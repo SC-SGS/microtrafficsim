@@ -1,0 +1,14 @@
+apply plugin: 'application'
+
+
+dependencies {
+	compile	project(':microtrafficsim-core')
+}
+
+
+mainClassName = 'microtrafficsim.examples.measurements.Main'
+
+
+// set jar and distribution name
+jar.baseName = 'microtrafficsim-examples-measurements'
+distributions.main.baseName = 'microtrafficsim-examples-measurements'

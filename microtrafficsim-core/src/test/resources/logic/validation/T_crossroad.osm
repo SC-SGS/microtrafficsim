@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="CGImap 0.4.0 (26171 thorn-02.openstreetmap.org)" copyright="OpenStreetMap and contributors" attribution="http://www.openstreetmap.org/copyright" license="http://opendatacommons.org/licenses/odbl/1-0/">
+ <bounds minlat="48.7892200" minlon="9.2606200" maxlat="48.7892700" maxlon="9.2606800"/>
+ <node id="267070094" visible="true" version="2" changeset="14315342" timestamp="2012-12-18T07:44:09Z" user="Max2509" uid="140685" lat="48.7888250" lon="9.2609724"/>
+ <node id="269231922" visible="true" version="2" changeset="7271720" timestamp="2011-02-13T04:10:22Z" user="mcgyvr81" uid="401006" lat="48.7895189" lon="9.2614242"/>
+ <node id="253030521" visible="true" version="5" changeset="14315289" timestamp="2012-12-18T07:37:16Z" user="Max2509" uid="140685" lat="48.7890110" lon="9.2599690"/>
+ <!--<node id="267070096" visible="true" version="4" changeset="7271720" timestamp="2011-02-13T04:10:21Z" user="mcgyvr81" uid="401006" lat="48.7895472" lon="9.2615099"/>-->
+ <!--<node id="269176203" visible="true" version="5" changeset="7271720" timestamp="2011-02-13T04:10:22Z" user="mcgyvr81" uid="401006" lat="48.7896813" lon="9.2618828"/>-->
+ <!--<node id="269232824" visible="true" version="4" changeset="7271720" timestamp="2011-02-13T04:10:22Z" user="mcgyvr81" uid="401006" lat="48.7898900" lon="9.2625162">-->
+  <!--<tag k="highway" v="turning_circle"/>-->
+ <!--</node>-->
+ <!--<node id="253031251" visible="true" version="5" changeset="14315289" timestamp="2012-12-18T07:37:16Z" user="Max2509" uid="140685" lat="48.7890764" lon="9.2592440"/>-->
+ <node id="267070091" visible="true" version="5" changeset="14315342" timestamp="2012-12-18T07:44:08Z" user="Max2509" uid="140685" lat="48.7892490" lon="9.2606482"/>
+ <!--<node id="253030527" visible="true" version="10" changeset="7285520" timestamp="2011-02-14T12:46:59Z" user="mcgyvr81" uid="401006" lat="48.7892790" lon="9.2586166"/>-->
+ <!--<node id="2072497911" visible="true" version="1" changeset="14315289" timestamp="2012-12-18T07:37:13Z" user="Max2509" uid="140685" lat="48.7890118" lon="9.2597081"/>-->
+ <!--<node id="2072497913" visible="true" version="1" changeset="14315289" timestamp="2012-12-18T07:37:13Z" user="Max2509" uid="140685" lat="48.7890344" lon="9.2594573"/>-->
+ <node id="1145357832" visible="true" version="3" changeset="14317805" timestamp="2012-12-18T12:17:20Z" user="Max2509" uid="140685" lat="48.7890774" lon="9.2601772"/>
+ <way id="24562781" visible="true" version="4" changeset="1708902" timestamp="2009-07-02T11:37:57Z" user="klausis" uid="85761">
+  <nd ref="267070091"/>
+  <nd ref="267070094"/>
+  <tag k="highway" v="residential"/>
+  <tag k="maxspeed" v="30"/>
+  <tag k="name" v="Selmaweg"/>
+ </way>
+ <way id="24777236" visible="true" version="11" changeset="14315289" timestamp="2012-12-18T07:37:16Z" user="Max2509" uid="140685">
+  <!--<nd ref="253030527"/>-->
+  <!--<nd ref="253031251"/>-->
+  <!--<nd ref="2072497913"/>-->
+  <!--<nd ref="2072497911"/>-->
+  <nd ref="253030521"/>
+  <nd ref="1145357832"/>
+  <nd ref="267070091"/> <!--intersection-->
+  <nd ref="269231922"/>
+  <!--<nd ref="267070096"/>-->
+  <!--<nd ref="269176203"/>-->
+  <!--<nd ref="269232824"/>-->
+  <tag k="highway" v="residential"/>
+  <tag k="maxspeed" v="30"/>
+  <tag k="name" v="In der Messe"/>
+ </way>
+</osm>

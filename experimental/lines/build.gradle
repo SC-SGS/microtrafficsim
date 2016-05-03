@@ -1,0 +1,16 @@
+apply plugin: 'application'
+
+
+dependencies {
+	compile	project(':microtrafficsim-core')
+}
+
+
+mainClassName = 'microtrafficsim.experimental.lines.LineShaderTestBench'
+
+
+// set jar and distribution name
+jar.baseName = 'microtrafficsim-experimental-lines_testbench'
+distributions.main.baseName = 'microtrafficsim-experimental-lines_testbench'
+
+applicationDefaultJvmArgs = ["-Xmx3g"]
