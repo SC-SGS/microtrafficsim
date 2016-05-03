@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="CGImap 0.4.0 (19870 thorn-03.openstreetmap.org)" copyright="OpenStreetMap and contributors" attribution="http://www.openstreetmap.org/copyright" license="http://opendatacommons.org/licenses/odbl/1-0/">
+ <bounds minlat="48.7699500" minlon="9.1792500" maxlat="48.7700900" maxlon="9.1794700"/>
+ <node id="96535138" visible="true" version="4" changeset="345593" timestamp="2008-06-30T13:57:30Z" user="cycleP" uid="28556" lat="48.7703461" lon="9.1800283"/>
+ <node id="96535395" visible="true" version="12" changeset="35044281" timestamp="2015-11-02T21:48:29Z" user="Peilscheibe" uid="35560" lat="48.7703887" lon="9.1801115">
+  <tag k="access" v="yes"/>
+  <tag k="barrier" v="lift_gate"/>
+  <tag k="lift_gate:type" v="double"/>
+  <tag k="motor_vehicle:conditional" v="no @ (Mo-Sa 21:30-06:00;Su;PH)"/>
+ </node>
+ <node id="273353344" visible="true" version="5" changeset="16382796" timestamp="2013-06-01T20:16:39Z" user="miscosm" uid="12982" lat="48.7691279" lon="9.1775439"/>
+ <node id="92311692" visible="true" version="4" changeset="23130730" timestamp="2014-06-24T20:37:39Z" user="Uhkabu" uid="453875" lat="48.7694195" lon="9.1800723"/>
+ <node id="92311691" visible="true" version="4" changeset="7358234" timestamp="2011-02-21T21:15:50Z" user="miscosm" uid="12982" lat="48.7700219" lon="9.1793566"/>
+ <node id="1397648576" visible="true" version="2" changeset="16382796" timestamp="2013-06-01T20:16:38Z" user="miscosm" uid="12982" lat="48.7696795" lon="9.1786939">
+  <tag k="crossing" v="uncontrolled"/>
+  <tag k="crossing_ref" v="zebra"/>
+  <tag k="highway" v="crossing"/>
+ </node>
+ <node id="1669123919" visible="true" version="2" changeset="16382796" timestamp="2013-06-01T20:16:39Z" user="miscosm" uid="12982" lat="48.7693692" lon="9.1780495"/>
+ <node id="96535139" visible="true" version="6" changeset="16382796" timestamp="2013-06-01T20:16:40Z" user="miscosm" uid="12982" lat="48.7697274" lon="9.1787919"/>
+ <node id="3080413322" visible="true" version="1" changeset="25481945" timestamp="2014-09-16T16:01:22Z" user="Peilscheibe" uid="35560" lat="48.7700594" lon="9.1793150">
+  <tag k="highway" v="give_way"/>
+  <tag k="traffic_sign" v="DE:205"/>
+ </node>
+ <node id="3080413323" visible="true" version="2" changeset="35044281" timestamp="2015-11-02T21:41:31Z" user="Peilscheibe" uid="35560" lat="48.7703891" lon="9.1789309">
+  <tag k="access" v="yes"/>
+  <tag k="barrier" v="lift_gate"/>
+  <tag k="motor_vehicle:conditional" v="no @ (Mo-Sa 21:30-06:00;Su;PH)"/>
+ </node>
+ <way id="292789429" visible="true" version="3" changeset="35044281" timestamp="2015-11-02T21:48:28Z" user="Peilscheibe" uid="35560">
+  <nd ref="92311691"/> <!--intersection-->
+  <nd ref="96535139"/>
+  <!--<nd ref="1397648576"/>-->
+  <!--<nd ref="1669123919"/>-->
+  <!--<nd ref="273353344"/>-->
+  <tag k="hazard" v="pedestrians"/>
+  <tag k="highway" v="residential"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="30"/>
+  <tag k="name" v="Heusteigstraße"/>
+  <tag k="sidewalk" v="both"/>
+  <tag k="source:maxspeed" v="DE:zone30"/>
+ </way>
+ <way id="303639202" visible="true" version="1" changeset="25481945" timestamp="2014-09-16T16:01:22Z" user="Peilscheibe" uid="35560">
+  <nd ref="92311691"/> <!--intersection-->
+  <nd ref="92311692"/>
+  <tag k="highway" v="residential"/>
+  <tag k="maxspeed" v="30"/>
+  <tag k="name" v="Bopserstraße"/>
+  <tag k="sidewalk" v="both"/>
+  <tag k="traffic_sign" v="DE:250,1020-30"/>
+  <tag k="vehicle" v="destination"/>
+ </way>
+ <way id="303639203" visible="true" version="2" changeset="25481945" timestamp="2014-09-16T16:40:32Z" user="Peilscheibe" uid="35560">
+  <nd ref="3080413323"/>
+  <nd ref="3080413322"/>
+  <nd ref="92311691"/> <!--intersection-->
+  <tag k="highway" v="residential"/>
+  <tag k="maxspeed" v="30"/>
+  <tag k="motor_vehicle:conditional" v="no @ (Mo-Sa 21:30-06:30;Su;PH)"/>
+  <tag k="name" v="Bopserstraße"/>
+  <tag k="parking:condition:both:residents" v="3B"/>
+  <tag k="parking:condition:both:time_interval" v="10:00-23:00"/>
+  <tag k="parking:lane:both" v="parallel"/>
+  <tag k="sidewalk" v="both"/>
+  <tag k="traffic_sign" v="DE:260,1020-30"/>
+ </way>
+ <way id="292931265" visible="true" version="2" changeset="32747113" timestamp="2015-07-20T07:05:34Z" user="Peilscheibe" uid="35560">
+  <!--<nd ref="96535395"/>-->
+  <nd ref="96535138"/>
+  <nd ref="92311691"/> <!--intersection-->
+  <tag k="highway" v="residential"/>
+  <tag k="lit" v="yes"/>
+  <tag k="maxspeed" v="30"/>
+  <tag k="name" v="Heusteigstraße"/>
+  <tag k="sidewalk" v="both"/>
+  <tag k="surface" v="asphalt"/>
+ </way>
+</osm>

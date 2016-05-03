@@ -1,0 +1,16 @@
+apply plugin: 'application'
+
+
+dependencies {
+	compile	project(':microtrafficsim-core')
+}
+
+
+mainClassName = 'microtrafficsim.examples.mapviewer.segmentbased.MapViewer'
+
+
+// set jar and distribution name
+jar.baseName = 'microtrafficsim-examples-mapviewer-segmentbased'
+distributions.main.baseName = 'microtrafficsim-examples-mapviewer-segmentbased'
+
+applicationDefaultJvmArgs = ["-Xmx3g"]

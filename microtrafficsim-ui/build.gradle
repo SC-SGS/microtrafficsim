@@ -1,0 +1,10 @@
+apply plugin: 'application'
+
+
+mainClassName = ""	// TODO
+
+
+// set jar, distribution and application name
+jar.baseName = 'microtrafficsim-ui'
+distributions.main.baseName = 'microtrafficsim-ui'
+startScripts.applicationName = 'microtrafficsim'
