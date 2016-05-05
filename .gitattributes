@@ -1,0 +1,10 @@
+# Unify line endings 
+* text=auto
+
+# Ignore line ending conversion for binary files
+*.jar   binary
+*.pdf   binary
+
+# Help out the github linguist api to detect the right languages
+*.gs 	linguist-language=GLSL
+
