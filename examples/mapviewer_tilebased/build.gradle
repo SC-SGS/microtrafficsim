@@ -11,9 +11,9 @@ dependencies {
 
 // handle command line arguments via '-Dexec.args="..."'
 run {
-	if (System.getProperty("exec.args")) {
-		args System.getProperty("exec.args").split()
-	}
+    if (System.getProperty("exec.args")) {
+        args System.getProperty("exec.args").split()
+    }
 }
 
 

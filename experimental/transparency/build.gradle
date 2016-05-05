@@ -2,7 +2,7 @@ apply plugin: 'application'
 
 
 dependencies {
-	compile	project(':microtrafficsim-core')
+    compile project(':microtrafficsim-core')
 }
 
 

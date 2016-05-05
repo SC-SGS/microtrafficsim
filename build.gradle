@@ -1,18 +1,18 @@
 // filter out 'examples' subproject as it is not a 'real' java project
 def javaProjects() {
-	subprojects.findAll { subproject -> !(subproject.name == 'examples') }
+    subprojects.findAll { subproject -> !(subproject.name == 'examples') }
 }
 
 configure(javaProjects()) {
-	apply plugin: 'java'
-	apply plugin: 'eclipse'
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
 
-	repositories {
-		mavenCentral()
-	}
+    repositories {
+        mavenCentral()
+    }
 
-	// enable verbose test logging
-	test.testLogging {
-       	events 'passed', 'skipped', 'failed'
-	}
+    // enable verbose test logging
+    test.testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
 }
