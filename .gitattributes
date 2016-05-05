@@ -6,5 +6,5 @@
 *.pdf   binary
 
 # Help out the github linguist api to detect the right languages
-*.gs 	linguist-language=GLSL
+*.gs    linguist-language=GLSL
 
