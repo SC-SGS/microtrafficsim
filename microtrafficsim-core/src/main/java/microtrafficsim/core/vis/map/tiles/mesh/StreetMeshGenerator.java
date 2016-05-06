@@ -17,6 +17,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 source.getFeatureProvider(),
                 source.getFeatureName(),
                 source.getTilingScheme(),
+                source.getRevision(),
                 getPropAdjacency(source.getStyle()),
                 getPropJoinsWhenPossible(source.getStyle())
         );

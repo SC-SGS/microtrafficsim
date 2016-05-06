@@ -15,6 +15,7 @@ public class FeatureSegmentLayerSource implements LayerSource {
 	private String feature;
 	private Style style;
 	private SegmentFeatureProvider provider;
+	private long revision;
 	
 	private ArrayList<LayerSourceChangeListener> listeners;
 	private SegmentFeatureProvider.FeatureChangeListener featureListener;
@@ -27,6 +28,7 @@ public class FeatureSegmentLayerSource implements LayerSource {
 		this.feature = feature;
 		this.style = style;
 		this.provider = provider;
+		this.revision = 0;
 
 		this.listeners = new ArrayList<>();
 		this.featureListener = new FeatureChangeListenerImpl();
@@ -44,6 +46,7 @@ public class FeatureSegmentLayerSource implements LayerSource {
 			provider.addFeatureChangeListener(featureListener);
 
 		this.provider = provider;
+		this.revision++;
 
 		for (LayerSourceChangeListener cl : listeners)
 			cl.sourceChanged(this);
@@ -64,6 +67,10 @@ public class FeatureSegmentLayerSource implements LayerSource {
 	
 	public Style getStyle() {
 		return style;
+	}
+
+	public long getRevision() {
+		return revision;
 	}
 	
 
@@ -106,12 +113,14 @@ public class FeatureSegmentLayerSource implements LayerSource {
 
 		@Override
 		public void featuresChanged() {
+			revision++;
 			for (LayerSourceChangeListener l : listeners)
 				l.sourceChanged(FeatureSegmentLayerSource.this);
 		}
 
 		@Override
 		public void featureChanged(String name) {
+			revision++;
 			if (feature != null && feature.equals(name))
 				for (LayerSourceChangeListener l : listeners)
 					l.sourceChanged(FeatureSegmentLayerSource.this);

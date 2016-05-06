@@ -13,6 +13,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     private final TileFeatureProvider provider;
     private final String feature;
     private final TilingScheme scheme;
+    private final long revision;
     private final boolean adjacency;
     private final boolean forceJoins;
 
@@ -22,6 +23,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
             TileFeatureProvider provider,
             String feature,
             TilingScheme scheme,
+            long revision,
             boolean adjacency,
             boolean forceJoins
     ) {
@@ -30,6 +32,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
         this.provider = provider;
         this.feature = feature;
         this.scheme = scheme;
+        this.revision = revision;
         this.adjacency = adjacency;
         this.forceJoins = forceJoins;
     }
@@ -47,6 +50,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                 && this.provider == other.provider
                 && this.feature.equals(other.feature)
                 && this.scheme.equals(other.scheme)
+                && this.revision == other.revision
                 && this.adjacency == other.adjacency
                 && this.forceJoins == other.forceJoins;
     }
@@ -59,6 +63,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                 .add(provider)
                 .add(feature)
                 .add(scheme)
+                .add(revision)
                 .add(adjacency)
                 .add(forceJoins)
                 .getHash();

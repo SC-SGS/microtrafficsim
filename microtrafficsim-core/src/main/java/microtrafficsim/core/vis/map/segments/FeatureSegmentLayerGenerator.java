@@ -56,6 +56,8 @@ public class FeatureSegmentLayerGenerator implements SegmentLayerGenerator {
 
 		synchronized (this) {
 			mesh = pool.get(key);
+			if (mesh != null)
+				mesh = mesh.require();
 
 			if (mesh == null) {
 				// if mesh is already being loaded, wait
@@ -68,13 +70,11 @@ public class FeatureSegmentLayerGenerator implements SegmentLayerGenerator {
 					}
 
 					mesh = pool.get(key);
-					mesh.require();
+					mesh = mesh.require();
 
 				} else {
 					loading.add(key);
 				}
-			} else {
-				mesh.require();
 			}
 		}
 

@@ -1,7 +1,9 @@
 package microtrafficsim.core.vis.mesh;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.HashSet;
 
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
@@ -13,10 +15,13 @@ public class ManagedMesh implements Mesh {
 	
 	private Mesh mesh;
 	private int refcount;
+	private HashSet<LifeTimeObserver<Mesh>> ltObservers;
+
 	
 	public ManagedMesh(Mesh mesh) {
 		this.mesh = mesh;
 		this.refcount = 1;
+		this.ltObservers = new HashSet<>();
 	}
 
 
@@ -30,9 +35,13 @@ public class ManagedMesh implements Mesh {
 	}
 
 	
-	public ManagedMesh require() {
-		refcount++;
-		return this;
+	public synchronized ManagedMesh require() {
+		if (refcount > 0) {
+			refcount++;
+			return this;
+		} else {
+			return null;
+		}
 	}
 
 	@Override
@@ -66,23 +75,30 @@ public class ManagedMesh implements Mesh {
 	}
 
 	@Override
-	public boolean dispose(RenderContext context) {
+	public synchronized boolean dispose(RenderContext context) {
 		if (mesh.getState() == State.DISPOSED || mesh.getState() == State.UNINITIALIZED) return false;
 
 		if (refcount == 1) {
 			refcount = 0;
-			return mesh.dispose(context);
+			boolean status =  mesh.dispose(context);
+			for (LifeTimeObserver<Mesh> lto : ltObservers)
+				lto.disposed(this);
+			return status;
 		} else {
 			refcount--;
 			return true;
 		}
 	}
 	
-	public boolean dispose(RenderContext context, boolean force) {
-		if (force)
-			return mesh.dispose(context);
-		else
+	public synchronized boolean dispose(RenderContext context, boolean force) {
+		if (force) {
+			boolean status =  mesh.dispose(context);
+			for (LifeTimeObserver<Mesh> lto : ltObservers)
+				lto.disposed(this);
+			return status;
+		} else {
 			return this.dispose(context);
+		}
 	}
 
 
@@ -100,14 +116,16 @@ public class ManagedMesh implements Mesh {
 	
 	@Override
 	public void addLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
-		mesh.addLifeTimeObserver(lto);
+		ltObservers.add(lto);
 	}
-	
+
+	@Override
 	public void removeLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
-		mesh.removeLifeTimeObserver(lto);
+		ltObservers.remove(lto);
 	}
-	
+
+	@Override
 	public Set<LifeTimeObserver<Mesh>> getLifeTimeObservers() {
-		return mesh.getLifeTimeObservers();
+		return Collections.unmodifiableSet(ltObservers);
 	}
 }

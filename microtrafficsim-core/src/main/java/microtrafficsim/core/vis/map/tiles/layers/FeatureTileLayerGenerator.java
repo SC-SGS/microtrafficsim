@@ -59,6 +59,8 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
 
         synchronized (this) {
             mesh = pool.get(key);
+			if (mesh != null)
+				mesh = mesh.require();
 
             if (mesh == null) {
                 // if mesh is already being loaded, wait
@@ -71,13 +73,11 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
                     }
 
                     mesh = pool.get(key);
-                    mesh.require();
+                    mesh = mesh.require();
 
                 } else {
                     loading.add(key);
                 }
-            } else {
-                mesh.require();
             }
         }
 
