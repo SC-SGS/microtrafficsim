@@ -21,6 +21,8 @@ public class SimulationConfig {
 	public long msPerTimeStep;
 	public long seed;
     public SimulationLogger logger;
+    // visualization
+    public VisualizationConfig visualization;
 	// crossing logic
 	public CrossingLogicConfig crossingLogic;
 	// vehicles
@@ -38,6 +40,8 @@ public class SimulationConfig {
 		msPerTimeStep = 500;
 		seed = new Random().nextLong();
         logger = new SimulationLogger(false);
+        // visualization
+        visualization = new VisualizationConfig();
 		// crossing logic
 		crossingLogic = new CrossingLogicConfig();
 		// vehicles
