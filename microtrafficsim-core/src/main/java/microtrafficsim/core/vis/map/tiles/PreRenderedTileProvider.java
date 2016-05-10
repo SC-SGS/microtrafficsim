@@ -8,32 +8,45 @@ import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.math.Rect2d;
 
+import java.util.HashSet;
+
 
 public class PreRenderedTileProvider implements TileProvider {
     // TODO: sync load tile and pre-render, handle init/dispose etc.
     // TODO: implement basic caching / resource re-using
 
     private TileLayerProvider provider;
+    private HashSet<TileChangeListener> tileListener;
+
+
+    public PreRenderedTileProvider() {
+        this(null);
+    }
+
+    public PreRenderedTileProvider(TileLayerProvider provider) {
+        this.provider = provider;
+        this.tileListener = new HashSet<>();
+    }
 
 
     @Override
     public Bounds getBounds() {
-        return null;    // TODO
+        return provider != null ? provider.getBounds() : null;
     }
 
     @Override
     public Rect2d getProjectedBounds() {
-        return null;    // TODO
+        return provider != null ? provider.getProjectedBounds() : null;
     }
 
     @Override
     public Projection getProjection() {
-        return null;    // TODO
+        return provider != null ? provider.getProjection() : null;
     }
 
     @Override
     public TilingScheme getTilingScheme() {
-        return null;    // TODO
+        return provider != null ? provider.getTilingScheme() : null;
     }
 
 
@@ -62,16 +75,16 @@ public class PreRenderedTileProvider implements TileProvider {
 
     @Override
     public boolean addTileChangeListener(TileChangeListener listener) {
-        return false;   // TODO
+        return tileListener.add(listener);
     }
 
     @Override
     public boolean removeTileChangeListener(TileChangeListener listener) {
-        return false;   // TODO
+        return tileListener.remove(listener);
     }
 
     @Override
     public boolean hasTileChangeListener(TileChangeListener listener) {
-        return false;   // TODO
+        return tileListener.contains(listener);
     }
 }

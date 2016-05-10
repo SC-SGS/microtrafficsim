@@ -1,27 +1,28 @@
 package microtrafficsim.examples.mapviewer.tilebased;
 
-import java.awt.Dimension;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.IOException;
-import java.util.Set;
-
-import javax.swing.JFrame;
-import javax.xml.stream.XMLStreamException;
-
-import microtrafficsim.core.map.layers.LayerDefinition;
+import microtrafficsim.core.map.layers.TileLayerDefinition;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
+import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.Visualizer;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.core.vis.map.projections.Projection;
-import microtrafficsim.core.vis.map.segments.SegmentLayerProvider;
-import microtrafficsim.core.vis.segmentbased.SegmentBasedVisualization;
+import microtrafficsim.core.vis.map.tiles.PreRenderedTileProvider;
+import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
+import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import javax.xml.stream.XMLStreamException;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.Set;
 
 
 public class MapViewer {
@@ -43,8 +44,10 @@ public class MapViewer {
 		} else {
 			file = new File(Example.DEFAULT_OSM_XML);
 		}
-		
-		show(new MercatorProjection(256), file);		// tiles will be 512x512 pixel
+
+        Projection projection = new MercatorProjection(256);    // tiles will be 512x512 pixel
+        TilingScheme scheme = new QuadTreeTilingScheme(projection, 0, 19);
+		show(projection, scheme, file);
 	}
 	
 	private static void printUsage() {
@@ -58,14 +61,15 @@ public class MapViewer {
 	}
 	
 	
-	private static void show(Projection projection, File file) throws Exception {
+	private static void show(Projection projection, TilingScheme scheme, File file) throws Exception {
 		
 		/* set up visualization style and sources */
-		Set<LayerDefinition> layers = Example.getLayerDefinitions();
-		SegmentLayerProvider provider = Example.getSegmentLayerProvider(projection, layers);
-		
+		Set<TileLayerDefinition> layers = Example.getLayerDefinitions();
+		TileLayerProvider layerProvider = Example.getLayerProvider(projection, scheme, layers);
+        PreRenderedTileProvider provider = new PreRenderedTileProvider(layerProvider);
+
 		/* create the visualizer */
-		SegmentBasedVisualization visualization = Example.createVisualization(provider);
+		TileBasedVisualization visualization = Example.createVisualization(provider);
 		
 		/* parse the OSM file asynchronously and update the sources */
 		OSMParser parser = Example.getParser();
@@ -100,7 +104,7 @@ public class MapViewer {
 			visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
 	}
 
-	private static void asyncParse(OSMParser parser, File file, Set<LayerDefinition> layers, Visualizer vis) {
+	private static void asyncParse(OSMParser parser, File file, Set<TileLayerDefinition> layers, Visualizer vis) {
 		new Thread(() -> {
 			try {
 				OSMParser.Result result = parser.parse(file);

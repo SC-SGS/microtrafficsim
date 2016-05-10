@@ -3,7 +3,9 @@ package microtrafficsim.examples.mapviewer.tilebased;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
-import microtrafficsim.core.map.layers.LayerDefinition;
+import microtrafficsim.core.map.layers.TileLayerDefinition;
+import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
+import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.MapFeatureDefinition;
 import microtrafficsim.core.parser.MapFeatureGenerator;
 import microtrafficsim.core.parser.OSMParser;
@@ -11,15 +13,15 @@ import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.VisualizerConfig;
 import microtrafficsim.core.vis.map.projections.Projection;
-import microtrafficsim.core.vis.map.segments.LayeredMapSegment;
-import microtrafficsim.core.vis.map.segments.FeatureSegmentLayerGenerator;
-import microtrafficsim.core.vis.map.segments.FeatureSegmentLayerSource;
-import microtrafficsim.core.vis.map.segments.SegmentLayerProvider;
+import microtrafficsim.core.vis.map.tiles.TileProvider;
+import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerGenerator;
+import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
+import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
+import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.mesh.style.Style;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.utils.Color;
-import microtrafficsim.core.vis.segmentbased.SegmentBasedVisualization;
-import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
+import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
 import microtrafficsim.core.vis.tilebased.TileGridOverlay;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
@@ -49,13 +51,13 @@ public class Example {
 	public static final float STREET_SCALE_NORMAL = (float) (1.0 / Math.pow(2, 19));
 	
 	
-	public static SegmentBasedVisualization createVisualization(SegmentLayerProvider provider) {
-		SegmentBasedVisualization vis = new SegmentBasedVisualization(
+	public static TileBasedVisualization createVisualization(TileProvider provider) {
+		TileBasedVisualization vis = new TileBasedVisualization(
 				WINDOW_WIDTH,
 				WINDOW_HEIGHT,
 				provider,
 				NUM_SEGMENT_WORKERS);
-		
+
 		vis.getKeyController().addKeyCommand(
 				KeyEvent.EVENT_KEY_PRESSED,
 				KeyEvent.VK_F12,
@@ -73,7 +75,7 @@ public class Example {
 		return vis;
 	}
 	
-	public static VisualizationPanel createVisualizationPanel(SegmentBasedVisualization vis) throws UnsupportedFeatureException {
+	public static VisualizationPanel createVisualizationPanel(TileBasedVisualization vis) throws UnsupportedFeatureException {
 		VisualizerConfig config = vis.getDefaultConfig();
 		
 		if (MSAA > 1) {
@@ -172,10 +174,10 @@ public class Example {
 	}
 
 	
-	public static Set<LayerDefinition> getLayerDefinitions() {
+	public static Set<TileLayerDefinition> getLayerDefinitions() {
 		boolean useAdjacencyPrimitives = true;
 
-		HashSet<LayerDefinition> layers = new HashSet<>();
+		HashSet<TileLayerDefinition> layers = new HashSet<>();
 
 		// shader resources
 		Resource vertShader;
@@ -279,42 +281,41 @@ public class Example {
 		
 		// create layers
 		int index = 0;
-		layers.add(new LayerDefinition("streets:other:outline", index++,
-				new FeatureSegmentLayerSource("streets:other", otherOutline)));
+		layers.add(new TileLayerDefinition("streets:other:outline", index++,
+				new FeatureTileLayerSource("streets:other", otherOutline)));
 
-		layers.add(new LayerDefinition("streets:primary:outline", index++,
-				new FeatureSegmentLayerSource("streets:primary", primaryOutline)));
+		layers.add(new TileLayerDefinition("streets:primary:outline", index++,
+				new FeatureTileLayerSource("streets:primary", primaryOutline)));
 
-		layers.add(new LayerDefinition("streets:trunk:outline", index++,
-				new FeatureSegmentLayerSource("streets:trunk", trunkOutline)));
+		layers.add(new TileLayerDefinition("streets:trunk:outline", index++,
+				new FeatureTileLayerSource("streets:trunk", trunkOutline)));
 
-		layers.add(new LayerDefinition("streets:motorway:outline", index++,
-				new FeatureSegmentLayerSource("streets:motorway", motorwayOutline)));
+		layers.add(new TileLayerDefinition("streets:motorway:outline", index++,
+				new FeatureTileLayerSource("streets:motorway", motorwayOutline)));
 
 
-		layers.add(new LayerDefinition("streets:other:base", index++,
-				new FeatureSegmentLayerSource("streets:other", otherInner)));
+		layers.add(new TileLayerDefinition("streets:other:base", index++,
+				new FeatureTileLayerSource("streets:other", otherInner)));
 
-		layers.add(new LayerDefinition("streets:primary:base", index++,
-				new FeatureSegmentLayerSource("streets:primary", primaryInner)));
+		layers.add(new TileLayerDefinition("streets:primary:base", index++,
+				new FeatureTileLayerSource("streets:primary", primaryInner)));
 
-		layers.add(new LayerDefinition("streets:trunk:base", index++,
-				new FeatureSegmentLayerSource("streets:trunk", trunkInner)));
+		layers.add(new TileLayerDefinition("streets:trunk:base", index++,
+				new FeatureTileLayerSource("streets:trunk", trunkInner)));
 
-		layers.add(new LayerDefinition("streets:motorway:base", index++,
-				new FeatureSegmentLayerSource("streets:motorway", motorwayInner)));
+		layers.add(new TileLayerDefinition("streets:motorway:base", index++,
+				new FeatureTileLayerSource("streets:motorway", motorwayInner)));
 
 		return layers;
 	}
 
-	public static SegmentLayerProvider getSegmentLayerProvider(Projection projection, Set<LayerDefinition> layers) {
-		LayeredMapSegment provider = new LayeredMapSegment(projection);
+	public static TileLayerProvider getLayerProvider(Projection projection, TilingScheme scheme, Set<TileLayerDefinition> layers) {
+        LayeredTileMap provider = new LayeredTileMap(projection, scheme);
+        FeatureTileLayerGenerator generator = new FeatureTileLayerGenerator();
+        provider.putGenerator(FeatureTileLayerSource.class, generator);
 
-		FeatureSegmentLayerGenerator generator = new FeatureSegmentLayerGenerator();
-		provider.putGenerator(FeatureSegmentLayerSource.class, generator);
-		
-		layers.forEach(provider::addLayer);
-		
+        layers.forEach(provider::addLayer);
+
 		return provider;
 	}
 }

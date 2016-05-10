@@ -7,7 +7,6 @@ import microtrafficsim.core.vis.context.RenderContext;
 import java.util.List;
 
 
-
 public abstract class TileLayer {
     private TileId tile;
     private Layer layer;
