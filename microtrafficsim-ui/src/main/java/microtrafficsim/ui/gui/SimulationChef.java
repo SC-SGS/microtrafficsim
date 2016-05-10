@@ -1,16 +1,22 @@
 package microtrafficsim.ui.gui;
 
 import com.jogamp.newt.event.KeyEvent;
+import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.simulation.controller.Simulation;
 import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.core.simulation.layers.LayerSupplier;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
+import microtrafficsim.core.vis.Visualization;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.VisualizerConfig;
+import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.map.segments.SegmentLayerProvider;
 import microtrafficsim.core.vis.segmentbased.SegmentBasedVisualization;
+import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.ui.Utils;
+import microtrafficsim.ui.scenarios.Scenario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,25 +47,26 @@ public class SimulationChef {
 
     // general
     private SimulationConfig config;
-    private LayerSupplier layerSupplier;
     // visualization
     private VisualizationPanel vpanel;
-    SegmentBasedVisualization visualization;
+    private SegmentBasedVisualization visualization;
+    private SpriteBasedVehicleOverlay overlay;
     private OSMParser parser;
     private Set<LayerDefinition> layers;
+    // vehicle simulation
+    private StreetGraph streetgraph;
     // jframe
     private JFrame jframe;
     private JMenuBar menubar;
 
-    public SimulationChef(SimulationConfig config, LayerSupplier layerSupplier) {
-        this(config, layerSupplier, "MicroTrafficSim - OSM MapViewer Example");
+    public SimulationChef(SimulationConfig config) {
+        this(config, "MicroTrafficSim - OSM MapViewer Example");
     }
 
-    public SimulationChef(SimulationConfig config, LayerSupplier layerSupplier, String title) {
+    public SimulationChef(SimulationConfig config, String title) {
         super();
         jframe = new JFrame(title);
         this.config = config;
-        this.layerSupplier = layerSupplier;
     }
 
     /*
@@ -67,13 +74,33 @@ public class SimulationChef {
     | general actions |
     |=================|
     */
-    public void prepareSimulation() throws UnsupportedFeatureException {
-
-        prepareVisualization();
-        prepareFrame();
-    }
-
     public void showGui() {
+
+        /* create and initialize the VisualizationPanel and JFrame */
+        try {
+            vpanel = createVisualizationPanel(visualization);
+        } catch (UnsupportedFeatureException e) {
+            e.printStackTrace();
+            Runtime.getRuntime().halt(0);
+            return;
+        }
+        jframe.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        jframe.add(vpanel, BorderLayout.CENTER);
+
+		/*
+		 * Note: JOGL automatically calls glViewport, we need to make sure that this
+		 * function is not called with a height or width of 0! Otherwise the program
+		 * crashes.
+		 */
+        jframe.setMinimumSize(new Dimension(100, 100));
+
+        // on close: stop the visualization and exit
+        jframe.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                exit();
+            }
+        });
+
         /* show frame and start visualization */
         jframe.setVisible(true);
         vpanel.start();
@@ -97,7 +124,14 @@ public class SimulationChef {
         new Thread(() -> {
             try {
                 jframe.setTitle("Parsing new map, please wait...");
+
+                /* reset */
+                overlay.setSimulation(null);
+
+                /* parsing */
                 OSMParser.Result result = parser.parse(file);
+                System.out.println(result.streetgraph != null);
+                streetgraph = result.streetgraph;
                 Utils.setFeatureProvider(layers, result.segment);
                 visualization.getVisualizer().resetView();
                 jframe.setTitle("MicroTrafficSim - " + file.getName()); // TODO
@@ -113,7 +147,7 @@ public class SimulationChef {
     | visualization |
     |===============|
     */
-    private void prepareVisualization() throws UnsupportedFeatureException {
+    public void prepareVisualization(LayerSupplier layerSupplier) {
 
         /* set up visualization style and sources */
         layers = layerSupplier.getLayerDefinitions();
@@ -121,10 +155,13 @@ public class SimulationChef {
 
 		/* create the visualizer */
         visualization = createVisualization(provider);
-        vpanel = createVisualizationPanel(visualization);
 
 		/* parse the OSM file asynchronously and update the sources */
-        parser = layerSupplier.getParser();
+        parser = layerSupplier.getParser(config);
+
+        /* create the visualization overlay */
+        overlay = new SpriteBasedVehicleOverlay(config.visualization.projection);
+        visualization.putOverlay(0, overlay);
     }
 
     private SegmentBasedVisualization createVisualization(SegmentLayerProvider provider) {
@@ -161,32 +198,15 @@ public class SimulationChef {
         return new VisualizationPanel(vis, config);
     }
 
+    public void addKeyCommand(short event, short vk, KeyCommand command) {
+        visualization.getKeyController().addKeyCommand(event, vk, command);
+    }
+
     /*
     |========|
     | JFrame |
     |========|
     */
-    private void prepareFrame() {
-
-        /* create and initialize the VisualizationPanel and JFrame */
-        jframe.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-        jframe.add(vpanel, BorderLayout.CENTER);
-
-		/*
-		 * Note: JOGL automatically calls glViewport, we need to make sure that this
-		 * function is not called with a height or width of 0! Otherwise the program
-		 * crashes.
-		 */
-        jframe.setMinimumSize(new Dimension(100, 100));
-
-        // on close: stop the visualization and exit
-        jframe.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                exit();
-            }
-        });
-    }
-
     public void addJMenuBar() {
 
         if (menubar == null) {
@@ -221,5 +241,25 @@ public class SimulationChef {
         JMenuItem item = new JMenuItem(itemname);
         item.addActionListener(l);
         menu.add(item);
+    }
+
+    /*
+    |====================|
+    | vehicle simulation |
+    |====================|
+    */
+    public void startSimulation() {
+
+        streetgraph.reset();
+        if (streetgraph != null) {
+
+            /* create the simulation */
+            Simulation sim = new Scenario(config, streetgraph, overlay.getVehicleFactory());
+            overlay.setSimulation(sim);
+
+		    /* initialize the simulation */
+            sim.prepare();
+            sim.runOneStep();
+        }
     }
 }

@@ -71,9 +71,9 @@ public abstract class AbstractSimulation implements Simulation {
 	}
 
 	/*
-	|===========|
-	| prepare() |
-	|===========|
+	|=========|
+	| prepare |
+	|=========|
 	*/
     /**
 	 * This method should be called before the simulation starts. E.g. it can be
@@ -254,7 +254,7 @@ public abstract class AbstractSimulation implements Simulation {
 
     @Override
 	public final ArrayList<? extends AbstractVehicle> getSpawnedVehicles() {
-		return new ArrayList<>(vehicleManager.getSpawnedVehicles());
+        return new ArrayList<>(vehicleManager.getSpawnedVehicles());
 	}
 
     @Override

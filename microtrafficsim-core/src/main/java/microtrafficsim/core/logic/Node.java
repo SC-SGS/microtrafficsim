@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  */
 public class Node implements IDijkstrableNode {
 
-	private CrossingLogicConfig config;
+	private SimulationConfig config;
 	private Random random;
 	public final Long ID;
 	private Coordinate coordinate;
@@ -44,7 +44,7 @@ public class Node implements IDijkstrableNode {
 	 * meaning for the simulation.
 	 */
 	public Node(SimulationConfig config, Coordinate coordinate) {
-		this.config = config.crossingLogic;
+		this.config = config;
 		ID = config.longIDGenerator.next();
 		random = new Random(config.seed);
 		this.coordinate = coordinate;
@@ -97,13 +97,13 @@ public class Node implements IDijkstrableNode {
                 // compare priorities of origins
                 byte cmp = (byte) (v1.getDirectedEdge().getPriorityLevel()
                         - v2.getDirectedEdge().getPriorityLevel());
-                if (cmp == 0 || !config.edgePriorityEnabled) {
+                if (cmp == 0 || !config.crossingLogic.edgePriorityEnabled) {
                     // compare priorities of destinations
                     cmp = (byte) (v1.peekNextRouteSection().getPriorityLevel()
                             - v2.peekNextRouteSection().getPriorityLevel());
-                    if (cmp == 0 || !config.edgePriorityEnabled) {
+                    if (cmp == 0 || !config.crossingLogic.edgePriorityEnabled) {
                         // compare right before left (or left before right)
-                        if (config.priorityToTheRightEnabled) {
+                        if (config.crossingLogic.priorityToTheRightEnabled) {
                             byte leftmostMatchingIdx = IndicesCalculator.leftmostIndexInMatching(origin1,
                                     destination1, origin2, destination2, indicesPerNode);
                             if (leftmostMatchingIdx == origin1) {
@@ -128,6 +128,15 @@ public class Node implements IDijkstrableNode {
         };
 	}
 
+    void reset() {
+        random = new Random(config.seed);
+
+        // crossing logic
+        assessedVehicles = new HashSet<>();
+        maxPrioVehicles = new HashSet<>();
+        anyChangeSinceUpdate = false;
+    }
+
 	public void update() {
 		
 		if (!assessedVehicles.isEmpty()) {
@@ -147,7 +156,7 @@ public class Node implements IDijkstrableNode {
                     // configs has to be false to enable going without priority:
                     // false <=>  config.goWithoutPriorityEnabled && !anyChangeSinceUpdate
                     // true  <=> !config.goWithoutPriorityEnabled || anyChangeSinceUpdate
-                    if (!config.goWithoutPriorityEnabled || anyChangeSinceUpdate
+                    if (!config.crossingLogic.goWithoutPriorityEnabled || anyChangeSinceUpdate
                             || v.peekNextRouteSection().getLane(0).getMaxInsertionIndex() >= 0) {
                         if (maxPrio < v.getPriorityCounter()) {
                             maxPrioVehicles.clear();
@@ -167,7 +176,7 @@ public class Node implements IDijkstrableNode {
 				// case #2: deadlock OR tooManyVehicles
 				// => choose random vehicle
 				if (maxPrio < assessedVehicles.size() - 1
-						|| (config.isOnlyOneVehicleEnabled() && maxPrioVehicles.size() > 1)) {
+						|| (config.crossingLogic.isOnlyOneVehicleEnabled() && maxPrioVehicles.size() > 1)) {
 					Iterator<AbstractVehicle> bla = maxPrioVehicles.iterator();
 					for (int i = 0; i < random.nextInt(maxPrioVehicles.size()); i++) {
 						bla.next();
@@ -329,7 +338,10 @@ public class Node implements IDijkstrableNode {
 		}
 
 		// now: all vectors are keys
-		Queue<Vec2f> sortedVectors = Geometry.sortClockwiseAsc(zero, edges.keySet(), !config.drivingOnTheRight);
+		Queue<Vec2f> sortedVectors = Geometry.sortClockwiseAsc(
+                zero,
+                edges.keySet(),
+                !config.crossingLogic.drivingOnTheRight);
 		byte nextCrossingIndex = 0;
 		while (!sortedVectors.isEmpty()) {
 			ArrayList<DirectedEdge> nextEdges = edges.remove(sortedVectors.poll());

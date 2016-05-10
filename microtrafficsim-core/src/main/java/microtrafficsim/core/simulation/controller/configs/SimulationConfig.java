@@ -13,7 +13,7 @@ import java.util.Random;
  * 
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class SimulationConfig {
+public final class SimulationConfig {
 
 	// general
 	public LongIDGenerator longIDGenerator;
@@ -21,6 +21,7 @@ public class SimulationConfig {
 	public long msPerTimeStep;
 	public long seed;
     public SimulationLogger logger;
+    public int ageForPause;
     // visualization
     public VisualizationConfig visualization;
 	// crossing logic
@@ -40,6 +41,7 @@ public class SimulationConfig {
 		msPerTimeStep = 500;
 		seed = new Random().nextLong();
         logger = new SimulationLogger(false);
+        ageForPause = -1;
         // visualization
         visualization = new VisualizationConfig();
 		// crossing logic

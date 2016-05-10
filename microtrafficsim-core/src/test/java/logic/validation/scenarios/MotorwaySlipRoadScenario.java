@@ -8,6 +8,7 @@ import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.simulation.controller.Simulation;
 import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
@@ -28,24 +29,20 @@ import java.util.function.Supplier;
  */
 public class MotorwaySlipRoadScenario extends ValidationScenario {
 
-    public static class Config extends ValidationScenario.Config {
+    public static void setupConfig(SimulationConfig config){
 
-        public int ageForPause = -1;
-
-        {
-            // super attributes
-            longIDGenerator = new ConcurrentLongIDGenerator();
-            msPerTimeStep = 200;
-            maxVehicleCount = 3;
-            crossingLogic.drivingOnTheRight = true;
-            crossingLogic.edgePriorityEnabled = true;
-            crossingLogic.priorityToTheRightEnabled = true;
-            crossingLogic.setOnlyOneVehicle(false);
-            // own attributes
-            ageForPause = -1;
-            // vehicle
-            Car.maxVelocity = 1;
-        }
+        // super attributes
+        config.longIDGenerator = new ConcurrentLongIDGenerator();
+        config.msPerTimeStep = 200;
+        config.maxVehicleCount = 3;
+        config.crossingLogic.drivingOnTheRight = true;
+        config.crossingLogic.edgePriorityEnabled = true;
+        config.crossingLogic.priorityToTheRightEnabled = true;
+        config.crossingLogic.setOnlyOneVehicle(false);
+        config.crossingLogic.goWithoutPriorityEnabled = false;
+        // own attributes
+        config.ageForPause = -1;
+        Car.maxVelocity = 1;
     }
 
     private static final String OSM_FILENAME = "motorway_slip-road.osm";
@@ -66,10 +63,12 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
             file = new PackagedResource(Main.class, OSM_FILENAME).asTemporaryFile();
         }
 
+        SimulationConfig config = new SimulationConfig();
+        setupConfig(config);
         Main.show(
                 new MercatorProjection(),
                 file,
-                new Config(),
+                config,
                 MotorwaySlipRoadScenario.class);
     }
 
@@ -87,7 +86,7 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
      * @param graph          The streetgraph used for this scenarios.
      * @param vehicleFactory This creates vehicles.
      */
-    public MotorwaySlipRoadScenario(Config config, StreetGraph graph,
+    public MotorwaySlipRoadScenario(SimulationConfig config, StreetGraph graph,
                                     Supplier<IVisualizationVehicle> vehicleFactory) {
         super(config,
                 graph,

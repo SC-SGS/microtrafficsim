@@ -99,6 +99,12 @@ public class DirectedEdge implements IDijkstrableEdge, ILogicEdge {
 		return ID + ":(" + origin.ID + " -" + numberOfCells + "-> " + destination.ID + ")";
 	}
 
+    void reset() {
+
+        lanes = new Lane[lanes.length];
+        lanes[0] = new Lane(this, 0);
+    }
+
 	// |===============|
 	// | visualization |
 	// |===============|

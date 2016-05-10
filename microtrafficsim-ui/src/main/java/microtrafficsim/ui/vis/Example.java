@@ -3,9 +3,8 @@ package microtrafficsim.ui.vis;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.parser.MapFeatureDefinition;
-import microtrafficsim.core.parser.MapFeatureGenerator;
-import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.parser.*;
+import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.core.simulation.layers.LayerSupplier;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.segments.FeatureSegmentLayerGenerator;
@@ -36,7 +35,7 @@ public class Example implements LayerSupplier {
 
     public static final float STREET_SCALE_NORMAL = (float) (1.0 / Math.pow(2, 19));
 
-    public OSMParser getParser() {
+    public OSMParser getParser(SimulationConfig config) {
 
         // predicates to match/select features
         Predicate<Way> predMotorway = w -> w.visible
@@ -109,10 +108,61 @@ public class Example implements LayerSupplier {
                 n -> false,
                 predOther);
 
+        // predicates to match/select features
+        Predicate<Way> streetgraphMatcher = w -> {
+            if (!w.visible) return false;
+            if (w.tags.get("highway") == null) return false;
+            if (w.tags.get("area") != null && !w.tags.get("area").equals("no")) return false;
+
+            switch (w.tags.get("highway")) {
+                case "motorway":
+                    return true;
+                case "trunk":
+                    return true;
+                case "primary":
+                    return true;
+                case "secondary":
+                    return true;
+                case "tertiary":
+                    return true;
+                case "unclassified":
+                    return true;
+                case "residential":
+                    return true;
+                //case "service":			return true;
+
+                case "motorway_link":
+                    return true;
+                case "trunk_link":
+                    return true;
+                case "primary_link":
+                    return true;
+                case "tertiary_link":
+                    return true;
+
+                case "living_street":
+                    return true;
+                case "track":
+                    return true;
+                case "road":
+                    return true;
+            }
+
+            return false;
+        };
+
+        StreetGraphFeatureDefinition streetgraph = new StreetGraphFeatureDefinition(
+                "streetgraph",
+                genindexStreetGraph,
+                new StreetGraphGenerator(config),
+                n -> false,
+                streetgraphMatcher);
+
         // create and return the parser
         return new OSMParser.Config()
                 .setGeneratorIndexBefore(genindexBefore)
                 .setGeneratorIndexStreetGraph(genindexStreetGraph)
+                .setStreetGraphFeatureDefinition(streetgraph)
                 .putMapFeatureDefinition(motorway)
                 .putMapFeatureDefinition(trunk)
                 .putMapFeatureDefinition(primary)

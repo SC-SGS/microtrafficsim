@@ -5,6 +5,7 @@ import microtrafficsim.ui.gui.SimulationChef;
 import microtrafficsim.ui.vis.Example;
 
 import java.io.File;
+import java.util.Random;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -12,8 +13,9 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        File file = null;
 
+        /* handle input arguments */
+        File file = null;
         if (args.length == 1) {
             switch(args[0]) {
                 case "-h":
@@ -26,10 +28,23 @@ public class Main {
             }
         }
 
+        /* setup config */
         SimulationConfig config = new SimulationConfig();
-        SimulationChef chef = new SimulationChef(config, new Example());
-        chef.prepareSimulation();
+        config.maxVehicleCount = 10;
+        config.seed = 1455374755807L;
+        config.multiThreading.nThreads = 8;
+        config.crossingLogic.drivingOnTheRight = true;
+        config.crossingLogic.edgePriorityEnabled = true;
+        config.crossingLogic.priorityToTheRightEnabled = true;
+        config.crossingLogic.goWithoutPriorityEnabled = true;
+        config.crossingLogic.setOnlyOneVehicle(false);
+        config.logger.enabled = false;
+        SimulationChef chef = new SimulationChef(config);
 
+        /* setup JFrame and visualization */
+        chef.prepareVisualization(new Example());
+
+        /* setup gui */
         chef.addJMenuBar();
         chef.addJMenuItem(
                 "Map",
@@ -45,9 +60,19 @@ public class Main {
                 e -> {
                     System.out.println("bla");
                 });
+        chef.addJMenuItem(
+                "Logic",
+                "Run",
+                e -> {
+                    chef.startSimulation();
+                }
+        );
 
+        /* parse file */
         if (file != null)
             chef.asyncParse(file);
+
+        /* show gui */
         chef.showGui();
     }
 

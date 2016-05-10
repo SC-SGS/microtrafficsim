@@ -3,6 +3,7 @@ package microtrafficsim.examples.simulation;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.controller.Simulation;
+import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
@@ -24,7 +25,7 @@ import java.util.Set;
 
 public class Main {
 	
-	private static final String DEFAULT_OSM_XML = "map.osm";
+	private static final String DEFAULT_OSM_XML = "/Users/Dominic/Documents/Studium/Bachelor_of_Disaster/microtrafficsim/maps/Stuttgart.osm";
 	private static final boolean PRINT_FRAME_STATS = false;
 
 	public static void main(String[] args) throws Exception {
@@ -60,15 +61,15 @@ public class Main {
 	private static void show(Projection projection, File file) throws Exception {
 		
 		/* create configuration for scenarios */
-		Scenario.Config scencfg = new Scenario.Config();
-		Example.initSimulationConfig(scencfg);
+		SimulationConfig config = new SimulationConfig();
+		Example.initSimulationConfig(config);
 		
 		/* set up visualization style and sources */
 		Set<LayerDefinition> layers = Example.getLayerDefinitions();
 		SegmentLayerProvider provider = Example.getSegmentLayerProvider(projection, layers);
 		
 		/* parse the OSM file */
-		OSMParser parser = Example.getParser(scencfg);
+		OSMParser parser = Example.getParser(config);
 		OSMParser.Result result;
 		
 		try {
@@ -85,7 +86,7 @@ public class Main {
 		SpriteBasedVehicleOverlay overlay = new SpriteBasedVehicleOverlay(projection);
 		
 		/* create the simulation */
-		Simulation sim = new Scenario(scencfg, result.streetgraph, overlay.getVehicleFactory());
+		Simulation sim = new Scenario(config, result.streetgraph, overlay.getVehicleFactory());
 		overlay.setSimulation(sim);
 		
 		/* create and display the frame */
@@ -101,8 +102,8 @@ public class Main {
 				vpanel = Example.createVisualizationPanel(visualization);
 			} catch (UnsupportedFeatureException e) {
 				e.printStackTrace();
-				Runtime.getRuntime().halt(0);
-				return;
+                Runtime.getRuntime().halt(0);
+                return;
 			}
 
 			/* create and initialize the JFrame */

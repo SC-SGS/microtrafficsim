@@ -35,12 +35,7 @@ import java.util.function.Supplier;
  */
 public abstract class AbstractStartEndScenario extends AbstractSimulation {
 
-    public static class Config extends SimulationConfig {
-
-        public int ageForPause = -1;
-    }
-
-    protected final Config config;
+    protected final SimulationConfig config;
     private final Supplier<ShortestPathAlgorithm> scoutFactory;
     // used for multithreaded vehicle creation
     private int orderIdx;
@@ -59,7 +54,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
      * @param graph The streetgraph used for this scenarios.
      * @param vehicleFactory This creates vehicles.
      */
-    public AbstractStartEndScenario(Config config,
+    public AbstractStartEndScenario(SimulationConfig config,
                                     StreetGraph graph,
                                     Supplier<IVisualizationVehicle> vehicleFactory) {
         super(config,
@@ -220,6 +215,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
                     // has permission to create vehicle
                     if (!route.isEmpty()) {
                         // add route to vehicle and vehicle to graph
+                        System.err.println("bla");
                         createAndAddVehicle(new Car(config.longIDGenerator, this, route));
                         successfullyAdded++;
                     }
@@ -299,7 +295,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
     */
     /**
      * This implementation calls {@link AbstractSimulation#cancel()}, if the simulation age reaches
-     * {@link AbstractStartEndScenario.Config#ageForPause}.
+     * {@link SimulationConfig#ageForPause}.
      */
     @Override
     public void didRunOneStep() {
@@ -311,7 +307,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
 
     /**
      * This implementation creates the start and end nodes depending on the radius percentages defined in the
-     * {@link AbstractStartEndScenario.Config}.
+     * {@link SimulationConfig}.
      *
      * <p>
      *     This method is calling two subtasks:<br>

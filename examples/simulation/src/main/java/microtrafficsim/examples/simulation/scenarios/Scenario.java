@@ -5,6 +5,7 @@ import microtrafficsim.core.frameworks.shortestpath.astar.impl.FastestWayAStar;
 import microtrafficsim.core.frameworks.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.EndOfTheWorldScenario;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 
@@ -12,21 +13,9 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 /**
- * Created by Dominic on 12.03.16.
+ * @author Dominic Parga Cacheiro
  */
 public class Scenario extends EndOfTheWorldScenario {
-
-    public static class Config extends EndOfTheWorldScenario.Config {
-
-        {
-            // super attributes
-            longIDGenerator = new ConcurrentLongIDGenerator();
-            msPerTimeStep = 5;
-            maxVehicleCount = 10000;
-            // own attributes
-            ageForPause = -1;
-        }
-    }
 
     /**
      * Standard constructor.
@@ -35,7 +24,7 @@ public class Scenario extends EndOfTheWorldScenario {
      * @param graph          The streetgraph used for this scenarios.
      * @param vehicleFactory This creates vehicles.
      */
-    public Scenario(Config config, StreetGraph graph, Supplier<IVisualizationVehicle> vehicleFactory) {
+    public Scenario(SimulationConfig config, StreetGraph graph, Supplier<IVisualizationVehicle> vehicleFactory) {
         super(config, graph, vehicleFactory);
     }
 

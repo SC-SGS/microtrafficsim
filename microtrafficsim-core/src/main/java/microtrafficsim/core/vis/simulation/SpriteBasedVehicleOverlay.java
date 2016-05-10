@@ -196,7 +196,7 @@ public class SpriteBasedVehicleOverlay implements Overlay {
 
 	@Override
 	public void display(RenderContext context, View view) {
-		if (!enabled || simulation == null) return;
+        if (!enabled || simulation == null) return;
 		GL3 gl = context.getDrawable().getGL().getGL3();
 		
 		// disable depth test
@@ -229,7 +229,7 @@ public class SpriteBasedVehicleOverlay implements Overlay {
 		
 		// update vehicle list
 		Collection<? extends ILogicVehicle> vehicles = simulation.getSpawnedVehicles();
-		int len = vehicles.size();
+        int len = vehicles.size();
 		if (len == 0) return;
 		
 		// orphan last buffer and load it to a new one
@@ -261,7 +261,7 @@ public class SpriteBasedVehicleOverlay implements Overlay {
 			buffer.putInt(v.getBaseColor().toIntABGR());
 			vehicleCount++;
 		}
-		
+
 		gl.glUnmapBuffer(vbo.target);	
 		gl.glBindBuffer(vbo.target, 0);
 		

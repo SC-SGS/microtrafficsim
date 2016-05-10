@@ -24,17 +24,6 @@ import java.util.function.Supplier;
  */
 public abstract class RandomRouteScenario extends AbstractStartEndScenario {
 
-	public static class Config extends AbstractStartEndScenario.Config {
-
-		{
-			// super attributes
-			longIDGenerator = new ConcurrentLongIDGenerator();
-			msPerTimeStep = 200;
-			// own attributes
-			ageForPause = -1;
-		}
-	}
-
     /**
      * Standard constructor.
      *
@@ -42,7 +31,7 @@ public abstract class RandomRouteScenario extends AbstractStartEndScenario {
      * @param graph The streetgraph used for this scenarios.
      * @param vehicleFactory This creates vehicles.
      */
-    public RandomRouteScenario(Config config, StreetGraph graph,
+    public RandomRouteScenario(SimulationConfig config, StreetGraph graph,
                                Supplier<IVisualizationVehicle> vehicleFactory) {
         super(config,
                 graph,

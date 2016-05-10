@@ -23,17 +23,6 @@ import java.util.function.Supplier;
  */
 public abstract class EndOfTheWorldScenario extends AbstractStartEndScenario {
 
-    public static class Config extends AbstractStartEndScenario.Config {
-        {
-            // super attributes
-            longIDGenerator = new ConcurrentLongIDGenerator();
-            msPerTimeStep = 10;
-            maxVehicleCount = 10000;
-            // own attributes
-            ageForPause = -1;
-        }
-    }
-
     // routing
     private final Rect leftEnd, rightEnd, topEnd, bottomEnd;
 
@@ -46,7 +35,7 @@ public abstract class EndOfTheWorldScenario extends AbstractStartEndScenario {
     reetgraph used for this scenarios.
      * @param vehicleFactory This creates vehicles.
      */
-    public EndOfTheWorldScenario(Config config, StreetGraph graph,
+    public EndOfTheWorldScenario(SimulationConfig config, StreetGraph graph,
                                  Supplier<IVisualizationVehicle> vehicleFactory) {
         super(config,
                 graph,

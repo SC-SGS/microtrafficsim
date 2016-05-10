@@ -100,4 +100,9 @@ public class StreetGraph {
 	public boolean addVehicle(AbstractVehicle vehicle) {
 		return vehicle.register();
 	}
+
+    public void reset() {
+        nodes.forEach(Node::reset);
+        edges.forEach(DirectedEdge::reset);
+    }
 }

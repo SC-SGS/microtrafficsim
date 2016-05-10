@@ -12,6 +12,7 @@ import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.impl.BlockingCar;
 import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.simulation.controller.AbstractSimulation;
+import microtrafficsim.core.simulation.controller.Simulation;
 import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
@@ -24,23 +25,19 @@ import java.util.function.Supplier;
  */
 public abstract class ValidationScenario extends AbstractSimulation {
 
-    public static class Config extends SimulationConfig {
+    public static void setupConfig(SimulationConfig config){
 
-        public int ageForPause = -1;
-
-        {
-            // super attributes
-            longIDGenerator = new ConcurrentLongIDGenerator();
-            msPerTimeStep = 200;
-            maxVehicleCount = 3;
-            crossingLogic.drivingOnTheRight = true;
-            crossingLogic.edgePriorityEnabled = true;
-            crossingLogic.priorityToTheRightEnabled = true;
-            crossingLogic.setOnlyOneVehicle(false);
-            crossingLogic.goWithoutPriorityEnabled = false;
-            // own attributes
-            ageForPause = -1;
-        }
+        // super attributes
+        config.longIDGenerator = new ConcurrentLongIDGenerator();
+        config.msPerTimeStep = 200;
+        config.maxVehicleCount = 3;
+        config.crossingLogic.drivingOnTheRight = true;
+        config.crossingLogic.edgePriorityEnabled = true;
+        config.crossingLogic.priorityToTheRightEnabled = true;
+        config.crossingLogic.setOnlyOneVehicle(false);
+        config.crossingLogic.goWithoutPriorityEnabled = false;
+        // own attributes
+        config.ageForPause = -1;
     }
 
     protected boolean justInitialized;
@@ -53,7 +50,7 @@ public abstract class ValidationScenario extends AbstractSimulation {
      * @param graph          The streetgraph used for this scenarios.
      * @param vehicleFactory This creates vehicles.
      */
-    public ValidationScenario(Config config, StreetGraph graph,
+    public ValidationScenario(SimulationConfig config, StreetGraph graph,
                               Supplier<IVisualizationVehicle> vehicleFactory) {
         super(config,
                 graph,

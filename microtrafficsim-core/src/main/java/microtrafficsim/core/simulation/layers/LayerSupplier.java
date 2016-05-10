@@ -2,6 +2,7 @@ package microtrafficsim.core.simulation.layers;
 
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.segments.SegmentLayerProvider;
 
@@ -12,7 +13,7 @@ import java.util.Set;
  */
 public interface LayerSupplier {
 
-    public OSMParser getParser();
+    public OSMParser getParser(SimulationConfig config);
 
     public Set<LayerDefinition> getLayerDefinitions();
 
