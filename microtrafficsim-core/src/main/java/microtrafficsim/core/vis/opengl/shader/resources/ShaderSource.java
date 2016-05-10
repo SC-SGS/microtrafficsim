@@ -10,7 +10,7 @@ public class ShaderSource {
 	
 	public ShaderSource(int type, Resource resource) {
 		this.type = type;
-		this.resource = resource;
+        this.resource = resource;
 	}
 	
 	

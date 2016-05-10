@@ -14,6 +14,7 @@ import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.resources.PackagedResource;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
@@ -64,7 +65,7 @@ public class TCrossroadScenario extends ValidationScenario {
         SimulationConfig config = new SimulationConfig();
         setupConfig(config);
         Main.show(
-                new MercatorProjection(),
+                config.visualization.projection,
                 file,
                 config,
                 TCrossroadScenario.class);
@@ -122,24 +123,18 @@ public class TCrossroadScenario extends ValidationScenario {
 
     @Override
     protected void createAndAddVehicles() {
-        /*
-        top mid microtrafficsim.core.map.Coordinate (48.78925, 9.260648)
-        bottom microtrafficsim.core.map.Coordinate (48.788826, 9.260972)
-        top right microtrafficsim.core.map.Coordinate (48.78989, 9.262516)
-        top left microtrafficsim.core.map.Coordinate (48.78928, 9.258616)
-        */
-        Iterator<Node> iter = graph.getNodeIterator();
-        while (iter.hasNext()) {
 
-            Node node = iter.next();
-            Coordinate c = node.getCoordinate();
-            // bottom
-            if (c.equals(new Coordinate(48.788826f, 9.260972f))) bottom = node;
-            // top right
-            else if (c.equals(new Coordinate(48.78952f, 9.261424f))) topRight = node;
-            // top left
-            else if (c.equals(new Coordinate(48.78901f, 9.259969f))) topLeft = node;
-        }
+        /* sort by lon */
+        Iterator<Node> iter = graph.getNodeIterator();
+        ArrayList<Node> sortedNodes = new ArrayList<>(4);
+        while (iter.hasNext())
+            sortedNodes.add(iter.next());
+
+        sortedNodes.sort((n1, n2) -> n1.getCoordinate().lon > n2.getCoordinate().lon ? 1 : -1);
+
+        topLeft = sortedNodes.get(0);
+        bottom = sortedNodes.get(2);
+        topRight = sortedNodes.get(3);
 
         updateScenarioState(VehicleState.DESPAWNED);
         justInitialized = false;

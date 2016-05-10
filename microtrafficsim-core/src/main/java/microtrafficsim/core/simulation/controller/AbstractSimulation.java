@@ -281,7 +281,7 @@ public abstract class AbstractSimulation implements Simulation {
 	
 	@Override
 	public final boolean addVehicle(AbstractVehicle vehicle) {
-		if (graph.addVehicle(vehicle)) {
+        if (graph.addVehicle(vehicle)) {
 			vehicleManager.addVehicle(vehicle);
 			return true;
 		}

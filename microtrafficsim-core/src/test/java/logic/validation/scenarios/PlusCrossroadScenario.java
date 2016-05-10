@@ -17,6 +17,7 @@ import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.resources.PackagedResource;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
@@ -67,7 +68,7 @@ public class PlusCrossroadScenario extends ValidationScenario {
         SimulationConfig config = new SimulationConfig();
         setupConfig(config);
         Main.show(
-                new MercatorProjection(),
+                config.visualization.projection,
                 file,
                 config,
                 PlusCrossroadScenario.class);
@@ -171,29 +172,20 @@ public class PlusCrossroadScenario extends ValidationScenario {
 
     @Override
     protected void createAndAddVehicles() {
-        /*
-        top left microtrafficsim.core.map.Coordinate (48.77039, 9.178931)
-        top right microtrafficsim.core.map.Coordinate (48.770348, 9.180028)
-        bottom left microtrafficsim.core.map.Coordinate (48.769726, 9.178792)
-        mid microtrafficsim.core.map.Coordinate (48.770023, 9.179357)
-        bottom right microtrafficsim.core.map.Coordinate (48.76942, 9.180072)
-        */
-        Iterator<Node> iter = graph.getNodeIterator();
-        while (iter.hasNext()) {
 
-            Node node = iter.next();
-            Coordinate c = node.getCoordinate();
-            // top left
-            if (c.equals(new Coordinate(48.77039f, 9.178931f))) topLeft = node;
-                // top right
-            else if (c.equals(new Coordinate(48.770348f, 9.180028f))) topRight = node;
-                // bottom left
-            else if (c.equals(new Coordinate(48.769726f, 9.178792f))) bottomLeft = node;
-                // mid
-            else if (c.equals(new Coordinate(48.770023f, 9.179357f))) mid = node;
-                // bottom right
-            else if (c.equals(new Coordinate(48.76942f, 9.180072f))) bottomRight = node;
-        }
+        /* sort by lon */
+        Iterator<Node> iter = graph.getNodeIterator();
+        ArrayList<Node> sortedNodes = new ArrayList<>(5);
+        while (iter.hasNext())
+            sortedNodes.add(iter.next());
+
+        sortedNodes.sort((n1, n2) -> n1.getCoordinate().lon > n2.getCoordinate().lon ? 1 : -1);
+
+        bottomLeft = sortedNodes.get(0);
+        topLeft = sortedNodes.get(1);
+        mid = sortedNodes.get(2);
+        topRight = sortedNodes.get(3);
+        bottomRight = sortedNodes.get(4);
 
         updateScenarioState(VehicleState.DESPAWNED);
         justInitialized = false;

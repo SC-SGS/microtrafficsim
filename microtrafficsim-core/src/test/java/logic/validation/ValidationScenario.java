@@ -25,21 +25,6 @@ import java.util.function.Supplier;
  */
 public abstract class ValidationScenario extends AbstractSimulation {
 
-    public static void setupConfig(SimulationConfig config){
-
-        // super attributes
-        config.longIDGenerator = new ConcurrentLongIDGenerator();
-        config.msPerTimeStep = 200;
-        config.maxVehicleCount = 3;
-        config.crossingLogic.drivingOnTheRight = true;
-        config.crossingLogic.edgePriorityEnabled = true;
-        config.crossingLogic.priorityToTheRightEnabled = true;
-        config.crossingLogic.setOnlyOneVehicle(false);
-        config.crossingLogic.goWithoutPriorityEnabled = false;
-        // own attributes
-        config.ageForPause = -1;
-    }
-
     protected boolean justInitialized;
     protected ShortestPathAlgorithm scout;
 

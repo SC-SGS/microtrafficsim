@@ -3,6 +3,8 @@ package microtrafficsim.examples.measurements;
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.simulation.controller.Simulation;
+import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.MeasuringScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
@@ -70,7 +72,7 @@ public class Main {
 	private static void show(Projection projection, File file) throws Exception {
 		
 		/* create configuration for scenarios */
-		Scenario.Config scencfg = new Scenario.Config();
+		SimulationConfig scencfg = new SimulationConfig();
 		Example.initSimulationConfig(scencfg);
 		
 		/* set up visualization style and sources */

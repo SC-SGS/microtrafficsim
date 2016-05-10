@@ -15,6 +15,7 @@ import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.resources.PackagedResource;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
@@ -66,7 +67,7 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
         SimulationConfig config = new SimulationConfig();
         setupConfig(config);
         Main.show(
-                new MercatorProjection(),
+                config.visualization.projection,
                 file,
                 config,
                 MotorwaySlipRoadScenario.class);
@@ -110,26 +111,19 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
 
     @Override
     protected void createAndAddVehicles() {
-        /*
-        bottom motorway microtrafficsim.core.map.Coordinate (48.883076, 9.144673)
-        top motorway microtrafficsim.core.map.Coordinate (48.885483, 9.145947)
-        interception microtrafficsim.core.map.Coordinate (48.884697, 9.145529)
-        bottom right microtrafficsim.core.map.Coordinate (48.88397, 9.146404)
-        */
-        Iterator<Node> iter = graph.getNodeIterator();
-        while (iter.hasNext()) {
 
-            Node node = iter.next();
-            Coordinate c = node.getCoordinate();
-            // bottom motorway
-            if (c.equals(new Coordinate(48.883076f, 9.144673f))) bottomMotorway = node;
-            // interception
-            else if (c.equals(new Coordinate(48.885483f, 9.145947f))) topMotorway = node;
-            // top motorway
-            else if (c.equals(new Coordinate(48.884697f, 9.145529f))) interception = node;
-            // bottom right
-            else if (c.equals(new Coordinate(48.88397f, 9.146404f))) bottomRight = node;
-        }
+        /* sort by lon */
+        Iterator<Node> iter = graph.getNodeIterator();
+        ArrayList<Node> sortedNodes = new ArrayList<>(4);
+        while (iter.hasNext())
+            sortedNodes.add(iter.next());
+
+        sortedNodes.sort((n1, n2) -> n1.getCoordinate().lon > n2.getCoordinate().lon ? 1 : -1);
+
+        bottomMotorway = sortedNodes.get(0);
+        interception = sortedNodes.get(1);
+        topMotorway = sortedNodes.get(2);
+        bottomRight = sortedNodes.get(3);
 
         updateScenarioState(VehicleState.DESPAWNED);
         justInitialized = false;

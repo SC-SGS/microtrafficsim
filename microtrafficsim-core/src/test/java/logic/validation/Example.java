@@ -189,8 +189,8 @@ public class Example {
         HashSet<LayerDefinition> layers = new HashSet<>();
 
         ShaderProgramSource progStreets = new ShaderProgramSource("streets");
-        progStreets.addSource(GL3.GL_VERTEX_SHADER, new PackagedResource(Visualization.class, "/shaders/test.vs"));
-        progStreets.addSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(Visualization.class, "/shaders/test.fs"));
+        progStreets.addSource(GL3.GL_VERTEX_SHADER, new PackagedResource(Visualization.class, "/shaders/basic.vs"));
+        progStreets.addSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(Visualization.class, "/shaders/basic.fs"));
 
         Style streets = new Style(progStreets);
         streets.uniforms.put("u_color", () -> Color.fromRGB(0x000000).toVec4f());
