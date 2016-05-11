@@ -21,7 +21,7 @@ public class TileManager {
     private TileProvider provider;
     private ExecutorService worker;
 
-    private TileRect bounds;
+    private TileRect tiles;
 
     private HashMap<TileId, Tile> visible;
     private HashMap<TileId, Future<Tile>> loading;
@@ -35,7 +35,7 @@ public class TileManager {
         this.provider = provider;
         this.worker = worker;
 
-        this.bounds = null;
+        this.tiles = null;
 
         this.visible = new HashMap<>();
         this.loading = new HashMap<>();
@@ -91,49 +91,60 @@ public class TileManager {
     }
 
 
-    public void update(RenderContext context, OrthographicView view) {
+    public void update(RenderContext context, OrthographicView observer) {
         boolean rebuild = false;
-        TileRect vbounds = provider.getTilingScheme().getTiles(provider.getProjectedBounds(), view.getZoomLevel());
+
+        double zoom = observer.getZoomLevel();
+        TilingScheme scheme = provider.getTilingScheme();
+        TileRect view = scheme.getTiles(observer.getViewportBounds(), zoom);
+        TileRect provided = scheme.getTiles(provider.getProjectedBounds(), zoom);
 
         // (re-)load tiles based on view and change-list
-        rebuild |= asyncLoadTiles(context, vbounds);
-        rebuild |= releaseTiles(context, vbounds);
+        rebuild |= asyncLoadTiles(context, view, provided);
+        rebuild |= releaseTiles(context, view);
 
         // fetch loaded tiles, release obsolete
         rebuild |= addLoadedTiles();
 
         // if necessary, release replaced tile and rebuild ordered id list
         if (rebuild) {
-            cleanupVisibleTiles(vbounds);
+            cleanupVisibleTiles(view);
             rebuildTileList();
         }
 
-        this.bounds = vbounds;
+        this.tiles = view;
     }
 
-    private boolean asyncLoadTiles(RenderContext context, TileRect view) {
+    private boolean asyncLoadTiles(RenderContext context, TileRect view, TileRect provided) {
+        if (provided == null) return false;
         boolean change = false;
 
-        // load tiles based on view
-        if (view.zoom != this.bounds.zoom) {        // if zoom is different, load all
-            for (int x = view.xmin; x <= view.xmax; x++)
-                for (int y = view.ymin; x <= view.ymax; y++)
+        int xmin = Math.max(view.xmin, provided.xmin);
+        int xmax = Math.min(view.xmax, provided.xmax);
+        int ymin = Math.max(view.ymin, provided.ymin);
+        int ymax = Math.min(view.ymax, provided.ymax);
+
+        // if nothing has been loaded or zoom is different, load all
+        if (this.tiles == null || view.zoom != this.tiles.zoom || reload.getAndSet(false)) {
+            for (int x = xmin; x <= xmax; x++)
+                for (int y = ymin; y <= ymax; y++)
                     change |= asyncReload(context, new TileId(x, y, view.zoom));
 
-        } else {                                    // else update and load only necessary tiles
+        // else update and load only necessary tiles
+        } else {
             // update changed tiles
             while (!changed.isEmpty()) {
                 TileId tile = changed.poll();
 
                 // if tile should have already been loaded and is still visible
-                if (view.contains(tile) && bounds.contains(tile))
+                if (view.contains(tile) && tiles.contains(tile) && provided.contains(tile))
                     change |= asyncReload(context, tile);
             }
 
             // load new tiles
-            for (int x = view.xmin; x <= view.xmax; x++)
-                for (int y = view.ymin; x <= view.ymax; y++)
-                    if (x < bounds.xmin || x > bounds.xmax || y < bounds.ymin || y > bounds.ymax)
+            for (int x = xmin; x <= xmax; x++)
+                for (int y = ymin; y <= ymax; y++)
+                    if (x < tiles.xmin || x > tiles.xmax || y < tiles.ymin || y > tiles.ymax)
                         change |= asyncReload(context, new TileId(x, y, view.zoom));
         }
 
@@ -220,13 +231,13 @@ public class TileManager {
         Set<TileId> visible = this.visible.keySet();
 
         for (TileId id : visible)
-            if (containsAll(visible, scheme.getTiles(id, view.zoom), view))
+            if (containsAllInView(visible, scheme.getTiles(id, view.zoom), view))
                 remove.add(id);
 
         visible.removeAll(remove);
     }
 
-    private static boolean containsAll(Set<TileId> set, TileRect rect, TileRect view) {
+    private static boolean containsAllInView(Set<TileId> set, TileRect rect, TileRect view) {
         for (int x = Math.max(rect.xmin, view.xmin); x <= Math.min(rect.xmax, view.xmax); x++)
             for (int y = Math.max(rect.ymin, view.ymin); y <= Math.min(rect.ymax, view.ymax); y++)
                 if (!set.contains(new TileId(x, y, view.zoom)))

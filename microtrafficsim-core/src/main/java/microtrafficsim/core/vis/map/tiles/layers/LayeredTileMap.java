@@ -88,7 +88,10 @@ public class LayeredTileMap implements TileLayerProvider {
                 l.layerChanged(layer.getName());
         }
 
-        return new TileLayerDefinition(old.getName(), old.getIndex(), old.getSource());
+        if (old == null)
+            return null;
+        else
+            return new TileLayerDefinition(old.getName(), old.getIndex(), old.getSource());
     }
 
     public TileLayerDefinition removeLayer(String name) {
@@ -103,9 +106,11 @@ public class LayeredTileMap implements TileLayerProvider {
                 for (LayerChangeListener l : listeners)
                     l.layerChanged(name);
             }
-        }
 
-        return new TileLayerDefinition(layer.getName(), layer.getIndex(), layer.getSource());
+            return new TileLayerDefinition(layer.getName(), layer.getIndex(), layer.getSource());
+        } else {
+            return null;
+        }
     }
 
 

@@ -111,6 +111,7 @@ public class QuadTreeTilingScheme implements TilingScheme {
 
     @Override
     public TileRect getTiles(Rect2d b, double zoom) {
+        if (b == null) return null;
         Rect2d max = projection.getProjectedMaximumBounds();
 
         int level = clamp((int) Math.ceil(zoom), minlevel, maxlevel);
