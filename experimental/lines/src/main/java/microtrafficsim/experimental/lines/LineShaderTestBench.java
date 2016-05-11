@@ -252,6 +252,10 @@ class LineShaderTestBench implements Renderer {
 					.link(gl)
 					.detach(gl, vs, gs, fs);
 
+            vs.dispose(gl);
+            gs.dispose(gl);
+            fs.dispose(gl);
+
 		} catch (Throwable t) {
 			error = true;
 
