@@ -41,4 +41,9 @@ public class TileId {
                 .add(z)
                 .getHash();
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getCanonicalName() + " { " + x + ", " + y + ", " + z + " }";
+    }
 }

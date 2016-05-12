@@ -82,16 +82,20 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
         }
 
         if (mesh == null) {
-            logger.debug("generating mesh for feature '" + src.getFeatureName()
-                    + "', tile '" + tile.x + "." + tile.y + "." + tile.z + "'");
+            logger.debug("generating mesh for tile {"
+                    + tile.x + "/" + tile.y + "/" + tile.z
+                    + "}, feature '" + src.getFeatureName() + "'");
 
-            {
-                Mesh m = generator.generate(context, src, tile);
-                if (m == null) return null;
-
-                mesh = new ManagedMesh(m);
+            Mesh m = generator.generate(context, src, tile);
+            if (m == null) {
+                synchronized (this) {
+                    loading.remove(key);
+                    this.notifyAll();
+                }
+                return null;
             }
 
+            mesh = new ManagedMesh(m);
             synchronized (this) {
                 pool.put(key, mesh);
                 loading.remove(key);

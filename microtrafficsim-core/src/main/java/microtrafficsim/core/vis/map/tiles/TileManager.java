@@ -6,6 +6,7 @@ import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.exceptions.ThisShouldNeverHappenException;
@@ -231,8 +232,10 @@ public class TileManager {
         Set<TileId> visible = this.visible.keySet();
 
         for (TileId id : visible)
-            if (containsAllInView(visible, scheme.getTiles(id, view.zoom), view))
+            if (id.z != view.zoom && containsAllInView(visible, scheme.getTiles(id, view.zoom), view))
                 remove.add(id);
+
+        // TODO: some tiles are unavailable at higher zoom level, so their parents are kept. Fix this issue.
 
         visible.removeAll(remove);
     }

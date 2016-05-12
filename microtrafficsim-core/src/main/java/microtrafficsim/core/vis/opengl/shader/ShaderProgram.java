@@ -293,8 +293,13 @@ public class ShaderProgram {
 	
 	
 	public void bind(GL2ES2 gl) {
-		context.ShaderState.bind(gl, this);
+        ShaderProgram current = context.ShaderState.getCurrentProgram();
+        if (this == current) return;
+
+		context.ShaderState.setCurrentProgram(this);
         bound = gl;
+
+        gl.glUseProgram(handle);
 
 		// update all dirty uniforms
 		for (UniformBinding binding : uniforms.values()) {
@@ -307,7 +312,7 @@ public class ShaderProgram {
 	
 	public void unbind(GL2ES2 gl) {
 		bound = null;
-		context.ShaderState.unbind(gl);
+        context.ShaderState.setCurrentProgram(null);
 	}
 	
 	
@@ -318,7 +323,7 @@ public class ShaderProgram {
 
 	public void uniformValueChanged(Uniform<?> uniform) {
 		UniformBinding binding = uniforms.get(uniform.getName());
-		
+
 		// if program is bound, update directly
 		if (bound != null)
 			binding.var.update(bound, binding.location);

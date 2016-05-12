@@ -12,27 +12,15 @@ public class ShaderState {
     }
 
 
-    public void bind(GL2ES2 gl, ShaderProgram program) {
-        if (program == bound) return;
-
-        gl.glUseProgram(program.getHandle());
-        bound = program;
+    public void setCurrentProgram(ShaderProgram program) {
+        this.bound = program;
     }
-
-    public void bind(GL2ES2 gl, ShaderProgram program, boolean force) {
-        if (!force && program == bound) return;
-
-        gl.glUseProgram(program.getHandle());
-        bound = program;
-    }
-
-    public void unbind(GL2ES2 gl) {
-        gl.glUseProgram(0);
-        bound = null;
-    }
-
 
     public ShaderProgram getCurrentProgram() {
         return bound;
+    }
+
+    public void unbind(GL2ES2 gl) {
+        if (bound != null) bound.unbind(gl);
     }
 }
