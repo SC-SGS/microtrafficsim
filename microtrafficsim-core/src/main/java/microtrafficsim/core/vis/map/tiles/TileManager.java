@@ -8,6 +8,7 @@ import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.view.OrthographicView;
+import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.exceptions.ThisShouldNeverHappenException;
 
@@ -330,7 +331,16 @@ public class TileManager {
         @Override
         public Tile call() throws Exception {
             Tile tile = provider.require(context, id);
-            // TODO: tile.setTransformation(...);
+
+            // set tile transformation matrix
+            Rect2d bounds = provider.getTilingScheme().getBounds(id);
+
+            // translate from [[-1, -1],[1, 1]] to [bounds]
+            tile.getTransformation()
+                    .translate((float) bounds.xmin, (float) bounds.ymin, 0)
+                    .scale((float) ((bounds.xmax - bounds.xmin) / 2.0), (float) ((bounds.ymax - bounds.ymin) / 2.0), 1)
+                    .translate(1, 1, 0);
+
             return tile;
         }
     }

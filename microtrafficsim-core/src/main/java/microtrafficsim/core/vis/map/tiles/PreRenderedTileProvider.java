@@ -163,7 +163,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
         public TileDummy(TileId id) {
             this.id = id;
-            this.transform = Mat4f.identity().scale(128, 128, 1);
+            this.transform = Mat4f.identity();
         }
 
 
