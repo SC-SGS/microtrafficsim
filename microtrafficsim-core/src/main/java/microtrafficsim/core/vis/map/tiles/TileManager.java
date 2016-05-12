@@ -1,14 +1,13 @@
 package microtrafficsim.core.vis.map.tiles;
 
 import com.jogamp.opengl.GL2ES2;
+import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
-import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.view.OrthographicView;
-import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.exceptions.ThisShouldNeverHappenException;
 
@@ -101,8 +100,10 @@ public class TileManager {
         TileRect view = scheme.getTiles(observer.getViewportBounds(), zoom);
         TileRect provided = scheme.getTiles(provider.getProjectedBounds(), zoom);
 
+        TileRect common = trIntersect(view, provided);
+
         // (re-)load tiles based on view and change-list
-        rebuild |= asyncLoadTiles(context, view, provided);
+        rebuild |= asyncLoadTiles(context, common);
         rebuild |= releaseTiles(context, view);
 
         // fetch loaded tiles, release obsolete
@@ -110,27 +111,34 @@ public class TileManager {
 
         // if necessary, release replaced tile and rebuild ordered id list
         if (rebuild) {
-            cleanupVisibleTiles(view);
+            cleanupVisibleTiles(common);
             rebuildTileList();
         }
 
         this.tiles = view;
     }
 
-    private boolean asyncLoadTiles(RenderContext context, TileRect view, TileRect provided) {
-        if (provided == null) return false;
+    private TileRect trIntersect(TileRect a, TileRect b) {
+        if (a == null || b == null) return null;
+
+        return new TileRect(
+                Math.max(a.xmin, b.xmin),
+                Math.max(a.ymin, b.ymin),
+                Math.min(a.xmax, b.xmax),
+                Math.min(a.ymax, b.ymax),
+                a.zoom
+        );
+    }
+
+    private boolean asyncLoadTiles(RenderContext context, TileRect rect) {
+        if (rect == null) return false;
         boolean change = false;
 
-        int xmin = Math.max(view.xmin, provided.xmin);
-        int xmax = Math.min(view.xmax, provided.xmax);
-        int ymin = Math.max(view.ymin, provided.ymin);
-        int ymax = Math.min(view.ymax, provided.ymax);
-
         // if nothing has been loaded or zoom is different, load all
-        if (this.tiles == null || view.zoom != this.tiles.zoom || reload.getAndSet(false)) {
-            for (int x = xmin; x <= xmax; x++)
-                for (int y = ymin; y <= ymax; y++)
-                    change |= asyncReload(context, new TileId(x, y, view.zoom));
+        if (this.tiles == null || rect.zoom != this.tiles.zoom || reload.getAndSet(false)) {
+            for (int x = rect.xmin; x <= rect.xmax; x++)
+                for (int y = rect.ymin; y <= rect.ymax; y++)
+                    change |= asyncReload(context, new TileId(x, y, rect.zoom));
 
         // else update and load only necessary tiles
         } else {
@@ -139,15 +147,15 @@ public class TileManager {
                 TileId tile = changed.poll();
 
                 // if tile should have already been loaded and is still visible
-                if (view.contains(tile) && tiles.contains(tile) && provided.contains(tile))
+                if (rect.contains(tile) && tiles.contains(tile))
                     change |= asyncReload(context, tile);
             }
 
             // load new tiles
-            for (int x = xmin; x <= xmax; x++)
-                for (int y = ymin; y <= ymax; y++)
+            for (int x = rect.xmin; x <= rect.xmax; x++)
+                for (int y = rect.ymin; y <= rect.ymax; y++)
                     if (x < tiles.xmin || x > tiles.xmax || y < tiles.ymin || y > tiles.ymax)
-                        change |= asyncReload(context, new TileId(x, y, view.zoom));
+                        change |= asyncReload(context, new TileId(x, y, rect.zoom));
         }
 
         return change;
@@ -236,8 +244,6 @@ public class TileManager {
             if (id.z != view.zoom && containsAllInView(visible, scheme.getTiles(id, view.zoom), view))
                 remove.add(id);
 
-        // TODO: some tiles are unavailable at higher zoom level, so their parents are kept. Fix this issue.
-
         visible.removeAll(remove);
     }
 
@@ -295,6 +301,10 @@ public class TileManager {
     public void display(RenderContext context) {
         GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
         context.DepthTest.disable(gl);
+
+        context.BlendMode.enable(gl);
+        context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
+        context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA);
 
         for (Tile tile : prebuilt)
             tile.display(context);
