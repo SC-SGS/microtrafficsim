@@ -76,8 +76,6 @@ public class ManagedMesh implements Mesh {
 
 	@Override
 	public synchronized boolean dispose(RenderContext context) {
-		if (mesh.getState() == State.DISPOSED || mesh.getState() == State.UNINITIALIZED) return false;
-
 		if (refcount == 1) {
 			refcount = 0;
 			boolean status =  mesh.dispose(context);

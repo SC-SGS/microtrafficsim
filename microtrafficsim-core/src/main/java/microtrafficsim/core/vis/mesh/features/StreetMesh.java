@@ -93,19 +93,21 @@ public class StreetMesh implements Mesh {
 
 	@Override
 	public boolean dispose(RenderContext context) {
-		if (state == State.DISPOSED || state == State.UNINITIALIZED) return false;
+		boolean disposable = state != State.DISPOSED && state != State.UNINITIALIZED;
 
-		GL gl = context.getDrawable().getGL();
+        if (disposable) {
+            GL gl = context.getDrawable().getGL();
 
-		vbo.dispose(gl);
-		ibo.dispose(gl);
+            vbo.dispose(gl);
+            ibo.dispose(gl);
 
-		state = State.DISPOSED;
+            state = State.DISPOSED;
+        }
 
 		for (LifeTimeObserver<Mesh> lto : ltObservers)
 			lto.disposed(this);
 
-		return true;
+		return disposable;
 	}
 
 	@Override

@@ -77,8 +77,9 @@ public class FeatureStyle {
 	
 	public void dispose(RenderContext context) {
 		GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
-		
-		program.dispose(gl);
+
+		if (program != null)
+			program.dispose(gl);
 		
 		program = null;
 		uniforms = null;

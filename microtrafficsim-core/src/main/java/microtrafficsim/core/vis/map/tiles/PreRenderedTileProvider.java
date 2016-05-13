@@ -8,6 +8,7 @@ import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayer;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayer;
+import microtrafficsim.core.vis.map.tiles.layers.TileLayerBucket;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.mesh.Mesh;
 import microtrafficsim.core.vis.opengl.BufferStorage;
@@ -24,7 +25,9 @@ import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 
 public class PreRenderedTileProvider implements TileProvider {
@@ -97,7 +100,6 @@ public class PreRenderedTileProvider implements TileProvider {
 
         // TODO
 
-        // TEMPORARY
         quad = new TileQuad();
         quad.initialize(gl);
     }
@@ -106,43 +108,39 @@ public class PreRenderedTileProvider implements TileProvider {
     public void dispose(RenderContext context) {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
-        tilecopy.dispose(gl);
-
         // TODO
 
-        // TEMPORARY
-        quad.dispose(gl);
-        quad = null;
+        tilecopy.dispose(gl);   tilecopy = null;
+        quad.dispose(gl);       quad = null;
     }
 
 
     @Override
-    public Tile require(RenderContext context, TileId tile) {
-        // TODO
-        // NOTE: make exception-safe (interrupts)
+    public Tile require(RenderContext context, TileId id) {
+        // TODO: make interrupt-safe
+
+        ArrayList<TileLayer> layers = provider.getAvailableLayers().stream()
+                .map(name -> provider.require(context, name, id))
+                .filter(layer -> layer != null)
+                .collect(Collectors.toCollection(ArrayList<TileLayer>::new));
 
         // TEMPORARY
-        boolean tmp = false;
-        for (String name : provider.getAvailableLayers()) {
-            TileLayer layer = provider.require(context, name, tile);
-            tmp |= (layer != null);
-            // XXX, dirty, temporary: make sure we don't flood the mesh pool
-            if (layer instanceof FeatureTileLayer) {
-                Mesh m = ((FeatureTileLayer) layer).getMesh();
-                m.getLifeTimeObservers().forEach(x -> x.disposed(m));
-            }
-            provider.release(context, layer);
+        if (layers.size() > 0) {
+            PreRenderedTile tile = new PreRenderedTile(id, layers);
+
+            // TODO: async tile initialize
+            // TODO: wait for task execution -> return Future for RenderContext.addTask(...)
+
+            return tile;
         }
 
-        if (tmp)
-            return new TileDummy(tile);
-        else
-            return null;
+        return null;
     }
 
     @Override
     public void release(RenderContext context, Tile tile) {
-        // TODO
+        if (tile instanceof PreRenderedTile)
+            ((PreRenderedTile) tile).dispose(context);
     }
 
 
@@ -162,15 +160,20 @@ public class PreRenderedTileProvider implements TileProvider {
     }
 
 
-    // TEMPORARY
-    private class TileDummy implements Tile {
+    private class PreRenderedTile implements Tile {
 
         private TileId id;
+        private ArrayList<TileLayer> layers;
+
         private Mat4f transform;
 
-        public TileDummy(TileId id) {
+        private int texture;
+
+
+        public PreRenderedTile(TileId id, ArrayList<TileLayer> layers) {
             this.id = id;
             this.transform = Mat4f.identity();
+            this.layers = layers;
         }
 
 
@@ -184,6 +187,7 @@ public class PreRenderedTileProvider implements TileProvider {
             GL3 gl = context.getDrawable().getGL().getGL3();
 
             tilecopy.bind(gl);
+            // TODO: bind texture
             tiletransform.set(transform);
             quad.draw(gl);
         }
@@ -196,6 +200,20 @@ public class PreRenderedTileProvider implements TileProvider {
         @Override
         public Mat4f getTransformation() {
             return transform;
+        }
+
+
+        public void initialize(RenderContext context) {
+            // TODO: pre-render
+        }
+
+        public void dispose(RenderContext context) {
+            // TODO: release texture
+
+            for (TileLayer layer : layers) {
+                layer.dispose(context);
+                provider.release(context, layer);
+            }
         }
     }
 

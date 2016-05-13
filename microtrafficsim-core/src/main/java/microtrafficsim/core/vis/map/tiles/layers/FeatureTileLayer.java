@@ -37,7 +37,9 @@ public class FeatureTileLayer extends TileLayer {
 
     @Override
     public void dispose(RenderContext context) {
-        vao.dispose(context.getDrawable().getGL().getGL2ES3());
+        if (vao != null)
+            vao.dispose(context.getDrawable().getGL().getGL2ES3());
+
         mesh.dispose(context);
         style.dispose(context);
     }

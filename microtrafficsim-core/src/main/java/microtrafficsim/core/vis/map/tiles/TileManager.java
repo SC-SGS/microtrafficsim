@@ -7,6 +7,7 @@ import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.core.vis.map.tiles.layers.TileLayer;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.exceptions.ThisShouldNeverHappenException;
@@ -111,7 +112,7 @@ public class TileManager {
 
         // if necessary, release replaced tile and rebuild ordered id list
         if (rebuild) {
-            cleanupVisibleTiles(common);
+            cleanupVisibleTiles(context, common);
             rebuildTileList();
         }
 
@@ -196,8 +197,13 @@ public class TileManager {
                         Tile tile = task.get();
                         if (tile != null)
                             provider.release(context, tile);
-                    } catch (ExecutionException | InterruptedException e) {
+                    } catch (InterruptedException e) {
                         throw new ThisShouldNeverHappenException(e);
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(
+                                "Error occured while loading tile asynchronously",
+                                e
+                        );
                     }
                 }
 
@@ -223,8 +229,13 @@ public class TileManager {
                     try {
                         visible.put(id, task.get());
                         change = true;
-                    } catch (ExecutionException | InterruptedException e) {
+                    } catch (InterruptedException e) {
                         throw new ThisShouldNeverHappenException(e);
+                    } catch (ExecutionException e) {
+                        throw new RuntimeException(
+                                "Error occured while loading tile asynchronously",
+                                e
+                        );
                     }
                 }
 
@@ -235,16 +246,21 @@ public class TileManager {
         return change;
     }
 
-    private void cleanupVisibleTiles(TileRect view) {
+    private void cleanupVisibleTiles(RenderContext context, TileRect view) {
         TilingScheme scheme = provider.getTilingScheme();
         HashSet<TileId> remove = new HashSet<>();
-        Set<TileId> visible = this.visible.keySet();
+        Set<TileId> visibleIDs = visible.keySet();
 
-        for (TileId id : visible)
-            if (id.z != view.zoom && containsAllInView(visible, scheme.getTiles(id, view.zoom), view))
+        for (Map.Entry<TileId, Tile> entry : visible.entrySet()) {
+            TileId id = entry.getKey();
+
+            if (id.z != view.zoom && containsAllInView(visibleIDs, scheme.getTiles(id, view.zoom), view)) {
                 remove.add(id);
+                provider.release(context, entry.getValue());
+            }
+        }
 
-        visible.removeAll(remove);
+        visible.keySet().removeAll(remove);
     }
 
     private static boolean containsAllInView(Set<TileId> set, TileRect rect, TileRect view) {
@@ -287,8 +303,13 @@ public class TileManager {
                 try {
                     visible.put(id, task.get());
                     change = true;
-                } catch (ExecutionException | InterruptedException e) {
+                } catch (InterruptedException e) {
                     throw new ThisShouldNeverHappenException(e);
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(
+                            "Error occured while loading tile asynchronously",
+                            e
+                    );
                 }
             }
         }

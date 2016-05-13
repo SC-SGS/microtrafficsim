@@ -78,9 +78,11 @@ public class ShaderProgram {
 		shaders.clear();
 		uniforms.clear();
 		attributes.clear();
-		
-		gl.glDeleteProgram(handle);
-		handle = -1;
+
+		if (handle != -1) {
+			gl.glDeleteProgram(handle);
+			handle = -1;
+		}
 		
 		for (LifeTimeObserver<ShaderProgram> lto : ltObservers)
 			lto.disposed(this);

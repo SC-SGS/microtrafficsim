@@ -35,6 +35,8 @@ public class VertexArrayObject {
 	
 	
 	public void dispose(GL2ES3 gl) {
+		if (this.handle == -1) return;
+
 		int[] obj = { handle };
 		gl.glDeleteVertexArrays(1, obj, 0);
 		this.handle = -1;
