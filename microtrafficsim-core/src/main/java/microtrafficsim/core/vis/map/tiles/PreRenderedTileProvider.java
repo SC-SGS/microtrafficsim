@@ -37,7 +37,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
     private ShaderProgram tilecopy;
     private UniformMat4f tiletransform;
-    private Quad quad;
+    private TileQuad quad;
 
 
     public PreRenderedTileProvider() {
@@ -96,7 +96,7 @@ public class PreRenderedTileProvider implements TileProvider {
         // TODO
 
         // TEMPORARY
-        quad = new Quad();
+        quad = new TileQuad();
         quad.initialize(gl);
     }
 
@@ -192,35 +192,39 @@ public class PreRenderedTileProvider implements TileProvider {
         }
     }
 
-    private static class Quad {
+    private static class TileQuad {
 
         float[] vertices = {
-                -1.f, -1.f, 0.f,
-                 1.f, -1.f, 0.f,
-                -1.f,  1.f, 0.f,
-                 1.f,  1.f, 0.f
+                -1.f, -1.f, 0.f,    0.f, 1.f,
+                 1.f, -1.f, 0.f,    1.f, 1.f,
+                -1.f,  1.f, 0.f,    0.f, 0.f,
+                 1.f,  1.f, 0.f,    1.f, 0.f
         };
 
         private VertexAttributePointer ptrPosition;
+        private VertexAttributePointer ptrTexcoord;
         private VertexArrayObject vao;
         private BufferStorage vbo;
 
 
         void initialize(GL3 gl) {
-            FloatBuffer buffer = FloatBuffer.wrap(vertices);
-
             vao = VertexArrayObject.create(gl);
             vbo = BufferStorage.create(gl, GL3.GL_ARRAY_BUFFER);
-            ptrPosition = VertexAttributePointer.create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, vbo, 12, 0);
+            ptrPosition = VertexAttributePointer.create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, vbo, 20,  0);
+            ptrTexcoord = VertexAttributePointer.create(VertexAttributes.TEXCOORD2, DataTypes.FLOAT_2, vbo, 20, 12);
 
             // create VAO
             vao.bind(gl);
             vbo.bind(gl);
             ptrPosition.enable(gl);
             ptrPosition.set(gl);
+            ptrTexcoord.enable(gl);
+            ptrTexcoord.set(gl);
             vao.unbind(gl);
 
             // load buffer
+            FloatBuffer buffer = FloatBuffer.wrap(vertices);
+
             vbo.bind(gl);
             gl.glBufferData(vbo.target, buffer.capacity() * 4, buffer, GL3.GL_STATIC_DRAW);
             vbo.unbind(gl);

@@ -86,7 +86,10 @@ public class SegmentBasedVisualizer implements Visualizer {
 		
 		attributes.putDefaultAttributeBinding("a_normal", VertexAttributes.NORMAL3);
 		attributes.putDefaultAttributeBinding("a_normal2", VertexAttributes.NORMAL2);
-		
+
+		attributes.putDefaultAttributeBinding("a_texcoord3", VertexAttributes.TEXCOORD3);
+		attributes.putDefaultAttributeBinding("a_texcoord", VertexAttributes.TEXCOORD2);
+
 		attributes.putDefaultAttributeBinding("a_color", VertexAttributes.COLOR);
 	}
 
