@@ -7,17 +7,18 @@ import java.util.HashMap;
 
 public class MeshPool<K> {
 	private HashMap<K, ManagedMesh> pool;
-	private final LifeTimeObserver<Mesh> lto = m -> pool.values().remove(m);
+
+	private final LifeTimeObserver<Mesh> lto = m -> removeMesh((ManagedMesh) m);
 
 	public MeshPool() {
 		this.pool = new HashMap<>();
 	}
 
-	public ManagedMesh get(K key) {
+	public synchronized ManagedMesh get(K key) {
 		return pool.get(key);
 	}
 
-	public ManagedMesh put(K key, ManagedMesh mesh) {
+	public synchronized ManagedMesh put(K key, ManagedMesh mesh) {
 		mesh.addLifeTimeObserver(lto);
 
 		ManagedMesh old = pool.put(key, mesh);
@@ -27,7 +28,7 @@ public class MeshPool<K> {
 		return old;
 	}
 
-	public ManagedMesh remove(K key) {
+	public synchronized ManagedMesh remove(K key) {
 		ManagedMesh mesh = pool.remove(key);
 
 		if (mesh != null)
@@ -36,7 +37,12 @@ public class MeshPool<K> {
 		return mesh;
 	}
 
-	public boolean contains(K key) {
+    public synchronized boolean removeMesh(ManagedMesh mesh) {
+        mesh.removeLifeTimeObserver(lto);
+        return pool.values().remove(mesh);
+    }
+
+	public synchronized boolean contains(K key) {
 		return pool.containsKey(key);
 	}
 }

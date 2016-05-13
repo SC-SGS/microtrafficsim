@@ -82,8 +82,8 @@ public class ManagedMesh implements Mesh {
 			refcount = 0;
 			boolean status =  mesh.dispose(context);
 			for (LifeTimeObserver<Mesh> lto : ltObservers)
-				lto.disposed(this);
-			return status;
+                lto.disposed(this);
+            return status;
 		} else {
 			refcount--;
 			return true;
@@ -94,7 +94,7 @@ public class ManagedMesh implements Mesh {
 		if (force) {
 			boolean status =  mesh.dispose(context);
 			for (LifeTimeObserver<Mesh> lto : ltObservers)
-				lto.disposed(this);
+                lto.disposed(this);
 			return status;
 		} else {
 			return this.dispose(context);

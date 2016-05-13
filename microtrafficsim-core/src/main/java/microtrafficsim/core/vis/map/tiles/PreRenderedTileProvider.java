@@ -6,8 +6,10 @@ import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
+import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayer;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayer;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
+import microtrafficsim.core.vis.mesh.Mesh;
 import microtrafficsim.core.vis.opengl.BufferStorage;
 import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.core.vis.opengl.shader.Shader;
@@ -124,6 +126,11 @@ public class PreRenderedTileProvider implements TileProvider {
         for (String name : provider.getAvailableLayers()) {
             TileLayer layer = provider.require(context, name, tile);
             tmp |= (layer != null);
+            // XXX, dirty, temporary: make sure we don't flood the mesh pool
+            if (layer instanceof FeatureTileLayer) {
+                Mesh m = ((FeatureTileLayer) layer).getMesh();
+                m.getLifeTimeObservers().forEach(x -> x.disposed(m));
+            }
             provider.release(context, layer);
         }
 
