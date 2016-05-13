@@ -10,6 +10,7 @@ import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.map.polygon.Polygon;
 import microtrafficsim.core.simulation.controller.AbstractSimulation;
 import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.Distribution;
 import microtrafficsim.math.random.WheelOfFortune;
 
@@ -28,7 +29,7 @@ import java.util.function.Supplier;
  *     {@link ShortestPathAlgorithm}.
  * </p>
  * <p>
- *     Overriding {@link #prepareScenario()} and {@link #createAndAddVehicles()} lets define you routes
+ *     Overriding {@link #prepareScenario()} and {@link #createAndAddVehicles(ProgressListener)} lets define you routes
  * </p>
  *
  * @author Dominic Parga Cacheiro
@@ -40,9 +41,9 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
     // used for multithreaded vehicle creation
     private int orderIdx;
     // used for creating vehicles and routes etc.
-    private final HashMap<Polygon, ArrayList<Node>> startFields, endFields;
-    private final WheelOfFortune startWheel, endWheel;
-    private final Random random;
+    private HashMap<Polygon, ArrayList<Node>> startFields, endFields;
+    private WheelOfFortune startWheel, endWheel;
+    private Random random;
     // used for printing vehicle creation process
     private int lastPercentage;
     private final Integer percentageDelta; // > 0 !!!
@@ -140,7 +141,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
     | create and add vehicles |
     |=========================|
     */
-    private void singleThreadedVehicleCreation() {
+    private void singleThreadedVehicleCreation(ProgressListener listener) {
 
         // calculate routes and create vehicles
         int successfullyAdded = 0;
@@ -160,11 +161,11 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
                 successfullyAdded++;
             }
 
-            logProgress(successfullyAdded, config.maxVehicleCount);
+            logProgress(successfullyAdded, config.maxVehicleCount, listener);
         }
     }
 
-    private void multiThreadedVehicleCreation() {
+    private void multiThreadedVehicleCreation(ProgressListener listener) {
 
         ExecutorService pool = Executors.newFixedThreadPool(config.multiThreading.nThreads);
         ArrayList<Callable<Object>> todo = new ArrayList<>(config.multiThreading.nThreads);
@@ -172,12 +173,13 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
         // deterministic/pseudo-random route + vehicle generation needs
         // variables for synchronization:
         orderIdx = 0;
+        final int[] addedVehicles = {0};
         final Object lock_random = new Object();
         final ReentrantLock lock = new ReentrantLock(true);
         final boolean[] permission = new boolean[config.multiThreading.nThreads];
-        Condition[] conditions = new Condition[config.multiThreading.nThreads];
-        for (int i = 0; i < conditions.length; i++) {
-            conditions[i] = lock.newCondition();
+        Condition[] getPermission = new Condition[config.multiThreading.nThreads];
+        for (int i = 0; i < getPermission.length; i++) {
+            getPermission[i] = lock.newCondition();
             permission[i] = i == 0;
         }
         // distribute vehicle generation uniformly over all threads
@@ -199,7 +201,6 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
                         end = bla[1];
                     }
                     // create route
-                    @SuppressWarnings("unchecked")
                     Route route = new Route(start, end,
                             (Queue<DirectedEdge>) scoutFactory.get().findShortestPath(start, end));
                     // create and add vehicle
@@ -207,7 +208,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
                     // wait for permission
                     if (!permission[idx]) {
                         try {
-                            conditions[idx].await();
+                            getPermission[idx].await();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -215,15 +216,15 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
                     // has permission to create vehicle
                     if (!route.isEmpty()) {
                         // add route to vehicle and vehicle to graph
-                        System.err.println("bla");
                         createAndAddVehicle(new Car(config.longIDGenerator, this, route));
                         successfullyAdded++;
+                        addedVehicles[0]++;
                     }
                     // let next thread finish its work
                     permission[idx] = false;
                     int nextIdx = (idx + 1) % config.multiThreading.nThreads;
-                    if (lock.hasWaiters(conditions[nextIdx])) {
-                        conditions[nextIdx].signal();
+                    if (lock.hasWaiters(getPermission[nextIdx])) {
+                        getPermission[nextIdx].signal();
                     } else {
                         permission[nextIdx] = true;
                     }
@@ -231,7 +232,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
                     lock.unlock();
 
                     // nice output
-                    logProgress(successfullyAdded, bucketCount);
+                    logProgress(addedVehicles[0], config.maxVehicleCount, listener);
                 }
             }));
         }
@@ -242,11 +243,14 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
         }
     }
 
-    private void logProgress(int finished, int total) {
+    private void logProgress(int finished, int total, ProgressListener listener) {
+
         int percentage = (100 * finished) / total;
         synchronized (percentageDelta) {
             if (percentage - lastPercentage >= percentageDelta) {
                 config.logger.info(percentage + "% vehicles created.");
+                if (listener != null)
+                    listener.didProgress(percentage);
                 lastPercentage += percentageDelta;
             }
         }
@@ -374,7 +378,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
     }
 
     @Override
-    protected final void createAndAddVehicles() {
+    protected final void createAndAddVehicles(ProgressListener listener) {
 
         if (startFields.size() <= 0 || endFields.size() <= 0) {
             if (startFields.size() <= 0)
@@ -386,9 +390,9 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
             long time = System.nanoTime();
 
             if (config.multiThreading.nThreads > 1) {
-                multiThreadedVehicleCreation();
+                multiThreadedVehicleCreation(listener);
             } else {
-                singleThreadedVehicleCreation();
+                singleThreadedVehicleCreation(listener);
             }
 
             config.logger.infoNanoseconds("CREATING VEHICLES finished after ", System.nanoTime() - time);

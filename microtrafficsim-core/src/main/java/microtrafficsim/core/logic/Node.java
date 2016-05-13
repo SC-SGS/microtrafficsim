@@ -144,7 +144,7 @@ public class Node implements IDijkstrableNode {
 			Iterator<AbstractVehicle> iter = assessedVehicles.iterator();
 
 			// get vehicles with max prio
-			byte maxPrio = Byte.MIN_VALUE;
+			int maxPrio = Integer.MIN_VALUE;
 			while (iter.hasNext()) {
 				AbstractVehicle v = iter.next();
 				// if

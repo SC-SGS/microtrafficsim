@@ -51,7 +51,7 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
     private AbstractVehicle vehicleInFront;
     private AbstractVehicle vehicleInBack;
     private boolean hasDashed; // for simulation
-    private byte priorityCounter; // for crossing logic
+    private int priorityCounter; // for crossing logic
     private final Object lock_priorityCounter = new Object();
     // angry factor
     private boolean lastVelocityWasZero;
@@ -200,11 +200,11 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
 
     public void incPriorityCounter() {
         synchronized (lock_priorityCounter) {
-            byte old = priorityCounter;
+            int old = priorityCounter;
             priorityCounter++;
             if (old > priorityCounter) {
                 try {
-                    throw new Exception("Vehicle.incPriorityCounter() - byte overflow");
+                    throw new Exception("Vehicle.incPriorityCounter() - int overflow");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -214,11 +214,11 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
 
     public void decPriorityCounter() {
         synchronized (lock_priorityCounter) {
-            byte old = priorityCounter;
+            int old = priorityCounter;
             priorityCounter--;
             if (old < priorityCounter) {
                 try {
-                    throw new Exception("Vehicle.incPriorityCounter() - byte underflow");
+                    throw new Exception("Vehicle.incPriorityCounter() - int underflow");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -226,7 +226,7 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
         }
     }
 
-    public byte getPriorityCounter() {
+    public int getPriorityCounter() {
         return priorityCounter;
     }
 

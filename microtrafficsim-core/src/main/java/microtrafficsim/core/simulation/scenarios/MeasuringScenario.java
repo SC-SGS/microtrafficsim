@@ -6,6 +6,7 @@ import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.simulation.controller.Simulation;
 import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.interesting.emotions.Hulk;
+import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.utils.datacollection.ConcurrentHashDataCollector;
 import microtrafficsim.utils.datacollection.Data;
@@ -73,6 +74,8 @@ public class MeasuringScenario implements Simulation {
         enableAllMeasurements();
         for (MeasuredType key : MeasuredType.values())
             dataCollector.addBundle(key.filename);
+
+        // TODO config.seed.addObserver(...)
     }
 
     /*
@@ -224,21 +227,21 @@ public class MeasuringScenario implements Simulation {
     @Override
     public final void run() {
 
-        if (paused) {
+        if (isPrepared() && paused) {
             timer = new Timer();
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
                     doRunOneStep();
                 }
-            }, 0, config.msPerTimeStep);
+            }, 0, config.msPerTimeStep.get());
             paused = false;
         }
     }
 
     @Override
     public final void runOneStep() {
-        if (paused)
+        if (isPrepared() && paused)
             doRunOneStep();
     }
 
@@ -273,6 +276,13 @@ public class MeasuringScenario implements Simulation {
     @Override
     public final void prepare() {
         simulation.prepare();
+
+        getVehicles().forEach(v -> v.setStateListener(this));
+    }
+
+    @Override
+    public final void prepare(ProgressListener listener) {
+        simulation.prepare(listener);
 
         getVehicles().forEach(v -> v.setStateListener(this));
     }

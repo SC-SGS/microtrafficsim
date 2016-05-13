@@ -46,8 +46,9 @@ public class Example {
 
     public static void initSimulationConfig(SimulationConfig config) {
         config.maxVehicleCount = 1000;
+        config.msPerTimeStep.set(500L);
         config.seed = new Random().nextLong();
-        config.seed = 1455374755807l;
+        config.seed = 1455374755807L;
         printSeed(config.seed);
         config.multiThreading.nThreads = 8;
         config.crossingLogic.drivingOnTheRight = true;
@@ -92,8 +93,7 @@ public class Example {
                 KeyEvent.EVENT_KEY_PRESSED,
                 KeyEvent.VK_RIGHT,
                 e -> {
-                    while (!sim.isPaused())
-                        sim.cancel();
+                    sim.cancel();
                     sim.runOneStep();
                 });
 

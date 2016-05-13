@@ -12,10 +12,8 @@ import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.impl.BlockingCar;
 import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.simulation.controller.AbstractSimulation;
-import microtrafficsim.core.simulation.controller.Simulation;
 import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.core.vis.opengl.utils.Color;
-import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 
 import java.util.Queue;
 import java.util.function.Supplier;

@@ -2,10 +2,13 @@ package microtrafficsim.core.simulation.controller.configs;
 
 import microtrafficsim.core.map.features.info.StreetType;
 import microtrafficsim.core.simulation.controller.SimulationLogger;
+import microtrafficsim.utils.observable.GenericObserver;
+import microtrafficsim.utils.observable.ObservableValue;
 import microtrafficsim.utils.id.BasicLongIDGenerator;
 import microtrafficsim.utils.id.LongIDGenerator;
 
 import java.util.HashMap;
+import java.util.Observer;
 import java.util.Random;
 
 /**
@@ -15,11 +18,39 @@ import java.util.Random;
  */
 public final class SimulationConfig {
 
-	// general
+    // NOTE: You have to add a new variable at 4 positions:
+    // - configuration variables
+    // - configuration variables' ids (in enum Id)
+    // - default values
+    // - observable array
+
+    private static int observableIdx = 0;
+    public enum Id {
+
+        /*
+        |==============================|
+        | configuration variables' ids |
+        |==============================|
+        */
+        msPerTimeStep(observableIdx++);
+
+        private final int idx;
+
+        Id(int idx) {
+            this.idx = idx;
+        }
+    }
+
+    /*
+    |=========================|
+    | configuration variables |
+    |=========================|
+    */
+    // general
 	public LongIDGenerator longIDGenerator;
-	public float metersPerCell;
-	public long msPerTimeStep;
-	public long seed;
+	public final float metersPerCell;
+    public final ObservableValue<Long, Id> msPerTimeStep;
+    public long seed;
     public SimulationLogger logger;
     public int ageForPause;
     // visualization
@@ -34,12 +65,18 @@ public final class SimulationConfig {
 	// multithreading
 	public MultiThreadingConfig multiThreading;
 
+    /*
+    |================|
+    | default values |
+    |================|
+    */
 	{
 		// general
 		longIDGenerator = new BasicLongIDGenerator();
 		metersPerCell = 7.5f;
-		msPerTimeStep = 500;
-		seed = new Random().nextLong();
+        msPerTimeStep = new ObservableValue<>(Id.msPerTimeStep);
+		msPerTimeStep.set(200L);
+        seed = new Random().nextLong();
         logger = new SimulationLogger(false);
         ageForPause = -1;
         // visualization
@@ -71,4 +108,23 @@ public final class SimulationConfig {
 		// multithreading
 		multiThreading = new MultiThreadingConfig();
 	}
+
+    /*
+    |==================|
+    | observable array |
+    |==================|
+    */
+    private final ObservableValue[] observables = new ObservableValue[] {
+            msPerTimeStep
+    };
+
+    public void addObserver(GenericObserver o) {
+        for (Id id : Id.values())
+            observables[id.idx].addObserver(o);
+    }
+
+    public void deleteObserver(GenericObserver o) {
+        for (Id id : Id.values())
+            observables[id.idx].deleteObserver(o);
+    }
 }

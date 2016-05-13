@@ -3,6 +3,7 @@ package microtrafficsim.core.simulation.controller;
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
+import microtrafficsim.interesting.progressable.ProgressListener;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -14,32 +15,30 @@ import java.util.Timer;
  */
 public interface Simulation extends VehicleStateListener {
 
-    public static void printUsage() {
-    }
-
 	/*
 	|========================|
 	| simulation preperation |
 	|========================|
 	*/
     /**
-     * This
-     */
-    public static void setUpConfig() {
-        // empty
-    }
-
-    /**
 	 * @return True, if {@link #prepare()} has finished;
 	 *         False otherwise
 	 */
-	public boolean isPrepared();
+	boolean isPrepared();
 
 	/**
-	 * This method clears all vehicle lists and should initialize all important aspects, e.g. creating vehicles and
+     * This method clears all vehicle lists and should initialize all important aspects, e.g. creating vehicles and
      * routes. After finishing, {@link #isPrepared()} will return true.
-	 */
-	public void prepare();
+     */
+    void prepare();
+
+    /**
+     * This method clears all vehicle lists and should initialize all important aspects, e.g. creating vehicles and
+     * routes. After finishing, {@link #isPrepared()} will return true.
+     *
+     * @param listener This listener gets informed if necessary changes are made.
+     */
+    void prepare(ProgressListener listener);
 
 	/*
 	|==================|
@@ -49,7 +48,7 @@ public interface Simulation extends VehicleStateListener {
 	/**
 	 * @return Number of finished simulation steps.
 	 */
-	public int getAge();
+	int getAge();
 	
 	/**
 	 * <p>
@@ -62,7 +61,7 @@ public interface Simulation extends VehicleStateListener {
 	 * ask if the simulation is running.
 	 * </p>
 	 */
-	public void run();
+	void run();
 
 	/**
 	 * <p>
@@ -70,7 +69,7 @@ public interface Simulation extends VehicleStateListener {
 	 * implementation does nothing.
 	 * </p>
 	 */
-	public void willRunOneStep();
+	void willRunOneStep();
 
 	/**
 	 * <p>
@@ -81,12 +80,12 @@ public interface Simulation extends VehicleStateListener {
      * Calls {@link #willRunOneStep()} and {@link #didRunOneStep()}.
      * </p>
 	 */
-	public void runOneStep();
+	void runOneStep();
 
     /**
      * Does the same as {@link #runOneStep()} but independant from {@link #isPaused()}
      */
-    public void doRunOneStep();
+    void doRunOneStep();
 
 	/**
 	 * <p>
@@ -94,7 +93,7 @@ public interface Simulation extends VehicleStateListener {
 	 * implementation does nothing.
 	 * </p>
 	 */
-	public void didRunOneStep();
+    void didRunOneStep();
 	
 	/**
 	 * This method should stop iterating the simulation steps after the
@@ -102,12 +101,12 @@ public interface Simulation extends VehicleStateListener {
 	 * returning true. One way could be using {@link Timer#cancel()} of
 	 * {@link Timer}.
 	 */
-	public void cancel();
+	void cancel();
 
 	/**
 	 * @return True, if the simulation does nothing; False if it is running.
 	 */
-	public boolean isPaused();
+	boolean isPaused();
 
 	/*
 	|==========|
@@ -118,28 +117,28 @@ public interface Simulation extends VehicleStateListener {
 	 * @return A copy of the list containing all spawned vehicles. This list
 	 *         does not contain a copy of the vehicles, but the vehicles itself.
 	 */
-	public ArrayList<? extends AbstractVehicle> getSpawnedVehicles();
+	ArrayList<? extends AbstractVehicle> getSpawnedVehicles();
 
     /**
      * @return A copy of the list containing all vehicles (spawned and not yet spawned). This list
      *         does not contain a copy of the vehicles, but the vehicles itself.
      */
-    public ArrayList<? extends AbstractVehicle> getVehicles();
+    ArrayList<? extends AbstractVehicle> getVehicles();
 
 	/**
 	 * @return The number of spawned vehicles.
 	 */
-	public int getSpawnedVehiclesCount();
+	int getSpawnedVehiclesCount();
 
 	/**
 	 * @return The number of all vehicles (spawned and not spawned).
 	 */
-	public int getVehiclesCount();
+	int getVehiclesCount();
 	
 	/**
 	 * @return Instance of {@link IVisualizationVehicle}.
 	 */
-	public IVisualizationVehicle createVisVehicle();
+	IVisualizationVehicle createVisVehicle();
 
 	/**
 	 * This method adds the given vehicle to the graph and if success, this
@@ -149,5 +148,5 @@ public interface Simulation extends VehicleStateListener {
 	 *            should be added
 	 * @return True, if vehicle has been added to the graph; False otherwise
 	 */
-	public boolean addVehicle(AbstractVehicle vehicle);
+	boolean addVehicle(AbstractVehicle vehicle);
 }

@@ -10,6 +10,7 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.simulation.controller.Simulation;
 import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
+import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.resources.PackagedResource;
 
@@ -33,7 +34,7 @@ public class TCrossroadScenario extends ValidationScenario {
 
         // super attributes
         config.longIDGenerator = new ConcurrentLongIDGenerator();
-        config.msPerTimeStep = 200;
+        config.msPerTimeStep.set(200L);
         config.maxVehicleCount = 3;
         config.crossingLogic.drivingOnTheRight = true;
         config.crossingLogic.edgePriorityEnabled = true;
@@ -122,7 +123,7 @@ public class TCrossroadScenario extends ValidationScenario {
     }
 
     @Override
-    protected void createAndAddVehicles() {
+    protected void createAndAddVehicles(ProgressListener listener) {
 
         /* sort by lon */
         Iterator<Node> iter = graph.getNodeIterator();
