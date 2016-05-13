@@ -30,7 +30,6 @@ public class ShaderProgramSource {
 	}
 	
 	public boolean addSource(int type, Resource source) {
-        System.out.println("name" + source.getUniqueName());
         return addSource(new ShaderSource(type, source));
 	}
 	
