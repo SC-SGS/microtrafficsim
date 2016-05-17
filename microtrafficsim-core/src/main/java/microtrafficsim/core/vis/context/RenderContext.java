@@ -5,10 +5,12 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import microtrafficsim.core.vis.Renderer;
 import microtrafficsim.core.vis.context.state.*;
-import microtrafficsim.core.vis.opengl.shader.Shader;
+import microtrafficsim.core.vis.context.tasks.FutureRenderTask;
+import microtrafficsim.core.vis.context.tasks.RenderTask;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Future;
 
 import static microtrafficsim.build.BuildSetup.DEBUG_VISUALIZATION;
 
@@ -18,11 +20,7 @@ public class RenderContext implements GLEventListener {
 	public interface UncaughtExceptionHandler {
 		void uncaughtException(RenderContext context, Throwable cause);
 	}
-	
-	public interface RenderTask {
-		void run(RenderContext context);
-	}
-	
+
 	
 	// -- state ---------------------------------------------------------------
 	
@@ -48,7 +46,7 @@ public class RenderContext implements GLEventListener {
 	// -- context -------------------------------------------------------------
 	
 	private Renderer renderer;
-	private Queue<RenderTask> tasks;
+	private Queue<FutureRenderTask<?>> tasks;
 	
 	private GLAnimatorControl animator;
 	private GLAutoDrawable drawable;
@@ -95,12 +93,20 @@ public class RenderContext implements GLEventListener {
 	}
 	
 	
-	public Queue<RenderTask> getTaskQueue() {
+	public Queue<? extends Future<?>> getTaskQueue() {
 		return tasks;
 	}
 	
-	public void addTask(RenderTask task) {
-		tasks.add(task);
+	public <V> Future<V> addTask(RenderTask<V> task) {
+        FutureRenderTask<V> future = new FutureRenderTask<>(task);
+
+        // if the context is current on this thread, run the task instantly
+        if (drawable != null && drawable.getContext().isCurrent())
+            future.run(this);
+        else
+		    tasks.add(future);
+
+		return future;
 	}
 	
 	public boolean hasTasks() {
@@ -163,14 +169,16 @@ public class RenderContext implements GLEventListener {
 	@Override
 	public void display(GLAutoDrawable drawable) {
 		this.drawable = drawable;
-		
+
+        // execute tasks on work queue
+        while (!tasks.isEmpty())
+            tasks.poll().run(this);
+
+        // display renderer
 		try {
-			while (!tasks.isEmpty())
-				tasks.poll().run(this);
-			
 			renderer.display(this);
-		} catch (Throwable exception) {
-			if(!handleException(exception))
+        } catch (Throwable exception) {
+            if(!handleException(exception))
 				throw exception;
 		} finally {
 			this.drawable = null;

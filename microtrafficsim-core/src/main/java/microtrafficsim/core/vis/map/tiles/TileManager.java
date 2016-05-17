@@ -7,7 +7,6 @@ import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
-import microtrafficsim.core.vis.map.tiles.layers.TileLayer;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.exceptions.ThisShouldNeverHappenException;

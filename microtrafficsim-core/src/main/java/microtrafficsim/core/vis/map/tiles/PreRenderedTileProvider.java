@@ -6,11 +6,8 @@ import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
-import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayer;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayer;
-import microtrafficsim.core.vis.map.tiles.layers.TileLayerBucket;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
-import microtrafficsim.core.vis.mesh.Mesh;
 import microtrafficsim.core.vis.opengl.BufferStorage;
 import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.core.vis.opengl.shader.Shader;
@@ -19,6 +16,7 @@ import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformMat4f;
+import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
 import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -27,21 +25,25 @@ import microtrafficsim.utils.resources.Resource;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.stream.Collectors;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 public class PreRenderedTileProvider implements TileProvider {
-    // TODO: sync load tile and pre-render, handle init/dispose etc.
     // TODO: implement basic caching / resource re-using
 
     private static final Resource TILE_COPY_SHADER_VS = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tile.vs");
     private static final Resource TILE_COPY_SHADER_FS = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tile.fs");
 
+    private static final int TEX_UNIT_TILE = 0;
+
     private TileLayerProvider provider;
     private HashSet<TileChangeListener> tileListener;
 
     private ShaderProgram tilecopy;
-    private UniformMat4f tiletransform;
+    private UniformMat4f uTileTransform;
+    private UniformSampler2D uTileSampler;
+
     private TileQuad quad;
 
 
@@ -78,7 +80,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
     @Override
     public void initialize(RenderContext context) {
-        tiletransform = (UniformMat4f) context.getUniformManager().getGlobalUniform("u_tile");
+        uTileTransform = (UniformMat4f) context.getUniformManager().getGlobalUniform("u_tile");
 
         GL3 gl = context.getDrawable().getGL().getGL3();
 
@@ -99,6 +101,8 @@ public class PreRenderedTileProvider implements TileProvider {
         fs.dispose(gl);
 
         // TODO
+        // uTileSampler = (UniformSampler2D) tilecopy.getUniform("u_tile_sampler");
+        // uTileSampler.set(TEX_UNIT_TILE);
 
         quad = new TileQuad();
         quad.initialize(gl);
@@ -108,33 +112,47 @@ public class PreRenderedTileProvider implements TileProvider {
     public void dispose(RenderContext context) {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
-        // TODO
-
         tilecopy.dispose(gl);   tilecopy = null;
         quad.dispose(gl);       quad = null;
     }
 
 
     @Override
-    public Tile require(RenderContext context, TileId id) {
-        // TODO: make interrupt-safe
+    public Tile require(RenderContext context, TileId id) throws InterruptedException, ExecutionException {
+        ArrayList<TileLayer> layers = new ArrayList<>();
 
-        ArrayList<TileLayer> layers = provider.getAvailableLayers().stream()
-                .map(name -> provider.require(context, name, id))
-                .filter(layer -> layer != null)
-                .collect(Collectors.toCollection(ArrayList<TileLayer>::new));
+        try {
+            for (String name : provider.getAvailableLayers()) {
+                if (Thread.interrupted())
+                    throw new InterruptedException();
 
-        // TEMPORARY
-        if (layers.size() > 0) {
+                TileLayer layer = provider.require(context, name, id);
+                if (layer != null)
+                    layers.add(layer);
+            }
+
+            if (layers.size() == 0)
+                return null;
+
+            /* Note:
+             *  If tile.initialize(c) is the last method that could throw an exception,
+             *  so there is no need to dispose() the tile itself.
+             */
             PreRenderedTile tile = new PreRenderedTile(id, layers);
-
-            // TODO: async tile initialize
-            // TODO: wait for task execution -> return Future for RenderContext.addTask(...)
+            Future<Void> task = context.addTask(c -> {
+                tile.initialize(c);
+                return null;
+            });
+            task.get();
 
             return tile;
-        }
 
-        return null;
+        } catch (Exception e) {         // make sure we clean up on interrupts and exceptions
+            for (TileLayer layer : layers)
+                provider.release(context, layer);
+
+            throw e;
+        }
     }
 
     @Override
@@ -168,12 +186,15 @@ public class PreRenderedTileProvider implements TileProvider {
         private Mat4f transform;
 
         private int texture;
+        private int fbo;
 
 
         public PreRenderedTile(TileId id, ArrayList<TileLayer> layers) {
             this.id = id;
-            this.transform = Mat4f.identity();
             this.layers = layers;
+            this.transform = Mat4f.identity();
+            this.texture = -1;
+            this.fbo = -1;
         }
 
 
@@ -187,8 +208,12 @@ public class PreRenderedTileProvider implements TileProvider {
             GL3 gl = context.getDrawable().getGL().getGL3();
 
             tilecopy.bind(gl);
-            // TODO: bind texture
-            tiletransform.set(transform);
+            uTileTransform.set(transform);
+
+            // TODO
+            // gl.glActiveTexture(GL3.GL_TEXTURE0 + TEX_UNIT_TILE);
+            // gl.glBindTexture(GL3.GL_TEXTURE_2D, texture);
+
             quad.draw(gl);
         }
 
