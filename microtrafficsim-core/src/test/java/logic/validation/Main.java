@@ -43,10 +43,10 @@ public class Main {
         Car.setDashAndDawdleFactor(0, 0);
 
         config.maxVehicleCount = 3;
-        config.seed = 1455374755807L;
-        Example.printSeed(config.seed);
-        config.multiThreading.nThreads = 8;
-        config.logger.enabled = false;
+        config.seed().set(1455374755807L);
+        Example.printSeed(config.seed().get());
+        config.multiThreading().nThreads().set(8);
+        config.logger().enabled = false;
     }
 
 	public static void show(Projection projection,

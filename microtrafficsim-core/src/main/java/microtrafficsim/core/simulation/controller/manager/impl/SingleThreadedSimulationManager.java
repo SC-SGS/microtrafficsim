@@ -12,8 +12,9 @@ import java.util.Iterator;
 public class SingleThreadedSimulationManager implements SimulationManager {
 
     @Override
-    public void willMoveAll(Iterator<AbstractVehicle> spawnedVehicle) {
+    public void willMoveAll(long timeDeltaMillis, Iterator<AbstractVehicle> spawnedVehicle) {
         spawnedVehicle.forEachRemaining((AbstractVehicle vehicle) -> {
+            vehicle.updateTimeDeltaMillis(timeDeltaMillis);
             vehicle.accelerate();
             vehicle.dash();
             vehicle.brake();
@@ -23,7 +24,8 @@ public class SingleThreadedSimulationManager implements SimulationManager {
 
     @Override
     public void moveAll(Iterator<AbstractVehicle> iteratorSpawned) {
-        iteratorSpawned.forEachRemaining(AbstractVehicle::move);
+        while (iteratorSpawned.hasNext())
+            iteratorSpawned.next().move();
     }
 
     @Override

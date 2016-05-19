@@ -46,10 +46,10 @@ public class DirectedEdge implements IDijkstrableEdge, ILogicEdge {
 	public DirectedEdge(SimulationConfig config, float lengthInMeters, Vec2f originDirection, Vec2f destinationDirection, float maxVelocity,
 			int noOfLines, Node origin, Node destination, byte priorityLevel) {
 
-		ID = config.longIDGenerator.next();
+		ID = config.longIDGenerator().get().next();
 		
 		// important for shortest path: round up
-		numberOfCells = Math.max(1, (int)(Math.ceil(lengthInMeters / config.metersPerCell)));
+		numberOfCells = Math.max(1, (int)(Math.ceil(lengthInMeters / config.metersPerCell().get())));
 		this.originDirection = originDirection.normalize();
 		this.destinationDirection = destinationDirection.normalize();
 
@@ -58,9 +58,9 @@ public class DirectedEdge implements IDijkstrableEdge, ILogicEdge {
 
 		this.origin = origin;
 		this.destination = destination;
-		// maxVelocity in km/h, but this.maxVelocity in m/s
-		this.maxVelocity = Math.max(1, (int) (maxVelocity / 3.6 / config.metersPerCell));
-		this.priorityLevel = priorityLevel;
+		// maxVelocity in km/h, but this.maxVelocity in cells/s
+		this.maxVelocity = Math.max(1, (int)Math.round(maxVelocity / 3.6 / config.metersPerCell().get()));
+        this.priorityLevel = priorityLevel;
 
 		this.entity = null;
 	}
@@ -85,7 +85,10 @@ public class DirectedEdge implements IDijkstrableEdge, ILogicEdge {
 	public Lane getLane(int i) {
 		return lanes[i];
 	}
-	
+
+    /**
+     * @return max allowed velocity in cells/s
+     */
 	public int getMaxVelocity() {
 		return maxVelocity;
 	}
@@ -105,9 +108,11 @@ public class DirectedEdge implements IDijkstrableEdge, ILogicEdge {
         lanes[0] = new Lane(this, 0);
     }
 
-	// |===============|
-	// | visualization |
-	// |===============|
+    /*
+	|===============|
+	| visualization |
+	|===============|
+    */
 	Vec2f getOriginDirection() {
 		return originDirection;
 	}
@@ -116,9 +121,11 @@ public class DirectedEdge implements IDijkstrableEdge, ILogicEdge {
 		return destinationDirection;
 	}
 
-	// |======================|
-	// | (i) IDijkstrableEdge |
-	// |======================|
+    /*
+	|======================|
+	| (i) IDijkstrableEdge |
+	|======================|
+	*/
 	@Override
 	public int getLength() {
 		
@@ -144,8 +151,8 @@ public class DirectedEdge implements IDijkstrableEdge, ILogicEdge {
 	@Override
 	public float getTimeCostMillis() {
 		
-		// 1000f because velocity is in m/s
-		return 1000f * numberOfCells / maxVelocity;
+		// 1000f because velocity is in cells/s = cells/1000ms
+		return (1000f * getLength()) / maxVelocity;
 	}
 
 	@Override
@@ -159,9 +166,11 @@ public class DirectedEdge implements IDijkstrableEdge, ILogicEdge {
 		return destination;
 	}
 
-	// |================|
-	// | (i) ILogicEdge |
-	// |================|
+    /*
+    |================|
+    | (i) ILogicEdge |
+    |================|
+    */
 	@Override
 	public StreetEntity getEntity() {
 		return entity;

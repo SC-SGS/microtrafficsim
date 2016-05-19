@@ -39,14 +39,14 @@ public abstract class ValidationScenario extends AbstractSimulation {
                 graph,
                 vehicleFactory);
         justInitialized = true;
-        scout = new LinearDistanceAStar(config.metersPerCell);
+        scout = new LinearDistanceAStar(config.metersPerCell().get());
     }
 
     protected abstract void updateScenarioState(VehicleState vehicleState);
 
     protected final void createAndAddCar(Node start, Node end, int delay) {
         createAndAddVehicle(
-                new Car(config.longIDGenerator,
+                new Car(config,
                         this, new Route(start, end,
                         (Queue<DirectedEdge>) scout.findShortestPath(start, end)),
                         delay
@@ -55,7 +55,7 @@ public abstract class ValidationScenario extends AbstractSimulation {
 
     protected final void createAndAddCar(Node start, Node end, int delay, Color color) {
         createAndAddVehicle(
-                new Car(config.longIDGenerator,
+                new Car(config,
                         this, new Route(start, end,
                         (Queue<DirectedEdge>) scout.findShortestPath(start, end)),
                         delay
@@ -66,7 +66,7 @@ public abstract class ValidationScenario extends AbstractSimulation {
 
     protected final void createAndAddBlockingCar(Node start, Node end, Color color) {
         BlockingCar blockingCar = new BlockingCar(
-                config.longIDGenerator,
+                config,
                 this,
                 new Route(start, end, (Queue<DirectedEdge>) scout.findShortestPath(start, end))
         );

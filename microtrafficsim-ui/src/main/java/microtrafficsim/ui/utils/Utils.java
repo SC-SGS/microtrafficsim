@@ -1,4 +1,4 @@
-package microtrafficsim.ui;
+package microtrafficsim.ui.utils;
 
 import java.io.File;
 import java.io.IOException;

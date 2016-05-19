@@ -1,19 +1,37 @@
 package microtrafficsim.core.simulation.controller.configs;
 
+import microtrafficsim.utils.valuewrapper.ConcurrentValue;
+import microtrafficsim.utils.valuewrapper.LazyFinalValue;
+
 /**
  * This class contains configurations for working parallel. 
  *  
  * @author Dominic Parga Cacheiro
  */
-public class MultiThreadingConfig {
+public final class MultiThreadingConfig {
 	
-	public int nThreads;
-	public int vehiclesPerRunnable;
-	public int nodesPerThread;
+	private LazyFinalValue<Integer> nThreads;
+    private ConcurrentValue<Integer> vehiclesPerRunnable;
+    private ConcurrentValue<Integer> nodesPerThread;
 	
-	{
-		nThreads = 8;
-		vehiclesPerRunnable = 200;
-		nodesPerThread = 500;
+	public MultiThreadingConfig() {
+        reset();
 	}
+
+    void reset() {
+
+		nThreads = new LazyFinalValue<>(8);
+		vehiclesPerRunnable = new ConcurrentValue<>(200);
+		nodesPerThread = new ConcurrentValue<>(500);
+    }
+
+    void reset(MultiThreadingConfig config) {
+        nThreads = config.nThreads;
+        vehiclesPerRunnable = config.vehiclesPerRunnable;
+        nodesPerThread = config.nodesPerThread;
+    }
+
+    public LazyFinalValue<Integer> nThreads() { return nThreads; }
+    public ConcurrentValue<Integer> vehiclesPerRunnable() { return vehiclesPerRunnable; }
+    public ConcurrentValue<Integer> nodesPerThread() { return nodesPerThread; }
 }

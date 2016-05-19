@@ -8,9 +8,9 @@ import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
-import microtrafficsim.utils.id.LongIDGenerator;
 
 import java.util.Random;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -35,6 +35,7 @@ import java.util.Random;
 public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
 
     // general
+    public final SimulationConfig config;
     public final long ID;
     private Random random;
     private VehicleEntity entity;
@@ -43,11 +44,14 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
     // routing
     private Route route;
     private int age;
-    private int spawnDelay;
-    // traffic
-    private Lane lane;
+    private final int spawnDelay;
+    // driving behaviour
     private int cellPosition;
     private int velocity;
+    private float relativeTimeDelta;
+    private Function<Integer, Integer> accelerate, dawdle;
+    // traffic
+    private Lane lane;
     private AbstractVehicle vehicleInFront;
     private AbstractVehicle vehicleInBack;
     private boolean hasDashed; // for simulation
@@ -56,17 +60,18 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
     // angry factor
     private boolean lastVelocityWasZero;
 
-    public AbstractVehicle(LongIDGenerator longIDGenerator, VehicleStateListener stateListener, Route route) {
+    public AbstractVehicle(SimulationConfig config, VehicleStateListener stateListener, Route route) {
 
-        this(longIDGenerator, stateListener, route, 0);
+        this(config, stateListener, route, 0);
     }
 
-    public AbstractVehicle(LongIDGenerator longIDGenerator,
+    public AbstractVehicle(SimulationConfig config,
                            VehicleStateListener stateListener,
                            Route route,
                            int spawnDelay) {
 
-        this.ID = longIDGenerator.next();
+        this.config = config;
+        this.ID = config.longIDGenerator().get().next();
         this.stateListener = stateListener;
         setState(VehicleState.NOT_SPAWNED);
         // routing
@@ -74,9 +79,12 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
         age = 0;
         this.spawnDelay = spawnDelay;
         resetPriorityCounter();
-        // traffic
+        // driving behaviour
         cellPosition = -1;
         velocity = 0;
+        accelerate = createAccelerationFunction();
+        dawdle = createDawdleFunction();
+        // traffic
         hasDashed = false;
         priorityCounter = 0;
         // interesting stuff
@@ -172,7 +180,7 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
     @Override
     public void setEntity(VehicleEntity entity) {
         this.entity = entity;
-        random = new Random(entity.getConfig().seed);
+        random = new Random(entity.getConfig().seed().get());
     }
 
     @Override
@@ -230,9 +238,11 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
         return priorityCounter;
     }
 
-    // |========================|
-    // | world/node interaction |
-    // |========================|
+    /*
+    |========================|
+    | world/node interaction |
+    |========================|
+    */
     /**
      * This method registers the vehicle in the start node of the vehicle's
      * route. If the route is empty, the vehicle does not register itself and
@@ -298,17 +308,37 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
     | simulation |
     |============|
     */
+    /**
+     * @param timeDeltaMillis Time since last time step
+     * <p>
+     * IMPORTANT: has to be <= 1000ms, otherwise there would be problems calculating
+     * vehicle positions at the end of roads.
+     * <p>
+     * Example: timeDeltaMillis = 100s
+     * => index out of bounds exceptions in street array
+     * <p>
+     * Therefore before calculation starts in this method:<br>
+     * timeDeltaMillis := Math.min(1000, timeDeltaMillis)
+     */
+    public void updateTimeDeltaMillis(long timeDeltaMillis) {
+        if (timeDeltaMillis > 1000)
+            relativeTimeDelta = 1f;
+        else
+            relativeTimeDelta = timeDeltaMillis / 1000f;
+
+        relativeTimeDelta = 1f;
+    }
+
     public void accelerate() {
         if (velocity < getMaxVelocity())
-            velocity++;
+            velocity = accelerate.apply(velocity);
     }
 
     public void dash() {
         if (velocity < getMaxVelocity()) {
-//            if (!hasDashed) TODO better dashing
                 hasDashed = random.nextFloat() < getDashFactor();
             if (hasDashed)
-                velocity++;
+                velocity = accelerate.apply(velocity);
         }
     }
 
@@ -357,15 +387,14 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
     }
 
     public void dawdle() {
-        if (!hasDashed) {
+        if (!hasDashed)
             if (velocity > 0 && state == VehicleState.SPAWNED) {
                 //     P[dawdle] = P[dawdle | not dash] * P[not dash]
                 // <=> P[dawdle | not dash] = P[dawdle] / (1 - P[dash])
                 float p = getDawdleFactor() / (1 - getDashFactor());
                 if (random.nextFloat() < p)
-                    velocity--;
+                    velocity = dawdle.apply(velocity);
             }
-        }
     }
 
     /**
@@ -373,12 +402,13 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
      * &bull If it stand's at a node, it will leave the current road and enter
      * the next road.<br>
      * &bull If it stand's in the lane, it just drives at the next position depending on its velocity.
+     *
      */
     public void move() {
 
         if (state == VehicleState.SPAWNED) {
             DirectedEdge edge = lane.getAssociatedEdge();
-            int distance = edge.getLength() - cellPosition;
+            int distance = edge.getLength() - getCellPosition();
             // Will cross node?
             if (velocity >= distance)
                 if (!route.isEmpty()) {
@@ -427,19 +457,46 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
     private void didOneSimulationStep() {
         // anger
         if (velocity == 0) {
-            if (lastVelocityWasZero) {
+            if (lastVelocityWasZero)
                 becomeMoreAngry();
-            }
             lastVelocityWasZero = true;
         } else {
-            if (!lastVelocityWasZero) {
+            if (!lastVelocityWasZero)
                 calmDown();
-            }
             lastVelocityWasZero = false;
         }
         // age
         age++;
     }
+
+    /**
+     * <p>
+     * This method calculates the incrementation of the velocity in the accelaration step. It is recommended to
+     * use the following formula:<br>
+     * ((1 - c) * vmax + c * vin) with c = e^(-1s/TAU)<br>
+     * TAU(Ferrari) is ca. 10s, TAU(Car) is ca. 15s
+     * <p>
+     * This formula is equal to:<br>
+     * (1) calculating t0 in<br>
+     * vin = (1 - e^(-t0/TAU)) * vmax<br>
+     * (2) putting t0 into<br>
+     * vout = (1 - e^(-t0/TAU)) * vmax<br>
+     * <p>
+     * After simplifying vout, you get the formula above.
+     *
+     * @return A function that calculates a greater velocity depending on a given velocity.<br>
+     * E.g.: constant acceleration <=> this method returns something like v -> v + const
+     */
+    protected abstract Function<Integer, Integer> createAccelerationFunction();
+
+    /**
+     * This method is only called when the vehicle is dawdling, thus it should return<br>
+     * e.g. v -> v - 5km/h
+     *
+     * @return A function that calculates a lower velocity depending on a given velocity.<br>
+     * E.g.: constant acceleration <=> this method returns something like v -> v - const
+     */
+    protected abstract Function<Integer, Integer> createDawdleFunction();
 
     /**
      * @return Max velocity this vehicle is able to have.
@@ -489,8 +546,6 @@ public abstract class AbstractVehicle implements ILogicVehicle, Hulk {
                 addVehicleInFront(lastVehicle);
             }
         }
-        // in case that the vehicle is crossing a node:
-        // cellPosition has to be negative
         cellPosition = cellPosition + velocity;
         lane.insertVehicle(this, cellPosition);
         entity.getVisualization().updatePosition();

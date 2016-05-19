@@ -1,4 +1,4 @@
-package microtrafficsim.utils.observable;
+package microtrafficsim.utils.valuewrapper.observable;
 
 import java.util.Observable;
 import java.util.Observer;

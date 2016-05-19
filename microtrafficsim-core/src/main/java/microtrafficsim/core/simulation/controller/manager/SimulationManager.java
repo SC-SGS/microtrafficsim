@@ -15,7 +15,7 @@ public interface SimulationManager {
     | vehicle simulation steps |
     |==========================|
      */
-    void willMoveAll(final Iterator<AbstractVehicle> spawnedVehicle);
+    void willMoveAll(final long timeDeltaMillis, final Iterator<AbstractVehicle> spawnedVehicle);
     void moveAll(final Iterator<AbstractVehicle> iteratorSpawned);
     void didMoveAll(final Iterator<AbstractVehicle> iteratorSpawned);
     void spawnAll(final Iterator<AbstractVehicle> iteratorNotSpawned);

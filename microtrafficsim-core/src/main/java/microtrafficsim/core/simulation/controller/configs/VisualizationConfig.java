@@ -2,6 +2,7 @@ package microtrafficsim.core.simulation.controller.configs;
 
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.core.vis.map.projections.Projection;
+import microtrafficsim.utils.valuewrapper.LazyFinalValue;
 
 /**
  * This class isolates the visualization configs from the other config
@@ -9,11 +10,21 @@ import microtrafficsim.core.vis.map.projections.Projection;
  * 
  * @author Dominic Parga Cacheiro
  */
-public class VisualizationConfig {
+public final class VisualizationConfig {
 
-    public Projection projection;
+    private LazyFinalValue<Projection> projection;
 
-	{
-        projection = new MercatorProjection(256); // tiles will be 512x512 pixel
+	public VisualizationConfig() {
+        reset();
 	}
+
+    void reset() {
+        projection = new LazyFinalValue<>(new MercatorProjection(256)); // tiles will be 512x512 pixel
+    }
+
+    void reset(VisualizationConfig config) {
+        projection = new LazyFinalValue<>(config.projection.get());
+    }
+
+    public LazyFinalValue<Projection> projection() { return projection; }
 }

@@ -2,6 +2,7 @@ package microtrafficsim.core.logic.vehicles.impl;
 
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
+import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
 import microtrafficsim.utils.id.LongIDGenerator;
 
 /**
@@ -11,13 +12,13 @@ public class BlockingCar extends Car {
 
     private boolean blocking;
 
-    public BlockingCar(LongIDGenerator longIDGenerator, VehicleStateListener stateListener, Route route) {
-        super(longIDGenerator, stateListener, route);
+    public BlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route route) {
+        super(config, stateListener, route);
         blocking = false;
     }
 
-    public BlockingCar(LongIDGenerator longIDGenerator, VehicleStateListener stateListener, Route route, int spawnDelay) {
-        super(longIDGenerator, stateListener, route, spawnDelay);
+    public BlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route route, int spawnDelay) {
+        super(config, stateListener, route, spawnDelay);
         blocking = false;
     }
 

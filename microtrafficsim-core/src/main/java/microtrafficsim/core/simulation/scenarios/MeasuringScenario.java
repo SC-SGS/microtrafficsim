@@ -234,7 +234,7 @@ public class MeasuringScenario implements Simulation {
                 public void run() {
                     doRunOneStep();
                 }
-            }, 0, config.msPerTimeStep.get());
+            }, 0, 1000 / config.speedup().get());
             paused = false;
         }
     }

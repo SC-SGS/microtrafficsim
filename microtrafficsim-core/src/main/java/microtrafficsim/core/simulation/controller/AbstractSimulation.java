@@ -41,7 +41,8 @@ public abstract class AbstractSimulation implements Simulation {
 	private boolean paused;
 	private Timer timer;
     private TimerTask timerTask;
-	private int age;
+	private int age; // todo replace # steps by time
+    private long timeDeltaMillis, timestamp, pausedTimestamp;
 	// manager
 	private final VehicleManager vehicleManager;
     private final SimulationManager simManager;
@@ -60,8 +61,9 @@ public abstract class AbstractSimulation implements Simulation {
 		prepared = false;
 		paused = true;
 		timer = new Timer();
+        timestamp = -1;
 		age = 0;
-		if (this.config.multiThreading.nThreads > 1) {
+		if (this.config.multiThreading().nThreads().get() > 1) {
             vehicleManager = new MultiThreadedVehicleManager(vehicleFactory);
             simManager = new MultiThreadedSimulationManager(config);
         } else {
@@ -69,10 +71,11 @@ public abstract class AbstractSimulation implements Simulation {
             simManager = new SingleThreadedSimulationManager();
         }
 
-        config.msPerTimeStep.addObserver((o, arg) -> {
+        // get updated if ms per time step changes
+        config.speedup().addObserver((o, arg) -> {
             if (!paused) {
                 cancel();
-                if (config.msPerTimeStep.get() > 0)
+                if (config.speedup().get() > 0)
                     run();
             }
         });
@@ -144,29 +147,35 @@ public abstract class AbstractSimulation implements Simulation {
 	 */
 	private void doSimulationStep() {
 
+        if (timestamp < 0) // init
+            timestamp = System.currentTimeMillis();
+        long now = System.currentTimeMillis();
+//        timeDeltaMillis = Math.min(now - timestamp, 1000 / config.speedup.get());
+        timeDeltaMillis = now - timestamp;
+        timestamp = now;
 
-		if (config.logger.enabled) {
-			long time = System.nanoTime();
-            simManager.willMoveAll(vehicleManager.iteratorSpawned());
-			config.logger.debugNanoseconds("time brake() etc. = ", System.nanoTime() - time);
+		if (config.logger().enabled) {
+			time = System.nanoTime();
+            simManager.willMoveAll(timeDeltaMillis, vehicleManager.iteratorSpawned());
+			config.logger().debugNanoseconds("time brake() etc. = ", System.nanoTime() - time);
 
 			time = System.nanoTime();
             simManager.moveAll(vehicleManager.iteratorSpawned());
-			config.logger.debugNanoseconds("time move() = ", System.nanoTime() - time);
+			config.logger().debugNanoseconds("time move() = ", System.nanoTime() - time);
 
 			time = System.nanoTime();
             simManager.didMoveAll(vehicleManager.iteratorSpawned());
-			config.logger.debugNanoseconds("time didMove() = ", System.nanoTime() - time);
+			config.logger().debugNanoseconds("time didMove() = ", System.nanoTime() - time);
 
 			time = System.nanoTime();
 			simManager.spawnAll(vehicleManager.iteratorNotSpawned());
-			config.logger.debugNanoseconds("time spawn() = ", System.nanoTime() - time);
+			config.logger().debugNanoseconds("time spawn() = ", System.nanoTime() - time);
 
 			time = System.nanoTime();
 			simManager.updateNodes(graph.getNodeIterator());
-			config.logger.debugNanoseconds("time updateNodes() = ", System.nanoTime() - time);
+			config.logger().debugNanoseconds("time updateNodes() = ", System.nanoTime() - time);
 		} else {
-            simManager.willMoveAll(vehicleManager.iteratorSpawned());
+            simManager.willMoveAll(timeDeltaMillis, vehicleManager.iteratorSpawned());
             simManager.moveAll(vehicleManager.iteratorSpawned());
             simManager.didMoveAll(vehicleManager.iteratorSpawned());
             simManager.spawnAll(vehicleManager.iteratorNotSpawned());
@@ -211,33 +220,33 @@ public abstract class AbstractSimulation implements Simulation {
 	public int getAge() {
 		return age;
 	}
-	
+
 	@Override
 	public final void run() {
 
-		if (prepared && paused) {
+		if (prepared && paused && config.speedup().get() > 0) {
             timerTask = new TimerTask() {
                 @Override
                 public void run() {
                     doRunOneStep();
                 }
             };
-			timer.schedule(timerTask, 0, config.msPerTimeStep.get());
+			timer.schedule(timerTask, 0, 1000 / config.speedup().get());
 			paused = false;
 		}
 	}
 
 	@Override
 	public void willRunOneStep() {
-        if (config.logger.enabled) {
+        if (config.logger().enabled) {
             if (isPrepared()) {
-                config.logger.debug("########## ########## ########## ########## ##");
-                config.logger.debug("NEW SIMULATION STEP");
-                config.logger.debug("simulation age before execution = " + getAge());
+                config.logger().debug("########## ########## ########## ########## ##");
+                config.logger().debug("NEW SIMULATION STEP");
+                config.logger().debug("simulation age before execution = " + getAge());
                 time = System.nanoTime();
             } else {
-                config.logger.debug("########## ########## ########## ########## ##");
-                config.logger.debug("NEW SIMULATION STEP (NOT PREPARED)");
+                config.logger().debug("########## ########## ########## ########## ##");
+                config.logger().debug("NEW SIMULATION STEP (NOT PREPARED)");
             }
         }
 	}
@@ -254,24 +263,14 @@ public abstract class AbstractSimulation implements Simulation {
         if (prepared)
             doSimulationStep();
         didRunOneStep();
-
-        // TODO
-//        synchronized (config) {
-//            if (lastMsPerTimeStep != config.msPerTimeStep) {
-//                lastMsPerTimeStep = config.msPerTimeStep;
-//                cancel();
-//                if (config.msPerTimeStep > 0)
-//                    run();
-//            }
-//        }
     }
 
     @Override
     public void didRunOneStep() {
-        if (config.logger.enabled) {
+        if (config.logger().enabled) {
             if (isPrepared())
-                config.logger.debugNanoseconds("time for this step = ", System.nanoTime() - time);
-            config.logger.debug("number of vehicles after run = " + getVehiclesCount());
+                config.logger().debugNanoseconds("time for this step = ", System.nanoTime() - time);
+            config.logger().debug("number of vehicles after run = " + getVehiclesCount());
         }
     }
 
