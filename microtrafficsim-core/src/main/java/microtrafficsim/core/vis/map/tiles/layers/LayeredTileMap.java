@@ -143,14 +143,14 @@ public class LayeredTileMap implements TileLayerProvider {
 
 
     @Override
-    public TileLayer require(RenderContext context, String name, TileId tile) {
+    public TileLayer require(RenderContext context, String name, TileId tile, Rect2d target) {
         Layer layer = layers.get(name);
         if (layer == null) return null;
 
         TileLayerGenerator gen = generators.get(layer.getSource().getType());
         if (gen == null) return null;
 
-        return gen.generate(context, layer, tile);
+        return gen.generate(context, layer, tile, target);
     }
 
     @Override

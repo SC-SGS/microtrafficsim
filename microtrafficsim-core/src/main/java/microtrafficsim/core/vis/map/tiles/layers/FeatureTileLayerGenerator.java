@@ -10,18 +10,16 @@ import microtrafficsim.core.vis.mesh.ManagedMesh;
 import microtrafficsim.core.vis.mesh.Mesh;
 import microtrafficsim.core.vis.mesh.MeshPool;
 import microtrafficsim.core.vis.mesh.style.FeatureStyle;
+import microtrafficsim.math.Rect2d;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class FeatureTileLayerGenerator implements TileLayerGenerator {
     private static final Logger logger = LoggerFactory.getLogger(FeatureTileLayerGenerator.class);
-
-    private AtomicBoolean releasing;
 
     private MeshPool<FeatureMeshGenerator.FeatureMeshKey> pool;
     private HashSet<FeatureMeshGenerator.FeatureMeshKey> loading;
@@ -36,7 +34,6 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
         this.pool = new MeshPool<>();
         this.loading = new HashSet<>();
         this.generators = new HashMap<>();
-        this.releasing = new AtomicBoolean(false);
 
         if (defaultInit) {
             generators.put(Street.class, new StreetMeshGenerator());
@@ -45,7 +42,7 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
 
 
     @Override
-    public FeatureTileLayer generate(RenderContext context, Layer layer, TileId tile) {
+    public FeatureTileLayer generate(RenderContext context, Layer layer, TileId tile, Rect2d target) {
         if (!(layer.getSource() instanceof FeatureTileLayerSource)) return null;
 
         FeatureTileLayerSource src = (FeatureTileLayerSource) layer.getSource();
@@ -54,7 +51,7 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
         FeatureMeshGenerator generator = generators.get(src.getFeatureType());
         if (generator == null) return null;
 
-        FeatureMeshGenerator.FeatureMeshKey key = generator.getKey(context, src, tile);
+        FeatureMeshGenerator.FeatureMeshKey key = generator.getKey(context, src, tile, target);
         ManagedMesh mesh;
 
         synchronized (this) {
@@ -86,7 +83,7 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
                     + tile.x + "/" + tile.y + "/" + tile.z
                     + "}, feature '" + src.getFeatureName() + "'");
 
-            Mesh m = generator.generate(context, src, tile);
+            Mesh m = generator.generate(context, src, tile, target);
             if (m == null) {
                 synchronized (this) {
                     loading.remove(key);

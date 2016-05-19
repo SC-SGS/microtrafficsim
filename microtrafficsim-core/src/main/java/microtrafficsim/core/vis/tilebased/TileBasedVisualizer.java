@@ -179,6 +179,7 @@ public class TileBasedVisualizer implements Visualizer {
 
         GL3 gl = context.getDrawable().getGL().getGL3();
         gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
+        gl.glViewport(0, 0, view.getSize().x, view.getSize().y);    // TODO: context state
 
         // update and draw
         manager.update(context, view);

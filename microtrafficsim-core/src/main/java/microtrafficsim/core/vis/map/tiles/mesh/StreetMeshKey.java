@@ -4,12 +4,14 @@ import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 
 public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     private final RenderContext context;
     private final TileId tile;
+    private final Rect2d target;
     private final TileFeatureProvider provider;
     private final String feature;
     private final TilingScheme scheme;
@@ -20,6 +22,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     public StreetMeshKey(
             RenderContext context,
             TileId tile,
+            Rect2d target,
             TileFeatureProvider provider,
             String feature,
             TilingScheme scheme,
@@ -29,6 +32,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     ) {
         this.context = context;
         this.tile = tile;
+        this.target = target;
         this.provider = provider;
         this.feature = feature;
         this.scheme = scheme;
@@ -47,6 +51,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
 
         return this.context == other.context
                 && this.tile.equals(other.tile)
+                && this.target.equals(other.target)
                 && this.provider == other.provider
                 && this.feature.equals(other.feature)
                 && this.scheme.equals(other.scheme)

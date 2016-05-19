@@ -8,8 +8,8 @@ import microtrafficsim.core.vis.mesh.MeshBucket;
 import microtrafficsim.core.vis.mesh.style.Style;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
-import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttribute;
 import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
+import microtrafficsim.math.Rect2d;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,10 +20,11 @@ import java.util.Set;
 public class StreetMeshGenerator implements FeatureMeshGenerator {
 
     @Override
-    public FeatureMeshKey getKey(RenderContext context, FeatureTileLayerSource source, TileId tile) {
+    public FeatureMeshKey getKey(RenderContext context, FeatureTileLayerSource source, TileId tile, Rect2d target) {
         return new StreetMeshKey(
                 context,
                 tile,
+                target,
                 source.getFeatureProvider(),
                 source.getFeatureName(),
                 source.getTilingScheme(),
@@ -34,7 +35,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
     }
 
     @Override
-    public Mesh generate(RenderContext context, FeatureTileLayerSource source, TileId tile) {
+    public Mesh generate(RenderContext context, FeatureTileLayerSource source, TileId tile, Rect2d target) {
         // NOTE: use tile-relative positions
         // TODO
 

@@ -33,6 +33,8 @@ public class PreRenderedTileProvider implements TileProvider {
     // TODO: implement basic caching, re-use textures and FBOs
     // TODO: depth attachment for FBOs?
 
+    private static final Rect2d TILE_TARGET = new Rect2d(-1.0, -1.0, 1.0, 1.0);
+
     private static final Resource TILE_COPY_SHADER_VS = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tiles/tilecopy.vs");
     private static final Resource TILE_COPY_SHADER_FS = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tiles/tilecopy.fs");
 
@@ -46,6 +48,12 @@ public class PreRenderedTileProvider implements TileProvider {
     private UniformSampler2D uTileSampler;
 
     private TileQuad quad;
+
+    // -- TEMPORARY -----------------------------------------------------------
+    private ShaderProgram tilepjt;
+    private static final Resource TILE_PJT_SHADER_VS = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tile_projection_test.vs");
+    private static final Resource TILE_PJT_SHADER_FS = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tile_projection_test.fs");
+    // ------------------------------------------------------------------------
 
 
     public PreRenderedTileProvider() {
@@ -106,6 +114,25 @@ public class PreRenderedTileProvider implements TileProvider {
 
         quad = new TileQuad();
         quad.initialize(gl);
+
+
+        // -- TEMPORARY -------------------------------------------------------
+        vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "tilepjt.vs")
+                .loadFromResource(TILE_PJT_SHADER_VS)
+                .compile(gl);
+
+        fs = Shader.create(gl, GL3.GL_FRAGMENT_SHADER, "tilepjt.fs")
+                .loadFromResource(TILE_PJT_SHADER_FS)
+                .compile(gl);
+
+        tilepjt = ShaderProgram.create(gl, context, "tilepjt")
+                .attach(gl, vs, fs)
+                .link(gl)
+                .detach(gl, vs, fs);
+
+        vs.dispose(gl);
+        fs.dispose(gl);
+        // --------------------------------------------------------------------
     }
 
     @Override
@@ -114,6 +141,10 @@ public class PreRenderedTileProvider implements TileProvider {
 
         tilecopy.dispose(gl);   tilecopy = null;
         quad.dispose(gl);       quad = null;
+
+        // -- TEMPORARY -------------------------------------------------------
+        tilepjt.dispose(gl);    tilepjt = null;
+        // --------------------------------------------------------------------
     }
 
 
@@ -126,7 +157,7 @@ public class PreRenderedTileProvider implements TileProvider {
                 if (Thread.interrupted())
                     throw new InterruptedException();
 
-                TileLayer layer = provider.require(context, name, id);
+                TileLayer layer = provider.require(context, name, id, TILE_TARGET);
                 if (layer != null)
                     layers.add(layer);
             }
@@ -261,13 +292,21 @@ public class PreRenderedTileProvider implements TileProvider {
 
 
             // render tile to FBO
-            float[] clear = { 0.f, 0.f, 0.f, .75f };                 // TODO: set alpha to 0
+            float[] clear = { 0.f, 0.f, 0.f, 0.f };
             gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
             gl.glClearBufferfv(GL3.GL_COLOR, 0, clear, 0);
+            gl.glViewport(0, 0, width, height);                         // TODO: context state
 
-            // TODO: test setup
+            context.BlendMode.enable(gl);
+            context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
+            context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
+
+            // TEMPORARY: TEST SETUP
+            tilepjt.bind(gl);
+            quad.draw(gl);
+            tilepjt.unbind(gl);
+
             // TODO: pre-render
-
             gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
         }
 

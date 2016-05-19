@@ -322,9 +322,10 @@ public class TileManager {
         GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
         context.DepthTest.disable(gl);
 
+        // TODO: move blend stuff to provider
         context.BlendMode.enable(gl);
         context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
-        context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA);
+        context.BlendMode.setFactors(gl, GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
 
         for (Tile tile : prebuilt)
             tile.display(context);
