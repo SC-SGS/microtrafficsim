@@ -166,7 +166,7 @@ class LineShaderTestBench implements Renderer {
 				KeyEvent.VK_PAGE_UP,
 				e -> {
 					lineblur = lineblur + 1;
-					context.addTask(c -> uLineBlur.set(lineblur));
+					context.addTask(c -> { uLineBlur.set(lineblur); return null; });
 				});
 
 		controller.addKeyCommand(
@@ -174,7 +174,7 @@ class LineShaderTestBench implements Renderer {
 				KeyEvent.VK_PAGE_DOWN,
 				e -> {
 					lineblur = Math.max(lineblur - 1, 0);
-					context.addTask(c -> uLineBlur.set(lineblur));
+					context.addTask(c -> { uLineBlur.set(lineblur); return null; });
 				});
 
 		/* screenshot */
@@ -187,7 +187,7 @@ class LineShaderTestBench implements Renderer {
 		controller.addKeyCommand(
 				KeyEvent.EVENT_KEY_RELEASED,
 				KeyEvent.VK_F5,
-				e -> context.addTask(c -> reloadShaders(c.getDrawable().getGL().getGL3())));
+				e -> context.addTask(c -> { reloadShaders(c.getDrawable().getGL().getGL3()); return null; }));
 	}
 
 
@@ -365,6 +365,7 @@ class LineShaderTestBench implements Renderer {
 						if (file.exists())
 							file.delete();
 					}
+					return null;
 				});
 			}
 		}).start();

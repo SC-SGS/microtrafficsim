@@ -80,6 +80,7 @@ public class Utils {
 						if (file.exists())
 							file.delete();
 					}
+					return null;
 				});
 			}
 		}).start();
