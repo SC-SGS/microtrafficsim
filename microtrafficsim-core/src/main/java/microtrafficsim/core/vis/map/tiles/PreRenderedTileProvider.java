@@ -374,7 +374,7 @@ public class PreRenderedTileProvider implements TileProvider {
                 context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
 
                 uView.set(Mat4f.identity());
-                uProjection.set(Mat4f.identity());
+                uProjection.set(Mat4f.identity().scale(1.f, 1.f, 0.1f));    // allow layer values for -10 to 10
                 uViewScale.set((float) Math.pow(2.0, id.z));
                 uViewport.set(width, height, 1.0f / width, 1.0f / height);
 
