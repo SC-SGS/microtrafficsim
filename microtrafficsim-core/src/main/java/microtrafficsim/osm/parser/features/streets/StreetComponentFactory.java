@@ -13,6 +13,8 @@ import microtrafficsim.osm.parser.ecs.Entity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
 import microtrafficsim.osm.primitives.Way;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +26,7 @@ import java.util.Set;
 * @author Maximilian Luz
 */
 public class StreetComponentFactory implements ComponentFactory<StreetComponent, Way> {
+	private static Logger logger = LoggerFactory.getLogger(StreetComponentFactory.class);
 
 	/**
 	 * Creates a component from the specified source-element and its set of
@@ -54,7 +57,14 @@ public class StreetComponentFactory implements ComponentFactory<StreetComponent,
 	}
 
 	private static float parseLayer(Map<String, String> tags) {
-		Float layer = tags.get("layer") != null ? Float.parseFloat(tags.get("layer")) : null;
+		Float layer = null;
+		if (tags.get("layer") != null) {
+			try {
+				layer = Float.parseFloat(tags.get("layer"));
+			} catch (NumberFormatException e) {
+				logger.warn("on 'layer' tag: '" + tags.get("layer") + "' is not a valid number!");
+			}
+		}
 
 		if (layer == null) {
 			if (tags.get("bridge") != null
