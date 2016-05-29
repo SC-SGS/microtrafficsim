@@ -8,7 +8,6 @@ import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.view.OrthographicView;
-import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.exceptions.ThisShouldNeverHappenException;
 
@@ -186,10 +185,10 @@ public class TileManager {
         Iterator<Map.Entry<TileId, Future<Tile>>> loading = this.loading.entrySet().iterator();
         while (loading.hasNext()) {
             Map.Entry<TileId, Future<Tile>> entry = loading.next();
-            TileRect rect = scheme.getTiles(entry.getKey(), view.zoom);
+            TileId id = entry.getKey();
             Future<Tile> task = entry.getValue();
 
-            if (rect.xmax < view.xmin || rect.xmin > view.xmax || rect.ymax < view.ymin || rect.ymin > view.ymax) {
+            if (id.z != view.zoom || id.x < view.xmin || id.x > view.xmax || id.y < view.ymin || id.y > view.ymax) {
                 task.cancel(true);
 
                 if (!task.isCancelled()) {      // if tile is already loaded, release it
