@@ -49,9 +49,12 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
         // expand to handle thick lines
         TileRect expanded = new TileRect(tile.x - 1, tile.y - 1, tile.x + 1, tile.x - 1, tile.z);
+
+        // get feature, return null if not available
         TileFeature<Street> feature = src.getFeatureProvider().require(src.getFeatureName(), expanded);
         if (feature == null) return null;
 
+        // get tile and source properties
         TilingScheme scheme = src.getTilingScheme();
         Projection projection = scheme.getProjection();
         Rect2d bounds = scheme.getBounds(tile);

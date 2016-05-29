@@ -44,6 +44,10 @@ public class MercatorProjection implements Projection {
 		
 		return new Coordinate(lat, lon);
 	}
+
+	public double getScale() {
+		return scale;
+	}
 	
 	
 	@Override
