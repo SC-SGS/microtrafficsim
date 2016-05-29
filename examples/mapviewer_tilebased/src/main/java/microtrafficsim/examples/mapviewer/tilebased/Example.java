@@ -70,7 +70,7 @@ public class Example {
 		
 		vis.getRenderContext().setUncaughtExceptionHandler(new Utils.DebugExceptionHandler());
 
-		// vis.putOverlay(0, new TileGridOverlay(new QuadTreeTilingScheme(provider.getProjection(), 0, 19)));
+		// vis.putOverlay(0, new TileGridOverlay(provider.getTilingScheme()));
 
 		return vis;
 	}

@@ -190,14 +190,12 @@ public class QuadTreeTilingScheme implements TilingScheme {
         Rect2d max = projection.getProjectedMaximumBounds();
         int n = 1 << tiles.zoom;
 
-        Rect2d r =  new Rect2d(
+        return new Rect2d(
                 max.xmin + (tiles.xmin / (double) n) * (max.xmax - max.xmin),
                 max.ymin + (1 - (tiles.ymax + 1) / (double) n) * (max.ymax - max.ymin),
                 max.xmin + ((tiles.xmax + 1) / (double) n) * (max.xmax - max.xmin),
                 max.ymin + (1 - tiles.ymin / (double) n) * (max.ymax - max.ymin)
         );
-
-        return r;
     }
 
 

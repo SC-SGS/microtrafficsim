@@ -362,6 +362,7 @@ public class TileManager {
         @Override
         public Tile call() throws Exception {
             Tile tile = provider.require(context, id);
+            if (tile == null) return null;
 
             // set tile transformation matrix
             Rect2d bounds = provider.getTilingScheme().getBounds(id);

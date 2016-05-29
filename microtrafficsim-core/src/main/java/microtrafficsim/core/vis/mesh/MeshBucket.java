@@ -8,7 +8,7 @@ import microtrafficsim.math.Vec3f;
 
 
 public interface MeshBucket {
-    Vec3f getPosition();
+    float getZIndex();
 
     void display(RenderContext context, ShaderProgram shader);
     void display(RenderContext context, VertexArrayObject vao);

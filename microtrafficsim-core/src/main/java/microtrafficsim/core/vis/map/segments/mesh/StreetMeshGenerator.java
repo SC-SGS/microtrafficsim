@@ -11,7 +11,6 @@ import microtrafficsim.core.vis.mesh.Mesh;
 import microtrafficsim.core.vis.mesh.features.StreetMesh;
 import microtrafficsim.core.vis.mesh.style.Style;
 import microtrafficsim.math.Vec2d;
-import microtrafficsim.math.Vec3f;
 import microtrafficsim.utils.collections.HashMultiMap;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
@@ -89,7 +88,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 			float layer = vertices.get(indexbucket.get(0)).layer;
 			int count = indexbucket.size();
 
-			buckets.add(mesh.new Bucket(new Vec3f(0, 0, layer), offset, count));
+			buckets.add(mesh.new Bucket(layer, offset, count));
 			offset += count;
 		}
 

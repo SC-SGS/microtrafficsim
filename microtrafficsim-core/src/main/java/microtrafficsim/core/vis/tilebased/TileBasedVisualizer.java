@@ -45,7 +45,6 @@ public class TileBasedVisualizer implements Visualizer {
     private TreeMap<Integer, Overlay> overlays;
 
     // global uniforms
-    private UniformMat4f uTile;
     private UniformMat4f uView;
     private UniformMat4f uProjection;
 
@@ -74,9 +73,10 @@ public class TileBasedVisualizer implements Visualizer {
         VertexAttributeManager attributes = context.getVertexAttribManager();
 
         // initialize global uniform variables
-        uTile = (UniformMat4f) uniforms.putGlobalUniform("u_tile", DataTypes.FLOAT_MAT4);
         uView = (UniformMat4f) uniforms.putGlobalUniform("u_view", DataTypes.FLOAT_MAT4);
         uProjection = (UniformMat4f) uniforms.putGlobalUniform("u_projection", DataTypes.FLOAT_MAT4);
+        uniforms.putGlobalUniform("u_viewscale", DataTypes.FLOAT);
+        uniforms.putGlobalUniform("u_viewport", DataTypes.FLOAT_VEC4);
 
         // initialize default attribute bindings
         attributes.putDefaultAttributeBinding("a_position", VertexAttributes.POSITION3);

@@ -7,6 +7,7 @@ import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayer;
+import microtrafficsim.core.vis.map.tiles.layers.TileLayerBucket;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.opengl.BufferStorage;
 import microtrafficsim.core.vis.opengl.DataTypes;
@@ -15,15 +16,19 @@ import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
+import microtrafficsim.core.vis.opengl.shader.uniforms.Uniform1f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformMat4f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
+import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
+import microtrafficsim.math.Vec4f;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -40,12 +45,19 @@ public class PreRenderedTileProvider implements TileProvider {
 
     private static final int TEX_UNIT_TILE = 0;
 
+    private static final BucketComparator CMP_BUCKET = new BucketComparator();
+
     private TileLayerProvider provider;
     private HashSet<TileChangeListener> tileListener;
 
     private ShaderProgram tilecopy;
     private UniformMat4f uTileCopyTransform;
     private UniformSampler2D uTileSampler;
+
+    private UniformMat4f uProjection;
+    private UniformMat4f uView;
+    private Uniform1f uViewScale;
+    private UniformVec4f uViewport;
 
     private TileQuad quad;
 
@@ -109,6 +121,10 @@ public class PreRenderedTileProvider implements TileProvider {
 
         uTileCopyTransform = (UniformMat4f) tilecopy.getUniform("u_tilecopy");
         uTileSampler = (UniformSampler2D) tilecopy.getUniform("u_tile_sampler");
+        uProjection = (UniformMat4f) context.getUniformManager().getGlobalUniform("u_projection");
+        uView = (UniformMat4f) context.getUniformManager().getGlobalUniform("u_view");
+        uViewScale = (Uniform1f) context.getUniformManager().getGlobalUniform("u_viewscale");
+        uViewport = (UniformVec4f) context.getUniformManager().getGlobalUniform("u_viewport");
 
         uTileSampler.set(TEX_UNIT_TILE);
 
@@ -150,26 +166,35 @@ public class PreRenderedTileProvider implements TileProvider {
 
     @Override
     public Tile require(RenderContext context, TileId id) throws InterruptedException, ExecutionException {
-        ArrayList<TileLayer> layers = new ArrayList<>();
+        ArrayList<TileLayerBucket> buckets = new ArrayList<>();
 
         try {
+            ArrayList<TileLayer> layers = new ArrayList<>();
+
             for (String name : provider.getAvailableLayers()) {
                 if (Thread.interrupted())
                     throw new InterruptedException();
 
                 TileLayer layer = provider.require(context, name, id, TILE_TARGET);
-                if (layer != null)
+                if (layer != null) {
                     layers.add(layer);
+                    buckets.addAll(layer.getBuckets());
+                }
             }
 
-            if (layers.size() == 0)
+            if (buckets.size() == 0) {
+                for (TileLayer layer : layers)
+                    layer.dispose(context);
                 return null;
+            }
+
+            buckets.sort(CMP_BUCKET);
 
             /* Note:
              *  If tile.initialize(c) is the last method that could throw an exception,
              *  so there is no need to dispose() the tile itself.
              */
-            PreRenderedTile tile = new PreRenderedTile(id, layers);
+            PreRenderedTile tile = new PreRenderedTile(id, buckets);
             Future<Void> task = context.addTask(c -> {
                 tile.initialize(c);
                 return null;
@@ -179,6 +204,10 @@ public class PreRenderedTileProvider implements TileProvider {
             return tile;
 
         } catch (Exception e) {         // make sure we clean up on interrupts and exceptions
+            HashSet<TileLayer> layers = new HashSet<>();
+            for (TileLayerBucket bucket : buckets)
+                layers.add(bucket.layer);
+
             for (TileLayer layer : layers)
                 provider.release(context, layer);
 
@@ -212,7 +241,7 @@ public class PreRenderedTileProvider implements TileProvider {
     private class PreRenderedTile implements Tile {
 
         private TileId id;
-        private ArrayList<TileLayer> layers;
+        private ArrayList<TileLayerBucket> buckets;
 
         private Mat4f transform;
 
@@ -220,9 +249,9 @@ public class PreRenderedTileProvider implements TileProvider {
         private int fbo;
 
 
-        public PreRenderedTile(TileId id, ArrayList<TileLayer> layers) {
+        public PreRenderedTile(TileId id, ArrayList<TileLayerBucket> buckets) {
             this.id = id;
-            this.layers = layers;
+            this.buckets = buckets;
             this.transform = Mat4f.identity();
             this.texture = -1;
             this.fbo = -1;
@@ -261,14 +290,25 @@ public class PreRenderedTileProvider implements TileProvider {
         public void initialize(RenderContext context) {
             GL3 gl = context.getDrawable().getGL().getGL3();
 
+            // -- initialize layers --
+            HashSet<TileLayer> layers = new HashSet<>();
+            for (TileLayerBucket bucket : buckets)
+                if (bucket.layer.getLayer().isEnabled())
+                    layers.add(bucket.layer);
+
+            for (TileLayer layer : layers)
+                layer.initialize(context);
+
+
+            // -- create render buffers --
             int[] obj = { -1, -1 };
 
             // create texture
             gl.glGenTextures(1, obj, 0);
             texture = obj[0];
 
-            int width = 512;                                        // TODO: get width
-            int height = 512;                                       // TODO: get height
+            int width = 512;                                            // TODO: get width
+            int height = 512;                                           // TODO: get height
 
             gl.glBindTexture(GL3.GL_TEXTURE_2D, texture);
             gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, width, height, 0, GL3.GL_RGBA, GL3.GL_BYTE, null);
@@ -290,6 +330,13 @@ public class PreRenderedTileProvider implements TileProvider {
             if (status != GL3.GL_FRAMEBUFFER_COMPLETE)
                 throw new RuntimeException("Failed to create Framebuffer Object (status: 0x" + Integer.toHexString(status));
 
+            // -- render tile --
+
+            // save old view parameter
+            Mat4f oldView = new Mat4f(uView.get());
+            Mat4f oldProjection = new Mat4f(uProjection.get());
+            Vec4f oldViewport = new Vec4f(uViewport.get());
+            float oldViewScale = uViewScale.get();
 
             // render tile to FBO
             float[] clear = { 0.f, 0.f, 0.f, 0.f };
@@ -301,13 +348,28 @@ public class PreRenderedTileProvider implements TileProvider {
             context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
             context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
 
+            uView.set(Mat4f.identity());
+            uProjection.set(Mat4f.identity());
+            uViewScale.set((float) Math.pow(2.0, id.z));
+            uViewport.set(width, height, 1.0f / width, 1.0f / height);
+
             // TEMPORARY: TEST SETUP
-            tilepjt.bind(gl);
-            quad.draw(gl);
-            tilepjt.unbind(gl);
+            // tilepjt.bind(gl);
+            // quad.draw(gl);
+            // tilepjt.unbind(gl);
 
             // TODO: pre-render
+            for (TileLayerBucket bucket : buckets)
+                if (bucket.layer.getLayer().isEnabled())
+                    bucket.display(context);
+
             gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+
+            // reset old view parameter
+            uView.set(oldView);
+            uProjection.set(oldProjection);
+            uViewport.set(oldViewport);
+            uViewScale.set(oldViewScale);
         }
 
         public void dispose(RenderContext context) {
@@ -327,6 +389,10 @@ public class PreRenderedTileProvider implements TileProvider {
                 texture = -1;
             }
 
+            HashSet<TileLayer> layers = new HashSet<>();
+            for (TileLayerBucket bucket : buckets)
+                layers.add(bucket.layer);
+
             for (TileLayer layer : layers) {
                 layer.dispose(context);
                 provider.release(context, layer);
@@ -337,10 +403,10 @@ public class PreRenderedTileProvider implements TileProvider {
     private static class TileQuad {
 
         float[] vertices = {
-                -1.f, -1.f, 0.f,    0.f, 1.f,
-                 1.f, -1.f, 0.f,    1.f, 1.f,
-                -1.f,  1.f, 0.f,    0.f, 0.f,
-                 1.f,  1.f, 0.f,    1.f, 0.f
+                -1.f, -1.f, 0.f,    0.f, 0.f,
+                 1.f, -1.f, 0.f,    1.f, 0.f,
+                -1.f,  1.f, 0.f,    0.f, 1.f,
+                 1.f,  1.f, 0.f,    1.f, 1.f
         };
 
         private VertexAttributePointer ptrPosition;
@@ -381,6 +447,24 @@ public class PreRenderedTileProvider implements TileProvider {
             vao.bind(gl);
             gl.glDrawArrays(GL3.GL_TRIANGLE_STRIP, 0, 4);
             vao.unbind(gl);
+        }
+    }
+
+    private static class BucketComparator implements Comparator<TileLayerBucket> {
+
+        @Override
+        public int compare(TileLayerBucket a, TileLayerBucket b) {
+            if (a.zIndex > b.zIndex)
+                return 1;
+            else if (a.zIndex < b.zIndex)
+                return -1;
+
+            if (a.layer.getLayer().getIndex() > b.layer.getLayer().getIndex())
+                return 1;
+            else if (a.layer.getLayer().getIndex() < b.layer.getLayer().getIndex())
+                return -1;
+            else
+                return 0;
         }
     }
 }

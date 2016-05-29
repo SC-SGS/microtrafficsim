@@ -37,11 +37,13 @@ public class FeatureTileLayer extends TileLayer {
 
     @Override
     public void dispose(RenderContext context) {
-        if (vao != null)
+        if (vao != null) {      // if initialized
             vao.dispose(context.getDrawable().getGL().getGL2ES3());
+            style.dispose(context);
+        }
 
+        // dispose mesh always, it is provided in the constructor
         mesh.dispose(context);
-        style.dispose(context);
     }
 
     @Override
@@ -67,8 +69,8 @@ public class FeatureTileLayer extends TileLayer {
 
         private MeshBucket mesh;
 
-        public FeatureBucket(TileLayer layer, MeshBucket mesh) {
-            super(layer, mesh.getPosition().z);
+        FeatureBucket(TileLayer layer, MeshBucket mesh) {
+            super(layer, mesh.getZIndex());
             this.mesh = mesh;
         }
 

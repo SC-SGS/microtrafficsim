@@ -20,7 +20,6 @@ import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
 import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
-import microtrafficsim.math.Vec3f;
 
 
 public class StreetMesh implements Mesh {
@@ -207,19 +206,18 @@ public class StreetMesh implements Mesh {
 
 	public class Bucket implements MeshBucket {
 
-		private final Vec3f position;
+		private final float zIndex;
 		private final int offset;
 		private final int count;
 
-		public Bucket(Vec3f position, int offset, int count) {
-			this.position = position;
+		public Bucket(float zIndex, int offset, int count) {
+			this.zIndex = zIndex;
 			this.offset = offset;
 			this.count = count;
 		}
 
-		@Override
-		public Vec3f getPosition() {
-			return position;
+		public float getZIndex() {
+			return zIndex;
 		}
 
 		@Override

@@ -3,7 +3,6 @@ package microtrafficsim.examples.mapviewer.tilebased;
 import microtrafficsim.core.map.layers.TileLayerDefinition;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
-import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.Visualizer;
@@ -46,7 +45,7 @@ public class MapViewer {
 		}
 
         Projection projection = new MercatorProjection(256);    // tiles will be 512x512 pixel
-        TilingScheme scheme = new QuadTreeTilingScheme(projection, 0, 19);
+        QuadTreeTilingScheme scheme = new QuadTreeTilingScheme(projection, 0, 19);
 		show(projection, scheme, file);
 	}
 	
@@ -61,7 +60,7 @@ public class MapViewer {
 	}
 	
 	
-	private static void show(Projection projection, TilingScheme scheme, File file) throws Exception {
+	private static void show(Projection projection, QuadTreeTilingScheme scheme, File file) throws Exception {
 		
 		/* set up visualization style and sources */
 		Set<TileLayerDefinition> layers = Example.getLayerDefinitions();
@@ -73,7 +72,7 @@ public class MapViewer {
 		
 		/* parse the OSM file asynchronously and update the sources */
 		OSMParser parser = Example.getParser();
-		asyncParse(parser, file, layers, visualization.getVisualizer());
+		asyncParse(parser, file, layers, visualization.getVisualizer(), scheme);
 		
 		/* create and initialize the VisualizationPanel and JFrame */
 		VisualizationPanel vpanel = Example.createVisualizationPanel(visualization);
@@ -104,13 +103,13 @@ public class MapViewer {
 			visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
 	}
 
-	private static void asyncParse(OSMParser parser, File file, Set<TileLayerDefinition> layers, Visualizer vis) {
+	private static void asyncParse(OSMParser parser, File file, Set<TileLayerDefinition> layers, Visualizer vis,
+								   QuadTreeTilingScheme scheme) {
 		new Thread(() -> {
 			try {
 				OSMParser.Result result = parser.parse(file);
 
 				logger.debug("begin tiling");
-				QuadTreeTilingScheme scheme = new QuadTreeTilingScheme(new MercatorProjection(), 0, 19);
 				QuadTreeTiledMapSegment tiled = new QuadTreeTiledMapSegment.Generator().generate(result.segment, scheme);
 				logger.debug("finished tiling");
 

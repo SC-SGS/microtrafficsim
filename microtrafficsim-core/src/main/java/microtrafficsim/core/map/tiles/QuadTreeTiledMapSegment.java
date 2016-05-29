@@ -187,12 +187,14 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
     @Override
     public <T extends FeaturePrimitive> TileFeature<T> require(String name, TileRect bounds) {
         Feature<T> feature = getFeature(name, scheme.getLeafTiles(bounds));
+        if (feature == null) return null;
         return new TileFeature<>(feature.getName(), feature.getType(), bounds, feature.getData());
     }
 
     @Override
     public <T extends FeaturePrimitive> TileFeature<T> require(String name, TileId tile) {
         Feature<T> feature = getFeature(name, scheme.getLeafTiles(tile));
+        if (feature == null) return null;
         return new TileFeature<>(feature.getName(), feature.getType(), new TileRect(tile), feature.getData());
     }
 

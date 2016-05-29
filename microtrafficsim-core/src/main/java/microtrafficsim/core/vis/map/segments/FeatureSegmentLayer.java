@@ -62,7 +62,7 @@ public class FeatureSegmentLayer extends SegmentLayer {
 		private MeshBucket mesh;
 
 		public FeatureBucket(MeshBucket mesh) {
-			super(FeatureSegmentLayer.this, mesh.getPosition().z);
+			super(FeatureSegmentLayer.this, mesh.getZIndex());
 			this.mesh = mesh;
 		}
 
