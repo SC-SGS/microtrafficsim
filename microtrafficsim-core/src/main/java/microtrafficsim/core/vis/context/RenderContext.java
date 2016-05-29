@@ -171,8 +171,10 @@ public class RenderContext implements GLEventListener {
 		this.drawable = drawable;
 
         // execute tasks on work queue
-        while (!tasks.isEmpty())
-            tasks.poll().run(this);
+        while (!tasks.isEmpty()) {
+			tasks.poll().run(this);
+			Thread.interrupted();		// interrupts are task-local, clear if necessary
+		}
 
         // display renderer
 		try {

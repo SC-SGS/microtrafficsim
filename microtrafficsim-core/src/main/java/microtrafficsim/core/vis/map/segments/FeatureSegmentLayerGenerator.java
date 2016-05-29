@@ -42,7 +42,7 @@ public class FeatureSegmentLayerGenerator implements SegmentLayerGenerator {
 	
 
 	@Override
-	public FeatureSegmentLayer generate(RenderContext context, LayerDefinition def, Projection projection) {
+	public FeatureSegmentLayer generate(RenderContext context, LayerDefinition def, Projection projection) throws InterruptedException {
         if (!(def.getSource() instanceof FeatureSegmentLayerSource)) return null;
 
 		FeatureSegmentLayerSource src = (FeatureSegmentLayerSource) def.getSource();

@@ -31,7 +31,7 @@ public interface TileLayerProvider {
     Set<String> getLayers();
     Set<String> getAvailableLayers();
 
-    TileLayer require(RenderContext context, String layer, TileId tile, Rect2d target);
+    TileLayer require(RenderContext context, String layer, TileId tile, Rect2d target) throws InterruptedException;
     void release(RenderContext context, TileLayer layer);
 
     boolean addLayerChangeListener(LayerChangeListener listener);

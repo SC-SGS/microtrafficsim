@@ -37,7 +37,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 	}
 	
 	@Override
-	public Mesh generate(RenderContext context, FeatureSegmentLayerSource src, Projection projection) {
+	public Mesh generate(RenderContext context, FeatureSegmentLayerSource src, Projection projection) throws InterruptedException {
 		boolean adjacency = getPropAdjacency(src.getStyle());
 		boolean joinsWhenPossible = getPropJoinsWhenPossible(src.getStyle());
 
@@ -273,7 +273,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 		public final Coordinate coordinate;
 		public final float layer;
 
-		public Vertex(Coordinate coordinate, float layer) {
+		Vertex(Coordinate coordinate, float layer) {
 			this.coordinate = coordinate;
 			this.layer = layer;
 		}

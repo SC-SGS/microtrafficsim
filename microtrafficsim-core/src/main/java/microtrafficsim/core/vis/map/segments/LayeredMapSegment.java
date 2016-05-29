@@ -120,7 +120,7 @@ public class LayeredMapSegment implements SegmentLayerProvider {
 
 	
 	@Override
-	public SegmentLayer require(RenderContext context, String layer) {
+	public SegmentLayer require(RenderContext context, String layer) throws InterruptedException {
 		LayerDefinition def = layers.get(layer);
 		if (def == null) return null;
 		

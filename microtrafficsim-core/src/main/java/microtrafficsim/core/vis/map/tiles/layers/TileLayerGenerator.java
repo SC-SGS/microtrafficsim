@@ -6,5 +6,5 @@ import microtrafficsim.math.Rect2d;
 
 
 public interface TileLayerGenerator {
-    TileLayer generate(RenderContext context, Layer layer, TileId tile, Rect2d target);
+    TileLayer generate(RenderContext context, Layer layer, TileId tile, Rect2d target) throws InterruptedException;
 }

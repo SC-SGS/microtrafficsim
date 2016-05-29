@@ -25,7 +25,7 @@ public interface SegmentLayerProvider {
 	Set<String> getLayers();
 	Set<String> getAvailableLayers();
 
-	SegmentLayer require(RenderContext context, String layer);
+	SegmentLayer require(RenderContext context, String layer) throws InterruptedException;
 	void release(SegmentLayer layer);
 
 	boolean addLayerChangeListener(LayerChangeListener listener);

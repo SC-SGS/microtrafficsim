@@ -32,7 +32,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
         }
 
 
-        public QuadTreeTiledMapSegment generate(SegmentFeatureProvider segment, QuadTreeTilingScheme scheme) {
+        public QuadTreeTiledMapSegment generate(SegmentFeatureProvider segment, QuadTreeTilingScheme scheme) throws InterruptedException {
             Rect2d bounds = scheme.getProjection().project(segment.getBounds());
             TileRect leafs = scheme.getTiles(bounds, scheme.getMaximumZoomLevel());
 
@@ -165,7 +165,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
 
 
     @Override
-    public <T extends FeaturePrimitive> Feature<T> require(String name) {
+    public <T extends FeaturePrimitive> Feature<T> require(String name) throws InterruptedException {
         return getFeature(name, leafs);
     }
 
@@ -174,7 +174,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
 
 
     @Override
-    public Map<String, Feature<?>> getFeatures() {
+    public Map<String, Feature<?>> getFeatures() throws InterruptedException {
         Map<String, Feature<?>> features = new HashMap<>();
 
         for (String str : featureset.keySet())
@@ -185,14 +185,14 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
 
 
     @Override
-    public <T extends FeaturePrimitive> TileFeature<T> require(String name, TileRect bounds) {
+    public <T extends FeaturePrimitive> TileFeature<T> require(String name, TileRect bounds) throws InterruptedException {
         Feature<T> feature = getFeature(name, scheme.getLeafTiles(bounds));
         if (feature == null) return null;
         return new TileFeature<>(feature.getName(), feature.getType(), bounds, feature.getData());
     }
 
     @Override
-    public <T extends FeaturePrimitive> TileFeature<T> require(String name, TileId tile) {
+    public <T extends FeaturePrimitive> TileFeature<T> require(String name, TileId tile) throws InterruptedException {
         Feature<T> feature = getFeature(name, scheme.getLeafTiles(tile));
         if (feature == null) return null;
         return new TileFeature<>(feature.getName(), feature.getType(), new TileRect(tile), feature.getData());
@@ -207,7 +207,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
 
 
     @SuppressWarnings("unchecked")
-    private <T extends FeaturePrimitive> Feature<T> getFeature(String name, TileRect leafs) {
+    private <T extends FeaturePrimitive> Feature<T> getFeature(String name, TileRect leafs) throws InterruptedException {
         TileGroup<T> tiles = (TileGroup<T>) featureset.get(name);
         if (tiles == null) return null;
 
@@ -219,9 +219,14 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
         int yl = Math.max(leafs.ymin - this.leafs.ymin, 0);
         int yr = Math.min(leafs.ymax - this.leafs.ymin, this.leafs.ymax - this.leafs.ymin);
 
-        for (int x = xl; x <= xr; x++)
-            for (int y = yl; y <= yr; y++)
+        for (int x = xl; x <= xr; x++) {
+            for (int y = yl; y <= yr; y++) {
+                if (Thread.interrupted())
+                    throw new InterruptedException();
+
                 data.addAll(tiles.data.get(x, y));
+            }
+        }
 
         return new Feature<>(name, tiles.type, data.toArray((T[]) Array.newInstance(tiles.type, data.size())));
     }

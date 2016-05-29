@@ -8,6 +8,7 @@ import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.view.OrthographicView;
+import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.exceptions.ThisShouldNeverHappenException;
 
@@ -104,7 +105,7 @@ public class TileManager {
 
         // (re-)load tiles based on view and change-list
         rebuild |= asyncLoadTiles(context, common);
-        rebuild |= releaseTiles(context, view);
+        rebuild |= releaseTiles(context, common);
 
         // fetch loaded tiles, release obsolete
         rebuild |= addLoadedTiles();

@@ -24,8 +24,8 @@ public interface TileFeatureProvider {
 
     Class<? extends FeaturePrimitive> getFeatureType(String name);
 
-    <T extends FeaturePrimitive> TileFeature<T> require(String name, TileId tile);
-    <T extends FeaturePrimitive> TileFeature<T> require(String name, TileRect bounds);
+    <T extends FeaturePrimitive> TileFeature<T> require(String name, TileId tile) throws InterruptedException;
+    <T extends FeaturePrimitive> TileFeature<T> require(String name, TileRect bounds) throws InterruptedException;
     void release(TileFeature<?> feature);
 
     Set<String> getAvailableFeatures();

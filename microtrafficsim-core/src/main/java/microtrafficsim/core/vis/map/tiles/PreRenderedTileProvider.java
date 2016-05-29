@@ -30,11 +30,14 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 
 public class PreRenderedTileProvider implements TileProvider {
+
+    private static int count = 0;
     // TODO: implement basic caching, re-use textures and FBOs
     // TODO: depth attachment for FBOs?
 
@@ -199,7 +202,19 @@ public class PreRenderedTileProvider implements TileProvider {
                 tile.initialize(c);
                 return null;
             });
-            task.get();
+
+            boolean interrupted = false;
+            while (true) {
+                try {
+                    task.get();
+                    break;
+                } catch (InterruptedException iex) {    // try cancel task on first interrupt, ignore others
+                    if (!interrupted) {
+                        task.cancel(true);              // if cancel is successful, task.get() will throw a
+                        interrupted = true;             // CancellationException, otherwise the task will complete
+                    }
+                }
+            }
 
             return tile;
 
@@ -211,7 +226,10 @@ public class PreRenderedTileProvider implements TileProvider {
             for (TileLayer layer : layers)
                 provider.release(context, layer);
 
-            throw e;
+            if (e instanceof CancellationException)
+                throw new InterruptedException();
+            else
+                throw e;
         }
     }
 
@@ -287,50 +305,8 @@ public class PreRenderedTileProvider implements TileProvider {
         }
 
 
-        public void initialize(RenderContext context) {
+        public void initialize(RenderContext context) throws CancellationException {
             GL3 gl = context.getDrawable().getGL().getGL3();
-
-            // -- initialize layers --
-            HashSet<TileLayer> layers = new HashSet<>();
-            for (TileLayerBucket bucket : buckets)
-                if (bucket.layer.getLayer().isEnabled())
-                    layers.add(bucket.layer);
-
-            for (TileLayer layer : layers)
-                layer.initialize(context);
-
-
-            // -- create render buffers --
-            int[] obj = { -1, -1 };
-
-            // create texture
-            gl.glGenTextures(1, obj, 0);
-            texture = obj[0];
-
-            int width = 512;                                            // TODO: get width
-            int height = 512;                                           // TODO: get height
-
-            gl.glBindTexture(GL3.GL_TEXTURE_2D, texture);
-            gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, width, height, 0, GL3.GL_RGBA, GL3.GL_BYTE, null);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_R, GL3.GL_CLAMP_TO_EDGE);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
-            gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
-
-            // create FBO
-            gl.glGenFramebuffers(1, obj, 1);
-            fbo = obj[1];
-
-            gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
-            gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, texture, 0);
-            int status = gl.glCheckFramebufferStatus(GL3.GL_FRAMEBUFFER);
-            gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
-
-            if (status != GL3.GL_FRAMEBUFFER_COMPLETE)
-                throw new RuntimeException("Failed to create Framebuffer Object (status: 0x" + Integer.toHexString(status));
-
-            // -- render tile --
 
             // save old view parameter
             Mat4f oldView = new Mat4f(uView.get());
@@ -338,38 +314,90 @@ public class PreRenderedTileProvider implements TileProvider {
             Vec4f oldViewport = new Vec4f(uViewport.get());
             float oldViewScale = uViewScale.get();
 
-            // render tile to FBO
-            float[] clear = { 0.f, 0.f, 0.f, 0.f };
-            gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
-            gl.glClearBufferfv(GL3.GL_COLOR, 0, clear, 0);
-            gl.glViewport(0, 0, width, height);                         // TODO: context state
-
-            context.BlendMode.enable(gl);
-            context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
-            context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
-
-            uView.set(Mat4f.identity());
-            uProjection.set(Mat4f.identity());
-            uViewScale.set((float) Math.pow(2.0, id.z));
-            uViewport.set(width, height, 1.0f / width, 1.0f / height);
-
-            // TEMPORARY: TEST SETUP
-            // tilepjt.bind(gl);
-            // quad.draw(gl);
-            // tilepjt.unbind(gl);
-
-            // TODO: pre-render
+            HashSet<TileLayer> layers = new HashSet<>();
             for (TileLayerBucket bucket : buckets)
                 if (bucket.layer.getLayer().isEnabled())
-                    bucket.display(context);
+                    layers.add(bucket.layer);
 
-            gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+            try {
+                // -- initialize layers --
+                for (TileLayer layer : layers) {
+                    if (Thread.interrupted())
+                        throw new InterruptedException();
 
-            // reset old view parameter
-            uView.set(oldView);
-            uProjection.set(oldProjection);
-            uViewport.set(oldViewport);
-            uViewScale.set(oldViewScale);
+                    layer.initialize(context);
+                }
+
+                // -- create render buffers --
+                int[] obj = {-1, -1};
+
+                // create texture
+                gl.glGenTextures(1, obj, 0);
+                texture = obj[0];
+
+                int width = 512;                                            // TODO: get width
+                int height = 512;                                           // TODO: get height
+
+                gl.glBindTexture(GL3.GL_TEXTURE_2D, texture);
+                gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, width, height, 0, GL3.GL_RGBA, GL3.GL_BYTE, null);
+                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
+                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_R, GL3.GL_CLAMP_TO_EDGE);
+                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
+                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
+                gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+
+                // create FBO
+                gl.glGenFramebuffers(1, obj, 1);
+                fbo = obj[1];
+
+                count++;
+                System.err.println(count);
+
+                gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
+                gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, texture, 0);
+                int status = gl.glCheckFramebufferStatus(GL3.GL_FRAMEBUFFER);
+                gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+
+                if (status != GL3.GL_FRAMEBUFFER_COMPLETE)
+                    throw new RuntimeException("Failed to create Framebuffer Object (status: 0x" + Integer.toHexString(status));
+
+                // -- render tile --
+
+                // render tile to FBO
+                float[] clear = {0.f, 0.f, 0.f, 0.f};
+                gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
+                gl.glClearBufferfv(GL3.GL_COLOR, 0, clear, 0);
+                gl.glViewport(0, 0, width, height);                         // TODO: context state
+
+                context.BlendMode.enable(gl);
+                context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
+                context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
+
+                uView.set(Mat4f.identity());
+                uProjection.set(Mat4f.identity());
+                uViewScale.set((float) Math.pow(2.0, id.z));
+                uViewport.set(width, height, 1.0f / width, 1.0f / height);
+
+                for (TileLayerBucket bucket : buckets) {
+                    if (Thread.interrupted())
+                        throw new InterruptedException();
+
+                    if (bucket.layer.getLayer().isEnabled())
+                        bucket.display(context);
+                }
+
+            } catch (InterruptedException e) {
+                dispose(context);
+                throw new CancellationException();  // cancel the executing task
+            } finally {
+                gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+
+                // reset old view parameter
+                uView.set(oldView);
+                uProjection.set(oldProjection);
+                uViewport.set(oldViewport);
+                uViewScale.set(oldViewScale);
+            }
         }
 
         public void dispose(RenderContext context) {
@@ -383,6 +411,9 @@ public class PreRenderedTileProvider implements TileProvider {
 
                 gl.glDeleteFramebuffers(1, obj, 0);
                 fbo = -1;
+
+                count--;
+                System.err.println(count);
             }
             if (texture != -1) {
                 gl.glDeleteTextures(1, obj, 1);
@@ -397,16 +428,18 @@ public class PreRenderedTileProvider implements TileProvider {
                 layer.dispose(context);
                 provider.release(context, layer);
             }
+
+            buckets.clear();
         }
     }
 
     private static class TileQuad {
 
         float[] vertices = {
-                -1.f, -1.f, 0.f,    0.f, 0.f,
-                 1.f, -1.f, 0.f,    1.f, 0.f,
-                -1.f,  1.f, 0.f,    0.f, 1.f,
-                 1.f,  1.f, 0.f,    1.f, 1.f
+                -1.0f, -1.0f, 0.f,    0.f, 0.f,
+                 1.0f, -1.0f, 0.f,    1.f, 0.f,
+                -1.0f,  1.0f, 0.f,    0.f, 1.f,
+                 1.0f,  1.0f, 0.f,    1.f, 1.f
         };
 
         private VertexAttributePointer ptrPosition;

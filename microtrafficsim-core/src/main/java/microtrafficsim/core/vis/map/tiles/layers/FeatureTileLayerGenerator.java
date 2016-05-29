@@ -42,7 +42,7 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
 
 
     @Override
-    public FeatureTileLayer generate(RenderContext context, Layer layer, TileId tile, Rect2d target) {
+    public FeatureTileLayer generate(RenderContext context, Layer layer, TileId tile, Rect2d target) throws InterruptedException {
         if (!(layer.getSource() instanceof FeatureTileLayerSource)) return null;
 
         FeatureTileLayerSource src = (FeatureTileLayerSource) layer.getSource();
@@ -52,28 +52,27 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
         if (generator == null) return null;
 
         FeatureMeshGenerator.FeatureMeshKey key = generator.getKey(context, src, tile, target);
-        ManagedMesh mesh;
+        ManagedMesh mesh = null;
 
         synchronized (this) {
-            mesh = pool.get(key);
-			if (mesh != null)
-				mesh = mesh.require();
+            while (mesh == null) {
+                mesh = pool.get(key);
 
-            if (mesh == null) {
-                // if mesh is already being loaded, wait
-                if (loading.contains(key)) {
-                    try {
-                        while (loading.contains(key))
-                            this.wait();
-                    } catch (InterruptedException e) {
-                        return null;
-                    }
-
-                    mesh = pool.get(key);
+			    if (mesh != null) {
                     mesh = mesh.require();
-
                 } else {
-                    loading.add(key);
+                    // if mesh is already being loaded, wait
+                    if (loading.contains(key)) {
+                        try {
+                            while (loading.contains(key))
+                                this.wait();
+                        } catch (InterruptedException e) {
+                            return null;
+                        }
+                    } else {
+                        loading.add(key);
+                        break;
+                    }
                 }
             }
         }
@@ -83,7 +82,17 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
                     + tile.x + "/" + tile.y + "/" + tile.z
                     + "}, feature '" + src.getFeatureName() + "'");
 
-            Mesh m = generator.generate(context, src, tile, target);
+            Mesh m = null;
+            try {
+                m = generator.generate(context, src, tile, target);
+            }  catch (InterruptedException e) {
+                synchronized (this) {
+                    loading.remove(key);
+                    this.notifyAll();
+                    throw new InterruptedException();
+                }
+            }
+
             if (m == null) {
                 synchronized (this) {
                     loading.remove(key);

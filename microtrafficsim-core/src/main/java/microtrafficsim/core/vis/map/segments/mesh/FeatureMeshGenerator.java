@@ -10,5 +10,5 @@ public interface FeatureMeshGenerator {
 	interface FeatureMeshKey {}
 
 	FeatureMeshKey getKey(RenderContext context, FeatureSegmentLayerSource src, Projection projection);
-	Mesh generate(RenderContext context, FeatureSegmentLayerSource src, Projection projection);
+	Mesh generate(RenderContext context, FeatureSegmentLayerSource src, Projection projection) throws InterruptedException;
 }

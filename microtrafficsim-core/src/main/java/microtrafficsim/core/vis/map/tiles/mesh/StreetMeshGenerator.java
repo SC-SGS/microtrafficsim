@@ -5,6 +5,7 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.TileFeature;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.tiles.TileId;
+import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
@@ -42,11 +43,13 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
     }
 
     @Override
-    public Mesh generate(RenderContext context, FeatureTileLayerSource src, TileId tile, Rect2d target) {
+    public Mesh generate(RenderContext context, FeatureTileLayerSource src, TileId tile, Rect2d target) throws InterruptedException {
         boolean adjacency = getPropAdjacency(src.getStyle());
         boolean joinsWhenPossible = getPropJoinsWhenPossible(src.getStyle());
 
-        TileFeature<Street> feature = src.getFeatureProvider().require(src.getFeatureName(), tile);
+        // expand to handle thick lines
+        TileRect expanded = new TileRect(tile.x - 1, tile.y - 1, tile.x + 1, tile.x - 1, tile.z);
+        TileFeature<Street> feature = src.getFeatureProvider().require(src.getFeatureName(), expanded);
         if (feature == null) return null;
 
         TilingScheme scheme = src.getTilingScheme();
@@ -71,6 +74,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         // create vertex buffer
         FloatBuffer vb = FloatBuffer.allocate(vertices.size() * 3);
         for (Vertex v : vertices) {
+            if (Thread.interrupted()) throw new InterruptedException();
             Vec2d projected = project(projection, bounds, target, v.coordinate);
             vb.put((float) projected.x);
             vb.put((float) projected.y);
@@ -110,7 +114,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             TileFeature<? extends Street> feature,
             boolean joinsWhenPossible,
             ArrayList<Vertex> vertices,
-            ArrayList<ArrayList<Integer>> indices)
+            ArrayList<ArrayList<Integer>> indices) throws InterruptedException
     {
         int restartIndex = context.PrimitiveRestart.getIndex();
 
@@ -130,6 +134,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         HashMap<Float, ArrayList<Integer>> buckets = new HashMap<>();
 
         for (Street street : feature.getData()) {
+            if (Thread.interrupted())
+                throw new InterruptedException();
+
             ArrayList<Integer> bucket = buckets.get(street.layer);
             if (bucket == null) {
                 bucket = new ArrayList<>();
@@ -231,7 +238,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             RenderContext context,
             TileFeature<? extends Street> feature,
             ArrayList<Vertex> vertices,
-            ArrayList<ArrayList<Integer>> indices)
+            ArrayList<ArrayList<Integer>> indices) throws InterruptedException
     {
         int restartIndex = context.PrimitiveRestart.getIndex();
 
@@ -240,6 +247,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         HashMap<Float, ArrayList<Integer>> buckets = new HashMap<>();
 
         for (Street street : feature.getData()) {
+            if (Thread.interrupted())
+                throw new InterruptedException();
+
             ArrayList<Integer> bucket = buckets.get(street.layer);
             if (bucket == null) {
                 bucket = new ArrayList<>();

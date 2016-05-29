@@ -21,6 +21,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.Set;
 
 
@@ -115,7 +116,7 @@ public class MapViewer {
 
 				Utils.setFeatureProvider(layers, tiled);
 				vis.resetView();
-			} catch (XMLStreamException | IOException e) {
+			} catch (XMLStreamException | IOException | InterruptedException e) {
 				e.printStackTrace();
 				Runtime.getRuntime().halt(1);
 			}

@@ -16,12 +16,12 @@ public interface SegmentFeatureProvider {
 
 	Class<? extends FeaturePrimitive> getFeatureType(String name);
 
-	<T extends FeaturePrimitive> Feature<T> require(String name);
+	<T extends FeaturePrimitive> Feature<T> require(String name) throws InterruptedException;
 	void release(Feature<?> feature);
 	void releaseAll();
 
 	Set<String> getAvailableFeatures();
-	Map<String, Feature<?>> getFeatures();
+	Map<String, Feature<?>> getFeatures() throws InterruptedException;
 	boolean hasFeature(String name);
 
 	boolean addFeatureChangeListener(FeatureChangeListener listener);

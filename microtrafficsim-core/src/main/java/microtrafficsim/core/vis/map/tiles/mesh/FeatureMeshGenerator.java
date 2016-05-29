@@ -11,5 +11,5 @@ public interface FeatureMeshGenerator {
     interface FeatureMeshKey {}
 
     FeatureMeshKey getKey(RenderContext context, FeatureTileLayerSource source, TileId tile, Rect2d targer);
-    Mesh generate(RenderContext context, FeatureTileLayerSource source, TileId tile, Rect2d target);
+    Mesh generate(RenderContext context, FeatureTileLayerSource source, TileId tile, Rect2d target) throws InterruptedException;
 }

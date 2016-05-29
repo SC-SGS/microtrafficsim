@@ -44,7 +44,6 @@ package microtrafficsim.core.vis.context.tasks;
 
 import microtrafficsim.core.vis.context.RenderContext;
 
-import java.sql.Time;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
@@ -171,23 +170,39 @@ public class FutureRenderTask<V> implements Future<V> {
             return stateIsRanOrCancelled(getState()) && runner == null;
         }
 
+        /**
+         * Cancels this task. If the task is already running, the running thread may be
+         * interrupted with the {@code mayInterruptIfRunning} flag. If the thread is
+         * running and this flag is specified, it depends on the task if the execution
+         * finishes normal or is cancelled. In both cases, this method will return true,
+         * however if the task still finishes successfully the {@link #isCancelled()}
+         * will return false.
+         *
+         * @param mayInterruptIfRunning set to {@code true} if the running thread should
+         *                              be interrupted.
+         * @return {@code true} iff the task has not been executed or is currently executing.
+         */
         boolean cancel(boolean mayInterruptIfRunning) {
+            int state;
             while (true) {
-                int state = getState();
+                state = getState();
                 if (stateIsRanOrCancelled(state))
                     return false;
+                if (state == RUNNING)               // if running, try cancelling
+                    break;
                 if (compareAndSetState(state, CANCELLED))
                     break;
             }
 
             if (mayInterruptIfRunning) {
-                Thread r = runner;
-                if (r != null)
-                    r.interrupt();
+                if (runner != null)
+                    runner.interrupt();
             }
 
             releaseShared(0);
-            done();
+
+            if (state != RUNNING)
+                done();
 
             return true;
         }
@@ -219,10 +234,6 @@ public class FutureRenderTask<V> implements Future<V> {
                 int state = getState();
                 if (state == RAN)
                     return;
-                if (state == CANCELLED) {
-                    releaseShared(0);
-                    return;
-                }
                 if (compareAndSetState(state, RAN)) {
                     result = value;
                     releaseShared(0);
@@ -259,6 +270,10 @@ public class FutureRenderTask<V> implements Future<V> {
                 V result;
                 try {
                     result = task.execute(context);
+                } catch (CancellationException ex) {
+                    setState(CANCELLED);
+                    releaseShared(0);
+                    return;
                 } catch (Throwable ex) {
                     setException(ex);
                     return;

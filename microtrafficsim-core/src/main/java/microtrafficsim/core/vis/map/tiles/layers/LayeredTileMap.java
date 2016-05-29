@@ -143,7 +143,7 @@ public class LayeredTileMap implements TileLayerProvider {
 
 
     @Override
-    public TileLayer require(RenderContext context, String name, TileId tile, Rect2d target) {
+    public TileLayer require(RenderContext context, String name, TileId tile, Rect2d target) throws InterruptedException {
         Layer layer = layers.get(name);
         if (layer == null) return null;
 
