@@ -45,7 +45,7 @@ public class Example {
 	public static final int WINDOW_WIDTH = 1600;
 	public static final int WINDOW_HEIGHT = 900;
 	public static final int MSAA = 0;
-	public static final int NUM_SEGMENT_WORKERS = Math.min(Runtime.getRuntime().availableProcessors() - 2, 2);
+	public static final int NUM_SEGMENT_WORKERS = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
 
 	public static final float STREET_SCALE_NORMAL = (float) (1.0 / Math.pow(2, 19));
 	
