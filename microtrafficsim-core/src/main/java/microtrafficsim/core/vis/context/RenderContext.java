@@ -106,6 +106,7 @@ public class RenderContext implements GLEventListener {
         FutureRenderTask<V> future = new FutureRenderTask<>(task);
 
         // if the context is current on this thread, run the task instantly
+		GLAutoDrawable drawable = this.drawable;
         if (drawable != null && drawable.getContext().isCurrent())
             future.run(this);
         else
