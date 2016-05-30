@@ -4,7 +4,6 @@ import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.layers.TileLayerDefinition;
-import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.MapFeatureDefinition;
 import microtrafficsim.core.parser.MapFeatureGenerator;
@@ -46,7 +45,7 @@ public class Example {
 	public static final int WINDOW_WIDTH = 1600;
 	public static final int WINDOW_HEIGHT = 900;
 	public static final int MSAA = 0;
-	public static final int NUM_SEGMENT_WORKERS = Runtime.getRuntime().availableProcessors();
+	public static final int NUM_SEGMENT_WORKERS = Math.min(Runtime.getRuntime().availableProcessors() - 2, 1);
 
 	public static final float STREET_SCALE_NORMAL = (float) (1.0 / Math.pow(2, 19));
 	
@@ -70,7 +69,7 @@ public class Example {
 		
 		vis.getRenderContext().setUncaughtExceptionHandler(new Utils.DebugExceptionHandler());
 
-		// vis.putOverlay(0, new TileGridOverlay(provider.getTilingScheme()));
+		vis.putOverlay(0, new TileGridOverlay(provider.getTilingScheme()));
 
 		return vis;
 	}

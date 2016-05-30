@@ -5,6 +5,8 @@ import microtrafficsim.core.map.features.MultiLine;
 import microtrafficsim.core.map.features.Point;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.math.Rect2d;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -13,6 +15,7 @@ import java.util.*;
 public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeatureProvider {
 
     public static class Generator {
+        private static Logger logger = LoggerFactory.getLogger(Generator.class);
 
         private HashMap<Class<? extends FeaturePrimitive>, TileIntersector<? extends FeaturePrimitive>> intersectors;
 
@@ -33,6 +36,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
 
 
         public QuadTreeTiledMapSegment generate(SegmentFeatureProvider segment, QuadTreeTilingScheme scheme) throws InterruptedException {
+            logger.debug("begin tiling process");
             Rect2d bounds = scheme.getProjection().project(segment.getBounds());
             TileRect leafs = scheme.getTiles(bounds, scheme.getMaximumZoomLevel());
 
@@ -41,6 +45,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
             for (Map.Entry<String, Feature<?>> entry : segment.getFeatures().entrySet())
                 featureset.put(entry.getKey(), createTileGroup(scheme, bounds, entry.getValue()));
 
+            logger.debug("finished tiling process");
             return new QuadTreeTiledMapSegment(scheme, segment.getBounds(), leafs, featureset);
         }
 
@@ -110,6 +115,8 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
                 py = cy;
                 parentBounds = childBounds;
                 parentData = childData;
+
+                logger.debug("tiling: finished level " + (z+1) + " for feature '" + feature.getName() + "'");
             }
 
             return new TileGroup<>(feature.getName(), feature.getType(), parentData);

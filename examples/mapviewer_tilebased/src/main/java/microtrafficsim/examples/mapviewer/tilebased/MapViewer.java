@@ -109,10 +109,7 @@ public class MapViewer {
 		new Thread(() -> {
 			try {
 				OSMParser.Result result = parser.parse(file);
-
-				logger.debug("begin tiling");
 				QuadTreeTiledMapSegment tiled = new QuadTreeTiledMapSegment.Generator().generate(result.segment, scheme);
-				logger.debug("finished tiling");
 
 				Utils.setFeatureProvider(layers, tiled);
 				vis.resetView();

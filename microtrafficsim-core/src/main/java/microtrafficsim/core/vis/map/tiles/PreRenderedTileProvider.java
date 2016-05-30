@@ -364,7 +364,7 @@ public class PreRenderedTileProvider implements TileProvider {
                 // -- render tile --
 
                 // render tile to FBO
-                float[] clear = {0.f, 0.f, 0.f, 0.f};
+                float[] clear = {0.f, 0.f, 0.f, 1.f};
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
                 gl.glClearBufferfv(GL3.GL_COLOR, 0, clear, 0);
                 gl.glViewport(0, 0, width, height);                         // TODO: context state

@@ -100,6 +100,8 @@ public class TileManager {
         TileRect view = scheme.getTiles(observer.getViewportBounds(), zoom);
         TileRect provided = scheme.getTiles(provider.getProjectedBounds(), zoom);
 
+        // TODO: expand provided by one to include thick lines at border ?
+
         TileRect common = trIntersect(view, provided);
 
         // (re-)load tiles based on view and change-list

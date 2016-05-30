@@ -7,15 +7,20 @@ import microtrafficsim.core.vis.Renderer;
 import microtrafficsim.core.vis.context.state.*;
 import microtrafficsim.core.vis.context.tasks.FutureRenderTask;
 import microtrafficsim.core.vis.context.tasks.RenderTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 import static microtrafficsim.build.BuildSetup.DEBUG_VISUALIZATION;
 
 
 public class RenderContext implements GLEventListener {
+    private static Logger logger = LoggerFactory.getLogger(RenderContext.class);
+    private static long RTASK_EXECUTION_BUDGED_NS = 32_000_000;
 	
 	public interface UncaughtExceptionHandler {
 		void uncaughtException(RenderContext context, Throwable cause);
@@ -171,9 +176,18 @@ public class RenderContext implements GLEventListener {
 		this.drawable = drawable;
 
         // execute tasks on work queue
+        // TODO: print task execution time
+        long t = System.nanoTime();
         while (!tasks.isEmpty()) {
 			tasks.poll().run(this);
 			Thread.interrupted();		// interrupts are task-local, clear if necessary
+
+            // make sure we do not block the main thread
+            long dt = System.nanoTime() - t;
+            if (dt > RTASK_EXECUTION_BUDGED_NS) {
+                logger.warn("time for combined task execution exceeded threshold: " + (dt / 1_000_000) + "ms");
+                break;
+            }
 		}
 
         // display renderer
