@@ -48,7 +48,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         boolean joinsWhenPossible = getPropJoinsWhenPossible(src.getStyle());
 
         // expand to handle thick lines
-        TileRect expanded = new TileRect(tile.x - 1, tile.y - 1, tile.x + 1, tile.x - 1, tile.z);
+        TileRect expanded = new TileRect(tile.x - 1, tile.y - 1, tile.x + 1, tile.x + 1, tile.z);
 
         // get feature, return null if not available
         TileFeature<Street> feature = src.getFeatureProvider().require(src.getFeatureName(), expanded);
