@@ -29,6 +29,9 @@ public interface TileProvider {
     Tile require(RenderContext context, TileId tile) throws InterruptedException, ExecutionException;
     void release(RenderContext context, Tile tile);
 
+    void beforeRendering(RenderContext context);
+    void afterRendering(RenderContext context);
+
     boolean addTileChangeListener(TileChangeListener listener);
     boolean removeTileChangeListener(TileChangeListener listener);
     boolean hasTileChangeListener(TileChangeListener listener);

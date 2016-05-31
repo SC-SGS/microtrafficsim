@@ -1,5 +1,6 @@
 package microtrafficsim.core.vis.map.tiles;
 
+import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.tiles.TileId;
@@ -164,6 +165,18 @@ public class PreRenderedTileProvider implements TileProvider {
         // --------------------------------------------------------------------
     }
 
+
+    @Override
+    public void beforeRendering(RenderContext context) {
+        GL gl = context.getDrawable().getGL();
+
+        context.BlendMode.enable(gl);
+        context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
+        context.BlendMode.setFactors(gl, GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    @Override
+    public void afterRendering(RenderContext context) {}
 
     @Override
     public Tile require(RenderContext context, TileId id) throws InterruptedException, ExecutionException {
