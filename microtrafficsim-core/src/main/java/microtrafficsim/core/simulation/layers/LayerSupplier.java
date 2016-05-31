@@ -13,9 +13,12 @@ import java.util.Set;
  */
 public interface LayerSupplier {
 
-    public OSMParser getParser(SimulationConfig config);
+    OSMParser getParser(SimulationConfig config);
 
-    public Set<LayerDefinition> getLayerDefinitions();
+    /**
+     * @return the layer definitions (precalculated!)
+     */
+    Set<LayerDefinition> getLayerDefinitions();
 
-    public SegmentLayerProvider getSegmentLayerProvider(Projection projection, Set<LayerDefinition> layers);
+    SegmentLayerProvider getSegmentLayerProvider(Projection projection, Set<LayerDefinition> layers);
 }

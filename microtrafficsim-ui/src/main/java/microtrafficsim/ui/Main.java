@@ -1,11 +1,11 @@
 package microtrafficsim.ui;
 
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
-import microtrafficsim.ui.gui.SimulationChef;
+import microtrafficsim.ui.core.SimulationChef;
+import microtrafficsim.ui.scenarios.Scenario;
 import microtrafficsim.ui.vis.Example;
 
+import javax.swing.*;
 import java.io.File;
-import java.util.Random;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -15,7 +15,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         /* handle input arguments */
-        File file = null;
+        final File file;
         if (args.length == 1) {
             switch(args[0]) {
                 case "-h":
@@ -26,63 +26,21 @@ public class Main {
                 default:
                     file = new File(args[0]);
             }
-        }
+        } else
+            file = null;
 
-        /* setup config */
-        SimulationConfig config = new SimulationConfig();
-        config.maxVehicleCount = 10;
-        config.seed = 1455374755807L;
-        config.multiThreading.nThreads = 8;
-        config.crossingLogic.drivingOnTheRight = true;
-        config.crossingLogic.edgePriorityEnabled = true;
-        config.crossingLogic.priorityToTheRightEnabled = true;
-        config.crossingLogic.goWithoutPriorityEnabled = true;
-        config.crossingLogic.setOnlyOneVehicle(false);
-        config.logger.enabled = false;
-        SimulationChef chef = new SimulationChef(config);
-
-        /* setup JFrame and visualization */
-        chef.prepareVisualization(new Example());
-
-        /* setup gui */
-        chef.addJMenuBar();
-        chef.addJMenuItem(
-                "Map",
-                "Open Map...",
-                e -> {
-                    File f = Utils.loadMap();
-                    if (f != null)
-                        chef.asyncParse(f);
-                });
-        chef.addJMenuItem(
-                "Logic",
-                "Change simulation parameters...",
-                e -> {
-                    System.out.println("bla");
-                });
-        chef.addJMenuItem(
-                "Logic",
-                "Run",
-                e -> {
-                    chef.startSimulation();
-                }
-        );
-
-        /* parse file */
-        if (file != null)
-            chef.asyncParse(file);
-
-        /* show gui */
-        chef.showGui();
+        SwingUtilities.invokeLater(() -> {
+            SimulationChef chef = new SimulationChef(Scenario::new, Example::new);
+            chef.createAndShow(file);
+        });
     }
 
     private static void printUsage() {
         System.out.println("");
-        System.out.println("MicroTrafficSim - OSM MapViewer Example.");
+        System.out.println("MicroTrafficSim - GUI.");
         System.out.println("");
-        System.out.println("Usage:");
-        System.out.println("  microtrafficsim                Run this example with the default map-file");
-        System.out.println("                                 Default name: map.osm");
+        System.out.println("usage:");
+        System.out.println("  microtrafficsim                Run this example without a map");
         System.out.println("  microtrafficsim <file>         Run this example with the specified map-file");
         System.out.println("  microtrafficsim --help | -h    Show this help message.");
         System.out.println("");

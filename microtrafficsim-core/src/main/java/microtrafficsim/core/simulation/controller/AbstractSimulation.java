@@ -1,6 +1,5 @@
 package microtrafficsim.core.simulation.controller;
 
-import microtrafficsim.core.frameworks.vehicle.ILogicVehicle;
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.frameworks.vehicle.VehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
@@ -13,7 +12,7 @@ import microtrafficsim.core.simulation.controller.manager.impl.MultiThreadedVehi
 import microtrafficsim.core.simulation.controller.manager.impl.SingleThreadedSimulationManager;
 import microtrafficsim.core.simulation.controller.manager.impl.SingleThreadedVehicleManager;
 import microtrafficsim.core.vis.opengl.utils.Color;
-import microtrafficsim.core.vis.simulation.Vehicle;
+import microtrafficsim.interesting.progressable.ProgressListener;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -41,7 +40,9 @@ public abstract class AbstractSimulation implements Simulation {
 	private boolean prepared;
 	private boolean paused;
 	private Timer timer;
-	private int age;
+    private TimerTask timerTask;
+	private int age; // todo replace # steps by time
+    private long timeDeltaMillis, timestamp, pausedTimestamp;
 	// manager
 	private final VehicleManager vehicleManager;
     private final SimulationManager simManager;
@@ -60,14 +61,24 @@ public abstract class AbstractSimulation implements Simulation {
 		prepared = false;
 		paused = true;
 		timer = new Timer();
+        timestamp = -1;
 		age = 0;
-		if (this.config.multiThreading.nThreads > 1) {
+		if (this.config.multiThreading().nThreads().get() > 1) {
             vehicleManager = new MultiThreadedVehicleManager(vehicleFactory);
             simManager = new MultiThreadedSimulationManager(config);
         } else {
             vehicleManager = new SingleThreadedVehicleManager(vehicleFactory);
             simManager = new SingleThreadedSimulationManager();
         }
+
+        // get updated if ms per time step changes
+        config.speedup().addObserver((o, arg) -> {
+            if (!paused) {
+                cancel();
+                if (config.speedup().get() > 0)
+                    run();
+            }
+        });
 	}
 
 	/*
@@ -78,7 +89,7 @@ public abstract class AbstractSimulation implements Simulation {
     /**
 	 * This method should be called before the simulation starts. E.g. it can be
 	 * used to set start nodes, that are used in the {@link AbstractSimulation}.
-	 * {@link #createAndAddVehicles()}.
+	 * {@link #createAndAddVehicles(ProgressListener)}.
 	 */
 	protected abstract void prepareScenario();
 
@@ -86,8 +97,10 @@ public abstract class AbstractSimulation implements Simulation {
 	 * This method should fill not spawned vehicles using {@link Simulation}.{@link #addVehicle(AbstractVehicle)} and
 	 * {@link AbstractSimulation}.{@link #getSpawnedVehicles()}. The spawning and other work
 	 * will be done automatically.
+     *
+     * @param listener could be null; This listener gets informed if necessary changes are made.
 	 */
-	protected abstract void createAndAddVehicles();
+	protected abstract void createAndAddVehicles(ProgressListener listener);
 
     /**
      * This method could be called to add the given vehicle to the simulation. For visualization, this method creates an
@@ -134,29 +147,35 @@ public abstract class AbstractSimulation implements Simulation {
 	 */
 	private void doSimulationStep() {
 
+        if (timestamp < 0) // init
+            timestamp = System.currentTimeMillis();
+        long now = System.currentTimeMillis();
+//        timeDeltaMillis = Math.min(now - timestamp, 1000 / config.speedup.get());
+        timeDeltaMillis = now - timestamp;
+        timestamp = now;
 
-		if (config.logger.enabled) {
-			long time = System.nanoTime();
-            simManager.willMoveAll(vehicleManager.iteratorSpawned());
-			config.logger.debugNanoseconds("time brake() etc. = ", System.nanoTime() - time);
+		if (config.logger().enabled) {
+			time = System.nanoTime();
+            simManager.willMoveAll(timeDeltaMillis, vehicleManager.iteratorSpawned());
+			config.logger().debugNanoseconds("time brake() etc. = ", System.nanoTime() - time);
 
 			time = System.nanoTime();
             simManager.moveAll(vehicleManager.iteratorSpawned());
-			config.logger.debugNanoseconds("time move() = ", System.nanoTime() - time);
+			config.logger().debugNanoseconds("time move() = ", System.nanoTime() - time);
 
 			time = System.nanoTime();
             simManager.didMoveAll(vehicleManager.iteratorSpawned());
-			config.logger.debugNanoseconds("time didMove() = ", System.nanoTime() - time);
+			config.logger().debugNanoseconds("time didMove() = ", System.nanoTime() - time);
 
 			time = System.nanoTime();
 			simManager.spawnAll(vehicleManager.iteratorNotSpawned());
-			config.logger.debugNanoseconds("time spawn() = ", System.nanoTime() - time);
+			config.logger().debugNanoseconds("time spawn() = ", System.nanoTime() - time);
 
 			time = System.nanoTime();
 			simManager.updateNodes(graph.getNodeIterator());
-			config.logger.debugNanoseconds("time updateNodes() = ", System.nanoTime() - time);
+			config.logger().debugNanoseconds("time updateNodes() = ", System.nanoTime() - time);
 		} else {
-            simManager.willMoveAll(vehicleManager.iteratorSpawned());
+            simManager.willMoveAll(timeDeltaMillis, vehicleManager.iteratorSpawned());
             simManager.moveAll(vehicleManager.iteratorSpawned());
             simManager.didMoveAll(vehicleManager.iteratorSpawned());
             simManager.spawnAll(vehicleManager.iteratorNotSpawned());
@@ -165,9 +184,11 @@ public abstract class AbstractSimulation implements Simulation {
 		age++;
 	}
 
-	// |================|
-	// | (i) Simulation |
-	// |================|
+    /*
+    |================|
+    | (i) Simulation |
+    |================|
+    */
 	@Override
 	public boolean isPrepared() {
 		return prepared;
@@ -178,77 +199,91 @@ public abstract class AbstractSimulation implements Simulation {
 		prepared = false;
 		vehicleManager.clearAll();
 		prepareScenario();
-		createAndAddVehicles();
+		createAndAddVehicles(null);
 		simManager.updateNodes(graph.getNodeIterator());
 		prepared = true;
 	}
-	
+
+    @Override
+    public final void prepare(ProgressListener listener) {
+		prepared = false;
+		vehicleManager.clearAll();
+		prepareScenario();
+		createAndAddVehicles(listener);
+		simManager.updateNodes(graph.getNodeIterator());
+		prepared = true;
+	}
+
+
+
 	@Override
 	public int getAge() {
 		return age;
 	}
-	
-	@Override
-	public final synchronized void run() {
 
-		if (paused) {
-			timer = new Timer();
-			timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					doRunOneStep();
-				}
-			}, 0, config.msPerTimeStep);
+	@Override
+	public final void run() {
+
+		if (prepared && paused && config.speedup().get() > 0) {
+            timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    doRunOneStep();
+                }
+            };
+			timer.schedule(timerTask, 0, 1000 / config.speedup().get());
 			paused = false;
 		}
 	}
 
 	@Override
 	public void willRunOneStep() {
-        if (config.logger.enabled) {
+        if (config.logger().enabled) {
             if (isPrepared()) {
-                config.logger.debug("########## ########## ########## ########## ##");
-                config.logger.debug("NEW SIMULATION STEP");
-                config.logger.debug("simulation age before execution = " + getAge());
+                config.logger().debug("########## ########## ########## ########## ##");
+                config.logger().debug("NEW SIMULATION STEP");
+                config.logger().debug("simulation age before execution = " + getAge());
                 time = System.nanoTime();
             } else {
-                config.logger.debug("########## ########## ########## ########## ##");
-                config.logger.debug("NEW SIMULATION STEP (NOT PREPARED)");
+                config.logger().debug("########## ########## ########## ########## ##");
+                config.logger().debug("NEW SIMULATION STEP (NOT PREPARED)");
             }
         }
 	}
 
 	@Override
-	public final synchronized void runOneStep() {
-		if (paused)
+	public final void runOneStep() {
+		if (prepared && paused)
             doRunOneStep();
 	}
 
     @Override
     public final void doRunOneStep() {
         willRunOneStep();
-        if (prepared) {
+        if (prepared)
             doSimulationStep();
-        }
         didRunOneStep();
     }
 
     @Override
     public void didRunOneStep() {
-        if (config.logger.enabled) {
+        if (config.logger().enabled) {
             if (isPrepared())
-                config.logger.debugNanoseconds("time for this step = ", System.nanoTime() - time);
-            config.logger.debug("number of vehicles after run = " + getVehiclesCount());
+                config.logger().debugNanoseconds("time for this step = ", System.nanoTime() - time);
+            config.logger().debug("number of vehicles after run = " + getVehiclesCount());
         }
     }
 
     @Override
-	public final synchronized void cancel() {
-		timer.cancel();
+	public final void cancel() {
+        if (timerTask != null) {
+            timerTask.cancel();
+            timerTask = null;
+        }
 		paused = true;
 	}
 	
-	public final synchronized boolean isPaused() {
+	public final boolean isPaused() {
 		return paused;
 	}
 

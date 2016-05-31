@@ -34,6 +34,156 @@ import java.util.function.Predicate;
 public class Example implements LayerSupplier {
 
     public static final float STREET_SCALE_NORMAL = (float) (1.0 / Math.pow(2, 19));
+    private final Set<LayerDefinition> layers;
+
+    public Example() {
+        layers = precalcLayerDefinitions();
+    }
+
+    private Set<LayerDefinition> precalcLayerDefinitions() {
+
+        boolean useAdjacencyPrimitives = true;
+
+        HashSet<LayerDefinition> layers = new HashSet<>();
+
+        // shader resources
+        Resource vertShader;
+        Resource fragShader;
+        Resource geomShader;
+
+        if (useAdjacencyPrimitives) {
+            vertShader = new PackagedResource(Example.class, "/shaders/features/streets/streets.vs");
+            fragShader = new PackagedResource(Example.class, "/shaders/features/streets/streets.fs");
+            geomShader = new PackagedResource(Example.class, "/shaders/features/streets/streets_round.gs");
+        } else {
+            vertShader = new PackagedResource(Example.class, "/shaders/basic.vs");
+            fragShader = new PackagedResource(Example.class, "/shaders/basic.fs");
+            geomShader = null;
+        }
+
+        // create shader
+        ShaderProgramSource progStreets = new ShaderProgramSource("streets");
+        progStreets.addSource(GL3.GL_VERTEX_SHADER, vertShader);
+        progStreets.addSource(GL3.GL_FRAGMENT_SHADER, fragShader);
+
+        if (geomShader != null)
+            progStreets.addSource(GL3.GL_GEOMETRY_SHADER, geomShader);
+
+        // create styles
+        Style motorwayOutline = new Style(progStreets);
+        motorwayOutline.setUniformSupplier("u_color", () -> Color.fromRGB(0xFF7336).toVec4f());
+        motorwayOutline.setUniformSupplier("u_linewidth", () -> 46.0f);
+        motorwayOutline.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
+        //motorwayOutline.setUniformSupplier("u_cap_type", () -> 2);
+        //motorwayOutline.setUniformSupplier("u_join_type", () -> 3);
+        motorwayOutline.setProperty("adjacency_primitives", useAdjacencyPrimitives);
+        motorwayOutline.setProperty("use_joins_when_possible", true);
+
+        Style motorwayInner = new Style(progStreets);
+        motorwayInner.setUniformSupplier("u_color", () -> Color.fromRGB(0xFFFFFF).toVec4f());
+        motorwayInner.setUniformSupplier("u_linewidth", () -> 40.0f);
+        motorwayInner.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
+        //motorwayInner.setUniformSupplier("u_cap_type", () -> 2);
+        //motorwayInner.setUniformSupplier("u_join_type", () -> 3);
+        motorwayInner.setProperty("adjacency_primitives", useAdjacencyPrimitives);
+        motorwayInner.setProperty("use_joins_when_possible", true);
+
+
+        Style trunkOutline = new Style(progStreets);
+        trunkOutline.setUniformSupplier("u_color", () -> Color.fromRGB(0x8FC270).toVec4f());
+        trunkOutline.setUniformSupplier("u_linewidth", () -> 46.0f);
+        trunkOutline.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
+        //trunkOutline.setUniformSupplier("u_cap_type", () -> 2);
+        //trunkOutline.setUniformSupplier("u_join_type", () -> 3);
+        trunkOutline.setProperty("adjacency_primitives", useAdjacencyPrimitives);
+        trunkOutline.setProperty("use_joins_when_possible", true);
+
+        Style trunkInner = new Style(progStreets);
+        trunkInner.setUniformSupplier("u_color", () -> Color.fromRGB(0xFFFFFF).toVec4f());
+        trunkInner.setUniformSupplier("u_linewidth", () -> 40.0f);
+        trunkInner.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
+        //trunkInner.setUniformSupplier("u_cap_type", () -> 2);
+        //trunkInner.setUniformSupplier("u_join_type", () -> 3);
+        trunkInner.setProperty("adjacency_primitives", useAdjacencyPrimitives);
+        trunkInner.setProperty("use_joins_when_possible", true);
+
+
+        Style primaryOutline = new Style(progStreets);
+        primaryOutline.setUniformSupplier("u_color", () -> Color.fromRGB(0x0595D1).toVec4f());
+        primaryOutline.setUniformSupplier("u_linewidth", () -> 46.0f);
+        primaryOutline.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
+        //primaryOutline.setUniformSupplier("u_cap_type", () -> 2);
+        //primaryOutline.setUniformSupplier("u_join_type", () -> 3);
+        primaryOutline.setProperty("adjacency_primitives", useAdjacencyPrimitives);
+        primaryOutline.setProperty("use_joins_when_possible", true);
+
+        Style primaryInner = new Style(progStreets);
+        primaryInner.setUniformSupplier("u_color", () -> Color.fromRGB(0xFFFFFF).toVec4f());
+        primaryInner.setUniformSupplier("u_linewidth", () -> 40.0f);
+        primaryInner.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
+        //primaryInner.setUniformSupplier("u_cap_type", () -> 2);
+        //primaryInner.setUniformSupplier("u_join_type", () -> 3);
+        primaryInner.setProperty("adjacency_primitives", useAdjacencyPrimitives);
+        primaryInner.setProperty("use_joins_when_possible", true);
+
+
+        Style otherOutline = new Style(progStreets);
+        otherOutline.setUniformSupplier("u_color", () -> Color.fromRGB(0x686868).toVec4f());
+        otherOutline.setUniformSupplier("u_linewidth", () -> 28.0f);
+        otherOutline.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
+        //otherOutline.setUniformSupplier("u_cap_type", () -> 2);
+        //otherOutline.setUniformSupplier("u_join_type", () -> 3);
+        otherOutline.setProperty("adjacency_primitives", useAdjacencyPrimitives);
+        otherOutline.setProperty("use_joins_when_possible", true);
+
+        Style otherInner = new Style(progStreets);
+        otherInner.setUniformSupplier("u_color", () -> Color.fromRGB(0xFFFFFF).toVec4f());
+        otherInner.setUniformSupplier("u_linewidth", () -> 24.0f);
+        otherInner.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
+        //otherInner.setUniformSupplier("u_cap_type", () -> 2);
+        //otherInner.setUniformSupplier("u_join_type", () -> 3);
+        otherInner.setProperty("adjacency_primitives", useAdjacencyPrimitives);
+        otherInner.setProperty("use_joins_when_possible", true);
+
+
+        // create layers
+        int index = 0;
+        layers.add(new LayerDefinition("streets:other:outline", index++,
+                new FeatureSegmentLayerSource("streets:other", otherOutline)));
+
+        layers.add(new LayerDefinition("streets:primary:outline", index++,
+                new FeatureSegmentLayerSource("streets:primary", primaryOutline)));
+
+        layers.add(new LayerDefinition("streets:trunk:outline", index++,
+                new FeatureSegmentLayerSource("streets:trunk", trunkOutline)));
+
+        layers.add(new LayerDefinition("streets:motorway:outline", index++,
+                new FeatureSegmentLayerSource("streets:motorway", motorwayOutline)));
+
+
+        layers.add(new LayerDefinition("streets:other:base", index++,
+                new FeatureSegmentLayerSource("streets:other", otherInner)));
+
+        layers.add(new LayerDefinition("streets:primary:base", index++,
+                new FeatureSegmentLayerSource("streets:primary", primaryInner)));
+
+        layers.add(new LayerDefinition("streets:trunk:base", index++,
+                new FeatureSegmentLayerSource("streets:trunk", trunkInner)));
+
+        layers.add(new LayerDefinition("streets:motorway:base", index++,
+                new FeatureSegmentLayerSource("streets:motorway", motorwayInner)));
+
+        return layers;
+    }
+
+    /*
+    |===================|
+    | (i) LayerSupplier |
+    |===================|
+    */
+    public Set<LayerDefinition> getLayerDefinitions() {
+        return layers;
+    }
 
     public OSMParser getParser(SimulationConfig config) {
 
@@ -171,142 +321,6 @@ public class Example implements LayerSupplier {
                 .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
                 .putRelationInitializer("restriction", new RestrictionRelationFactory())
                 .createParser();
-    }
-
-    public Set<LayerDefinition> getLayerDefinitions() {
-
-        boolean useAdjacencyPrimitives = true;
-
-        HashSet<LayerDefinition> layers = new HashSet<>();
-
-        // shader resources
-        Resource vertShader;
-        Resource fragShader;
-        Resource geomShader;
-
-        if (useAdjacencyPrimitives) {
-            vertShader = new PackagedResource(Example.class, "/shaders/features/streets/streets.vs");
-            fragShader = new PackagedResource(Example.class, "/shaders/features/streets/streets.fs");
-            geomShader = new PackagedResource(Example.class, "/shaders/features/streets/streets_round.gs");
-        } else {
-            vertShader = new PackagedResource(Example.class, "/shaders/basic.vs");
-            fragShader = new PackagedResource(Example.class, "/shaders/basic.fs");
-            geomShader = null;
-        }
-
-        // create shader
-        ShaderProgramSource progStreets = new ShaderProgramSource("streets");
-        progStreets.addSource(GL3.GL_VERTEX_SHADER, vertShader);
-        progStreets.addSource(GL3.GL_FRAGMENT_SHADER, fragShader);
-
-        if (geomShader != null)
-            progStreets.addSource(GL3.GL_GEOMETRY_SHADER, geomShader);
-
-        // create styles
-        Style motorwayOutline = new Style(progStreets);
-        motorwayOutline.setUniformSupplier("u_color", () -> Color.fromRGB(0xFF7336).toVec4f());
-        motorwayOutline.setUniformSupplier("u_linewidth", () -> 46.0f);
-        motorwayOutline.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
-        //motorwayOutline.setUniformSupplier("u_cap_type", () -> 2);
-        //motorwayOutline.setUniformSupplier("u_join_type", () -> 3);
-        motorwayOutline.setProperty("adjacency_primitives", useAdjacencyPrimitives);
-        motorwayOutline.setProperty("use_joins_when_possible", true);
-
-        Style motorwayInner = new Style(progStreets);
-        motorwayInner.setUniformSupplier("u_color", () -> Color.fromRGB(0xFFFFFF).toVec4f());
-        motorwayInner.setUniformSupplier("u_linewidth", () -> 40.0f);
-        motorwayInner.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
-        //motorwayInner.setUniformSupplier("u_cap_type", () -> 2);
-        //motorwayInner.setUniformSupplier("u_join_type", () -> 3);
-        motorwayInner.setProperty("adjacency_primitives", useAdjacencyPrimitives);
-        motorwayInner.setProperty("use_joins_when_possible", true);
-
-
-        Style trunkOutline = new Style(progStreets);
-        trunkOutline.setUniformSupplier("u_color", () -> Color.fromRGB(0x8FC270).toVec4f());
-        trunkOutline.setUniformSupplier("u_linewidth", () -> 46.0f);
-        trunkOutline.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
-        //trunkOutline.setUniformSupplier("u_cap_type", () -> 2);
-        //trunkOutline.setUniformSupplier("u_join_type", () -> 3);
-        trunkOutline.setProperty("adjacency_primitives", useAdjacencyPrimitives);
-        trunkOutline.setProperty("use_joins_when_possible", true);
-
-        Style trunkInner = new Style(progStreets);
-        trunkInner.setUniformSupplier("u_color", () -> Color.fromRGB(0xFFFFFF).toVec4f());
-        trunkInner.setUniformSupplier("u_linewidth", () -> 40.0f);
-        trunkInner.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
-        //trunkInner.setUniformSupplier("u_cap_type", () -> 2);
-        //trunkInner.setUniformSupplier("u_join_type", () -> 3);
-        trunkInner.setProperty("adjacency_primitives", useAdjacencyPrimitives);
-        trunkInner.setProperty("use_joins_when_possible", true);
-
-
-        Style primaryOutline = new Style(progStreets);
-        primaryOutline.setUniformSupplier("u_color", () -> Color.fromRGB(0x0595D1).toVec4f());
-        primaryOutline.setUniformSupplier("u_linewidth", () -> 46.0f);
-        primaryOutline.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
-        //primaryOutline.setUniformSupplier("u_cap_type", () -> 2);
-        //primaryOutline.setUniformSupplier("u_join_type", () -> 3);
-        primaryOutline.setProperty("adjacency_primitives", useAdjacencyPrimitives);
-        primaryOutline.setProperty("use_joins_when_possible", true);
-
-        Style primaryInner = new Style(progStreets);
-        primaryInner.setUniformSupplier("u_color", () -> Color.fromRGB(0xFFFFFF).toVec4f());
-        primaryInner.setUniformSupplier("u_linewidth", () -> 40.0f);
-        primaryInner.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
-        //primaryInner.setUniformSupplier("u_cap_type", () -> 2);
-        //primaryInner.setUniformSupplier("u_join_type", () -> 3);
-        primaryInner.setProperty("adjacency_primitives", useAdjacencyPrimitives);
-        primaryInner.setProperty("use_joins_when_possible", true);
-
-
-        Style otherOutline = new Style(progStreets);
-        otherOutline.setUniformSupplier("u_color", () -> Color.fromRGB(0x686868).toVec4f());
-        otherOutline.setUniformSupplier("u_linewidth", () -> 28.0f);
-        otherOutline.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
-        //otherOutline.setUniformSupplier("u_cap_type", () -> 2);
-        //otherOutline.setUniformSupplier("u_join_type", () -> 3);
-        otherOutline.setProperty("adjacency_primitives", useAdjacencyPrimitives);
-        otherOutline.setProperty("use_joins_when_possible", true);
-
-        Style otherInner = new Style(progStreets);
-        otherInner.setUniformSupplier("u_color", () -> Color.fromRGB(0xFFFFFF).toVec4f());
-        otherInner.setUniformSupplier("u_linewidth", () -> 24.0f);
-        otherInner.setUniformSupplier("u_viewscale_norm", () -> STREET_SCALE_NORMAL);
-        //otherInner.setUniformSupplier("u_cap_type", () -> 2);
-        //otherInner.setUniformSupplier("u_join_type", () -> 3);
-        otherInner.setProperty("adjacency_primitives", useAdjacencyPrimitives);
-        otherInner.setProperty("use_joins_when_possible", true);
-
-
-        // create layers
-        int index = 0;
-        layers.add(new LayerDefinition("streets:other:outline", index++,
-                new FeatureSegmentLayerSource("streets:other", otherOutline)));
-
-        layers.add(new LayerDefinition("streets:primary:outline", index++,
-                new FeatureSegmentLayerSource("streets:primary", primaryOutline)));
-
-        layers.add(new LayerDefinition("streets:trunk:outline", index++,
-                new FeatureSegmentLayerSource("streets:trunk", trunkOutline)));
-
-        layers.add(new LayerDefinition("streets:motorway:outline", index++,
-                new FeatureSegmentLayerSource("streets:motorway", motorwayOutline)));
-
-
-        layers.add(new LayerDefinition("streets:other:base", index++,
-                new FeatureSegmentLayerSource("streets:other", otherInner)));
-
-        layers.add(new LayerDefinition("streets:primary:base", index++,
-                new FeatureSegmentLayerSource("streets:primary", primaryInner)));
-
-        layers.add(new LayerDefinition("streets:trunk:base", index++,
-                new FeatureSegmentLayerSource("streets:trunk", trunkInner)));
-
-        layers.add(new LayerDefinition("streets:motorway:base", index++,
-                new FeatureSegmentLayerSource("streets:motorway", motorwayInner)));
-
-        return layers;
     }
 
     public SegmentLayerProvider getSegmentLayerProvider(Projection projection, Set<LayerDefinition> layers) {

@@ -7,10 +7,8 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.impl.Car;
-import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.simulation.controller.Simulation;
 import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
-import microtrafficsim.core.vis.map.projections.MercatorProjection;
+import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.resources.PackagedResource;
 
@@ -33,14 +31,14 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
     public static void setupConfig(SimulationConfig config){
 
         // super attributes
-        config.longIDGenerator = new ConcurrentLongIDGenerator();
-        config.msPerTimeStep = 200;
+        config.longIDGenerator().set(new ConcurrentLongIDGenerator());
+        config.speedup().set(5);
         config.maxVehicleCount = 3;
-        config.crossingLogic.drivingOnTheRight = true;
-        config.crossingLogic.edgePriorityEnabled = true;
-        config.crossingLogic.priorityToTheRightEnabled = true;
-        config.crossingLogic.setOnlyOneVehicle(false);
-        config.crossingLogic.goWithoutPriorityEnabled = false;
+        config.crossingLogic().drivingOnTheRight().set(true);
+        config.crossingLogic().edgePriorityEnabled = true;
+        config.crossingLogic().priorityToTheRightEnabled = true;
+        config.crossingLogic().setOnlyOneVehicle(false);
+        config.crossingLogic().goWithoutPriorityEnabled = false;
         // own attributes
         config.ageForPause = -1;
         Car.maxVelocity = 1;
@@ -67,7 +65,7 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
         SimulationConfig config = new SimulationConfig();
         setupConfig(config);
         Main.show(
-                config.visualization.projection,
+                config.visualization().projection().get(),
                 file,
                 config,
                 MotorwaySlipRoadScenario.class);
@@ -110,7 +108,7 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
     }
 
     @Override
-    protected void createAndAddVehicles() {
+    protected void createAndAddVehicles(ProgressListener listener) {
 
         /* sort by lon */
         Iterator<Node> iter = graph.getNodeIterator();

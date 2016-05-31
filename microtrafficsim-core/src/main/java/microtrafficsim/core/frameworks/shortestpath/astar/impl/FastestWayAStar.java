@@ -28,10 +28,11 @@ public class FastestWayAStar extends AbstractAStarAlgorithm {
 	@Override
 	protected <T extends IDijkstrableNode> float estimate(T destination, T routeDestination) {
 		// after HaversineDistance/metersPerCell: result in cells
-		// BUT results should be in milliseconds
-		// => take minimum speed = 5 cell/s
-		// => 1000ms = 1s
-		return 200 * (int)(
+		// BUT results for estimation should be in milliseconds
+		// => take maximum speed = 6 cell/s
+		// => 1000 ms / (6 cells) * ? m / (7.5 m/cell)
+        // => 1000 / 6 * ? / 7.5 ms
+		return 1000 / 6 * (int)(
                 HaversineDistanceCalculator.getDistance(
                         destination.getCoordinate(),
                         routeDestination.getCoordinate()

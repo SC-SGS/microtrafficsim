@@ -58,8 +58,9 @@ public class Lane {
 	}
 
 	public synchronized void moveVehicle(AbstractVehicle vehicle, int delta) {
-		cells.remove(vehicle.getCellPosition());
-		cells.put(vehicle.getCellPosition() + delta, vehicle);
+        if (delta > 0)
+		    cells.remove(vehicle.getCellPosition());
+		    cells.put(vehicle.getCellPosition() + delta, vehicle);
 	}
 
 	public synchronized void insertVehicle(AbstractVehicle vehicle, int pos) {

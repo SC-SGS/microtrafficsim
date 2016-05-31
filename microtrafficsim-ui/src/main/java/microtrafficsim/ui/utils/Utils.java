@@ -1,4 +1,4 @@
-package microtrafficsim.ui;
+package microtrafficsim.ui.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +18,9 @@ import microtrafficsim.core.vis.opengl.shader.ShaderCompileError;
 import microtrafficsim.core.vis.opengl.shader.ShaderLinkError;
 import microtrafficsim.core.vis.opengl.utils.FramebufferUtils;
 
-
+/**
+ * @author Maximilian Luz, Dominic Parga Cacheiro
+ */
 public class Utils {
 
     public static void setFeatureProvider(Set<LayerDefinition> layers, SegmentFeatureProvider provider) {
@@ -87,9 +89,14 @@ public class Utils {
         }).start();;
     }
 
+    /* loading files (= maps) */
+    private static File currentDirectory;
+    static {
+        currentDirectory = new File(System.getProperty("user.dir"));
+    }
     public static File loadMap() {
         JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+        chooser.setCurrentDirectory(currentDirectory);
         chooser.setFileFilter(new FileFilter() {
 
             @Override
@@ -120,6 +127,7 @@ public class Utils {
 
         int action = chooser.showOpenDialog(null);
 
+        currentDirectory = chooser.getCurrentDirectory();
         if (action == JFileChooser.APPROVE_OPTION)
             return chooser.getSelectedFile();
 

@@ -1,27 +1,48 @@
 package microtrafficsim.core.simulation.controller.configs;
 
+import microtrafficsim.utils.valuewrapper.LazyFinalValue;
+
 /**
  * This class isolates the crossing logic configs from the other config
  * parameters to guarantee better overview.
  * 
  * @author Dominic Parga Cacheiro
  */
-public class CrossingLogicConfig {
+public final class CrossingLogicConfig {
 	
-	public boolean drivingOnTheRight; // or left
+	private LazyFinalValue<Boolean> drivingOnTheRight; // or left
 	public boolean edgePriorityEnabled;
 	public boolean priorityToTheRightEnabled;
 	private boolean onlyOneVehicleEnabled;
 	public boolean goWithoutPriorityEnabled;
 	
-	{
-		drivingOnTheRight = true;
-		edgePriorityEnabled = true;
-		priorityToTheRightEnabled = true;
-		onlyOneVehicleEnabled = false;
-        goWithoutPriorityEnabled = false;
+	public CrossingLogicConfig() {
+		reset();
 	}
-	
+
+    void reset() {
+        drivingOnTheRight = new LazyFinalValue<>(true);
+        edgePriorityEnabled = true;
+        priorityToTheRightEnabled = true;
+        onlyOneVehicleEnabled = false;
+        goWithoutPriorityEnabled = false;
+    }
+
+    void reset(CrossingLogicConfig config) {
+        drivingOnTheRight = new LazyFinalValue<>(config.drivingOnTheRight.get());
+        edgePriorityEnabled = config.edgePriorityEnabled;
+        priorityToTheRightEnabled = config.priorityToTheRightEnabled;
+        onlyOneVehicleEnabled = config.onlyOneVehicleEnabled;
+        goWithoutPriorityEnabled = config.goWithoutPriorityEnabled;
+    }
+
+    /*
+    |========|
+    | getter |
+    |========|
+    */
+    public LazyFinalValue<Boolean> drivingOnTheRight() { return drivingOnTheRight; }
+
 	/**
 	 * This method guarantees, if right-before-left (or left-before-right) is
 	 * disabled, then only one vehicle is allowed to drive. In this case, the

@@ -60,22 +60,22 @@ public class UnitTestDijkstraExample {
 		Node e = new Node(config, uselessPosition);
 
 		// create edges and add them to the nodes
-		DirectedEdge ab = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, a, b, (byte) 0);
+		DirectedEdge ab = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, a, b, (byte) 0);
 		a.addEdge(ab);
 		b.addEdge(ab);
-		DirectedEdge bc = new DirectedEdge(config, 2 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, b, c, (byte) 0);
+		DirectedEdge bc = new DirectedEdge(config, 2 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, b, c, (byte) 0);
 		b.addEdge(bc);
 		c.addEdge(bc);
-		DirectedEdge bd = new DirectedEdge(config, 5 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, b, d, (byte) 0);
+		DirectedEdge bd = new DirectedEdge(config, 5 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, b, d, (byte) 0);
 		b.addEdge(bd);
 		d.addEdge(bd);
-		DirectedEdge cd = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, c, d, (byte) 0);
+		DirectedEdge cd = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, c, d, (byte) 0);
 		c.addEdge(cd);
 		d.addEdge(cd);
-		DirectedEdge de = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, d, e, (byte) 0);
+		DirectedEdge de = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, d, e, (byte) 0);
 		d.addEdge(de);
 		e.addEdge(de);
-		DirectedEdge ec = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, e, c, (byte) 0);
+		DirectedEdge ec = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, e, c, (byte) 0);
 		e.addEdge(ec);
 		c.addEdge(ec);
 
@@ -138,40 +138,40 @@ public class UnitTestDijkstraExample {
 		Node h = new Node(config, uselessPosition);
 
 		// create edges and add them to the nodes
-		DirectedEdge ab = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, a, b, (byte) 0);
+		DirectedEdge ab = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, a, b, (byte) 0);
 		a.addEdge(ab);
 		b.addEdge(ab);
-		DirectedEdge ac = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, a, c, (byte) 0);
+		DirectedEdge ac = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 3, a, c, (byte) 0);
 		a.addEdge(ac);
 		c.addEdge(ac);
-		DirectedEdge ba = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, b, a, (byte) 0);
+		DirectedEdge ba = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, b, a, (byte) 0);
 		a.addEdge(ba);
 		b.addEdge(ba);
-		DirectedEdge bc = new DirectedEdge(config, 2 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, b, c, (byte) 0);
+		DirectedEdge bc = new DirectedEdge(config, 2 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 3, b, c, (byte) 0);
 		b.addEdge(bc);
 		c.addEdge(bc);
-		DirectedEdge de = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, d, e, (byte) 0);
+		DirectedEdge de = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, d, e, (byte) 0);
 		d.addEdge(de);
 		e.addEdge(de);
-		DirectedEdge df = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, e, f, (byte) 0);
+		DirectedEdge df = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 3, e, f, (byte) 0);
 		d.addEdge(df);
 		f.addEdge(df);
-		DirectedEdge ea = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, e, a, (byte) 0);
+		DirectedEdge ea = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, e, a, (byte) 0);
 		e.addEdge(ea);
 		a.addEdge(ea);
-		DirectedEdge fh = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 2, f, h, (byte) 0);
+		DirectedEdge fh = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 2, f, h, (byte) 0);
 		f.addEdge(fh);
 		h.addEdge(fh);
-		DirectedEdge gd = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, g, d, (byte) 0);
+		DirectedEdge gd = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 3, g, d, (byte) 0);
 		g.addEdge(gd);
 		d.addEdge(gd);
-		DirectedEdge gf = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 2, g, f, (byte) 0);
+		DirectedEdge gf = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 2, g, f, (byte) 0);
 		g.addEdge(gf);
 		f.addEdge(gf);
-		DirectedEdge he = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 4, h, e, (byte) 0);
+		DirectedEdge he = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 4, h, e, (byte) 0);
 		h.addEdge(he);
 		e.addEdge(he);
-		DirectedEdge hg = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 4, h, g, (byte) 0);
+		DirectedEdge hg = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 4, h, g, (byte) 0);
 		h.addEdge(hg);
 		g.addEdge(hg);
 		// add nodes to the graph
@@ -231,40 +231,40 @@ public class UnitTestDijkstraExample {
 		Node h = new Node(config, uselessPosition);
 
 		// create edges and add them to the nodes
-		DirectedEdge ab = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, a, b, (byte) 0);
+		DirectedEdge ab = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, a, b, (byte) 0);
 		a.addEdge(ab);
 		b.addEdge(ab);
-		DirectedEdge ac = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, a, c, (byte) 0);
+		DirectedEdge ac = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 3, a, c, (byte) 0);
 		a.addEdge(ac);
 		c.addEdge(ac);
-		DirectedEdge ba = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, b, a, (byte) 0);
+		DirectedEdge ba = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, b, a, (byte) 0);
 		a.addEdge(ba);
 		b.addEdge(ba);
-		DirectedEdge bc = new DirectedEdge(config, 2 * config.metersPerCell, rubbish, rubbish, maxVelocity, 2, b, c, (byte) 0);
+		DirectedEdge bc = new DirectedEdge(config, 2 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 2, b, c, (byte) 0);
 		b.addEdge(bc);
 		c.addEdge(bc);
-		DirectedEdge de = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, d, e, (byte) 0);
+		DirectedEdge de = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, d, e, (byte) 0);
 		d.addEdge(de);
 		e.addEdge(de);
-		DirectedEdge df = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, e, f, (byte) 0);
+		DirectedEdge df = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 3, e, f, (byte) 0);
 		d.addEdge(df);
 		f.addEdge(df);
-		DirectedEdge ea = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, e, a, (byte) 0);
+		DirectedEdge ea = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 1, e, a, (byte) 0);
 		e.addEdge(ea);
 		a.addEdge(ea);
-		DirectedEdge fh = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 2, f, h, (byte) 0);
+		DirectedEdge fh = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 2, f, h, (byte) 0);
 		f.addEdge(fh);
 		h.addEdge(fh);
-		DirectedEdge gd = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, g, d, (byte) 0);
+		DirectedEdge gd = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 3, g, d, (byte) 0);
 		g.addEdge(gd);
 		d.addEdge(gd);
-		DirectedEdge gf = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 2, g, f, (byte) 0);
+		DirectedEdge gf = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 2, g, f, (byte) 0);
 		g.addEdge(gf);
 		f.addEdge(gf);
-		DirectedEdge he = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 4, h, e, (byte) 0);
+		DirectedEdge he = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 4, h, e, (byte) 0);
 		h.addEdge(he);
 		e.addEdge(he);
-		DirectedEdge hg = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 4, h, g, (byte) 0);
+		DirectedEdge hg = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, maxVelocity, 4, h, g, (byte) 0);
 		h.addEdge(hg);
 		g.addEdge(hg);
 		// add nodes to the graph
@@ -324,10 +324,10 @@ public class UnitTestDijkstraExample {
 		Node b = new Node(config, new Coordinate(0, 0));
 		Node c = new Node(config, new Coordinate(0, 0));
 		
-		DirectedEdge ab = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, 5, 1, a, b, (byte) 0);
+		DirectedEdge ab = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, 5, 1, a, b, (byte) 0);
 		a.addEdge(ab);
 		b.addEdge(ab);
-		DirectedEdge bc = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, 5, 1, b, c, (byte) 0);
+		DirectedEdge bc = new DirectedEdge(config, 1 * config.metersPerCell().get(), rubbish, rubbish, 5, 1, b, c, (byte) 0);
 		b.addEdge(bc);
 		c.addEdge(bc);
 

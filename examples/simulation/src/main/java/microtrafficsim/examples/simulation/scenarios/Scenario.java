@@ -32,14 +32,14 @@ public class Scenario extends EndOfTheWorldScenario {
     protected Supplier<ShortestPathAlgorithm> createScoutFactory() {
         return new Supplier<ShortestPathAlgorithm>() {
 
-            private Random random = new Random(config.seed);
+            private Random random = new Random(config.seed().get());
 
             @Override
             public ShortestPathAlgorithm get() {
                 if (random.nextFloat() < 1.0f) {
-                    return new FastestWayAStar(config.metersPerCell);
+                    return new FastestWayAStar(config.metersPerCell().get());
                 } else {
-                    return new LinearDistanceAStar(config.metersPerCell);
+                    return new LinearDistanceAStar(config.metersPerCell().get());
                 }
             }
         };

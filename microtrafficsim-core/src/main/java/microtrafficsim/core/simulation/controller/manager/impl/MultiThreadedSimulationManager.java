@@ -8,7 +8,9 @@ import microtrafficsim.core.simulation.controller.manager.SimulationManager;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 /**
@@ -23,12 +25,13 @@ public class MultiThreadedSimulationManager implements SimulationManager {
     public MultiThreadedSimulationManager(SimulationConfig config) {
 
         this.config = config;
-        pool = Executors.newFixedThreadPool(config.multiThreading.nThreads);
+        pool = Executors.newFixedThreadPool(config.multiThreading().nThreads().get());
     }
 
     @Override
-    public void willMoveAll(Iterator<AbstractVehicle> iteratorSpawned) {
+    public void willMoveAll(long timeDeltaMillis, Iterator<AbstractVehicle> iteratorSpawned) {
         doVehicleTask((AbstractVehicle v) -> {
+            v.updateTimeDeltaMillis(timeDeltaMillis);
             v.accelerate();
             v.dash();
             v.brake();
@@ -53,16 +56,17 @@ public class MultiThreadedSimulationManager implements SimulationManager {
 
     @Override
     public void updateNodes(final Iterator<Node> iter) {
-        ArrayList<Callable<Object>> todo = new ArrayList<>(config.multiThreading.nThreads);
+        ArrayList<Callable<Object>> tasks = new ArrayList<>(config.multiThreading().nThreads().get());
 
-        for (int c = 0; c < config.multiThreading.nThreads; c++)
-             todo.add(Executors.callable(() -> {
-                Node[] nodes = new Node[config.multiThreading.nodesPerThread];
+        for (int c = 0; c < config.multiThreading().nThreads().get(); c++)
+            tasks.add(Executors.callable(() -> {
+                int nodesPerThread = config.multiThreading().nodesPerThread().get();
+                Node[] nodes = new Node[nodesPerThread];
                 int nodeCount;
                 do {
                     nodeCount = 0;
                     synchronized (iter) {
-                        while (nodeCount < config.multiThreading.nodesPerThread && iter.hasNext()) {
+                        while (nodeCount < nodesPerThread && iter.hasNext()) {
                             nodes[nodeCount++] = iter.next();
                         }
                     }
@@ -73,29 +77,29 @@ public class MultiThreadedSimulationManager implements SimulationManager {
 
         // waiting for finishing the threads
         try {
-            pool.invokeAll(todo);
+            pool.invokeAll(tasks);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     private void doVehicleTask(Consumer<AbstractVehicle> task, Iterator<AbstractVehicle> iter) {
-        LinkedList<Callable<Object>> todo = new LinkedList<>();
+        LinkedList<Callable<Object>> tasks = new LinkedList<>();
 
         while (iter.hasNext()) {
             // fill current thread's vehicle list
-            ArrayList<AbstractVehicle> list = new ArrayList<>(config.multiThreading.vehiclesPerRunnable);
+            ArrayList<AbstractVehicle> list = new ArrayList<>(config.multiThreading().vehiclesPerRunnable().get());
             int c = 0;
-            while (c++ < config.multiThreading.vehiclesPerRunnable && iter.hasNext()) {
+            while (c++ < config.multiThreading().vehiclesPerRunnable().get() && iter.hasNext()) {
                 list.add(iter.next());
             }
             // let a thread work off the list
-            todo.add(Executors.callable(() -> list.forEach(task)));
+            tasks.add(Executors.callable(() -> list.forEach(task)));
         }
 
         // waiting for finishing the threads
         try {
-            pool.invokeAll(todo);
+            pool.invokeAll(tasks);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

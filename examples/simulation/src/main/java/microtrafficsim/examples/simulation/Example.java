@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -46,16 +45,16 @@ public class Example {
 
     public static void initSimulationConfig(SimulationConfig config) {
         config.maxVehicleCount = 1000;
-        config.seed = new Random().nextLong();
-        config.seed = 1455374755807l;
-        printSeed(config.seed);
-        config.multiThreading.nThreads = 8;
-        config.crossingLogic.drivingOnTheRight = true;
-        config.crossingLogic.edgePriorityEnabled = true;
-        config.crossingLogic.priorityToTheRightEnabled = true;
-        config.crossingLogic.goWithoutPriorityEnabled = true;
-        config.crossingLogic.setOnlyOneVehicle(false);
-        config.logger.enabled = false;
+        config.speedup().set(2);
+        config.seed().set(1455374755807L);
+        printSeed(config.seed().get());
+        config.multiThreading().nThreads().set(8);
+        config.crossingLogic().drivingOnTheRight().set(true);
+        config.crossingLogic().edgePriorityEnabled = true;
+        config.crossingLogic().priorityToTheRightEnabled = true;
+        config.crossingLogic().goWithoutPriorityEnabled = true;
+        config.crossingLogic().setOnlyOneVehicle(false);
+        config.logger().enabled = false;
     }
 
     private static void printSeed(long seed) {
@@ -92,8 +91,7 @@ public class Example {
                 KeyEvent.EVENT_KEY_PRESSED,
                 KeyEvent.VK_RIGHT,
                 e -> {
-                    while (!sim.isPaused())
-                        sim.cancel();
+                    sim.cancel();
                     sim.runOneStep();
                 });
 
