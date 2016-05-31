@@ -13,14 +13,13 @@ import org.slf4j.LoggerFactory;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
-import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
 import static microtrafficsim.build.BuildSetup.DEBUG_VISUALIZATION;
 
 
 public class RenderContext implements GLEventListener {
     private static Logger logger = LoggerFactory.getLogger(RenderContext.class);
-    private static long RTASK_EXECUTION_BUDGED_NS = 32_000_000;
+    private static final long RTASK_EXECUTION_BUDGED_NS = 32_000_000;
 	
 	public interface UncaughtExceptionHandler {
 		void uncaughtException(RenderContext context, Throwable cause);
@@ -28,22 +27,24 @@ public class RenderContext implements GLEventListener {
 
 	
 	// -- state ---------------------------------------------------------------
-	
+
+	public final ViewportState Viewport;
 	public final ClearColor ClearColor;
 	public final ClearDepth ClearDepth;
 	public final DepthTest DepthTest;
 	public final BlendMode BlendMode;
 	public final PrimitiveRestart PrimitiveRestart;
-	public final Points Points;
+	public final PointState Points;
     public final ShaderState ShaderState;
 
 	{
+        Viewport = new ViewportState();
 		ClearColor = new ClearColor();
 		ClearDepth = new ClearDepth();
 		DepthTest = new DepthTest();
 		BlendMode = new BlendMode();
 		PrimitiveRestart = new PrimitiveRestart();
-		Points = new Points();
+		Points = new PointState();
         ShaderState = new ShaderState();
 	}
 	
@@ -145,6 +146,7 @@ public class RenderContext implements GLEventListener {
 	@Override
 	public void init(GLAutoDrawable drawable) {
 		this.drawable = drawable;
+        this.Viewport.setInternal(0, 0, drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
 		
 		try {
 			renderer.init(this);
@@ -159,7 +161,8 @@ public class RenderContext implements GLEventListener {
 	@Override
 	public void dispose(GLAutoDrawable drawable) {
 		this.drawable = drawable;
-		
+        this.Viewport.setInternal(0, 0, drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
+
 		try {
 			renderer.dispose(this);
 		} catch (Throwable exception) {
@@ -175,9 +178,9 @@ public class RenderContext implements GLEventListener {
 	@Override
 	public void display(GLAutoDrawable drawable) {
 		this.drawable = drawable;
+        this.Viewport.setInternal(0, 0, drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
 
         // execute tasks on work queue
-        // TODO: print task execution time
         long t = System.nanoTime();
         while (!tasks.isEmpty()) {
 			tasks.poll().run(this);
@@ -205,7 +208,8 @@ public class RenderContext implements GLEventListener {
 	@Override
 	public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
 		this.drawable = drawable;
-		
+        this.Viewport.setInternal(0, 0, drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
+
 		try {
 			renderer.reshape(this, x, y, width, height);
 		} catch (Throwable exception) {

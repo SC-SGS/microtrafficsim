@@ -3,12 +3,12 @@ package microtrafficsim.core.vis.context.state;
 import com.jogamp.opengl.GL2GL3;
 
 
-public class Points {
+public class PointState {
 	
 	private float pointsize;
 	private int pointSpriteCoordOrigin;
 	
-	public Points() {
+	public PointState() {
 		pointSpriteCoordOrigin = GL2GL3.GL_UPPER_LEFT;
 	}
 	

@@ -27,6 +27,20 @@ public class Rect2i {
 		this.ymax = other.ymax;
 	}
 
+	public void set(Rect2i other) {
+        this.xmin = other.xmin;
+        this.ymin = other.ymin;
+        this.xmax = other.xmax;
+        this.ymax = other.ymax;
+	}
+
+    public void set(int xmin, int ymin, int xmax, int ymax) {
+        this.xmin = xmin;
+        this.ymin = ymin;
+        this.xmax = xmax;
+        this.ymax = ymax;
+    }
+
 	public Vec2i min() {
 		return new Vec2i(xmin, ymin);
 	}

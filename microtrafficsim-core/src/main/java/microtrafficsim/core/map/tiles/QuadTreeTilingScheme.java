@@ -3,6 +3,7 @@ package microtrafficsim.core.map.tiles;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.math.Vec2i;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 import java.util.Objects;
@@ -205,6 +206,15 @@ public class QuadTreeTilingScheme implements TilingScheme {
 
     public int getMinimumZoomLevel() {
         return minlevel;
+    }
+
+
+    public Vec2i getTileSize() {
+        Rect2d max = projection.getProjectedMaximumBounds();
+        return new Vec2i(
+                (int) (max.xmax - max.xmin),
+                (int) (max.ymax - max.ymin)
+        );
     }
 
 

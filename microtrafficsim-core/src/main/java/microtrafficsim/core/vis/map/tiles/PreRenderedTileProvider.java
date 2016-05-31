@@ -20,9 +20,7 @@ import microtrafficsim.core.vis.opengl.shader.uniforms.Uniform1f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformMat4f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
-import microtrafficsim.math.Mat4f;
-import microtrafficsim.math.Rect2d;
-import microtrafficsim.math.Vec4f;
+import microtrafficsim.math.*;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
@@ -309,10 +307,11 @@ public class PreRenderedTileProvider implements TileProvider {
             GL3 gl = context.getDrawable().getGL().getGL3();
 
             // save old view parameter
-            Mat4f oldView = new Mat4f(uView.get());
-            Mat4f oldProjection = new Mat4f(uProjection.get());
-            Vec4f oldViewport = new Vec4f(uViewport.get());
-            float oldViewScale = uViewScale.get();
+            Mat4f oldUView = new Mat4f(uView.get());
+            Mat4f oldUProjection = new Mat4f(uProjection.get());
+            Vec4f oldUViewport = new Vec4f(uViewport.get());
+            float oldUViewScale = uViewScale.get();
+            Rect2i oldViewport = context.Viewport.get();
 
             HashSet<TileLayer> layers = new HashSet<>();
             for (TileLayerBucket bucket : buckets)
@@ -335,11 +334,10 @@ public class PreRenderedTileProvider implements TileProvider {
                 gl.glGenTextures(1, obj, 0);
                 texture = obj[0];
 
-                int width = 512;                                            // TODO: get width
-                int height = 512;                                           // TODO: get height
+                Vec2i size = getTilingScheme().getTileSize();
 
                 gl.glBindTexture(GL3.GL_TEXTURE_2D, texture);
-                gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, width, height, 0, GL3.GL_RGBA, GL3.GL_BYTE, null);
+                gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, size.x, size.y, 0, GL3.GL_RGBA, GL3.GL_BYTE, null);
                 gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
                 gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
                 gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
@@ -367,7 +365,7 @@ public class PreRenderedTileProvider implements TileProvider {
                 float[] clear = {0.f, 0.f, 0.f, 0.f};
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
                 gl.glClearBufferfv(GL3.GL_COLOR, 0, clear, 0);
-                gl.glViewport(0, 0, width, height);                         // TODO: context state
+                context.Viewport.set(gl, 0, 0, size.x, size.y);
 
                 context.BlendMode.enable(gl);
                 context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
@@ -376,7 +374,7 @@ public class PreRenderedTileProvider implements TileProvider {
                 uView.set(Mat4f.identity());
                 uProjection.set(Mat4f.identity().scale(1.f, 1.f, 0.1f));    // allow layer values for -10 to 10
                 uViewScale.set((float) Math.pow(2.0, id.z));
-                uViewport.set(width, height, 1.0f / width, 1.0f / height);
+                uViewport.set(size.x, size.y, 1.0f / size.x, 1.0f / size.y);
 
                 for (TileLayerBucket bucket : buckets) {
                     if (Thread.interrupted())
@@ -393,10 +391,11 @@ public class PreRenderedTileProvider implements TileProvider {
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 
                 // reset old view parameter
-                uView.set(oldView);
-                uProjection.set(oldProjection);
-                uViewport.set(oldViewport);
-                uViewScale.set(oldViewScale);
+                context.Viewport.set(gl, oldViewport);
+                uView.set(oldUView);
+                uProjection.set(oldUProjection);
+                uViewport.set(oldUViewport);
+                uViewScale.set(oldUViewScale);
             }
         }
 

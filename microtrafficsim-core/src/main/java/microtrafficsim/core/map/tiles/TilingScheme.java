@@ -5,6 +5,7 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.math.Vec2i;
 
 
 public interface TilingScheme {
@@ -20,6 +21,8 @@ public interface TilingScheme {
     Vec2d getPosition(int x, int y, int z);
     Rect2d getBounds(int x, int y, int z);
     Rect2d getBounds(TileRect tiles);
+
+    Vec2i getTileSize();
 
 
     default TileId getTile(Coordinate c, double zoom) {
