@@ -35,7 +35,7 @@ import static microtrafficsim.build.BuildSetup.DEBUG_VISUALIZATION;
 
 public class TileBasedVisualizer implements Visualizer {
 
-    private static final int DEFAULT_FPS = 0;
+    private static final int DEFAULT_FPS = 60;
     private static final String GL_PROFILE = GLProfile.GL3;
 
     private RenderContext context;

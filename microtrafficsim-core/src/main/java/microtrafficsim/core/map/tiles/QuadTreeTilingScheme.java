@@ -1,12 +1,11 @@
 package microtrafficsim.core.map.tiles;
 
 import microtrafficsim.core.vis.map.projections.Projection;
+import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.Vec2i;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
-
-import java.util.Objects;
 
 
 public class QuadTreeTilingScheme implements TilingScheme {
@@ -50,7 +49,7 @@ public class QuadTreeTilingScheme implements TilingScheme {
 
     @Override
     public TileRect getTiles(TileRect b, double zoom) {
-        int level = clamp((int) Math.ceil(zoom), minlevel, maxlevel);
+        int level = MathUtils.clamp((int) Math.ceil(zoom), minlevel, maxlevel);
 
         if (level > b.zoom) {           // child tiles
             int diff = level - b.zoom;
@@ -67,14 +66,14 @@ public class QuadTreeTilingScheme implements TilingScheme {
             int ctiles = 1 << b.zoom;
 
             int xmin = (int) ((b.xmin / (double) ctiles) * ptiles);
-            int xmax = (int) ((b.xmax / (double) ctiles) * ptiles);
             int ymin = (int) ((b.ymin / (double) ctiles) * ptiles);
+            int xmax = (int) ((b.xmax / (double) ctiles) * ptiles);
             int ymax = (int) ((b.ymax / (double) ctiles) * ptiles);
 
             return new TileRect(
                     clamp(xmin, 0, ptiles - 1),
-                    clamp(xmax, 0, ptiles - 1),
                     clamp(ymin, 0, ptiles - 1),
+                    clamp(xmax, 0, ptiles - 1),
                     clamp(ymax, 0, ptiles - 1),
                     level
             );

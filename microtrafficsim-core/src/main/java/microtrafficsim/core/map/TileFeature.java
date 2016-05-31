@@ -8,7 +8,7 @@ public class TileFeature<T extends FeaturePrimitive> {
     private final String name;
     private final Class<T> type;
     private final TileRect bounds;
-    private T[] data;
+    private final T[] data;
 
     public TileFeature(String name, Class<T> type, TileRect bounds, T[] data) {
         this.name = name;

@@ -48,6 +48,8 @@ public class Example {
 	public static final int NUM_SEGMENT_WORKERS = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
 
 	public static final float STREET_SCALE_NORMAL = (float) (1.0 / Math.pow(2, 19));
+
+	public static final int TILE_GRID_LEVEL = 15;
 	
 	
 	public static TileBasedVisualization createVisualization(TileProvider provider) {
