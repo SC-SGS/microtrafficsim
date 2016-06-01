@@ -49,7 +49,7 @@ public class Example {
 
 	public static final float STREET_SCALE_NORMAL = (float) (1.0 / Math.pow(2, 19));
 
-	public static final int TILE_GRID_LEVEL = 15;
+	public static final int TILE_GRID_LEVEL = 12;
 	
 	
 	public static TileBasedVisualization createVisualization(TileProvider provider) {

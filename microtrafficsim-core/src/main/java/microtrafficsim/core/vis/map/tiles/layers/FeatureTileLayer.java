@@ -6,6 +6,7 @@ import microtrafficsim.core.vis.mesh.Mesh;
 import microtrafficsim.core.vis.mesh.MeshBucket;
 import microtrafficsim.core.vis.mesh.style.FeatureStyle;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
+import microtrafficsim.math.Mat4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +19,8 @@ public class FeatureTileLayer extends TileLayer {
     private FeatureStyle style;
     private VertexArrayObject vao;
 
-    public FeatureTileLayer(TileId tile, Layer layer, FeatureTileLayerSource source, Mesh mesh, FeatureStyle style) {
-        super(tile, layer, source);
+    public FeatureTileLayer(TileId tile, Layer layer, Mat4f transform, Mesh mesh, FeatureStyle style) {
+        super(tile, layer, transform);
 
         this.mesh = mesh;
         this.style = style;

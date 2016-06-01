@@ -29,12 +29,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
     @Override
     public FeatureMeshKey getKey(RenderContext context, FeatureTileLayerSource source, TileId tile, Rect2d target) {
-        // expand to handle thick lines
-        TileRect expanded = new TileRect(tile.x - 1, tile.y - 1, tile.x + 1, tile.y + 1, tile.z);
-
         return new StreetMeshKey(
                 context,
-                tile,
+                getFeatureBounds(source, tile),
                 target,
                 source.getFeatureProvider(),
                 source.getFeatureName(),
@@ -43,6 +40,11 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 getPropAdjacency(source.getStyle()),
                 getPropJoinsWhenPossible(source.getStyle())
         );
+    }
+
+    @Override
+    public TileRect getFeatureBounds(FeatureTileLayerSource src, TileId tile) {
+        return src.getFeatureProvider().getFeatureBounds(src.getFeatureName(), tile);
     }
 
     @Override
@@ -60,7 +62,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         // get tile and source properties
         TilingScheme scheme = src.getTilingScheme();
         Projection projection = scheme.getProjection();
-        Rect2d bounds = scheme.getBounds(tile);
+        Rect2d bounds = scheme.getBounds(getFeatureBounds(src, tile));
 
         // generate mesh
         ArrayList<Vertex> vertices = new ArrayList<>();

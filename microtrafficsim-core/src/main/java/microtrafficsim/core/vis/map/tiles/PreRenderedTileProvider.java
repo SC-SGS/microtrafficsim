@@ -384,8 +384,7 @@ public class PreRenderedTileProvider implements TileProvider {
                 context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
                 context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
 
-                uView.set(Mat4f.identity());
-                uProjection.set(Mat4f.identity().scale(1.f, 1.f, 0.1f));    // allow layer values for -10 to 10
+                uProjection.set(Mat4f.identity());
                 uViewScale.set((float) Math.pow(2.0, id.z));
                 uViewport.set(size.x, size.y, 1.0f / size.x, 1.0f / size.y);
 
@@ -393,8 +392,10 @@ public class PreRenderedTileProvider implements TileProvider {
                     if (Thread.interrupted())
                         throw new InterruptedException();
 
-                    if (bucket.layer.getLayer().isEnabled())
+                    if (bucket.layer.getLayer().isEnabled()) {
+                        uView.set(bucket.layer.getTransform());
                         bucket.display(context);
+                    }
                 }
 
             } catch (InterruptedException e) {

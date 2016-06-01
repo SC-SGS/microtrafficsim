@@ -157,12 +157,12 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
 
     @Override
     public Bounds getBounds() {
-        return scheme.getUnprojectedBounds(leafs);
+        return bounds;
     }
 
     @Override
     public Rect2d getProjectedBounds() {
-        return scheme.getBounds(leafs);
+        return scheme.getProjection().project(bounds);
     }
 
 
@@ -212,18 +212,18 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
 
 
     @Override
-    public TileRect bestMatchingFeature(String name, TileId tile) {
-        return bestMatchingFeature(name, new TileRect(tile.x, tile.y, tile.x, tile.y, tile.z));
+    public TileRect getFeatureBounds(String name, TileId tile) {
+        return getFeatureBounds(name, new TileRect(tile.x, tile.y, tile.x, tile.y, tile.z));
     }
 
     @Override
-    public TileRect bestMatchingFeature(String name, TileRect bounds) {
+    public TileRect getFeatureBounds(String name, TileRect bounds) {
         bounds = scheme.getTiles(bounds, leafs.zoom);
         return new TileRect(
-                Math.max(leafs.xmin, this.leafs.xmin),
-                Math.max(leafs.ymin, this.leafs.ymin),
-                Math.min(leafs.xmax, this.leafs.xmax),
-                Math.min(leafs.ymax, this.leafs.ymax),
+                Math.max(bounds.xmin, this.leafs.xmin),
+                Math.max(bounds.ymin, this.leafs.ymin),
+                Math.min(bounds.xmax, this.leafs.xmax),
+                Math.min(bounds.ymax, this.leafs.ymax),
                 this.leafs.zoom
         );
     }

@@ -24,8 +24,8 @@ public interface TileFeatureProvider {
 
     Class<? extends FeaturePrimitive> getFeatureType(String name);
 
-    TileRect bestMatchingFeature(String name, TileId tile);
-    TileRect bestMatchingFeature(String name, TileRect bounds);
+    TileRect getFeatureBounds(String name, TileId tile);
+    TileRect getFeatureBounds(String name, TileRect bounds);
 
     <T extends FeaturePrimitive> TileFeature<T> require(String name, TileId tile) throws InterruptedException;
     <T extends FeaturePrimitive> TileFeature<T> require(String name, TileRect bounds) throws InterruptedException;

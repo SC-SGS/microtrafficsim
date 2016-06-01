@@ -2,6 +2,7 @@ package microtrafficsim.core.vis.map.tiles.mesh;
 
 import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.tiles.TileId;
+import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.math.Rect2d;
@@ -10,7 +11,7 @@ import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     private final RenderContext context;
-    private final TileId tile;
+    private final TileRect tiles;
     private final Rect2d target;
     private final TileFeatureProvider provider;
     private final String feature;
@@ -21,7 +22,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
 
     public StreetMeshKey(
             RenderContext context,
-            TileId tile,
+            TileRect tiles,
             Rect2d target,
             TileFeatureProvider provider,
             String feature,
@@ -31,7 +32,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
             boolean forceJoins
     ) {
         this.context = context;
-        this.tile = tile;
+        this.tiles = tiles;
         this.target = target;
         this.provider = provider;
         this.feature = feature;
@@ -50,7 +51,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
         StreetMeshKey other = (StreetMeshKey) obj;
 
         return this.context == other.context
-                && this.tile.equals(other.tile)
+                && this.tiles.equals(other.tiles)
                 && this.target.equals(other.target)
                 && this.provider == other.provider
                 && this.feature.equals(other.feature)
@@ -64,7 +65,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     public int hashCode() {
         return new FNVHashBuilder()
                 .add(context)
-                .add(tile)
+                .add(tiles)
                 .add(provider)
                 .add(feature)
                 .add(scheme)

@@ -10,6 +10,7 @@ import microtrafficsim.core.vis.mesh.ManagedMesh;
 import microtrafficsim.core.vis.mesh.Mesh;
 import microtrafficsim.core.vis.mesh.MeshPool;
 import microtrafficsim.core.vis.mesh.style.FeatureStyle;
+import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,8 @@ import java.util.HashSet;
 
 public class FeatureTileLayerGenerator implements TileLayerGenerator {
     private static final Logger logger = LoggerFactory.getLogger(FeatureTileLayerGenerator.class);
+
+    private static final Rect2d MESH_TARGET = new Rect2d(-1.0, -1.0, 1.0, 1.0);
 
     private MeshPool<FeatureMeshGenerator.FeatureMeshKey> pool;
     private HashSet<FeatureMeshGenerator.FeatureMeshKey> loading;
@@ -51,7 +54,7 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
         FeatureMeshGenerator generator = generators.get(src.getFeatureType());
         if (generator == null) return null;
 
-        FeatureMeshGenerator.FeatureMeshKey key = generator.getKey(context, src, tile, target);
+        FeatureMeshGenerator.FeatureMeshKey key = generator.getKey(context, src, tile, MESH_TARGET);
         ManagedMesh mesh = null;
 
         synchronized (this) {
@@ -82,9 +85,9 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
                     + tile.x + "/" + tile.y + "/" + tile.z
                     + "}, feature '" + src.getFeatureName() + "'");
 
-            Mesh m = null;
+            Mesh m;
             try {
-                m = generator.generate(context, src, tile, target);
+                m = generator.generate(context, src, tile, MESH_TARGET);
             }  catch (InterruptedException e) {
                 synchronized (this) {
                     loading.remove(key);
@@ -109,7 +112,25 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
             }
         }
 
+        // translate from MESH_TARGET via meshbounds to tilebounds to targe
+        Rect2d meshbounds = src.getTilingScheme().getBounds(generator.getFeatureBounds(src, tile));
+        Rect2d tilebounds = src.getTilingScheme().getBounds(tile);
+
+        float sxMeshToBounds = (float) ((meshbounds.xmax - meshbounds.xmin) / (MESH_TARGET.xmax - MESH_TARGET.xmin));
+        float syMeshToBounds = (float) ((meshbounds.ymax - meshbounds.ymin) / (MESH_TARGET.ymax - MESH_TARGET.ymin));
+        float sxBoundsToTile = (float) ((target.xmax - target.xmin) / (tilebounds.xmax - tilebounds.xmin));
+        float syBoundsToTile = (float) ((target.ymax - target.ymin) / (tilebounds.ymax - tilebounds.ymin));
+
+        float szMeshToTile = 0.1f;      // handle layer valuse from -10 to 10
+
+        Mat4f transform = Mat4f.identity()
+                .translate((float) target.xmin, (float) target.ymin, 0.f)
+                .scale(sxBoundsToTile, syBoundsToTile, 1.f)
+                .translate((float) (meshbounds.xmin - tilebounds.xmin), (float) (meshbounds.ymin - tilebounds.ymin), 0.f)
+                .scale(sxMeshToBounds, syMeshToBounds, szMeshToTile)
+                .translate((float) (-MESH_TARGET.xmin), (float) (-MESH_TARGET.ymin), 0.f);
+
         FeatureStyle style = new FeatureStyle(src.getStyle());
-        return new FeatureTileLayer(tile, layer, src, mesh, style);
+        return new FeatureTileLayer(tile, layer, transform, mesh, style);
     }
 }
