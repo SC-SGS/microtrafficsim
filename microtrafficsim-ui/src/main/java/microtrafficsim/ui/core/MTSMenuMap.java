@@ -25,8 +25,8 @@ class MTSMenuMap extends JMenu {
         itemOpenMap.addActionListener(e -> {
             File f = Utils.loadMap();
             if (f != null)
-                menubar.chef.asyncParse(f);
-            menubar.menuLogic.itemRun.setText("Run");
+                menubar.chef.parse(f);
+            menubar.menuLogic.itemRun.setText("Run/Pause");
         });
     }
 }

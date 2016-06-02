@@ -26,6 +26,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
@@ -42,9 +43,7 @@ public class SimulationChef {
 
     // general
     SimulationConfig config;
-    private BusyClosure sync; // synchronized
-    private PrefFrame preferences;
-    private final Object lock_preferences = new Object();
+    private ReentrantLock lock_gui;
     // visualization
     private LayerSupplier layerSupplier;
     private VisualizationPanel vpanel;
@@ -57,7 +56,10 @@ public class SimulationChef {
     private StreetGraph streetgraph;
     // jframe
     private JFrame jframe;
-    private JPanel topPanel;
+//    private JPanel topPanel;
+    // preferences
+    private PrefFrame preferences;
+    private boolean forNewSimulation;
 
     /**
      * This interface gives the opportunity to call the constructor of {@link SimulationChef} with a parameter, that
@@ -70,13 +72,6 @@ public class SimulationChef {
     }
     public interface LayerSupplierConstructor {
         LayerSupplier instantiate();
-    }
-    private interface BusyClosure {
-        /**
-         * @return previous value (unchanged if true);
-         */
-        boolean getBusy();
-        void getUnbusy();
     }
 
     public SimulationChef(SimulationConstructor simulationConstructor,
@@ -93,39 +88,27 @@ public class SimulationChef {
 
         super();
         jframe = new JFrame(title);
-        topPanel = new JPanel();
-        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
-        jframe.add(topPanel, BorderLayout.NORTH);
+//        topPanel = new JPanel(); todo cool icons for run etc.
+//        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+//        jframe.add(topPanel, BorderLayout.NORTH);
 
         config = new SimulationConfig();
         this.simulationConstructor = simulationConstructor;
         this.layerSupplier = layerSupplierConstructor.instantiate();
 
-        /* is busy */
-        class BusyClosureImpl implements BusyClosure {
-
-            private boolean isBusy;
-
-            @Override
-            public synchronized boolean getBusy() {
-                if (!isBusy) {
-                    boolean old = isBusy;
-                    isBusy = true;
-                    return false;
-                }
-                return true;
-            }
-
-            @Override
-            public synchronized void getUnbusy() {
-                isBusy = false;
-            }
-        }
-        sync = new BusyClosureImpl();
+        lock_gui = new ReentrantLock();
     }
 
     private boolean isVisible() {
         return vpanel != null;
+    }
+
+    private boolean simIsActive() {
+        return sim != null;
+    }
+
+    private boolean streetgraphIsActive() {
+        return streetgraph != null;
     }
 
     /*
@@ -133,68 +116,101 @@ public class SimulationChef {
     | general actions |
     |=================|
     */
-    public void createAndShow() {
-        createAndShow(null);
+    public void createAndShow(File file) {
+        createPreferences();
+
+        /* setup JFrame and visualization */
+        prepareVisualization();
+
+        // todo toolbar for icons for run etc.
+//            JToolBar toolbar = new JToolBar("Menu");
+//            toolbar.add(new MTSMenuBar(this).create());
+//            addToTopBar(toolbar);
+        jframe.add(new MTSMenuBar(this).create(), BorderLayout.NORTH);
+
+        /* parse file */
+        if (file != null)
+            parse(file);
+
+        /* create and initialize the VisualizationPanel and JFrame */
+        try {
+            vpanel = createVisualizationPanel(visualization);
+        } catch (UnsupportedFeatureException e) {
+            e.printStackTrace();
+            Runtime.getRuntime().halt(0);
+            return;
+        }
+        jframe.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        jframe.add(vpanel, BorderLayout.CENTER);
+
+        /*
+         * Note: JOGL automatically calls glViewport, we need to make sure that this
+         * function is not called with a height or width of 0! Otherwise the program
+         * crashes.
+         */
+        jframe.setMinimumSize(new Dimension(100, 100));
+
+        // on close: stop the visualization and exit
+        jframe.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                exit();
+            }
+        });
+
+        /* show frame and start visualization */
+        jframe.setLocationRelativeTo(null); // center on screen; close to setVisible
+        jframe.setVisible(true);
+        vpanel.start();
+
+        if (PRINT_FRAME_STATS)
+            visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
     }
 
-    public void createAndShow(File file) {
+    private void createPreferences() {
+        preferences = new PrefFrame();
+        /* add sub panels */
+        preferences.addPrefPanel(new PanelGeneral(config));
+        preferences.addPrefPanel(new PanelCrossingLogic(config));
+        preferences.addPrefPanel(new PanelVisualization(config));
+        preferences.addPrefPanel(new PanelConcurrency(config));
 
-        if(!sync.getBusy()) {
+        /* create/init */
+        preferences.create();
 
-            /* setup JFrame and visualization */
-            prepareVisualization();
+        preferences.addListener(newConfig -> {
 
-            JToolBar toolbar = new JToolBar("Menu");
-            toolbar.add(new MTSMenuBar(this).create());
-            addToTopBar(toolbar);
+            if (!this.forNewSimulation) {
+                config.reset(newConfig);
+            } else {
+                /* reset */
+                config.reset(newConfig);
+                streetgraph.reset();
+                overlay.setSimulation(null);
+                sim = null;
 
-            /* parse file */
-            if (file != null)
-                asyncParse(file);
+                String oldTitle = jframe.getTitle();
+                jframe.setTitle("Calculating vehicle routes 0%");
 
-            if (!isVisible()) {
+                        /* create the simulation */
+                sim = simulationConstructor.instantiate(config, streetgraph, overlay.getVehicleFactory());
+                overlay.setSimulation(sim);
 
-                /* create and initialize the VisualizationPanel and JFrame */
-                try {
-                    vpanel = createVisualizationPanel(visualization);
-                } catch (UnsupportedFeatureException e) {
-                    e.printStackTrace();
-                    Runtime.getRuntime().halt(0);
-                    return;
-                }
-                jframe.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-                jframe.add(vpanel, BorderLayout.CENTER);
+                        /* initialize the simulation */
+                sim.prepare(currentInPercent
+                        -> jframe.setTitle("Calculating vehicle routes " + currentInPercent + "%"));
+                sim.runOneStep();
 
-                /*
-                 * Note: JOGL automatically calls glViewport, we need to make sure that this
-                 * function is not called with a height or width of 0! Otherwise the program
-                 * crashes.
-                 */
-                jframe.setMinimumSize(new Dimension(100, 100));
-
-                // on close: stop the visualization and exit
-                jframe.addWindowListener(new WindowAdapter() {
-                    public void windowClosing(WindowEvent e) {
-                        exit();
-                    }
-                });
-
-                /* show frame and start visualization */
-                jframe.setLocationRelativeTo(null); // center on screen; close to setVisible
-                jframe.setVisible(true);
-                vpanel.start();
-
-                if (PRINT_FRAME_STATS)
-                    visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
-
+                jframe.setTitle(oldTitle);
             }
-            sync.getUnbusy();
-        }
+        });
+        preferences.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        preferences.pack();
+        preferences.setLocationRelativeTo(null); // center on screen; close to setVisible
+        preferences.setVisible(false);
     }
 
     private void exit() {
-
-        if (vpanel != null)
+        if (isVisible())
             vpanel.stop();
         System.exit(0);
     }
@@ -204,33 +220,24 @@ public class SimulationChef {
     | parsing |
     |=========|
     */
-    void asyncParse(File file) {
+    void parse(File file) {
 
-        if (isVisible())
-            if (!sync.getBusy()) {
+        try {
+            jframe.setTitle("Parsing new map, please wait...");
 
-                new Thread(() -> {
+            overlay.setSimulation(null);
+            sim = null;
 
-                    try {
-                        jframe.setTitle("Parsing new map, please wait...");
-
-                        overlay.setSimulation(null);
-                        sim = null;
-
-                        /* parsing */
-                        OSMParser.Result result = parser.parse(file);
-                        streetgraph = result.streetgraph;
-                        Utils.setFeatureProvider(layerSupplier.getLayerDefinitions(), result.segment);
-                        visualization.getVisualizer().resetView();
-                        jframe.setTitle("MicroTrafficSim - " + file.getName());
-                    } catch (XMLStreamException | IOException e) {
-                        e.printStackTrace();
-                        Runtime.getRuntime().halt(1);
-                    }
-
-                    sync.getUnbusy();
-                }).start();
-            }
+            /* parsing */
+            OSMParser.Result result = parser.parse(file);
+            streetgraph = result.streetgraph;
+            Utils.setFeatureProvider(layerSupplier.getLayerDefinitions(), result.segment);
+            visualization.getVisualizer().resetView();
+            jframe.setTitle("MicroTrafficSim - " + file.getName());
+        } catch (XMLStreamException | IOException e) {
+            e.printStackTrace();
+            Runtime.getRuntime().halt(1);
+        }
     }
 
     /*
@@ -301,10 +308,11 @@ public class SimulationChef {
     | JFrame |
     |========|
     */
-    private void addToTopBar(JComponent component) {
-        component.setAlignmentX(Component.LEFT_ALIGNMENT);
-        topPanel.add(component);
-    }
+    // todo icons for run etc.
+//    private void addToTopBar(JComponent component) {
+//        component.setAlignmentX(Component.LEFT_ALIGNMENT);
+//        topPanel.add(component);
+//    }
 
     /*
     |====================|
@@ -316,19 +324,14 @@ public class SimulationChef {
      *
      * @return new state == paused
      */
-    boolean asyncRunSimulation() {
-
-        if (sim != null)
+    void runSimulation() {
+        if (simIsActive()) {
             if (sim.isPaused()) {
                 sim.run();
             } else {
                 sim.cancel();
-                return true;
             }
-        else
-            asyncCreateNewSimulation();
-
-        return config.speedup().get() == 0;
+        }
     }
 
     /**
@@ -336,26 +339,23 @@ public class SimulationChef {
      *
      * @return new state == paused
      */
-    boolean asyncRunOneStep() {
-        if (sim != null) {
+    void runOneStep() {
+        if (simIsActive()) {
             if (!sim.isPaused())
                 sim.cancel();
-            new Thread(() -> sim.runOneStep()).start();
+            sim.runOneStep();
         }
-        else
-            asyncCreateNewSimulation();
-        return true;
     }
 
-    void asyncCreateNewSimulation() {
-        if (isVisible() && (streetgraph != null)) {
-            if (!sync.getBusy())
-                showPreferences(true);
-        } else
+    void createNewSimulation() {
+        if (isVisible() && streetgraphIsActive()) {
+            showPreferences(true);
+        } else {
             JOptionPane.showMessageDialog(null,
                     "A map is needed for a simulation.\n" +
                             "For loading a map, please go to\n" +
                             "Map -> Open map...\n");
+        }
     }
 
     /*
@@ -363,80 +363,21 @@ public class SimulationChef {
     | preferences |
     |=============|
     */
-    private boolean forNewSimulation;
-    void showPreferences(boolean forNewSimulation) {
+    public void showPreferences() {
+        showPreferences(false);
+    }
 
-        synchronized (lock_preferences) {
-            this.forNewSimulation = forNewSimulation;
-            if (preferences != null) {
-                for (ComponentId componentId : ComponentId.values()) {
-                    boolean isEnabled = (sim == null) || forNewSimulation || componentId.isEnabledDuringSimulating();
-                    preferences.setEnabled(isEnabled, componentId);
-                }
-                preferences.toFront();
-                return;
-            }
+    private void showPreferences(boolean forNewSimulation) {
+        preferences.initSettings();
+        this.forNewSimulation = forNewSimulation;
 
-            preferences = new PrefFrame();
-            SwingUtilities.invokeLater(() -> {
-                /* add sub panels */
-                preferences.addPrefPanel(new PanelGeneral(config));
-                preferences.addPrefPanel(new PanelCrossingLogic(config));
-                preferences.addPrefPanel(new PanelVisualization(config));
-                preferences.addPrefPanel(new PanelConcurrency(config));
-
-                /* create/init */
-                preferences.create();
-                preferences.initSettings();
-
-                for (ComponentId componentId : ComponentId.values()) {
-                    boolean isEnabled = (sim == null) || forNewSimulation || componentId.isEnabledDuringSimulating();
-                    isEnabled &= !componentId.isAlwaysDisabled();
-                    preferences.setEnabled(isEnabled, componentId);
-                }
-
-                preferences.addListener(newConfig -> {
-
-                    if (!this.forNewSimulation) {
-                        config.reset(newConfig);
-                        sync.getUnbusy();
-                    } else {
-                        new Thread(() -> {
-                            /* reset */
-                            config.reset(newConfig);
-                            streetgraph.reset();
-                            overlay.setSimulation(null);
-                            sim = null;
-
-                            String oldTitle = jframe.getTitle();
-                            jframe.setTitle("Calculating vehicle routes 0%");
-
-                            /* create the simulation */
-                            sim = simulationConstructor.instantiate(config, streetgraph, overlay.getVehicleFactory());
-                            overlay.setSimulation(sim);
-
-                            /* initialize the simulation */
-                            sim.prepare(currentInPercent
-                                    -> jframe.setTitle("Calculating vehicle routes " + currentInPercent + "%"));
-                            sim.runOneStep();
-
-                            jframe.setTitle(oldTitle);
-                            sync.getUnbusy();
-                        }).start();
-                    }
-                });
-                preferences.addWindowListener(new WindowAdapter() {
-                    @Override
-                    public void windowClosed(WindowEvent e) {
-                        super.windowClosed(e);
-                        preferences = null;
-                        sync.getUnbusy();
-                    }
-                });
-                preferences.pack();
-                preferences.setLocationRelativeTo(null); // center on screen; close to setVisible
-                preferences.setVisible(true);
-            });
+        for (ComponentId componentId : ComponentId.values()) {
+            boolean isEnabled = !simIsActive() || forNewSimulation || componentId.isEnabledDuringSimulating();
+            isEnabled &= !componentId.isAlwaysDisabled();
+            preferences.setEnabled(isEnabled, componentId);
         }
+
+        preferences.setVisible(true);
+        preferences.toFront();
     }
 }

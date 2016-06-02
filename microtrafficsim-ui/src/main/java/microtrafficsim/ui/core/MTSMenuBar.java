@@ -26,11 +26,6 @@ public class MTSMenuBar extends JMenuBar {
         menuMap.addActions(this);
         menuLogic.addActions(this);
 
-        chef.config.speedup().addObserver((o, arg) -> {
-            if (chef.config.speedup().get() == 0)
-                menuLogic.updateTextItemRun(false);
-        });
-
         return this;
     }
 }

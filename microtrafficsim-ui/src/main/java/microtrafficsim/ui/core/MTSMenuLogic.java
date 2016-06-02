@@ -20,8 +20,7 @@ class MTSMenuLogic extends JMenu {
         itemPrepareSim = new JMenuItem("Prepare simulation");
         add(itemPrepareSim);
 
-        itemRun = new JMenuItem();
-        updateTextItemRun(false);
+        itemRun = new JMenuItem("Run/Pause");
         add(itemRun);
 
         itemRunOneStep = new JMenuItem("Run one step");
@@ -30,43 +29,22 @@ class MTSMenuLogic extends JMenu {
 
     public void addActions(MTSMenuBar menubar) {
 
-        itemChangeSimParams.addActionListener(e -> {
-            SwingUtilities.invokeLater(() -> menubar.chef.showPreferences(false));
-        });
+        itemChangeSimParams.addActionListener(e -> menubar.chef.showPreferences());
         menubar.chef.addKeyCommand(
                 KeyEvent.EVENT_KEY_PRESSED,
                 KeyEvent.VK_COMMA,
-                e -> menubar.chef.showPreferences(false)
+                e -> menubar.chef.showPreferences()
         );
-        itemPrepareSim.addActionListener(e -> {
-            menubar.chef.asyncCreateNewSimulation();
-            updateTextItemRun(false);
-        });
-        itemRun.addActionListener(e -> {
-            boolean isPausedNow = menubar.chef.asyncRunSimulation();
-            updateTextItemRun(!isPausedNow);
-        });
+        itemPrepareSim.addActionListener(e -> menubar.chef.createNewSimulation());
+        itemRun.addActionListener(e -> menubar.chef.runSimulation());
         menubar.chef.addKeyCommand(
                 KeyEvent.EVENT_KEY_PRESSED,
                 KeyEvent.VK_SPACE,
-                e -> {
-                    boolean isPausedNow = menubar.chef.asyncRunSimulation();
-                    updateTextItemRun(!isPausedNow);
-                });
-        itemRunOneStep.addActionListener(e -> {
-            menubar.chef.asyncRunOneStep();
-            updateTextItemRun(false);
-        });
+                e -> menubar.chef.runSimulation());
+        itemRunOneStep.addActionListener(e -> menubar.chef.runOneStep());
         menubar.chef.addKeyCommand(
                 KeyEvent.EVENT_KEY_PRESSED,
                 KeyEvent.VK_RIGHT,
-                e -> {
-                    menubar.chef.asyncRunOneStep();
-                    updateTextItemRun(false);
-                });
-    }
-
-    void updateTextItemRun(boolean isRunning) {
-        itemRun.setText(isRunning ? "Pause" : "Run");
+                e -> menubar.chef.runOneStep());
     }
 }
