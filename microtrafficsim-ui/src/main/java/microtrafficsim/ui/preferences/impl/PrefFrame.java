@@ -32,18 +32,6 @@ public class PrefFrame extends JFrame implements IPreferences {
         listeners = new HashSet<>();
 
         setLayout(new BorderLayout());
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                content = null;
-                bottom = null;
-                panels.clear();
-                panels = null;
-                listeners.clear();
-                listeners = null;
-            }
-        });
 //        setMinimumSize(new Dimension(550, 330));
 
         panels = new LinkedList<>();
@@ -132,7 +120,7 @@ public class PrefFrame extends JFrame implements IPreferences {
                 listener.didAcceptChanges(newConfig);
 
         if (!errorOccured)
-            dispose();
+            setVisible(false);
 
         return errorOccured;
     }
@@ -140,7 +128,7 @@ public class PrefFrame extends JFrame implements IPreferences {
     @Override
     public void cancelChanges() {
         panels.forEach(PrefPanel::cancelChanges);
-        dispose();
+        setVisible(false);
     }
 
     /**
