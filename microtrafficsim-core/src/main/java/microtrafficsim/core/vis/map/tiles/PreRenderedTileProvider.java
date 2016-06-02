@@ -39,13 +39,13 @@ public class PreRenderedTileProvider implements TileProvider {
     private static int count = 0;
     // TODO: implement basic caching, re-use textures and FBOs
     // TODO: depth attachment for FBOs?
+    // TODO: reload only layer on layer-change
     // TODO: refactor layer status control (enabled/disabled), add observers.
     //          redraw vs. reload on status change --> reload/unload only specific layer
 
     // TODO FOR FRIDAY 3.6.
-    //  1. add LayerChangeListeners, check change propagation chain
-    //  2. StyleSheet-class, use 'void apply(StyleSheet)'
-    //  3. merge into microtrafficsim.ui
+    //  1. StyleSheet-class, use 'void apply(StyleSheet)'
+    //  2. merge into microtrafficsim.ui
 
     private static final Rect2d TILE_TARGET = new Rect2d(-1.0, -1.0, 1.0, 1.0);
 
@@ -58,6 +58,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
     private TileLayerProvider provider;
     private HashSet<TileChangeListener> tileListener;
+    private TileLayerProvider.LayerChangeListener layerListener;
 
     private float[] bgcolor = {0.f, 0.f, 0.f, 0.f};
 
@@ -72,20 +73,13 @@ public class PreRenderedTileProvider implements TileProvider {
 
     private TileQuad quad;
 
-    // -- TEMPORARY -----------------------------------------------------------
-    private ShaderProgram tilepjt;
-    private static final Resource TILE_PJT_SHADER_VS = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tile_projection_test.vs");
-    private static final Resource TILE_PJT_SHADER_FS = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tile_projection_test.fs");
-    // ------------------------------------------------------------------------
-
-
-    public PreRenderedTileProvider() {
-        this(null);
-    }
 
     public PreRenderedTileProvider(TileLayerProvider provider) {
+        this.layerListener = new LayerChangeListenerImpl();
+
         this.provider = provider;
         this.tileListener = new HashSet<>();
+        this.provider.addLayerChangeListener(layerListener);
     }
 
 
@@ -141,25 +135,6 @@ public class PreRenderedTileProvider implements TileProvider {
 
         quad = new TileQuad();
         quad.initialize(gl);
-
-
-        // -- TEMPORARY -------------------------------------------------------
-        vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "tilepjt.vs")
-                .loadFromResource(TILE_PJT_SHADER_VS)
-                .compile(gl);
-
-        fs = Shader.create(gl, GL3.GL_FRAGMENT_SHADER, "tilepjt.fs")
-                .loadFromResource(TILE_PJT_SHADER_FS)
-                .compile(gl);
-
-        tilepjt = ShaderProgram.create(gl, context, "tilepjt")
-                .attach(gl, vs, fs)
-                .link(gl)
-                .detach(gl, vs, fs);
-
-        vs.dispose(gl);
-        fs.dispose(gl);
-        // --------------------------------------------------------------------
     }
 
     @Override
@@ -168,10 +143,6 @@ public class PreRenderedTileProvider implements TileProvider {
 
         tilecopy.dispose(gl);   tilecopy = null;
         quad.dispose(gl);       quad = null;
-
-        // -- TEMPORARY -------------------------------------------------------
-        tilepjt.dispose(gl);    tilepjt = null;
-        // --------------------------------------------------------------------
     }
 
 
@@ -520,6 +491,37 @@ public class PreRenderedTileProvider implements TileProvider {
                 return -1;
             else
                 return 0;
+        }
+    }
+
+    private class LayerChangeListenerImpl implements TileLayerProvider.LayerChangeListener {
+
+        @Override
+        public void layersChanged() {
+            for (TileChangeListener l : tileListener)
+                l.tilesChanged();
+        }
+
+        @Override
+        public void layersChanged(TileId tile) {
+            for (TileChangeListener l : tileListener)
+                l.tileChanged(tile);
+        }
+
+        @Override
+        public void layerChanged(String name) {
+            // TODO: only reload layer
+
+            for (TileChangeListener l : tileListener)
+                l.tilesChanged();
+        }
+
+        @Override
+        public void layerChanged(String name, TileId tile) {
+            // TODO: only reload layer
+
+            for (TileChangeListener l : tileListener)
+                l.tileChanged(tile);
         }
     }
 }
