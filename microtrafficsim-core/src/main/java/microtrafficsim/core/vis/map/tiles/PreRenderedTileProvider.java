@@ -39,6 +39,13 @@ public class PreRenderedTileProvider implements TileProvider {
     private static int count = 0;
     // TODO: implement basic caching, re-use textures and FBOs
     // TODO: depth attachment for FBOs?
+    // TODO: refactor layer status control (enabled/disabled), add observers.
+    //          redraw vs. reload on status change --> reload/unload only specific layer
+
+    // TODO FOR FRIDAY 3.6.
+    //  1. add LayerChangeListeners, check change propagation chain
+    //  2. StyleSheet-class, use 'void apply(StyleSheet)'
+    //  3. merge into microtrafficsim.ui
 
     private static final Rect2d TILE_TARGET = new Rect2d(-1.0, -1.0, 1.0, 1.0);
 
@@ -51,6 +58,8 @@ public class PreRenderedTileProvider implements TileProvider {
 
     private TileLayerProvider provider;
     private HashSet<TileChangeListener> tileListener;
+
+    private float[] bgcolor = {0.f, 0.f, 0.f, 0.f};
 
     private ShaderProgram tilecopy;
     private UniformMat4f uTileCopyTransform;
@@ -370,14 +379,14 @@ public class PreRenderedTileProvider implements TileProvider {
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 
                 if (status != GL3.GL_FRAMEBUFFER_COMPLETE)
-                    throw new RuntimeException("Failed to create Framebuffer Object (status: 0x" + Integer.toHexString(status));
+                    throw new RuntimeException("Failed to create framebuffer object (status: 0x"
+                            + Integer.toHexString(status) + ")");
 
                 // -- render tile --
 
                 // render tile to FBO
-                float[] clear = {0.f, 0.f, 0.f, 0.f};
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
-                gl.glClearBufferfv(GL3.GL_COLOR, 0, clear, 0);
+                gl.glClearBufferfv(GL3.GL_COLOR, 0, bgcolor, 0);
                 context.Viewport.set(gl, 0, 0, size.x, size.y);
 
                 context.BlendMode.enable(gl);

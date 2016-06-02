@@ -177,7 +177,10 @@ public class TileBasedVisualizer implements Visualizer {
         uView.set(view.getViewMatrix());
         uProjection.set(view.getProjectionMatrix());
 
+        // clear
         GL3 gl = context.getDrawable().getGL().getGL3();
+        context.ClearColor.set(gl, bgcolor);
+        context.ClearDepth.set(gl, 1.f);
         gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 
         // update and draw
