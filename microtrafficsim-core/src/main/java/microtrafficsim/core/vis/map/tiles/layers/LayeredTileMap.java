@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 
 public class LayeredTileMap implements TileLayerProvider {
 
-    private Projection projection;
     private TilingScheme scheme;
+    private Projection projection;
 
     private Rect2d bounds;
 
@@ -27,9 +27,9 @@ public class LayeredTileMap implements TileLayerProvider {
     private List<LayerChangeListener> listeners;
 
 
-    public LayeredTileMap(Projection projection, TilingScheme scheme) {
-        this.projection = projection;
+    public LayeredTileMap(TilingScheme scheme) {
         this.scheme = scheme;
+        this.projection = scheme.getProjection();
 
         this.bounds = null;
 
@@ -42,22 +42,13 @@ public class LayeredTileMap implements TileLayerProvider {
 
 
     @Override
-    public void setProjection(Projection projection) {
-        this.projection = projection;
-
-        // notify listeners
-        listeners.forEach(LayerChangeListener::layersChanged);
+    public TilingScheme getTilingScheme() {
+        return scheme;
     }
 
     @Override
     public Projection getProjection() {
-        return projection;
-    }
-
-
-    @Override
-    public TilingScheme getTilingScheme() {
-        return scheme;
+        return scheme.getProjection();
     }
 
 

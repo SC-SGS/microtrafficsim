@@ -22,9 +22,7 @@ public interface TileLayerProvider {
     Bounds getBounds();
     Rect2d getProjectedBounds();
 
-    void setProjection(Projection projection);
     Projection getProjection();
-
     TilingScheme getTilingScheme();
 
     Layer getLayer(String name);

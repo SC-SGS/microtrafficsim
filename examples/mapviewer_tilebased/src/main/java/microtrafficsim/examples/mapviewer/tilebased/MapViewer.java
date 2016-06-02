@@ -46,9 +46,7 @@ public class MapViewer {
 			file = new File(Example.DEFAULT_OSM_XML);
 		}
 
-        Projection projection = new MercatorProjection(256);    // tiles will be 512x512 pixel
-        QuadTreeTilingScheme scheme = new QuadTreeTilingScheme(projection, 0, 19);
-		show(projection, scheme, file);
+		show(file);
 	}
 	
 	private static void printUsage() {
@@ -62,11 +60,10 @@ public class MapViewer {
 	}
 	
 	
-	private static void show(Projection projection, QuadTreeTilingScheme scheme, File file) throws Exception {
-		
+	private static void show(File file) throws Exception {
 		/* set up visualization style and sources */
 		Collection<TileLayerDefinition> layers = Example.getLayerDefinitions();
-		TileLayerProvider layerProvider = Example.getLayerProvider(projection, scheme, layers);
+		TileLayerProvider layerProvider = Example.getLayerProvider(Example.TILING_SCHEME, layers);
         PreRenderedTileProvider provider = new PreRenderedTileProvider(layerProvider);
 
 		/* create the visualizer */
@@ -74,7 +71,7 @@ public class MapViewer {
 		
 		/* parse the OSM file asynchronously and update the sources */
 		OSMParser parser = Example.getParser();
-		asyncParse(parser, file, layers, visualization.getVisualizer(), scheme);
+		asyncParse(parser, file, layers, visualization.getVisualizer(), Example.TILING_SCHEME);
 		
 		/* create and initialize the VisualizationPanel and JFrame */
 		VisualizationPanel vpanel = Example.createVisualizationPanel(visualization);

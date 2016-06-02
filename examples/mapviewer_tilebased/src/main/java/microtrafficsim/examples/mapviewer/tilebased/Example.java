@@ -3,12 +3,14 @@ package microtrafficsim.examples.mapviewer.tilebased;
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.map.layers.TileLayerDefinition;
 import microtrafficsim.core.map.style.StyleSheet;
+import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.MapFeatureDefinition;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.VisualizerConfig;
+import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.tiles.TileProvider;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerGenerator;
@@ -33,9 +35,11 @@ public class Example {
 	public static final int WINDOW_WIDTH = 1600;
 	public static final int WINDOW_HEIGHT = 900;
 	public static final int MSAA = 0;
+
 	public static final int NUM_SEGMENT_WORKERS = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
 
-	public static final float STREET_SCALE_NORMAL = (float) (1.0 / Math.pow(2, 19));
+	public static final Projection PROJECTION = new MercatorProjection(256);    // tiles will be 512x512 pixel
+	public static final QuadTreeTilingScheme TILING_SCHEME = new QuadTreeTilingScheme(PROJECTION, 0, 19);
 
 	public static final int TILE_GRID_LEVEL = 12;
 
@@ -100,8 +104,8 @@ public class Example {
 		return STYLE.getLayers();
 	}
 
-	public static TileLayerProvider getLayerProvider(Projection projection, TilingScheme scheme, Collection<TileLayerDefinition> layers) {
-        LayeredTileMap provider = new LayeredTileMap(projection, scheme);
+	public static TileLayerProvider getLayerProvider(TilingScheme scheme, Collection<TileLayerDefinition> layers) {
+        LayeredTileMap provider = new LayeredTileMap(scheme);
         FeatureTileLayerGenerator generator = new FeatureTileLayerGenerator();
         provider.putGenerator(FeatureTileLayerSource.class, generator);
 
