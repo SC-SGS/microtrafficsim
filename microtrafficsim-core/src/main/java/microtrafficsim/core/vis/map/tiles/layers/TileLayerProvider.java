@@ -30,6 +30,7 @@ public interface TileLayerProvider {
     Layer getLayer(String name);
     Set<String> getLayers();
     Set<String> getAvailableLayers();
+    Set<String> getAvailableLayers(TileId tile);
 
     TileLayer require(RenderContext context, String layer, TileId tile, Rect2d target) throws InterruptedException;
     void release(RenderContext context, TileLayer layer);

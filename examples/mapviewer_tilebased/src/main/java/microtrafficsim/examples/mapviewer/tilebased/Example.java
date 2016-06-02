@@ -282,29 +282,29 @@ public class Example {
 		
 		// create layers
 		int index = 0;
-		layers.add(new TileLayerDefinition("streets:other:outline", index++,
+		layers.add(new TileLayerDefinition("streets:other:outline", index++, 0, 19,
 				new FeatureTileLayerSource("streets:other", otherOutline)));
 
-		layers.add(new TileLayerDefinition("streets:primary:outline", index++,
+		layers.add(new TileLayerDefinition("streets:primary:outline", index++, 0, 19,
 				new FeatureTileLayerSource("streets:primary", primaryOutline)));
 
-		layers.add(new TileLayerDefinition("streets:trunk:outline", index++,
+		layers.add(new TileLayerDefinition("streets:trunk:outline", index++, 0, 19,
 				new FeatureTileLayerSource("streets:trunk", trunkOutline)));
 
-		layers.add(new TileLayerDefinition("streets:motorway:outline", index++,
+		layers.add(new TileLayerDefinition("streets:motorway:outline", index++, 0, 19,
 				new FeatureTileLayerSource("streets:motorway", motorwayOutline)));
 
 
-		layers.add(new TileLayerDefinition("streets:other:base", index++,
+		layers.add(new TileLayerDefinition("streets:other:base", index++, 16, 19,
 				new FeatureTileLayerSource("streets:other", otherInner)));
 
-		layers.add(new TileLayerDefinition("streets:primary:base", index++,
+		layers.add(new TileLayerDefinition("streets:primary:base", index++, 16, 19,
 				new FeatureTileLayerSource("streets:primary", primaryInner)));
 
-		layers.add(new TileLayerDefinition("streets:trunk:base", index++,
+		layers.add(new TileLayerDefinition("streets:trunk:base", index++, 16, 19,
 				new FeatureTileLayerSource("streets:trunk", trunkInner)));
 
-		layers.add(new TileLayerDefinition("streets:motorway:base", index++,
+		layers.add(new TileLayerDefinition("streets:motorway:base", index++, 16, 19,
 				new FeatureTileLayerSource("streets:motorway", motorwayInner)));
 
 		return layers;

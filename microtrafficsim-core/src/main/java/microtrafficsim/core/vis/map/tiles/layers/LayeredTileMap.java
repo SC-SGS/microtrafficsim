@@ -73,7 +73,7 @@ public class LayeredTileMap implements TileLayerProvider {
 
 
     public TileLayerDefinition addLayer(TileLayerDefinition def) {
-        Layer layer = new Layer(def.getName(), def.getIndex(), def.getSource());
+        Layer layer = new Layer(def.getName(), def.getIndex(), def.getMinimumZoomLevel(), def.getMaximumZoomLevel(), def.getSource());
         Layer old = layers.put(layer.getName(), layer);
 
         layer.getSource().addLayerSourceChangeListener(sourceListener);
@@ -91,7 +91,8 @@ public class LayeredTileMap implements TileLayerProvider {
         if (old == null)
             return null;
         else
-            return new TileLayerDefinition(old.getName(), old.getIndex(), old.getSource());
+            return new TileLayerDefinition(old.getName(), old.getIndex(), old.getMinimumZoomLevel(),
+                    old.getMaximumZoomLevel(), old.getSource());
     }
 
     public TileLayerDefinition removeLayer(String name) {
@@ -107,7 +108,8 @@ public class LayeredTileMap implements TileLayerProvider {
                     l.layerChanged(name);
             }
 
-            return new TileLayerDefinition(layer.getName(), layer.getIndex(), layer.getSource());
+            return new TileLayerDefinition(layer.getName(), layer.getIndex(), layer.getMinimumZoomLevel(),
+                    layer.getMaximumZoomLevel(), layer.getSource());
         } else {
             return null;
         }
@@ -131,6 +133,15 @@ public class LayeredTileMap implements TileLayerProvider {
     @Override
     public Set<String> getAvailableLayers() {
         return layers.values().stream()
+                .filter(d -> d.getSource().isAvailable())
+                .map(Layer::getName)
+                .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    @Override
+    public Set<String> getAvailableLayers(TileId tile) {
+        return layers.values().stream()
+                .filter(d -> d.isAvailableFor(tile))
                 .filter(d -> d.getSource().isAvailable())
                 .map(Layer::getName)
                 .collect(Collectors.toCollection(HashSet::new));

@@ -165,7 +165,7 @@ public class PreRenderedTileProvider implements TileProvider {
         try {
             ArrayList<TileLayer> layers = new ArrayList<>();
 
-            for (String name : provider.getAvailableLayers()) {
+            for (String name : provider.getAvailableLayers(id)) {
                 if (Thread.interrupted())
                     throw new InterruptedException();
 
