@@ -3,6 +3,7 @@ package microtrafficsim.core.vis.map.tiles;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.Bounds;
+import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
@@ -21,6 +22,7 @@ import microtrafficsim.core.vis.opengl.shader.uniforms.Uniform1f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformMat4f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
+import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.math.*;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
@@ -60,7 +62,7 @@ public class PreRenderedTileProvider implements TileProvider {
     private HashSet<TileChangeListener> tileListener;
     private TileLayerProvider.LayerChangeListener layerListener;
 
-    private float[] bgcolor = {0.f, 0.f, 0.f, 0.f};
+    private Color bgcolor = Color.fromRGBA(0x00000000);
 
     private ShaderProgram tilecopy;
     private UniformMat4f uTileCopyTransform;
@@ -232,6 +234,12 @@ public class PreRenderedTileProvider implements TileProvider {
 
 
     @Override
+    public void apply(StyleSheet style) {
+        bgcolor = style.getTileBackgroundColor();
+    }
+
+
+    @Override
     public boolean addTileChangeListener(TileChangeListener listener) {
         return tileListener.add(listener);
     }
@@ -258,7 +266,7 @@ public class PreRenderedTileProvider implements TileProvider {
         private int fbo;
 
 
-        public PreRenderedTile(TileId id, ArrayList<TileLayerBucket> buckets) {
+        PreRenderedTile(TileId id, ArrayList<TileLayerBucket> buckets) {
             this.id = id;
             this.buckets = buckets;
             this.transform = Mat4f.identity();
@@ -357,7 +365,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
                 // render tile to FBO
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
-                gl.glClearBufferfv(GL3.GL_COLOR, 0, bgcolor, 0);
+                gl.glClearBufferfv(GL3.GL_COLOR, 0, new float[]{bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a}, 0);
                 context.Viewport.set(gl, 0, 0, size.x, size.y);
 
                 context.BlendMode.enable(gl);

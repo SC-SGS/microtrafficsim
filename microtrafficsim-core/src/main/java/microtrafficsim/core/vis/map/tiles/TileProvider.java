@@ -1,6 +1,7 @@
 package microtrafficsim.core.vis.map.tiles;
 
 import microtrafficsim.core.map.Bounds;
+import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
@@ -31,6 +32,8 @@ public interface TileProvider {
 
     void beforeRendering(RenderContext context);
     void afterRendering(RenderContext context);
+
+    void apply(StyleSheet style);
 
     boolean addTileChangeListener(TileChangeListener listener);
     boolean removeTileChangeListener(TileChangeListener listener);

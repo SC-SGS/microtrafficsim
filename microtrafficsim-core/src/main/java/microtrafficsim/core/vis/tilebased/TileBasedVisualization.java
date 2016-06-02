@@ -1,5 +1,6 @@
 package microtrafficsim.core.vis.tilebased;
 
+import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.vis.AbstractVisualization;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.input.OrthoInputController;
@@ -35,5 +36,10 @@ public class TileBasedVisualization extends AbstractVisualization {
     private TileBasedVisualization(RenderContext context, OrthographicView view, TileProvider provider,
                                    OrthoInputController controller, ExecutorService worker) {
         super(context, new TileBasedVisualizer(context, view, provider, worker), controller, controller);
+    }
+
+
+    public void apply(StyleSheet style) {
+        ((TileBasedVisualizer) getVisualizer()).apply(style);
     }
 }

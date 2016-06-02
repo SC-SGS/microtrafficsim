@@ -22,6 +22,7 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.util.Collection;
 import java.util.Set;
 
 
@@ -64,7 +65,7 @@ public class MapViewer {
 	private static void show(Projection projection, QuadTreeTilingScheme scheme, File file) throws Exception {
 		
 		/* set up visualization style and sources */
-		Set<TileLayerDefinition> layers = Example.getLayerDefinitions();
+		Collection<TileLayerDefinition> layers = Example.getLayerDefinitions();
 		TileLayerProvider layerProvider = Example.getLayerProvider(projection, scheme, layers);
         PreRenderedTileProvider provider = new PreRenderedTileProvider(layerProvider);
 
@@ -104,7 +105,7 @@ public class MapViewer {
 			visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
 	}
 
-	private static void asyncParse(OSMParser parser, File file, Set<TileLayerDefinition> layers, Visualizer vis,
+	private static void asyncParse(OSMParser parser, File file, Collection<TileLayerDefinition> layers, Visualizer vis,
 								   QuadTreeTilingScheme scheme) {
 		new Thread(() -> {
 			try {

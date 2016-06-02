@@ -3,6 +3,7 @@ package microtrafficsim.core.vis.tilebased;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
+import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
@@ -41,6 +42,7 @@ public class TileBasedVisualizer implements Visualizer {
     private RenderContext context;
     private OrthographicView view;
 
+    private TileProvider provider;
     private TileManager manager;
     private TreeMap<Integer, Overlay> overlays;
 
@@ -48,7 +50,7 @@ public class TileBasedVisualizer implements Visualizer {
     private UniformMat4f uView;
     private UniformMat4f uProjection;
 
-    private Color bgcolor = Color.fromRGB(0xFFFFFA);
+    private Color bgcolor = Color.fromRGBA(0x000000FF);
 
 
     public TileBasedVisualizer(
@@ -59,6 +61,7 @@ public class TileBasedVisualizer implements Visualizer {
     {
         this.context = context;
         this.view = view;
+        this.provider = provider;
 
         this.overlays = new TreeMap<>();
 
@@ -249,6 +252,12 @@ public class TileBasedVisualizer implements Visualizer {
     @Override
     public Collection<Overlay> getAllOverlays() {
         return overlays.values();
+    }
+
+
+    public void apply(StyleSheet style) {
+        bgcolor = style.getBackgroundColor();
+        provider.apply(style);
     }
 
 

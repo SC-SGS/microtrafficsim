@@ -15,12 +15,13 @@ import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Collection;
 import java.util.Set;
 
 
 public class Utils {
 	
-	public static void setFeatureProvider(Set<TileLayerDefinition> layers, TileFeatureProvider provider) {
+	public static void setFeatureProvider(Collection<TileLayerDefinition> layers, TileFeatureProvider provider) {
 		for (TileLayerDefinition def : layers) {
 			TileLayerSource src = def.getSource();
 
