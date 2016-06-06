@@ -1,7 +1,6 @@
 package microtrafficsim.core.vis.map.tiles;
 
 import com.jogamp.opengl.GL2ES2;
-import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TileRect;
@@ -367,10 +366,14 @@ public class TileManager {
             Rect2d bounds = provider.getTilingScheme().getBounds(id);
 
             // translate from [[-1, -1],[1, 1]] to [bounds]
-            tile.getTransformation()
-                    .translate((float) bounds.xmin, (float) bounds.ymin, 0)
-                    .scale((float) ((bounds.xmax - bounds.xmin) / 2.0), (float) ((bounds.ymax - bounds.ymin) / 2.0), 1)
-                    .translate(1, 1, 0);
+            double sx = (bounds.xmax - bounds.xmin) / 2.0;
+            double sy = (bounds.ymax - bounds.ymin) / 2.0;
+            tile.getTransformation().set(
+                    (float) sx,        0.f, 0.f, (float) (bounds.xmin + sx),
+                           0.f, (float) sy, 0.f, (float) (bounds.ymin + sy),
+                           0.f,        0.f, 1.f,                        0.f,
+                           0.f,        0.f, 0.f,                        1.f
+            );
 
             return tile;
         }

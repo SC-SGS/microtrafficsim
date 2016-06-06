@@ -58,7 +58,35 @@ public class Mat4f {
 		System.arraycopy(raw, 0, this.raw, 0, 16);
 		return this;
 	}
-	
+
+	public Mat4f set(float a11, float a12, float a13, float a14,
+				 float a21, float a22, float a23, float a24,
+				 float a31, float a32, float a33, float a34,
+				 float a41, float a42, float a43, float a44) {
+
+		raw[0] = a11;
+		raw[1] = a12;
+		raw[2] = a13;
+		raw[3] = a14;
+
+		raw[4] = a21;
+		raw[5] = a22;
+		raw[6] = a23;
+		raw[7] = a24;
+
+		raw[8] = a31;
+		raw[9] = a32;
+		raw[10] = a33;
+		raw[11] = a34;
+
+		raw[12] = a41;
+		raw[13] = a42;
+		raw[14] = a43;
+		raw[15] = a44;
+
+		return this;
+	}
+
 	public float[] getRaw() {
 		return raw;
 	}

@@ -116,19 +116,24 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
         Rect2d meshbounds = src.getTilingScheme().getBounds(generator.getFeatureBounds(src, tile));
         Rect2d tilebounds = src.getTilingScheme().getBounds(tile);
 
-        float sxMeshToBounds = (float) ((meshbounds.xmax - meshbounds.xmin) / (MESH_TARGET.xmax - MESH_TARGET.xmin));
-        float syMeshToBounds = (float) ((meshbounds.ymax - meshbounds.ymin) / (MESH_TARGET.ymax - MESH_TARGET.ymin));
-        float sxBoundsToTile = (float) ((target.xmax - target.xmin) / (tilebounds.xmax - tilebounds.xmin));
-        float syBoundsToTile = (float) ((target.ymax - target.ymin) / (tilebounds.ymax - tilebounds.ymin));
+        double sxMeshToBounds = (meshbounds.xmax - meshbounds.xmin) / (MESH_TARGET.xmax - MESH_TARGET.xmin);
+        double syMeshToBounds = (meshbounds.ymax - meshbounds.ymin) / (MESH_TARGET.ymax - MESH_TARGET.ymin);
+        double sxBoundsToTile = (target.xmax - target.xmin) / (tilebounds.xmax - tilebounds.xmin);
+        double syBoundsToTile = (target.ymax - target.ymin) / (tilebounds.ymax - tilebounds.ymin);
 
-        float szMeshToTile = 0.1f;      // handle layer valuse from -10 to 10
+        double sx = sxMeshToBounds * sxBoundsToTile;
+        double sy = syMeshToBounds * syBoundsToTile;
+        float sz = 0.1f;      // handle layer valuse from -10 to 10
 
-        Mat4f transform = Mat4f.identity()
-                .translate((float) target.xmin, (float) target.ymin, 0.f)
-                .scale(sxBoundsToTile, syBoundsToTile, 1.f)
-                .translate((float) (meshbounds.xmin - tilebounds.xmin), (float) (meshbounds.ymin - tilebounds.ymin), 0.f)
-                .scale(sxMeshToBounds, syMeshToBounds, szMeshToTile)
-                .translate((float) (-MESH_TARGET.xmin), (float) (-MESH_TARGET.ymin), 0.f);
+        double tx = meshbounds.xmin - tilebounds.xmin;
+        double ty = meshbounds.ymin - tilebounds.ymin;
+
+        Mat4f transform = new Mat4f(
+                (float) (sx),          0.f, 0.f, (float) (target.xmin + sxBoundsToTile * tx - MESH_TARGET.xmin * sx),
+                         0.f, (float) (sy), 0.f, (float) (target.ymin + syBoundsToTile * ty - MESH_TARGET.ymin * sy),
+                         0.f,          0.f,  sz,                                                                 0.f,
+                         0.f,          0.f, 0.f,                                                                 1.f
+        );
 
         FeatureStyle style = new FeatureStyle(src.getStyle());
         return new FeatureTileLayer(tile, layer, transform, mesh, style);
