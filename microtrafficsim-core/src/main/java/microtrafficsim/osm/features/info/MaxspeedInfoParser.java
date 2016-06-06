@@ -19,7 +19,7 @@ import microtrafficsim.core.map.features.info.MaxspeedInfo;
 public class MaxspeedInfoParser {
 	private static Logger logger = LoggerFactory.getLogger(MaxspeedInfoParser.class);
 	
-	private static Pattern valuetype = Pattern.compile("^([0-9]+(?:\\.(?:[0-9])*)?)(?:\\s+(km/h|kmh|kph|mph|knots))?$");
+	private static Pattern valuetype = Pattern.compile("^([0-9]+(?:\\.(?:[0-9])*)?)(?:\\s*(km/h|kmh|kph|mph|knots))?$");
 	private static Pattern zonetype = Pattern.compile("^(.*):(.*)$");
 	
 	
