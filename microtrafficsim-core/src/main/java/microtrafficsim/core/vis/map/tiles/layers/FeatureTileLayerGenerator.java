@@ -3,6 +3,7 @@ package microtrafficsim.core.vis.map.tiles.layers;
 import microtrafficsim.core.map.FeaturePrimitive;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.tiles.TileId;
+import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.tiles.mesh.FeatureMeshGenerator;
 import microtrafficsim.core.vis.map.tiles.mesh.StreetMeshGenerator;
@@ -80,9 +81,11 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
             }
         }
 
+        TileRect actual = generator.getFeatureBounds(src, tile);
+
         if (mesh == null) {
             logger.debug("generating mesh for tile {"
-                    + tile.x + "/" + tile.y + "/" + tile.z
+                    + actual.xmin + "-" + actual.xmax + "/" + actual.ymin + "-" + actual.ymax + "/" + actual.zoom
                     + "}, feature '" + src.getFeatureName() + "'");
 
             Mesh m;
@@ -113,7 +116,7 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
         }
 
         // translate from MESH_TARGET via meshbounds to tilebounds to targe
-        Rect2d meshbounds = src.getTilingScheme().getBounds(generator.getFeatureBounds(src, tile));
+        Rect2d meshbounds = src.getTilingScheme().getBounds(actual);
         Rect2d tilebounds = src.getTilingScheme().getBounds(tile);
 
         double sxMeshToBounds = (meshbounds.xmax - meshbounds.xmin) / (MESH_TARGET.xmax - MESH_TARGET.xmin);
