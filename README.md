@@ -37,11 +37,9 @@ for the tile-based version and
 ```shell
 ./gradlew :examples:mapviewer_segmentbased:run -Dexec.args="<path to OSM-XML file>"
 ```
-for the segment based version. In the `master`-branch, the tile-based version
-is not fully implemented yet. An experimental (functioning) version can be found in
-the branch `wip/visualizaton`.
+for the segment based version.
 
 
 ## Please Note
-This software is still in an experimental state. Due to a few deadlines the
+This software is still in an experimental state. Due to a few deadlines, the
 documentation is sparse and will be provided later, expect it after the 18.06.
