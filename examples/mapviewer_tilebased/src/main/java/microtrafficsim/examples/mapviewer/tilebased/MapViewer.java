@@ -6,8 +6,6 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.Visualizer;
-import microtrafficsim.core.vis.map.projections.MercatorProjection;
-import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.tiles.PreRenderedTileProvider;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
@@ -21,9 +19,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.util.Collection;
-import java.util.Set;
 
 
 public class MapViewer {

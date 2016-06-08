@@ -30,24 +30,24 @@ import java.util.Collection;
 
 public class Example {
 
-	public static final String DEFAULT_OSM_XML = "map.osm";
-	public static final boolean PRINT_FRAME_STATS = false;
+	static final String DEFAULT_OSM_XML = "map.osm";
+	static final boolean PRINT_FRAME_STATS = false;
 
-	public static final int WINDOW_WIDTH = 1600;
-	public static final int WINDOW_HEIGHT = 900;
-	public static final int MSAA = 0;
+	static final int WINDOW_WIDTH = 1600;
+	static final int WINDOW_HEIGHT = 900;
+	static final int MSAA = 0;
 
-	public static final int NUM_SEGMENT_WORKERS = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
+	static final int NUM_SEGMENT_WORKERS = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
 
-	public static final Projection PROJECTION = new MercatorProjection(256);    // tiles will be 512x512 pixel
-	public static final QuadTreeTilingScheme TILING_SCHEME = new QuadTreeTilingScheme(PROJECTION, 0, 19);
+	static final Projection PROJECTION = new MercatorProjection(256);    // tiles will be 512x512 pixel
+	static final QuadTreeTilingScheme TILING_SCHEME = new QuadTreeTilingScheme(PROJECTION, 0, 19);
 
-	public static final int TILE_GRID_LEVEL = 12;
+	static final int TILE_GRID_LEVEL = 12;
 
-	public static final StyleSheet STYLE = new LightStyleSheet();
+	static final StyleSheet STYLE = new LightStyleSheet();
 	
 	
-	public static TileBasedVisualization createVisualization(TileProvider provider) {
+	static TileBasedVisualization createVisualization(TileProvider provider) {
 		TileBasedVisualization vis = new TileBasedVisualization(
 				WINDOW_WIDTH,
 				WINDOW_HEIGHT,
@@ -73,7 +73,7 @@ public class Example {
 		return vis;
 	}
 	
-	public static VisualizationPanel createVisualizationPanel(TileBasedVisualization vis) throws UnsupportedFeatureException {
+	static VisualizationPanel createVisualizationPanel(TileBasedVisualization vis) throws UnsupportedFeatureException {
 		VisualizerConfig config = vis.getDefaultConfig();
 		
 		if (MSAA > 1) {
@@ -85,7 +85,7 @@ public class Example {
 	}
 	
 	
-	public static OSMParser getParser() {
+	static OSMParser getParser() {
 		StyleSheet.ParserConfig styleconfig = STYLE.getParserConfiguration();
 		OSMParser.Config config = new OSMParser.Config()
 				.setGeneratorIndexBefore(styleconfig.generatorIndexOfUnification)
@@ -101,11 +101,11 @@ public class Example {
 	}
 
 	
-	public static Collection<TileLayerDefinition> getLayerDefinitions() {
+	static Collection<TileLayerDefinition> getLayerDefinitions() {
 		return STYLE.getLayers();
 	}
 
-	public static TileLayerProvider getLayerProvider(TilingScheme scheme, Collection<TileLayerDefinition> layers) {
+	static TileLayerProvider getLayerProvider(TilingScheme scheme, Collection<TileLayerDefinition> layers) {
         LayeredTileMap provider = new LayeredTileMap(scheme);
         FeatureTileLayerGenerator generator = new FeatureTileLayerGenerator();
         provider.putGenerator(FeatureTileLayerSource.class, generator);

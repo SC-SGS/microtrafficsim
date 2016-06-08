@@ -25,8 +25,6 @@ import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.math.*;
-import microtrafficsim.utils.collections.HashMultiSet;
-import microtrafficsim.utils.collections.MultiSet;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
