@@ -164,7 +164,7 @@ public class LightStyleSheet implements StyleSheet {
         layers.add(genLayer("streets:living_street:outline:xl", index++, 13, 13, "streets:living_street", sLivingStreetOutlineXL));
         layers.add(genLayer("streets:road:outline:xl",          index++, 13, 13, "streets:road",          sRoadOutlineXL));
         layers.add(genLayer("streets:residential:outline:xl",   index++, 12, 13, "streets:residential",   sResidentialOutlineXL));
-        layers.add(genLayer("streets:unclassified:outline:xl",  index++, 10, 13, "streets:unclassified",  sUnclassifiedOutlineXL));
+        layers.add(genLayer("streets:unclassified:outline:xl",  index++, 12, 13, "streets:unclassified",  sUnclassifiedOutlineXL));
         layers.add(genLayer("streets:tertiary:outline:xl",      index++,  0, 13, "streets:tertiary",      sTertiaryOutlineXL));
         layers.add(genLayer("streets:secondary:outline:xl",     index++,  0, 13, "streets:secondary",     sSecondaryOutlineXL));
         layers.add(genLayer("streets:primary:outline:xl",       index++,  0, 13, "streets:primary",       sPrimaryOutlineXL));

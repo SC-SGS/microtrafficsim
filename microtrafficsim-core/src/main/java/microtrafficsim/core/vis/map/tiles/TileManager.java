@@ -8,6 +8,7 @@ import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.context.tasks.RenderTask;
 import microtrafficsim.core.vis.view.OrthographicView;
+import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.Rect2d;
 
 import java.util.*;
@@ -70,20 +71,8 @@ public class TileManager {
             cancelling.add(future);
         }
 
-        // make sure everything is released correctly
-        for (Future<Tile> future : loading.values()) {
-            try {
-                Tile tile = future.get();
-                provider.release(context, tile);
-            } catch (InterruptedException | ExecutionException e) {
-                // we are disposing, ignore all exceptions
-            }
-        }
-
         // dispose layers that have already been loaded
-        for (Tile tile : visible.values())
-            if (tile != null)
-                provider.release(context, tile);
+        visible.values().stream().filter(t -> t != null).forEach(t -> provider.release(context, t));
 
         loading.clear();
         visible.clear();
@@ -109,13 +98,10 @@ public class TileManager {
         // get bounds, relative to the current view
         TileRect view = scheme.getTiles(viewport, zoom);
         TileRect provided = scheme.getTiles(provider.getProjectedBounds(), zoom);
-
-        // get tiles to load
-        TileRect common = provided != null ? TileRect.intersect(view, provided) : null; // provided and in view
-        Set<TileId> reload = mgmtTilesToLoad(common);                               // provided, in view and not loaded
+        TileRect common = provided != null ? TileRect.intersect(view, provided) : null;     // provided and in view
 
         // load tiles asynchronously, move loaded tiles to visible, update
-        boolean rebuild = mgmtAsyncReload(context, reload);
+        boolean rebuild = mgmtAsyncReload(context, common);
         rebuild |= mgmtMoveLoaded(context);
         rebuild |= mgmtRemoveInvisible(context, scheme, common);
 
@@ -132,34 +118,51 @@ public class TileManager {
         this.tiles = view;
     }
 
-    private Set<TileId> mgmtTilesToLoad(TileRect common) {
-        if (common == null) {
-            return new HashSet<>();
+    private boolean mgmtAsyncReload(RenderContext context, TileRect common)
+            throws ExecutionException, InterruptedException {
+
+        if (common == null) return false;
+        boolean change = false;
 
         // if explicit request or zoom changed: reload all tiles
-        } else if (reload.getAndSet(false) || common.zoom != this.tiles.zoom) {
-            return common.getAll();
+        if (reload.getAndSet(false) || common.zoom != this.tiles.zoom) {
+            changed.clear();
+            for (int x = common.xmin; x <= common.xmax; x++)
+                for (int y = common.ymin; y <= common.ymax; y++)
+                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
 
         // else: reload only tiles that are explicitly marked as invalidated or newly in view
         } else {
-            Set<TileId> res = TileRect.subtract(common, this.tiles);    // add tiles newly in view
-            assert res != null;
+            int xmin = MathUtils.clamp(this.tiles.xmin, common.xmin, common.xmax + 1);
+            int ymin = MathUtils.clamp(this.tiles.ymin, common.ymin, common.ymax + 1);
+            int xmax = MathUtils.clamp(this.tiles.xmax, common.xmin - 1, common.xmax);
+            int ymax = MathUtils.clamp(this.tiles.ymax, common.ymin - 1, common.ymax);
 
-            TileId id;                                                  // add updated (in view)
-            while ((id = changed.poll()) != null)
-                if (this.tiles.contains(id) && common.contains(id))
-                    res.add(id);
+            // full x-segments
+            for (int y = common.ymin; y <= common.ymax; y++) {
+                for (int x = common.xmin; x < xmin; x++)
+                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
 
-            return res;
+                for (int x = common.xmax; x > xmax; x--)
+                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
+            }
+
+            // partial y-segments
+            for (int x = xmin; x <= xmax; x++) {
+                for (int y = common.ymin; y < ymin; y++)
+                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
+
+                for (int y = common.ymax; y > ymax; y--)
+                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
+            }
+
+            // changed tiles
+            TileId id;
+            while((id = changed.poll()) != null) {
+                if (id.x >= xmin && id.x <= xmax && id.y >= ymin && id.x <= ymax && id.z == common.zoom)
+                    mgmtAsyncReload(context, id);
+            }
         }
-    }
-
-    private boolean mgmtAsyncReload(RenderContext context, Set<TileId> tiles)
-            throws ExecutionException, InterruptedException {
-
-        boolean change = false;
-        for (TileId id : tiles)
-            change |= mgmtAsyncReload(context, id);
 
         return change;
     }
@@ -170,13 +173,7 @@ public class TileManager {
         Future<Tile> prev = loading.put(id, worker.submit(new Loader(context, provider, id)));
         if (prev != null) {
             prev.cancel(true);                              // cancel the previous task
-
-            if (!prev.isDone()) {                           // if task is not finished / cancelled, cleanup later
-                cancelling.add(prev);
-            } else if (!prev.isCancelled()) {               // if task has finished successful, add the tile
-                provider.release(context, visible.put(id, getFromTaskIgnoringCancellation(prev)));
-                return true;
-            }
+            cancelling.add(prev);
         }
 
         return false;
@@ -194,8 +191,7 @@ public class TileManager {
 
             if (task.isDone()) {                    // if task is done, remove it
                 if (!task.isCancelled()) {          // if task is done and has not been cancelled, add the result
-                    Tile tile = getFromTaskIgnoringCancellation(task);
-                    provider.release(context, visible.put(id, tile));
+                    provider.release(context, visible.put(id, getFromTaskIgnoringCancellation(task)));
                     changed = true;
                 }
 
@@ -240,14 +236,7 @@ public class TileManager {
 
             if (common == null || !common.contains(id)) {
                 task.cancel(true);
-
-                if (!task.isDone()) {
-                    cancelling.add(task);
-                } else {
-                    Tile tile = getFromTaskIgnoringCancellation(task);
-                    provider.release(context, tile);
-                }
-
+                cancelling.add(task);
                 remove.add(id);
             }
         }
@@ -274,12 +263,10 @@ public class TileManager {
 
     private void mgmtRebuild() {
         prebuilt.clear();
-
-        for (Tile tile : visible.values())
-            if (tile != null)
-                prebuilt.add(tile);
-
-        prebuilt.sort(CMP_TILE);
+        visible.values().stream()
+                .filter(x -> x != null)
+                .sorted(CMP_TILE)
+                .forEach(prebuilt::add);
     }
 
     private void mgmtCleanupCancelled(RenderContext context) throws ExecutionException, InterruptedException {
@@ -404,15 +391,18 @@ public class TileManager {
                 Future<Tile> task = it.next();
 
                 if (task.isDone()) {
-                    Tile tile = getFromTaskIgnoringCancellation(task);
-                    provider.release(context, tile);
+                    try {
+                        provider.release(context, task.get());
+                    } catch (ExecutionException | CancellationException | InterruptedException e) {
+                        /* ignore, we are cleaning up */
+                    }
                 }
 
                 it.remove();
             }
 
             if (!cancelling.isEmpty())
-                context.addTask(new TileCleanupTask(cancelling), true);
+                context.addTask(this, true);
 
             return null;
         }

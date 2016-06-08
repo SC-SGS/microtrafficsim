@@ -201,6 +201,7 @@ public class FutureRenderTask<V> implements Future<V> {
             }
 
             if (mayInterruptIfRunning) {
+                Thread runner = this.runner;
                 if (runner != null)
                     runner.interrupt();
             }

@@ -7,6 +7,7 @@ import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.core.vis.context.tasks.RenderTask;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayer;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerBucket;
@@ -160,8 +161,10 @@ public class PreRenderedTileProvider implements TileProvider {
     public void afterRendering(RenderContext context) {}
 
     @Override
-    public Tile require(RenderContext context, TileId id) throws InterruptedException, ExecutionException {
+    public Tile require(RenderContext context, TileId id) throws CancellationException, ExecutionException {
         ArrayList<TileLayerBucket> buckets = new ArrayList<>();
+        PreRenderedTile tile;
+        Future<Void> task;
 
         try {
             ArrayList<TileLayer> layers = new ArrayList<>();
@@ -186,31 +189,17 @@ public class PreRenderedTileProvider implements TileProvider {
             buckets.sort(CMP_BUCKET);
 
             /* Note:
-             *  tile.initialize(c) is the last method that could throw an exception,
-             *  so there is no need to dispose() the tile itself.
+             *  tile.initialize(c) will clean up on interrupts etc. It either returns
+             *  using a CancellationException or exit successfully.
              */
-            PreRenderedTile tile = new PreRenderedTile(id, buckets);
-            Future<Void> task = context.addTask(c -> {
+            tile = new PreRenderedTile(id, buckets);
+            task = context.addTask(c -> {
                 tile.initialize(c);
                 return null;
             });
 
-            boolean interrupted = false;
-            while (true) {
-                try {
-                    task.get();
-                    break;
-                } catch (InterruptedException iex) {    // try cancel task on first interrupt, ignore others
-                    if (!interrupted) {
-                        task.cancel(true);              // if cancel is successful, task.get() will throw a
-                        interrupted = true;             // CancellationException, otherwise the task will complete
-                    }
-                }
-            }
-
-            return tile;
-
-        } catch (Exception e) {         // make sure we clean up on interrupts and exceptions
+        // make sure we clean up on interrupts
+        } catch (InterruptedException e){
             HashSet<TileLayer> layers = new HashSet<>();
             for (TileLayerBucket bucket : buckets)
                 layers.add(bucket.layer);
@@ -218,11 +207,18 @@ public class PreRenderedTileProvider implements TileProvider {
             for (TileLayer layer : layers)
                 provider.release(context, layer);
 
-            if (e instanceof InterruptedException)
-                throw new CancellationException();
-            else
-                throw e;
+            throw new CancellationException();      // cancel the task
         }
+
+        try {                                       // try to wait for the task
+            task.get();
+        } catch (InterruptedException iex) {        // on interrupt: try cancel, cancel this task, async cleanup
+            task.cancel(true);
+            context.addTask(new TileCleanupTask(task, tile));
+            throw new CancellationException();
+        }
+
+        return tile;
     }
 
     @Override
@@ -321,9 +317,7 @@ public class PreRenderedTileProvider implements TileProvider {
             try {
                 // -- initialize layers --
                 for (TileLayer layer : layers) {
-                    if (Thread.interrupted())
-                        throw new InterruptedException();
-
+                    if (Thread.interrupted()) throw new CancellationException();
                     layer.initialize(context);
                 }
 
@@ -376,8 +370,7 @@ public class PreRenderedTileProvider implements TileProvider {
                 uViewport.set(size.x, size.y, 1.0f / size.x, 1.0f / size.y);
 
                 for (TileLayerBucket bucket : buckets) {
-                    if (Thread.interrupted())
-                        throw new InterruptedException();
+                    if (Thread.interrupted()) throw new CancellationException();
 
                     if (bucket.layer.getLayer().isEnabled()) {
                         uView.set(bucket.layer.getTransform());
@@ -385,9 +378,9 @@ public class PreRenderedTileProvider implements TileProvider {
                     }
                 }
 
-            } catch (InterruptedException e) {
+            } catch (CancellationException e) {
                 dispose(context);
-                throw new CancellationException();  // cancel the executing task
+                throw e;            // cancel the executing task
             } finally {
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 
@@ -529,6 +522,30 @@ public class PreRenderedTileProvider implements TileProvider {
 
             for (TileChangeListener l : tileListener)
                 l.tileChanged(tile);
+        }
+    }
+
+    private class TileCleanupTask implements RenderTask<Void> {
+
+        private final Future<Void> task;
+        private final Tile tile;
+
+        TileCleanupTask(Future<Void> task, Tile tile) {
+            this.task = task;
+            this.tile = tile;
+        }
+
+        @Override
+        public Void execute(RenderContext context) throws Exception {
+            if (!task.isDone()) {               // if task is still running, try again
+                context.addTask(this, true);
+                return null;
+            }
+
+            if (!task.isCancelled())            // if task was successful, release the tile
+                release(context, tile);
+
+            return null;
         }
     }
 }

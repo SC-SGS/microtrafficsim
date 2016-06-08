@@ -21,7 +21,7 @@ import static microtrafficsim.build.BuildSetup.DEBUG_VISUALIZATION;
 
 public class RenderContext implements GLEventListener {
     private static Logger logger = LoggerFactory.getLogger(RenderContext.class);
-    private static final long RTASK_EXECUTION_BUDGED_NS = 32_000_000;
+    private static final long RTASK_EXECUTION_BUDGED_NS = 33_000_000;
 
 
 	// -- state ---------------------------------------------------------------
