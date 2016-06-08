@@ -7,7 +7,7 @@ import java.nio.IntBuffer;
 
 import javax.imageio.ImageIO;
 
-import microtrafficsim.core.vis.errors.ResourceError;
+import microtrafficsim.core.vis.exceptions.ResourceError;
 
 
 /**

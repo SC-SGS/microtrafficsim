@@ -11,7 +11,7 @@ public class Distribution {
 	/**
 	 * <p>
 	 * Calculates an iterator returning as much ints as buckets are given. This
-	 * method is stable against round errors. This means, it is guaranteed, the
+	 * method is stable against round exceptions. This means, it is guaranteed, the
 	 * sum of all returned ints is the same number as the number of elements
 	 * given as parameter.
 	 * </p>

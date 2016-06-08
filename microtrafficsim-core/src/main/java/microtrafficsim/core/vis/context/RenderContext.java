@@ -4,6 +4,8 @@ import com.jogamp.opengl.GLAnimatorControl;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import microtrafficsim.core.vis.Renderer;
+import microtrafficsim.core.vis.context.exceptions.UncaughtContextException;
+import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
 import microtrafficsim.core.vis.context.state.*;
 import microtrafficsim.core.vis.context.tasks.FutureRenderTask;
 import microtrafficsim.core.vis.context.tasks.RenderTask;
@@ -20,12 +22,8 @@ import static microtrafficsim.build.BuildSetup.DEBUG_VISUALIZATION;
 public class RenderContext implements GLEventListener {
     private static Logger logger = LoggerFactory.getLogger(RenderContext.class);
     private static final long RTASK_EXECUTION_BUDGED_NS = 32_000_000;
-	
-	public interface UncaughtExceptionHandler {
-		void uncaughtException(RenderContext context, Throwable cause);
-	}
 
-	
+
 	// -- state ---------------------------------------------------------------
 
 	public final ViewportState Viewport;
@@ -103,19 +101,23 @@ public class RenderContext implements GLEventListener {
 		return tasks;
 	}
 	
-	public <V> Future<V> addTask(RenderTask<V> task) {
+	public <V> Future<V> addTask(RenderTask<V> task, boolean delay) {
         FutureRenderTask<V> future = new FutureRenderTask<>(task);
 
-        // if the context is current on this thread, run the task instantly
+        // if delay is false and the context is current on this thread, run the task instantly
 		GLAutoDrawable drawable = this.drawable;
-        if (drawable != null && drawable.getContext().isCurrent())
+        if (!delay && drawable != null && drawable.getContext().isCurrent())
             future.run(this);
         else
 		    tasks.add(future);
 
 		return future;
 	}
-	
+
+	public <V> Future<V> addTask(RenderTask<V> task) {
+		return addTask(task, false);
+	}
+
 	public boolean hasTasks() {
 		return tasks.isEmpty();
 	}
@@ -152,7 +154,7 @@ public class RenderContext implements GLEventListener {
 			renderer.init(this);
 		} catch (Throwable exception) {
 			if(!handleException(exception))
-				throw exception;
+				throw new UncaughtContextException(this, exception);
 		} finally {
 			this.drawable = null;
 		}
@@ -163,11 +165,17 @@ public class RenderContext implements GLEventListener {
 		this.drawable = drawable;
         this.Viewport.setInternal(0, 0, drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
 
+		// finish executing all tasks (may contain cleanup tasks)
+		while (!tasks.isEmpty()) {
+			tasks.poll().run(this);
+			Thread.interrupted();        // interrupts are task-local, clear if necessary
+		}
+
 		try {
 			renderer.dispose(this);
 		} catch (Throwable exception) {
 			if(!handleException(exception))
-				throw exception;
+				throw new UncaughtContextException(this, exception);
 		} finally {
 			this.drawable = null;
 		}
@@ -199,7 +207,7 @@ public class RenderContext implements GLEventListener {
 			renderer.display(this);
         } catch (Throwable exception) {
             if(!handleException(exception))
-				throw exception;
+				throw new UncaughtContextException(this, exception);
 		} finally {
 			this.drawable = null;
 		}
@@ -214,7 +222,7 @@ public class RenderContext implements GLEventListener {
 			renderer.reshape(this, x, y, width, height);
 		} catch (Throwable exception) {
 			if(!handleException(exception))
-				throw exception;
+				throw new UncaughtContextException(this, exception);
 		} finally {
 			this.drawable = null;
 		}

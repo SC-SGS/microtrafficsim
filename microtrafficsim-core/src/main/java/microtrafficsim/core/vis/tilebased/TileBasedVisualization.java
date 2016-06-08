@@ -6,9 +6,10 @@ import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.input.OrthoInputController;
 import microtrafficsim.core.vis.map.tiles.TileProvider;
 import microtrafficsim.core.vis.view.OrthographicView;
+import microtrafficsim.utils.concurrency.InterruptSafeExecutors;
+import microtrafficsim.utils.concurrency.InteruptSafeThreadPoolExecutor;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 public class TileBasedVisualization extends AbstractVisualization {
@@ -22,7 +23,7 @@ public class TileBasedVisualization extends AbstractVisualization {
 
 
     public TileBasedVisualization(int width, int height, TileProvider provider, int nWorkerThreads) {
-        this(width, height, provider, Executors.newFixedThreadPool(nWorkerThreads));
+        this(width, height, provider, InterruptSafeExecutors.newFixedThreadPool(nWorkerThreads));
     }
 
     public TileBasedVisualization(int width, int height, TileProvider provider, ExecutorService worker) {

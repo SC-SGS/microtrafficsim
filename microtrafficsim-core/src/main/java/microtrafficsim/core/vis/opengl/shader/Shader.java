@@ -11,7 +11,7 @@ import java.util.Set;
 import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.util.glsl.ShaderUtil;
 
-import microtrafficsim.core.vis.errors.ResourceError;
+import microtrafficsim.core.vis.exceptions.ResourceError;
 import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
 import microtrafficsim.utils.Streams;
 import microtrafficsim.utils.resources.Resource;

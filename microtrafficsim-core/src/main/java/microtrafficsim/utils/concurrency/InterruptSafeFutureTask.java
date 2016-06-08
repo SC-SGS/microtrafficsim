@@ -40,27 +40,28 @@
  * "
  */
 
-package microtrafficsim.core.vis.context.tasks;
+package microtrafficsim.utils.concurrency;
 
-import microtrafficsim.core.vis.context.RenderContext;
 
 import java.util.concurrent.*;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
-
 /**
- * A interrupt-safe Future implementation for execution on a RenderContext,
- * modelled after the OpenJDK Future implementation.
+ * A interrupt-safe Future implementation, modelled after the OpenJDK Future implementation.
  *
  * @author Maximilian Luz
  */
-public class FutureRenderTask<V> implements Future<V> {
+public class InterruptSafeFutureTask<V> implements RunnableFuture<V> {
 
     private Synchronizer sync;
 
-    public FutureRenderTask(RenderTask<V> task) {
+    public InterruptSafeFutureTask(Callable<V> task) {
         if (task == null) throw new NullPointerException();
         this.sync = new Synchronizer(task);
+    }
+
+    public InterruptSafeFutureTask(Runnable task, V result) {
+        this.sync = new Synchronizer(Executors.callable(task, result));
     }
 
     @Override
@@ -91,11 +92,10 @@ public class FutureRenderTask<V> implements Future<V> {
     /**
      * Sets this Future to the result of its computation unless it has been
      * cancelled.
-     *
-     * @param context the RenderContext on which this task will be executed
      */
-    public void run(RenderContext context) {
-        sync.run(context);
+    @Override
+    public void run() {
+        sync.run();
     }
 
     /**
@@ -142,11 +142,10 @@ public class FutureRenderTask<V> implements Future<V> {
      * designed for use with tasks that intrinsically execute more
      * than once.
      *
-     * @param context the RenderContext on which this task will be executed
      * @return true if successfully run and reset
      */
-    protected boolean runAndReset(RenderContext context) {
-        return sync.runAndReset(context);
+    protected boolean runAndReset() {
+        return sync.runAndReset();
     }
 
 
@@ -158,11 +157,11 @@ public class FutureRenderTask<V> implements Future<V> {
         private static final int CANCELLED = 4;
 
         private volatile Thread runner;
-        private RenderTask<V> task;
+        private Callable<V> task;
         private V result;
         private Throwable exception;
 
-        Synchronizer(RenderTask<V> task) {
+        Synchronizer(Callable<V> task) {
             this.task = task;
             setState(READY);
         }
@@ -267,7 +266,7 @@ public class FutureRenderTask<V> implements Future<V> {
             }
         }
 
-        void run(RenderContext context) {
+        void run() {
             if (!compareAndSetState(READY, RUNNING))
                 return;
 
@@ -275,7 +274,7 @@ public class FutureRenderTask<V> implements Future<V> {
             if (getState() == RUNNING) {    // recheck after setting thread
                 V result;
                 try {
-                    result = task.execute(context);
+                    result = task.call();
                 } catch (CancellationException ex) {
                     setState(CANCELLED);
                     releaseShared(0);
@@ -290,14 +289,14 @@ public class FutureRenderTask<V> implements Future<V> {
             }
         }
 
-        boolean runAndReset(RenderContext context) {
+        boolean runAndReset() {
             if (!compareAndSetState(READY, RUNNING))
                 return false;
 
             try {
                 runner = Thread.currentThread();
                 if (getState() == RUNNING)
-                    task.execute(context);
+                    task.call();
                 runner = null;
                 return compareAndSetState(RUNNING, READY);
             } catch (Throwable ex) {
@@ -323,3 +322,4 @@ public class FutureRenderTask<V> implements Future<V> {
         }
     }
 }
+

@@ -1,4 +1,4 @@
-package microtrafficsim.core.vis.errors;
+package microtrafficsim.core.vis.exceptions;
 
 
 public class ResourceError extends Error {

@@ -18,6 +18,7 @@ import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
+import microtrafficsim.core.vis.tilebased.TileGridOverlay;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
 import microtrafficsim.osm.parser.processing.osm.sanitizer.SanitizerWayComponent;

@@ -12,7 +12,7 @@ import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.vis.context.RenderContext;
-import microtrafficsim.core.vis.context.RenderContext.UncaughtExceptionHandler;
+import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
 import microtrafficsim.core.vis.map.segments.FeatureSegmentLayerSource;
 import microtrafficsim.core.vis.opengl.shader.ShaderCompileError;
 import microtrafficsim.core.vis.opengl.shader.ShaderLinkError;

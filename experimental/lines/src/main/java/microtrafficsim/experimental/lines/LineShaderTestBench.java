@@ -10,6 +10,7 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.FPSAnimator;
 import microtrafficsim.core.vis.Renderer;
 import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
 import microtrafficsim.core.vis.input.OrthoInputController;
 import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.core.vis.opengl.shader.*;
@@ -371,7 +372,7 @@ class LineShaderTestBench implements Renderer {
 		}).start();
 	}
 
-	private class DebugExceptionHandler implements RenderContext.UncaughtExceptionHandler {
+	private class DebugExceptionHandler implements UncaughtExceptionHandler {
 
 		@Override
 		public void uncaughtException(RenderContext context, Throwable exception) {

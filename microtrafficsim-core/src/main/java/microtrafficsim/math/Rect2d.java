@@ -63,4 +63,14 @@ public class Rect2d {
 	public String toString() {
 		return this.getClass() + " {" + xmin + ", " + ymin + ", " + xmax + ", " + ymax + "}";
 	}
+
+
+	public static Rect2d intersect(Rect2d a, Rect2d b) {
+		return new Rect2d(
+				Math.max(a.xmin, b.xmin),
+				Math.max(a.ymin, b.ymin),
+				Math.min(a.xmax, b.xmax),
+				Math.min(a.ymax, b.ymax)
+		);
+	}
 }

@@ -24,6 +24,8 @@ import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.math.*;
+import microtrafficsim.utils.collections.HashMultiSet;
+import microtrafficsim.utils.collections.MultiSet;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
@@ -38,16 +40,13 @@ import java.util.concurrent.Future;
 
 public class PreRenderedTileProvider implements TileProvider {
 
-    private static int count = 0;
+    private static int count = 0;               // TODO: remove, only for mem-leak debugging
+
     // TODO: implement basic caching, re-use textures and FBOs
     // TODO: depth attachment for FBOs?
     // TODO: reload only layer on layer-change
     // TODO: refactor layer status control (enabled/disabled), add observers.
     //          redraw vs. reload on status change --> reload/unload only specific layer
-
-    // TODO FOR FRIDAY 3.6.
-    //  1. StyleSheet-class, use 'void apply(StyleSheet)'
-    //  2. merge into microtrafficsim.ui
 
     private static final Rect2d TILE_TARGET = new Rect2d(-1.0, -1.0, 1.0, 1.0);
 
@@ -187,7 +186,7 @@ public class PreRenderedTileProvider implements TileProvider {
             buckets.sort(CMP_BUCKET);
 
             /* Note:
-             *  If tile.initialize(c) is the last method that could throw an exception,
+             *  tile.initialize(c) is the last method that could throw an exception,
              *  so there is no need to dispose() the tile itself.
              */
             PreRenderedTile tile = new PreRenderedTile(id, buckets);
@@ -219,8 +218,8 @@ public class PreRenderedTileProvider implements TileProvider {
             for (TileLayer layer : layers)
                 provider.release(context, layer);
 
-            if (e instanceof CancellationException)
-                throw new InterruptedException();
+            if (e instanceof InterruptedException)
+                throw new CancellationException();
             else
                 throw e;
         }

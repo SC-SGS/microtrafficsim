@@ -47,7 +47,7 @@ public final class CrossingLogicConfig {
 	 * This method guarantees, if right-before-left (or left-before-right) is
 	 * disabled, then only one vehicle is allowed to drive. In this case, the
 	 * previously set value of onlyOneVehicle doesn't matter. This is needed,
-	 * because otherwise, errors or wrong behavior would occur. E.g. two
+	 * because otherwise, exceptions or wrong behavior would occur. E.g. two
 	 * vehicles cross each others way, but caused by randomness, both of them
 	 * get permission to cross the node. In worst case, they want to drive on
 	 * the same destination edge and on the same cell.

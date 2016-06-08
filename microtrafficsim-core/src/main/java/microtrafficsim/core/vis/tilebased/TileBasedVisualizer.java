@@ -176,7 +176,7 @@ public class TileBasedVisualizer implements Visualizer {
     }
 
     @Override
-    public void display(RenderContext context) {
+    public void display(RenderContext context) throws Exception {
         uView.set(view.getViewMatrix());
         uProjection.set(view.getProjectionMatrix());
 

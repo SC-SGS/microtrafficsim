@@ -4,7 +4,7 @@ import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.layers.TileLayerDefinition;
 import microtrafficsim.core.map.layers.TileLayerSource;
 import microtrafficsim.core.vis.context.RenderContext;
-import microtrafficsim.core.vis.context.RenderContext.UncaughtExceptionHandler;
+import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.opengl.shader.ShaderCompileError;
 import microtrafficsim.core.vis.opengl.shader.ShaderLinkError;
@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collection;
-import java.util.Set;
 
 
 public class Utils {

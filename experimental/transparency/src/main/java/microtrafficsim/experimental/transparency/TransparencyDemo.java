@@ -11,6 +11,7 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.FPSAnimator;
 import microtrafficsim.core.vis.Renderer;
 import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
 import microtrafficsim.core.vis.opengl.BufferStorage;
 import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.core.vis.opengl.shader.Shader;
@@ -574,7 +575,7 @@ class TransparencyDemo implements Renderer {
 		}
 	}
 
-	public static class DebugExceptionHandler implements RenderContext.UncaughtExceptionHandler {
+	public static class DebugExceptionHandler implements UncaughtExceptionHandler {
 
 		@Override
 		public void uncaughtException(RenderContext context, Throwable exception) {

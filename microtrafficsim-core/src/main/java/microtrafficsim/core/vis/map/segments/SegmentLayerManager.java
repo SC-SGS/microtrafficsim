@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.vis.context.RenderContext;
-import microtrafficsim.core.vis.errors.AsyncOperationError;
+import microtrafficsim.core.vis.exceptions.AsyncOperationError;
 import microtrafficsim.core.vis.map.segments.SegmentLayerProvider.LayerChangeListener;
 import microtrafficsim.math.Rect2d;
 
