@@ -1,20 +1,15 @@
 package microtrafficsim.osm.parser.base;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import microtrafficsim.core.map.Bounds;
+import microtrafficsim.osm.primitives.*;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
-import microtrafficsim.core.map.Bounds;
-import microtrafficsim.osm.primitives.Node;
-import microtrafficsim.osm.primitives.Primitive;
-import microtrafficsim.osm.primitives.Relation;
-import microtrafficsim.osm.primitives.RelationMember;
-import microtrafficsim.osm.primitives.Way;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
