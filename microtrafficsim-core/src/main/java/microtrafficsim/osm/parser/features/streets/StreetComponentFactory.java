@@ -51,9 +51,14 @@ public class StreetComponentFactory implements ComponentFactory<StreetComponent,
 		LaneInfo lanes = LaneInfoParser.parse(source.tags);
 		MaxspeedInfo maxspeed = MaxspeedInfoParser.parse(source.tags);
 		StreetType streettype = StreetTypeParser.parse(source.tags);
+		boolean roundabout = parseRoundabout(source.tags);
 		float layer = parseLayer(source.tags);
 
-		return new StreetComponent((WayEntity) entity, streettype, lanes, maxspeed, oneway, layer);
+		return new StreetComponent((WayEntity) entity, streettype, lanes, maxspeed, oneway, roundabout, layer);
+	}
+
+	private static boolean parseRoundabout(Map<String, String> tags) {
+		return "roundabout".equals(tags.get("junction"));
 	}
 
 	private static float parseLayer(Map<String, String> tags) {

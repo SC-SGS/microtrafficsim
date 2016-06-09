@@ -1,11 +1,18 @@
 # Microscopic Traffic Simulation
 with OpenStreetMap data.
 
+
+## News
+On 18 June 2016, we will have a stand at the
+[Tag der Wissenschaft Uni Stuttgart](http://www.uni-stuttgart.de/tag/2016/). You are welcome to visit us.
+
+
 ## Demonstration and Examples
 Demonstrations and examples can be executed using `gradle`. All
 OpenStreetMap (OSM) files need to be in the OSM XML format, as, for
 example, provided by the
 [OpenStreetMap web interface](https://www.openstreetmap.org).
+
 
 #### Main UI
 The main UI provides an overview of the simulation. The scenario is
@@ -20,6 +27,7 @@ executed using
 
 The temporary branch `tmp/presentation` currently contains an
 experimental implementation using a tile-based visualization.
+
 
 #### Fixed Simulation Example
 The fixed simulation example features a fixed scenario, fixed parameters,
@@ -38,6 +46,18 @@ for the tile-based version and
 ./gradlew :examples:mapviewer_segmentbased:run -Dexec.args="<path to OSM-XML file>"
 ```
 for the segment based version.
+
+
+## Supported traffic attributes
+* different vehicle types (inclusive different max velocities, acceleration functions etc.)
+* static routing: fastest vs. shortest route
+* streets' max velocity
+* single laned streets
+
+All following attributes can be en-/disabled.
+* crossing logic: street priorities (roundabouts are handled with right-before-left)
+* crossing logic: right-before-left XOR left-before-right XOR random
+* "friendly-standing-in-jam": If a vehicle has to wait at a crossroad, it relinquishes its right of way for an other vehicle that has not to wait.
 
 
 ## Please Note
