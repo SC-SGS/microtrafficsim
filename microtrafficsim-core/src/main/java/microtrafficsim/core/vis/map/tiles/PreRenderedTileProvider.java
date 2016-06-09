@@ -32,6 +32,7 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -41,7 +42,6 @@ public class PreRenderedTileProvider implements TileProvider {
 
     private static int count = 0;               // TODO: remove, only for mem-leak debugging
 
-    // TODO: implement basic caching, re-use textures and FBOs
     // TODO: reload only layer on layer-change
     // TODO: refactor layer status control (enabled/disabled), add observers.
     //          redraw vs. reload on status change --> reload/unload only specific layer
@@ -70,36 +70,47 @@ public class PreRenderedTileProvider implements TileProvider {
     private Uniform1f uViewScale;
     private UniformVec4f uViewport;
 
+    private TileBufferPool pool;
     private TileQuad quad;
 
-
     public PreRenderedTileProvider(TileLayerProvider provider) {
+        this(provider, getDefaultTileBufferPoolSizeFrom(new Vec2i(2560, 1440),
+                provider.getTilingScheme().getTileSize(), 0));
+    }
+
+    public PreRenderedTileProvider(TileLayerProvider provider, int targetBufferPoolSize) {
         this.layerListener = new LayerChangeListenerImpl();
 
         this.provider = provider;
         this.tileListener = new HashSet<>();
         this.provider.addLayerChangeListener(layerListener);
+        this.pool = new TileBufferPool(provider.getTilingScheme().getTileSize() , targetBufferPoolSize);
+    }
+
+    private static int getDefaultTileBufferPoolSizeFrom(Vec2i display, Vec2i tile, int additional) {
+        // maximum number of tiles present on the screen + additional
+        return 4 * (display.x / tile.x + 1) * (display.y / tile.y + 1) + additional;
     }
 
 
     @Override
     public Bounds getBounds() {
-        return provider != null ? provider.getBounds() : null;
+        return provider.getBounds();
     }
 
     @Override
     public Rect2d getProjectedBounds() {
-        return provider != null ? provider.getProjectedBounds() : null;
+        return provider.getProjectedBounds();
     }
 
     @Override
     public Projection getProjection() {
-        return provider != null ? provider.getProjection() : null;
+        return provider.getProjection();
     }
 
     @Override
     public TilingScheme getTilingScheme() {
-        return provider != null ? provider.getTilingScheme() : null;
+        return provider.getTilingScheme();
     }
 
 
@@ -140,8 +151,9 @@ public class PreRenderedTileProvider implements TileProvider {
 
     @Override
     public void dispose(RenderContext context) {
-        GL3 gl = context.getDrawable().getGL().getGL3();
+        pool.dispose(context);
 
+        GL3 gl = context.getDrawable().getGL().getGL3();
         tilecopy.dispose(gl);   tilecopy = null;
         quad.dispose(gl);       quad = null;
     }
@@ -255,19 +267,13 @@ public class PreRenderedTileProvider implements TileProvider {
         private ArrayList<TileLayerBucket> buckets;
 
         private Mat4f transform;
-
-        private int colorTexture;
-        private int depthTexture;
-        private int fbo;
-
+        private TileBuffer buffer;
 
         PreRenderedTile(TileId id, ArrayList<TileLayerBucket> buckets) {
             this.id = id;
             this.buckets = buckets;
             this.transform = Mat4f.identity();
-            this.colorTexture = -1;
-            this.depthTexture = -1;
-            this.fbo = -1;
+            this.buffer = null;
         }
 
 
@@ -284,10 +290,10 @@ public class PreRenderedTileProvider implements TileProvider {
             uTileCopyTransform.set(transform);
 
             gl.glActiveTexture(GL3.GL_TEXTURE0 + TEX_UNIT_TILE_COLOR);
-            gl.glBindTexture(GL3.GL_TEXTURE_2D, colorTexture);
+            gl.glBindTexture(GL3.GL_TEXTURE_2D, buffer.color);
 
             gl.glActiveTexture(GL3.GL_TEXTURE0 + TEX_UNIT_TILE_DEPTH);
-            gl.glBindTexture(GL3.GL_TEXTURE_2D, depthTexture);
+            gl.glBindTexture(GL3.GL_TEXTURE_2D, buffer.depth);
 
             quad.draw(gl);
         }
@@ -319,64 +325,24 @@ public class PreRenderedTileProvider implements TileProvider {
                     layers.add(bucket.layer);
 
             try {
-                // -- initialize layers --
+                // initialize layers
                 for (TileLayer layer : layers) {
                     if (Thread.interrupted()) throw new CancellationException();
                     layer.initialize(context);
                 }
 
-                // -- create render buffers (textures) --
-                int[] obj = {-1, -1, -1};
-
-                // create textures
-                gl.glGenTextures(2, obj, 0);
-                colorTexture = obj[0];
-                depthTexture = obj[1];
-
-                Vec2i size = getTilingScheme().getTileSize();
-
-                gl.glBindTexture(GL3.GL_TEXTURE_2D, colorTexture);
-                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
-                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
-                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
-                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
-                gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, size.x, size.y, 0, GL3.GL_RGBA, GL3.GL_BYTE, null);
-                gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
-
-                gl.glBindTexture(GL3.GL_TEXTURE_2D, depthTexture);
-                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
-                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
-                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
-                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
-                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_COMPARE_MODE, GL3.GL_NONE);
-                gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT16, size.x, size.y, 0, GL3.GL_DEPTH_COMPONENT, GL3.GL_BYTE, null);
-                gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
-
-                // create FBO
-                gl.glGenFramebuffers(1, obj, 2);
-                fbo = obj[2];
+                // create render buffer
+                buffer = pool.require(context);
 
                 count++;
                 System.err.println(count);
 
-                gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
-                gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, colorTexture, 0);
-                gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_DEPTH_ATTACHMENT, GL3.GL_TEXTURE_2D, depthTexture, 0);
-                int status = gl.glCheckFramebufferStatus(GL3.GL_FRAMEBUFFER);
-                gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
-
-                if (status != GL3.GL_FRAMEBUFFER_COMPLETE)
-                    throw new RuntimeException("Failed to create framebuffer object (status: 0x"
-                            + Integer.toHexString(status) + ")");
-
-                // -- render tile --
-
                 // render tile to FBO
-                gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
+                gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, buffer.fbo);
                 gl.glClearBufferfv(GL3.GL_COLOR, 0, new float[]{bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a}, 0);
                 gl.glClearBufferfv(GL3.GL_DEPTH, 0, new float[]{ 0.f }, 0);
 
-                context.Viewport.set(gl, 0, 0, size.x, size.y);
+                context.Viewport.set(gl, 0, 0, pool.width, pool.height);
 
                 context.BlendMode.enable(gl);
                 context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
@@ -387,7 +353,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
                 uProjection.set(Mat4f.identity());
                 uViewScale.set((float) Math.pow(2.0, id.z));
-                uViewport.set(size.x, size.y, 1.0f / size.x, 1.0f / size.y);
+                uViewport.set(pool.width, pool.height, 1.0f / pool.width, 1.0f / pool.height);
 
                 for (TileLayerBucket bucket : buckets) {
                     if (Thread.interrupted()) throw new CancellationException();
@@ -414,26 +380,11 @@ public class PreRenderedTileProvider implements TileProvider {
         }
 
         public void dispose(RenderContext context) {
-            GL3 gl = context.getDrawable().getGL().getGL3();
+            count--;
+            System.err.println(count);
 
-            int[] obj = { fbo, colorTexture, depthTexture};
-            if (fbo != -1) {
-                gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
-                gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, 0, 0);
-                gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_DEPTH_ATTACHMENT, GL3.GL_TEXTURE_2D, 0, 0);
-                gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
-
-                gl.glDeleteFramebuffers(1, obj, 0);
-                fbo = -1;
-
-                count--;
-                System.err.println(count);
-            }
-            if (colorTexture != -1) {
-                gl.glDeleteTextures(2, obj, 1);
-                colorTexture = -1;
-                depthTexture = -1;
-            }
+            pool.release(context, buffer);
+            buffer = null;
 
             HashSet<TileLayer> layers = new HashSet<>();
             for (TileLayerBucket bucket : buckets)
@@ -445,6 +396,151 @@ public class PreRenderedTileProvider implements TileProvider {
             }
 
             buckets.clear();
+        }
+    }
+
+    private class TileCleanupTask implements RenderTask<Void> {
+
+        private final Future<Void> task;
+        private final Tile tile;
+
+        TileCleanupTask(Future<Void> task, Tile tile) {
+            this.task = task;
+            this.tile = tile;
+        }
+
+        @Override
+        public Void execute(RenderContext context) throws Exception {
+            if (!task.isDone()) {               // if task is still running, try again
+                context.addTask(this, true);
+                return null;
+            }
+
+            if (!task.isCancelled())            // if task was successful, release the tile
+                release(context, tile);
+
+            return null;
+        }
+    }
+
+    private static class TileBuffer {
+        private TileBuffer() {}
+
+        int fbo = -1;
+        int color = -1;
+        int depth = -1;
+
+        static TileBuffer create(RenderContext context, int width, int height) {
+            TileBuffer buffer = new TileBuffer();
+
+            GL3 gl = context.getDrawable().getGL().getGL3();
+            int[] obj = {-1, -1, -1};
+
+            // create textures
+            gl.glGenTextures(2, obj, 0);
+            buffer.color = obj[0];
+            buffer.depth = obj[1];
+
+            gl.glBindTexture(GL3.GL_TEXTURE_2D, buffer.color);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
+            gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, width, height, 0, GL3.GL_RGBA, GL3.GL_BYTE, null);
+            gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+
+            gl.glBindTexture(GL3.GL_TEXTURE_2D, buffer.depth);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_COMPARE_MODE, GL3.GL_NONE);
+            gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT16, width, height, 0, GL3.GL_DEPTH_COMPONENT, GL3.GL_BYTE, null);
+            gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+
+            // create framebuffer
+            gl.glGenFramebuffers(1, obj, 2);
+            buffer.fbo = obj[2];
+
+            gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, buffer.fbo);
+            gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, buffer.color, 0);
+            gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_DEPTH_ATTACHMENT, GL3.GL_TEXTURE_2D, buffer.depth, 0);
+            int status = gl.glCheckFramebufferStatus(GL3.GL_FRAMEBUFFER);
+            gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+
+            if (status != GL3.GL_FRAMEBUFFER_COMPLETE)
+                throw new RuntimeException("Failed to create framebuffer object (status: 0x"
+                        + Integer.toHexString(status) + ")");
+
+            return buffer;
+        }
+
+        void dispose(RenderContext context) {
+            if (fbo == -1) return;
+
+            GL3 gl = context.getDrawable().getGL().getGL3();
+            int[] obj = { fbo, color, depth};
+
+            // detach textures fron fbo
+            gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
+            gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, 0, 0);
+            gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_DEPTH_ATTACHMENT, GL3.GL_TEXTURE_2D, 0, 0);
+            gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+
+            // delete fbo and textrues
+            gl.glDeleteFramebuffers(1, obj, 0);
+            gl.glDeleteTextures(2, obj, 1);
+
+            fbo = -1;
+            color = -1;
+            depth = -1;
+        }
+    }
+
+    private static class TileBufferPool {
+        final int width;
+        final int height;
+        final int targetPoolSize;
+        private int actualPoolSize;
+
+        private LinkedList<TileBuffer> unused = new LinkedList<>();
+
+        TileBufferPool(Vec2i size, int targetPoolSize) {
+            this.width = size.x;
+            this.height = size.y;
+            this.targetPoolSize = targetPoolSize;
+
+            System.out.println(targetPoolSize);
+        }
+
+        TileBuffer require(RenderContext context) {
+            TileBuffer buffer;
+
+            // If an unused buffer is available, take it. Else create a new one.
+            if (!unused.isEmpty()) {
+                buffer = unused.poll();
+            } else {
+                buffer = TileBuffer.create(context, width, height);
+                actualPoolSize++;
+            }
+
+            return buffer;
+        }
+
+        void release(RenderContext context, TileBuffer buffer) {
+            if (actualPoolSize < targetPoolSize && unused != null) {
+                unused.push(buffer);
+            } else {
+                buffer.dispose(context);
+                actualPoolSize--;
+            }
+        }
+
+        void dispose(RenderContext context) {
+            for (TileBuffer buffer : unused)
+                buffer.dispose(context);
+
+            unused = null;
         }
     }
 
@@ -498,6 +594,7 @@ public class PreRenderedTileProvider implements TileProvider {
         }
     }
 
+
     private static class BucketComparator implements Comparator<TileLayerBucket> {
 
         @Override
@@ -547,27 +644,4 @@ public class PreRenderedTileProvider implements TileProvider {
         }
     }
 
-    private class TileCleanupTask implements RenderTask<Void> {
-
-        private final Future<Void> task;
-        private final Tile tile;
-
-        TileCleanupTask(Future<Void> task, Tile tile) {
-            this.task = task;
-            this.tile = tile;
-        }
-
-        @Override
-        public Void execute(RenderContext context) throws Exception {
-            if (!task.isDone()) {               // if task is still running, try again
-                context.addTask(this, true);
-                return null;
-            }
-
-            if (!task.isCancelled())            // if task was successful, release the tile
-                release(context, tile);
-
-            return null;
-        }
-    }
 }
