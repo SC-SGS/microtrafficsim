@@ -42,7 +42,6 @@ public class PreRenderedTileProvider implements TileProvider {
     private static int count = 0;               // TODO: remove, only for mem-leak debugging
 
     // TODO: implement basic caching, re-use textures and FBOs
-    // TODO: depth attachment for FBOs?
     // TODO: reload only layer on layer-change
     // TODO: refactor layer status control (enabled/disabled), add observers.
     //          redraw vs. reload on status change --> reload/unload only specific layer
@@ -52,7 +51,8 @@ public class PreRenderedTileProvider implements TileProvider {
     private static final Resource TILE_COPY_SHADER_VS = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tiles/tilecopy.vs");
     private static final Resource TILE_COPY_SHADER_FS = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tiles/tilecopy.fs");
 
-    private static final int TEX_UNIT_TILE = 0;
+    private static final int TEX_UNIT_TILE_COLOR = 0;
+    private static final int TEX_UNIT_TILE_DEPTH = 1;
 
     private static final BucketComparator CMP_BUCKET = new BucketComparator();
 
@@ -64,7 +64,6 @@ public class PreRenderedTileProvider implements TileProvider {
 
     private ShaderProgram tilecopy;
     private UniformMat4f uTileCopyTransform;
-    private UniformSampler2D uTileSampler;
 
     private UniformMat4f uProjection;
     private UniformMat4f uView;
@@ -125,13 +124,15 @@ public class PreRenderedTileProvider implements TileProvider {
         fs.dispose(gl);
 
         uTileCopyTransform = (UniformMat4f) tilecopy.getUniform("u_tilecopy");
-        uTileSampler = (UniformSampler2D) tilecopy.getUniform("u_tile_sampler");
         uProjection = (UniformMat4f) context.getUniformManager().getGlobalUniform("u_projection");
         uView = (UniformMat4f) context.getUniformManager().getGlobalUniform("u_view");
         uViewScale = (Uniform1f) context.getUniformManager().getGlobalUniform("u_viewscale");
         uViewport = (UniformVec4f) context.getUniformManager().getGlobalUniform("u_viewport");
 
-        uTileSampler.set(TEX_UNIT_TILE);
+        UniformSampler2D uColorSampler = (UniformSampler2D) tilecopy.getUniform("u_color_sampler");
+        UniformSampler2D uDepthSampler = (UniformSampler2D) tilecopy.getUniform("u_depth_sampler");
+        uColorSampler.set(TEX_UNIT_TILE_COLOR);
+        uDepthSampler.set(TEX_UNIT_TILE_DEPTH);
 
         quad = new TileQuad();
         quad.initialize(gl);
@@ -255,7 +256,8 @@ public class PreRenderedTileProvider implements TileProvider {
 
         private Mat4f transform;
 
-        private int texture;
+        private int colorTexture;
+        private int depthTexture;
         private int fbo;
 
 
@@ -263,7 +265,8 @@ public class PreRenderedTileProvider implements TileProvider {
             this.id = id;
             this.buckets = buckets;
             this.transform = Mat4f.identity();
-            this.texture = -1;
+            this.colorTexture = -1;
+            this.depthTexture = -1;
             this.fbo = -1;
         }
 
@@ -280,8 +283,11 @@ public class PreRenderedTileProvider implements TileProvider {
             tilecopy.bind(gl);
             uTileCopyTransform.set(transform);
 
-            gl.glActiveTexture(GL3.GL_TEXTURE0 + TEX_UNIT_TILE);
-            gl.glBindTexture(GL3.GL_TEXTURE_2D, texture);
+            gl.glActiveTexture(GL3.GL_TEXTURE0 + TEX_UNIT_TILE_COLOR);
+            gl.glBindTexture(GL3.GL_TEXTURE_2D, colorTexture);
+
+            gl.glActiveTexture(GL3.GL_TEXTURE0 + TEX_UNIT_TILE_DEPTH);
+            gl.glBindTexture(GL3.GL_TEXTURE_2D, depthTexture);
 
             quad.draw(gl);
         }
@@ -319,32 +325,43 @@ public class PreRenderedTileProvider implements TileProvider {
                     layer.initialize(context);
                 }
 
-                // -- create render buffers --
-                int[] obj = {-1, -1};
+                // -- create render buffers (textures) --
+                int[] obj = {-1, -1, -1};
 
-                // create texture
-                gl.glGenTextures(1, obj, 0);
-                texture = obj[0];
+                // create textures
+                gl.glGenTextures(2, obj, 0);
+                colorTexture = obj[0];
+                depthTexture = obj[1];
 
                 Vec2i size = getTilingScheme().getTileSize();
 
-                gl.glBindTexture(GL3.GL_TEXTURE_2D, texture);
-                gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, size.x, size.y, 0, GL3.GL_RGBA, GL3.GL_BYTE, null);
+                gl.glBindTexture(GL3.GL_TEXTURE_2D, colorTexture);
                 gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
                 gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
                 gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
                 gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
+                gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, size.x, size.y, 0, GL3.GL_RGBA, GL3.GL_BYTE, null);
+                gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+
+                gl.glBindTexture(GL3.GL_TEXTURE_2D, depthTexture);
+                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
+                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
+                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
+                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
+                gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_COMPARE_MODE, GL3.GL_NONE);
+                gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT16, size.x, size.y, 0, GL3.GL_DEPTH_COMPONENT, GL3.GL_BYTE, null);
                 gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
 
                 // create FBO
-                gl.glGenFramebuffers(1, obj, 1);
-                fbo = obj[1];
+                gl.glGenFramebuffers(1, obj, 2);
+                fbo = obj[2];
 
                 count++;
                 System.err.println(count);
 
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
-                gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, texture, 0);
+                gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, colorTexture, 0);
+                gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_DEPTH_ATTACHMENT, GL3.GL_TEXTURE_2D, depthTexture, 0);
                 int status = gl.glCheckFramebufferStatus(GL3.GL_FRAMEBUFFER);
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 
@@ -357,11 +374,16 @@ public class PreRenderedTileProvider implements TileProvider {
                 // render tile to FBO
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
                 gl.glClearBufferfv(GL3.GL_COLOR, 0, new float[]{bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a}, 0);
+                gl.glClearBufferfv(GL3.GL_DEPTH, 0, new float[]{ 0.f }, 0);
+
                 context.Viewport.set(gl, 0, 0, size.x, size.y);
 
                 context.BlendMode.enable(gl);
                 context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
                 context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
+
+                context.DepthTest.enable(gl);
+                context.DepthTest.setFunction(gl, GL3.GL_GEQUAL);
 
                 uProjection.set(Mat4f.identity());
                 uViewScale.set((float) Math.pow(2.0, id.z));
@@ -394,10 +416,11 @@ public class PreRenderedTileProvider implements TileProvider {
         public void dispose(RenderContext context) {
             GL3 gl = context.getDrawable().getGL().getGL3();
 
-            int[] obj = { fbo, texture };
+            int[] obj = { fbo, colorTexture, depthTexture};
             if (fbo != -1) {
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, fbo);
                 gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, 0, 0);
+                gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_DEPTH_ATTACHMENT, GL3.GL_TEXTURE_2D, 0, 0);
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 
                 gl.glDeleteFramebuffers(1, obj, 0);
@@ -406,9 +429,10 @@ public class PreRenderedTileProvider implements TileProvider {
                 count--;
                 System.err.println(count);
             }
-            if (texture != -1) {
-                gl.glDeleteTextures(1, obj, 1);
-                texture = -1;
+            if (colorTexture != -1) {
+                gl.glDeleteTextures(2, obj, 1);
+                colorTexture = -1;
+                depthTexture = -1;
             }
 
             HashSet<TileLayer> layers = new HashSet<>();
