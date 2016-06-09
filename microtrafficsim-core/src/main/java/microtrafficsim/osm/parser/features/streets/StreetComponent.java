@@ -28,17 +28,19 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
 	public LaneInfo lanes;
 	public MaxspeedInfo maxspeed;
 	public OnewayInfo oneway;
+	public boolean roundabout;
 	public float layer;
 	
 	
 	public StreetComponent(WayEntity entity, StreetType streettype, LaneInfo lanes,
-			MaxspeedInfo maxspeed, OnewayInfo oneway, float layer) {
+			MaxspeedInfo maxspeed, OnewayInfo oneway, boolean roundabout, float layer) {
 		
 		super(entity);
 		this.streettype = streettype;
 		this.lanes = lanes;
 		this.maxspeed = maxspeed;
 		this.oneway = oneway;
+		this.roundabout = roundabout;
 		this.layer = layer;
 	}
 
@@ -61,7 +63,7 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
 	public StreetComponent clone(Entity e) {
 		LaneInfo lanes = new LaneInfo(this.lanes);
 		MaxspeedInfo maxspeed = new MaxspeedInfo(this.maxspeed);
-		return new StreetComponent((WayEntity) e, streettype, lanes, maxspeed, oneway, layer);
+		return new StreetComponent((WayEntity) e, streettype, lanes, maxspeed, oneway, roundabout, layer);
 	}
 
 	
@@ -71,6 +73,7 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
 				&& this.lanes.equals(other.lanes)
 				&& this.maxspeed.equals(other.maxspeed)
 				&& this.oneway.equals(other.oneway)
+				&& this.roundabout == other.roundabout
 				&& this.layer == other.layer;
 	}
 
@@ -80,6 +83,7 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
 				&& this.lanes.reverseEquals(other)
 				&& this.maxspeed.reverseEquals(other.maxspeed)
 				&& this.oneway.reverseEquals(other.oneway)
+				&& this.roundabout == other.roundabout
 				&& this.layer == other.layer;
 	}
 	
@@ -96,6 +100,7 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
 				.add(maxspeed)
 				.add(oneway)
 				.add(layer)
+				.add(roundabout)
 				.getHash();
 	}
 		
@@ -110,6 +115,7 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
 				&& this.lanes.equals(other.lanes)
 				&& this.maxspeed.equals(other.maxspeed)
 				&& this.oneway.equals(other.oneway)
+				&& this.roundabout == other.roundabout
 				&& this.layer == other.layer;
 	}
 	
@@ -124,6 +130,7 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
 				&& this.lanes.reverseEquals(other.lanes)
 				&& this.maxspeed.reverseEquals(other.maxspeed)
 				&& this.oneway.reverseEquals(other.oneway)
+				&& this.roundabout == other.roundabout
 				&& this.layer == other.layer;
 	}
 
