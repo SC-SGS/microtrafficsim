@@ -50,7 +50,7 @@ for the segment based version.
 
 ## Supported traffic attributes
 All attributes can be en-/disabled.
-* different vehicle types (inclusive different max velocities)
+* different vehicle types (inclusive different max velocities, acceleration functions etc.)
 * static routing: fastest vs. shortest route
 * streets' max velocity
 * single laned streets
