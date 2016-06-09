@@ -40,8 +40,6 @@ import java.util.concurrent.Future;
 
 public class PreRenderedTileProvider implements TileProvider {
 
-    private static int count = 0;               // TODO: remove, only for mem-leak debugging
-
     // TODO: reload only layer on layer-change
     // TODO: refactor layer status control (enabled/disabled), add observers.
     //          redraw vs. reload on status change --> reload/unload only specific layer
@@ -334,9 +332,6 @@ public class PreRenderedTileProvider implements TileProvider {
                 // create render buffer
                 buffer = pool.require(context);
 
-                count++;
-                System.err.println(count);
-
                 // render tile to FBO
                 gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, buffer.fbo);
                 gl.glClearBufferfv(GL3.GL_COLOR, 0, new float[]{bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a}, 0);
@@ -380,9 +375,6 @@ public class PreRenderedTileProvider implements TileProvider {
         }
 
         public void dispose(RenderContext context) {
-            count--;
-            System.err.println(count);
-
             pool.release(context, buffer);
             buffer = null;
 
@@ -509,8 +501,6 @@ public class PreRenderedTileProvider implements TileProvider {
             this.width = size.x;
             this.height = size.y;
             this.targetPoolSize = targetPoolSize;
-
-            System.out.println(targetPoolSize);
         }
 
         TileBuffer require(RenderContext context) {
