@@ -1,6 +1,10 @@
 # Microscopic Traffic Simulation
 with OpenStreetMap data.
 
+## News
+On 18 June 2016, we will have a stand at the
+[Tag der Wissenschaft Uni Stuttgart](http://www.uni-stuttgart.de/tag/2016/). You are welcome to visit us.
+
 ## Demonstration and Examples
 Demonstrations and examples can be executed using `gradle`. All
 OpenStreetMap (OSM) files need to be in the OSM XML format, as, for
