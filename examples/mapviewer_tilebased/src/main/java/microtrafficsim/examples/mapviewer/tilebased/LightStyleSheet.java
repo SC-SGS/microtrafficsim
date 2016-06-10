@@ -225,7 +225,7 @@ public class LightStyleSheet implements StyleSheet {
 
     private Style genStyle(ShaderProgramSource shader, Color color, float linewidth, float scalenorm) {
         Style style = new Style(shader);
-        style.setUniformSupplier("u_color", () -> color.toVec4f());
+        style.setUniformSupplier("u_color", color::toVec4f);
         style.setUniformSupplier("u_linewidth", () -> linewidth);
         style.setUniformSupplier("u_viewscale_norm", () -> scalenorm);
         style.setProperty("adjacency_primitives", true);
