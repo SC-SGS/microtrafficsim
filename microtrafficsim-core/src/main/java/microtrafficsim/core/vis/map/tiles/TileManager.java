@@ -129,7 +129,7 @@ public class TileManager {
             changed.clear();
             for (int x = common.xmin; x <= common.xmax; x++)
                 for (int y = common.ymin; y <= common.ymax; y++)
-                    change |= mgmtAsyncLoad(context, new TileId(x, y, common.zoom));
+                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
 
         // else: reload only tiles that are explicitly marked as invalidated or newly in view
         } else {
@@ -141,33 +141,33 @@ public class TileManager {
             // full x-segments
             for (int y = common.ymin; y <= common.ymax; y++) {
                 for (int x = common.xmin; x < xmin; x++)
-                    change |= mgmtAsyncLoad(context, new TileId(x, y, common.zoom));
+                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
 
                 for (int x = common.xmax; x > xmax; x--)
-                    change |= mgmtAsyncLoad(context, new TileId(x, y, common.zoom));
+                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
             }
 
             // partial y-segments
             for (int x = xmin; x <= xmax; x++) {
                 for (int y = common.ymin; y < ymin; y++)
-                    change |= mgmtAsyncLoad(context, new TileId(x, y, common.zoom));
+                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
 
                 for (int y = common.ymax; y > ymax; y--)
-                    change |= mgmtAsyncLoad(context, new TileId(x, y, common.zoom));
+                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
             }
 
             // changed tiles
             TileId id;
             while((id = changed.poll()) != null) {
                 if (id.x >= xmin && id.x <= xmax && id.y >= ymin && id.x <= ymax && id.z == common.zoom)
-                    change |= mgmtAsyncLoad(context, id);
+                    change |= mgmtAsyncReload(context, id);
             }
         }
 
         return change;
     }
 
-    private boolean mgmtAsyncLoad(RenderContext context, TileId id)
+    private boolean mgmtAsyncReload(RenderContext context, TileId id)
             throws ExecutionException, InterruptedException {
 
         Future<Tile> prev = loading.put(id, worker.submit(new Loader(context, provider, id)));
@@ -293,7 +293,7 @@ public class TileManager {
     }
 
 
-    private static Tile getFromTaskIgnoringCancellation(Future<Tile> task)
+    private static <V> V getFromTaskIgnoringCancellation(Future<V> task)
             throws ExecutionException, InterruptedException {
         try {
             return task.get();

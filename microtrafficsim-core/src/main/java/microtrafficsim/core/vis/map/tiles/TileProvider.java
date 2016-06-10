@@ -29,7 +29,6 @@ public interface TileProvider {
     void dispose(RenderContext context);
 
     Tile require(RenderContext context, TileId tile) throws InterruptedException, ExecutionException;
-    void update(RenderContext context, Tile tile) throws InterruptedException, ExecutionException;
     void release(RenderContext context, Tile tile);
 
     void beforeRendering(RenderContext context);

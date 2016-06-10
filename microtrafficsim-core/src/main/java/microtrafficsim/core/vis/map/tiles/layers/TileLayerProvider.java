@@ -17,6 +17,7 @@ public interface TileLayerProvider {
         void layersChanged(TileId tile);
         void layerChanged(String name);
         void layerChanged(String name, TileId tile);
+        void layerStateChanged(String name);
     }
 
     Bounds getBounds();

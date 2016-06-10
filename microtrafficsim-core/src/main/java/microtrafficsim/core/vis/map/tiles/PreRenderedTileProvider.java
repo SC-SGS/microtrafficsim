@@ -40,9 +40,8 @@ import java.util.concurrent.Future;
 
 public class PreRenderedTileProvider implements TileProvider {
 
-    // TODO: reload only layer on layer-change
-    // TODO: refactor layer status control (enabled/disabled), add observers.
-    //          redraw vs. reload on status change --> reload/unload only specific layer
+    // TODO: reload only layer on layer-change, instead of full tile
+    // TODO: do not reload layers on layer state change
 
     private static final Rect2d TILE_TARGET = new Rect2d(-1.0, -1.0, 1.0, 1.0);
 
@@ -56,7 +55,6 @@ public class PreRenderedTileProvider implements TileProvider {
 
     private TileLayerProvider provider;
     private HashSet<TileChangeListener> tileListener;
-    private TileLayerProvider.LayerChangeListener layerListener;
 
     private Color bgcolor = Color.fromRGBA(0x00000000);
 
@@ -77,11 +75,9 @@ public class PreRenderedTileProvider implements TileProvider {
     }
 
     public PreRenderedTileProvider(TileLayerProvider provider, int targetBufferPoolSize) {
-        this.layerListener = new LayerChangeListenerImpl();
-
         this.provider = provider;
         this.tileListener = new HashSet<>();
-        this.provider.addLayerChangeListener(layerListener);
+        this.provider.addLayerChangeListener(new LayerChangeListenerImpl());
         this.pool = new TileBufferPool(provider.getTilingScheme().getTileSize() , targetBufferPoolSize);
     }
 
@@ -229,11 +225,6 @@ public class PreRenderedTileProvider implements TileProvider {
         }
 
         return tile;
-    }
-
-    @Override
-    public void update(RenderContext context, Tile tile) throws InterruptedException, ExecutionException {
-        // TODO
     }
 
     @Override
@@ -638,6 +629,13 @@ public class PreRenderedTileProvider implements TileProvider {
             for (TileChangeListener l : tileListener)
                 l.tileChanged(tile);
         }
-    }
 
+        @Override
+        public void layerStateChanged(String name) {
+            // TODO: only redraw
+
+            for (TileChangeListener l : tileListener)
+                l.tilesChanged();
+        }
+    }
 }

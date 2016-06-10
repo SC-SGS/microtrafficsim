@@ -24,6 +24,7 @@ public class LayeredTileMap implements TileLayerProvider {
     private HashMap<Class<? extends TileLayerSource>, TileLayerGenerator> generators;
 
     private TileLayerSource.LayerSourceChangeListener sourceListener;
+    private Layer.LayerStateChangeListener layerListener;
     private List<LayerChangeListener> listeners;
 
 
@@ -38,6 +39,7 @@ public class LayeredTileMap implements TileLayerProvider {
 
         this.listeners = new ArrayList<>();
         this.sourceListener = new LayerSourceChangeListenerImpl();
+        this.layerListener = new LayerStateChangeListenerImpl();
     }
 
 
@@ -68,6 +70,7 @@ public class LayeredTileMap implements TileLayerProvider {
         Layer old = layers.put(layer.getName(), layer);
 
         layer.getSource().addLayerSourceChangeListener(sourceListener);
+        layer.addLayerStateChangeListener(layerListener);
 
         if (old != null)
             old.getSource().removeLayerSourceChangeListener(sourceListener);
@@ -91,6 +94,7 @@ public class LayeredTileMap implements TileLayerProvider {
 
         if (layer != null) {
             layer.getSource().removeLayerSourceChangeListener(sourceListener);
+            layer.removeLayerStateChangeListener(layerListener);
 
             if (layer.getSource().isAvailable()) {
                 updateBounds();
@@ -220,6 +224,13 @@ public class LayeredTileMap implements TileLayerProvider {
                     .collect(Collectors.toCollection(HashSet::new));
 
             listeners.forEach(listener -> changed.forEach(layer -> listener.layerChanged(layer, tile)));
+        }
+    }
+
+    private class LayerStateChangeListenerImpl implements Layer.LayerStateChangeListener {
+        @Override
+        public void layerStateChanged(String name) {
+            listeners.forEach(listener -> listener.layerStateChanged(name));
         }
     }
 }

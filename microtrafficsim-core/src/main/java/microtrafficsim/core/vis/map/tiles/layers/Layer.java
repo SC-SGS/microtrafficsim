@@ -3,8 +3,15 @@ package microtrafficsim.core.vis.map.tiles.layers;
 import microtrafficsim.core.map.layers.TileLayerSource;
 import microtrafficsim.core.map.tiles.TileId;
 
+import java.util.ArrayList;
+
 
 public class Layer {
+
+    public interface LayerStateChangeListener {
+        void layerStateChanged(String name);
+    }
+
 
     private final String name;
     private int index;
@@ -12,6 +19,8 @@ public class Layer {
     private int maxzoom;
     private TileLayerSource source;
     private boolean enabled;
+
+    private ArrayList<LayerStateChangeListener> listeners;
 
 
     public Layer(String name, int index, int minzoom, int maxzoom, TileLayerSource source) {
@@ -21,6 +30,7 @@ public class Layer {
         this.maxzoom = maxzoom;
         this.source = source;
         this.enabled = true;
+        this.listeners = new ArrayList<>();
     }
 
 
@@ -49,6 +59,7 @@ public class Layer {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+        listeners.forEach(l -> l.layerStateChanged(name));
     }
 
 
@@ -63,6 +74,15 @@ public class Layer {
 
     public boolean isAvailableFor(TileId tile) {
         return minzoom <= tile.z && tile.z <= maxzoom;
+    }
+
+
+    public void addLayerStateChangeListener(LayerStateChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeLayerStateChangeListener(LayerStateChangeListener listener) {
+        listeners.remove(listener);
     }
 }
 
