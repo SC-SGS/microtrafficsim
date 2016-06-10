@@ -1,11 +1,7 @@
 package microtrafficsim.examples.mapviewer.tilebased;
 
-import microtrafficsim.core.map.TileFeatureProvider;
-import microtrafficsim.core.map.layers.TileLayerDefinition;
-import microtrafficsim.core.map.layers.TileLayerSource;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
-import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.opengl.shader.ShaderCompileError;
 import microtrafficsim.core.vis.opengl.shader.ShaderLinkError;
 import microtrafficsim.core.vis.opengl.utils.FramebufferUtils;
@@ -15,20 +11,10 @@ import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Collection;
 
 
 public class Utils {
-	
-	public static void setFeatureProvider(Collection<TileLayerDefinition> layers, TileFeatureProvider provider) {
-		for (TileLayerDefinition def : layers) {
-			TileLayerSource src = def.getSource();
 
-			if (src instanceof FeatureTileLayerSource)
-				((FeatureTileLayerSource) src).setFeatureProvider(provider);
-		}
-	}
-	
 	public static void asyncScreenshot(RenderContext context) {
 		new Thread(() -> {
 			JFileChooser chooser = new JFileChooser();
