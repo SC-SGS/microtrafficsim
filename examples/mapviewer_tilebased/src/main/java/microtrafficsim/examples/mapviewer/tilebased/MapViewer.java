@@ -108,48 +108,48 @@ public class MapViewer {
      * @throws UnsupportedFeatureException
      *          if not all required OpenGL features are available
      */
-	private static void show(File file) throws UnsupportedFeatureException {
-		/* set up layer and tile provider */
-		Collection<TileLayerDefinition> layers = STYLE.getLayers();
-		TileLayerProvider layerProvider = createLayerProvider(layers);
+    private static void show(File file) throws UnsupportedFeatureException {
+        /* set up layer and tile provider */
+        Collection<TileLayerDefinition> layers = STYLE.getLayers();
+        TileLayerProvider layerProvider = createLayerProvider(layers);
         PreRenderedTileProvider provider = new PreRenderedTileProvider(layerProvider);
 
-		/* create the visualizer */
-		TileBasedVisualization visualization = createVisualization(provider);
-		
-		/* parse the OSM file asynchronously and update the sources */
-		OSMParser parser = createParser();
-		asyncParse(parser, file, layers, visualization.getVisualizer());
-		
-		/* create and initialize the VisualizationPanel and JFrame */
-		VisualizationPanel vpanel = createVisualizationPanel(visualization);
-		JFrame frame = new JFrame("MicroTrafficSim - OSM MapViewer Example");
-		frame.setSize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
-		frame.add(vpanel);
-		
-		/*
-		 * Note: JOGL automatically calls glViewport, we need to make sure that this
-		 * function is not called with a height or width of 0! Otherwise the program
-		 * crashes.
-		 */
-		frame.setMinimumSize(new Dimension(100, 100));
+        /* create the visualizer */
+        TileBasedVisualization visualization = createVisualization(provider);
+        
+        /* parse the OSM file asynchronously and update the sources */
+        OSMParser parser = createParser();
+        asyncParse(parser, file, layers, visualization.getVisualizer());
+        
+        /* create and initialize the VisualizationPanel and JFrame */
+        VisualizationPanel vpanel = createVisualizationPanel(visualization);
+        JFrame frame = new JFrame("MicroTrafficSim - OSM MapViewer Example");
+        frame.setSize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
+        frame.add(vpanel);
+        
+        /*
+         * Note: JOGL automatically calls glViewport, we need to make sure that this
+         * function is not called with a height or width of 0! Otherwise the program
+         * crashes.
+         */
+        frame.setMinimumSize(new Dimension(100, 100));
 
-		/* on close: stop the visualization and exit */
-		frame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				vpanel.stop();
-				System.exit(0);
-			}
-		});
+        /* on close: stop the visualization and exit */
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                vpanel.stop();
+                System.exit(0);
+            }
+        });
 
-		/* show frame and start visualization */
-		frame.setVisible(true);
-		vpanel.start();
+        /* show frame and start visualization */
+        frame.setVisible(true);
+        vpanel.start();
 
         /* if specified, print frame statistics */
-		if (PRINT_FRAME_STATS)
-			visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
-	}
+        if (PRINT_FRAME_STATS)
+            visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
+    }
 
     /**
      * Create the (tile-based) visualization object. The visualization object is
@@ -286,30 +286,30 @@ public class MapViewer {
      * @param vis       the visualizer which is used to draw the parsed segment
      *                  and which's view should be reset
      */
-	private static void asyncParse(OSMParser parser, File file, Collection<TileLayerDefinition> layers, Visualizer vis) {
-		new Thread(() -> {
-			try {
-				/* parse file and create tiled provider */
-				OSMParser.Result result = parser.parse(file);
-				QuadTreeTiledMapSegment tiled = new QuadTreeTiledMapSegment.Generator()
-						.generate(result.segment, TILING_SCHEME, TILE_GRID_LEVEL);
+    private static void asyncParse(OSMParser parser, File file, Collection<TileLayerDefinition> layers, Visualizer vis) {
+        new Thread(() -> {
+            try {
+                /* parse file and create tiled provider */
+                OSMParser.Result result = parser.parse(file);
+                QuadTreeTiledMapSegment tiled = new QuadTreeTiledMapSegment.Generator()
+                        .generate(result.segment, TILING_SCHEME, TILE_GRID_LEVEL);
 
-				/* update the feature sources, so that they will use the created provider */
-				for (TileLayerDefinition def : layers) {
-					TileLayerSource src = def.getSource();
+                /* update the feature sources, so that they will use the created provider */
+                for (TileLayerDefinition def : layers) {
+                    TileLayerSource src = def.getSource();
 
-					if (src instanceof FeatureTileLayerSource)
-						((FeatureTileLayerSource) src).setFeatureProvider(tiled);
-				}
+                    if (src instanceof FeatureTileLayerSource)
+                        ((FeatureTileLayerSource) src).setFeatureProvider(tiled);
+                }
 
-				/* center the view to the parsed area */
-				vis.resetView();
-			} catch (XMLStreamException | IOException | InterruptedException e) {
-				e.printStackTrace();
-				Runtime.getRuntime().halt(1);
-			}
-		}).start();
-	}
+                /* center the view to the parsed area */
+                vis.resetView();
+            } catch (XMLStreamException | IOException | InterruptedException e) {
+                e.printStackTrace();
+                Runtime.getRuntime().halt(1);
+            }
+        }).start();
+    }
 
 
     /**

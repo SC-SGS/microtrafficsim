@@ -37,16 +37,16 @@ public class LightStyleSheet implements StyleSheet {
         colorBackground = Color.fromRGB(0xFFFFFF);
 
         Color[] colors = {
-                Color.fromRGB(0xFF6F69),			// motorway
-                Color.fromRGB(0x659118),			// trunk
-                Color.fromRGB(0xDB9E36),			// primary
-                Color.fromRGB(0x105B63),			// secondary
-                Color.from(177,  98, 134),			// tertiary
-                Color.from(104, 157, 106),			// unclassified
-                Color.from(124, 111, 100),			// residential
-                Color.from(146, 131, 116),			// road
-                Color.from(146, 131, 116),			// living-street
-                Color.from(189, 174, 147),			// track
+                Color.fromRGB(0xFF6F69),            // motorway
+                Color.fromRGB(0x659118),            // trunk
+                Color.fromRGB(0xDB9E36),            // primary
+                Color.fromRGB(0x105B63),            // secondary
+                Color.from(177,  98, 134),          // tertiary
+                Color.from(104, 157, 106),          // unclassified
+                Color.from(124, 111, 100),          // residential
+                Color.from(146, 131, 116),          // road
+                Color.from(146, 131, 116),          // living-street
+                Color.from(189, 174, 147),          // track
         };
 
 
