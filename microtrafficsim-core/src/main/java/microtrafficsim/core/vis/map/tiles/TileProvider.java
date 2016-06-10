@@ -8,6 +8,7 @@ import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.math.Rect2d;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 
@@ -28,6 +29,7 @@ public interface TileProvider {
     void dispose(RenderContext context);
 
     Tile require(RenderContext context, TileId tile) throws InterruptedException, ExecutionException;
+    void update(RenderContext context, Tile tile) throws InterruptedException, ExecutionException;
     void release(RenderContext context, Tile tile);
 
     void beforeRendering(RenderContext context);

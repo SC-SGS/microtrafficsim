@@ -169,8 +169,9 @@ public class PreRenderedTileProvider implements TileProvider {
     @Override
     public void afterRendering(RenderContext context) {}
 
+
     @Override
-    public Tile require(RenderContext context, TileId id) throws CancellationException, ExecutionException {
+    public Tile require(RenderContext context, TileId id) throws InterruptedException, ExecutionException {
         ArrayList<TileLayerBucket> buckets = new ArrayList<>();
         PreRenderedTile tile;
         Future<Void> task;
@@ -216,7 +217,7 @@ public class PreRenderedTileProvider implements TileProvider {
             for (TileLayer layer : layers)
                 provider.release(context, layer);
 
-            throw new CancellationException();      // cancel the task
+            throw e;                                // cancel the task
         }
 
         try {                                       // try to wait for the task
@@ -224,10 +225,15 @@ public class PreRenderedTileProvider implements TileProvider {
         } catch (InterruptedException iex) {        // on interrupt: try cancel, cancel this task, async cleanup
             task.cancel(true);
             context.addTask(new TileCleanupTask(task, tile));
-            throw new CancellationException();
+            throw new InterruptedException();       // cancel the task
         }
 
         return tile;
+    }
+
+    @Override
+    public void update(RenderContext context, Tile tile) throws InterruptedException, ExecutionException {
+        // TODO
     }
 
     @Override

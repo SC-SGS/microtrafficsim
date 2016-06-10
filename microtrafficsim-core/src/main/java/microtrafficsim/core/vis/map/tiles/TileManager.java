@@ -101,7 +101,7 @@ public class TileManager {
         TileRect common = provided != null ? TileRect.intersect(view, provided) : null;     // provided and in view
 
         // load tiles asynchronously, move loaded tiles to visible, update
-        boolean rebuild = mgmtAsyncReload(context, common);
+        boolean rebuild = mgmtReload(context, common);
         rebuild |= mgmtMoveLoaded(context);
         rebuild |= mgmtRemoveInvisible(context, scheme, common);
 
@@ -118,7 +118,7 @@ public class TileManager {
         this.tiles = view;
     }
 
-    private boolean mgmtAsyncReload(RenderContext context, TileRect common)
+    private boolean mgmtReload(RenderContext context, TileRect common)
             throws ExecutionException, InterruptedException {
 
         if (common == null) return false;
@@ -129,7 +129,7 @@ public class TileManager {
             changed.clear();
             for (int x = common.xmin; x <= common.xmax; x++)
                 for (int y = common.ymin; y <= common.ymax; y++)
-                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
+                    change |= mgmtAsyncLoad(context, new TileId(x, y, common.zoom));
 
         // else: reload only tiles that are explicitly marked as invalidated or newly in view
         } else {
@@ -141,42 +141,51 @@ public class TileManager {
             // full x-segments
             for (int y = common.ymin; y <= common.ymax; y++) {
                 for (int x = common.xmin; x < xmin; x++)
-                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
+                    change |= mgmtAsyncLoad(context, new TileId(x, y, common.zoom));
 
                 for (int x = common.xmax; x > xmax; x--)
-                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
+                    change |= mgmtAsyncLoad(context, new TileId(x, y, common.zoom));
             }
 
             // partial y-segments
             for (int x = xmin; x <= xmax; x++) {
                 for (int y = common.ymin; y < ymin; y++)
-                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
+                    change |= mgmtAsyncLoad(context, new TileId(x, y, common.zoom));
 
                 for (int y = common.ymax; y > ymax; y--)
-                    change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
+                    change |= mgmtAsyncLoad(context, new TileId(x, y, common.zoom));
             }
 
             // changed tiles
             TileId id;
             while((id = changed.poll()) != null) {
                 if (id.x >= xmin && id.x <= xmax && id.y >= ymin && id.x <= ymax && id.z == common.zoom)
-                    mgmtAsyncReload(context, id);
+                    change |= mgmtAsyncLoad(context, id);
             }
         }
 
         return change;
     }
 
-    private boolean mgmtAsyncReload(RenderContext context, TileId id)
+    private boolean mgmtAsyncLoad(RenderContext context, TileId id)
             throws ExecutionException, InterruptedException {
 
         Future<Tile> prev = loading.put(id, worker.submit(new Loader(context, provider, id)));
-        if (prev != null) {
-            prev.cancel(true);                              // cancel the previous task
+        if (prev == null) return false;
+
+        // if the previous task is not finished, cancel it
+        if (!prev.isDone()) {
+            prev.cancel(true);
             cancelling.add(prev);
+            return false;
         }
 
-        return false;
+        // if the previous task was cancelled, it is already disposed
+        if (prev.isCancelled()) return false;
+
+        // if the previous task was successful, use the generated tile
+        provider.release(context, visible.put(id, getFromTaskIgnoringCancellation(prev)));
+        return true;
     }
 
     private boolean mgmtMoveLoaded(RenderContext context)
@@ -344,8 +353,13 @@ public class TileManager {
         }
 
         @Override
-        public Tile call() throws Exception {
-            Tile tile = provider.require(context, id);
+        public Tile call() throws CancellationException, ExecutionException {
+            Tile tile;
+            try {
+                tile = provider.require(context, id);
+            } catch (InterruptedException e) {
+                throw new CancellationException();      // cancel this task
+            }
             if (tile == null) return null;
 
             // set tile transformation matrix
@@ -362,17 +376,6 @@ public class TileManager {
             );
 
             return tile;
-        }
-    }
-
-    private static class TileComparator implements Comparator<Tile> {
-
-        @Override
-        public int compare(Tile a, Tile b) {
-            int za = a.getId().z;
-            int zb = b.getId().z;
-
-            return za > zb ? 1 : za < zb ? -1 : 0;
         }
     }
 
@@ -405,6 +408,17 @@ public class TileManager {
                 context.addTask(this, true);
 
             return null;
+        }
+    }
+
+    private static class TileComparator implements Comparator<Tile> {
+
+        @Override
+        public int compare(Tile a, Tile b) {
+            int za = a.getId().z;
+            int zb = b.getId().z;
+
+            return za > zb ? 1 : za < zb ? -1 : 0;
         }
     }
 }
