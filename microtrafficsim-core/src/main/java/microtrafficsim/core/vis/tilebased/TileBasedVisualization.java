@@ -7,7 +7,6 @@ import microtrafficsim.core.vis.input.OrthoInputController;
 import microtrafficsim.core.vis.map.tiles.TileProvider;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.utils.concurrency.InterruptSafeExecutors;
-import microtrafficsim.utils.concurrency.InteruptSafeThreadPoolExecutor;
 
 import java.util.concurrent.ExecutorService;
 
