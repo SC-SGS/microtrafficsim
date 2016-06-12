@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public abstract class AbstractSimulation implements Simulation {
-  protected final SimulationConfig config;
+  private final SimulationConfig config;
   protected final StreetGraph graph;
   // simulation steps
   private boolean prepared;
@@ -71,7 +71,12 @@ public abstract class AbstractSimulation implements Simulation {
     }
   }
 
-	/*
+  @Override
+  public SimulationConfig getConfig() {
+    return config;
+  }
+
+  /*
 	|=========|
 	| prepare |
 	|=========|

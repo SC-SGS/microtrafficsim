@@ -46,7 +46,7 @@ public abstract class ValidationScenario extends AbstractSimulation {
 
   protected final void createAndAddCar(Node start, Node end, int delay) {
     createAndAddVehicle(
-            new ValidationCar(config,
+            new ValidationCar(getConfig(),
                     this, new Route(start, end,
                     (Queue<DirectedEdge>) scout.findShortestPath(start, end)),
                     delay
@@ -55,7 +55,7 @@ public abstract class ValidationScenario extends AbstractSimulation {
 
   protected final void createAndAddCar(Node start, Node end, int delay, Color color) {
     createAndAddVehicle(
-            new ValidationCar(config,
+            new ValidationCar(getConfig(),
                     this, new Route(start, end,
                     (Queue<DirectedEdge>) scout.findShortestPath(start, end)),
                     delay
@@ -66,7 +66,7 @@ public abstract class ValidationScenario extends AbstractSimulation {
 
   protected final void createAndAddBlockingCar(Node start, Node end, Color color) {
     ValidationBlockingCar blockingCar = new ValidationBlockingCar(
-            config,
+            getConfig(),
             this,
             new Route(start, end, (Queue<DirectedEdge>) scout.findShortestPath(start, end))
     );

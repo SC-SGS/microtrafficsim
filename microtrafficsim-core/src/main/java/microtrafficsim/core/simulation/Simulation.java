@@ -3,6 +3,7 @@ package microtrafficsim.core.simulation;
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.interesting.progressable.ProgressListener;
 
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ import java.util.Timer;
  * @author Dominic Parga Cacheiro
  */
 public interface Simulation extends VehicleStateListener {
+  SimulationConfig getConfig();
+
   /*
 	|========================|
 	| simulation preperation |

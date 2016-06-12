@@ -17,7 +17,7 @@ import microtrafficsim.utils.fileio.FileManager;
 import java.util.*;
 
 /**
- * Created by Dominic on 12.03.16.
+ * @author Dominic Parga Cacheiro
  */
 public class MeasuringScenario implements Simulation {
 
@@ -78,11 +78,16 @@ public class MeasuringScenario implements Simulation {
         // TODO config.seed.addObserver(...)
     }
 
-    /*
-    |======================|
-    | writing data to file |
-    |======================|
-    */
+  @Override
+  public SimulationConfig getConfig() {
+    return config;
+  }
+
+  /*
+      |======================|
+      | writing data to file |
+      |======================|
+      */
     public synchronized void writeDataToFile() {
 
         System.out.println("");
