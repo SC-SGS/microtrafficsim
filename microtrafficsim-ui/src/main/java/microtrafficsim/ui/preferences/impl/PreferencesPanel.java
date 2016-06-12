@@ -1,4 +1,6 @@
-package microtrafficsim.ui.preferences;
+package microtrafficsim.ui.preferences.impl;
+
+import microtrafficsim.ui.preferences.Preferences;
 
 import javax.swing.*;
 import java.awt.*;

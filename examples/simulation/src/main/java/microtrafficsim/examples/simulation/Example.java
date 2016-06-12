@@ -45,16 +45,16 @@ public class Example {
 
     public static void initSimulationConfig(SimulationConfig config) {
         config.maxVehicleCount = 1000;
-        config.speedup().set(2);
-        config.seed().set(1455374755807L);
-        printSeed(config.seed().get());
-        config.multiThreading().nThreads().set(8);
-        config.crossingLogic().drivingOnTheRight().set(true);
-        config.crossingLogic().edgePriorityEnabled = true;
-        config.crossingLogic().priorityToTheRightEnabled = true;
-        config.crossingLogic().goWithoutPriorityEnabled = true;
-        config.crossingLogic().setOnlyOneVehicle(false);
-        config.logger().enabled = false;
+        config.speedup = 2;
+        config.seed = 1455374755807L;
+        printSeed(config.seed);
+        config.multiThreading.nThreads = 8;
+        config.crossingLogic.drivingOnTheRight = true;
+        config.crossingLogic.edgePriorityEnabled = true;
+        config.crossingLogic.priorityToTheRightEnabled = true;
+        config.crossingLogic.friendlyStandingInJamEnabled = true;
+        config.crossingLogic.setOnlyOneVehicle(false);
+        config.logger.enabled = false;
     }
 
     private static void printSeed(long seed) {

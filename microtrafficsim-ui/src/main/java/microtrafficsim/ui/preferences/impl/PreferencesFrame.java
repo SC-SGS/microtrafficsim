@@ -1,8 +1,11 @@
-package microtrafficsim.ui.preferences;
+package microtrafficsim.ui.preferences.impl;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.ui.gui.GUIController;
 import microtrafficsim.ui.gui.GUIEvent;
+import microtrafficsim.ui.preferences.PrefElement;
+import microtrafficsim.ui.preferences.IncorrectSettingsException;
+import microtrafficsim.ui.preferences.Preferences;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -130,7 +133,7 @@ public class PreferencesFrame extends JFrame implements Preferences {
   }
 
   @Override
-  public void setEnabled(ComponentId id, boolean enabled) {
+  public void setEnabled(PrefElement id, boolean enabled) {
     switch (id) {
       // General
       case sliderSpeedup:
@@ -151,9 +154,9 @@ public class PreferencesFrame extends JFrame implements Preferences {
         concurrencyPanel.setEnabled(id, enabled);
         break;
       // crossing logic
-      case edgePriorityEnabled:
+      case edgePriority:
       case priorityToThe:
-      case onlyOneVehicleEnabled:
+      case onlyOneVehicle:
       case friendlyStandingInJam:
         crossingLogicPanel.setEnabled(id, enabled);
     }

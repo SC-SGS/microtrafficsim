@@ -1,9 +1,9 @@
-package microtrafficsim.ui.core;
+package microtrafficsim.ui;
 
-import microtrafficsim.ui.gui.SimulationController;
+import microtrafficsim.core.simulation.scenarios.RandomRouteScenario;
 import microtrafficsim.ui.gui.GUIController;
 import microtrafficsim.ui.gui.GUIEvent;
-import microtrafficsim.ui.scenarios.Scenario;
+import microtrafficsim.ui.gui.SimulationController;
 import microtrafficsim.ui.vis.TileBasedMapViewer;
 
 import javax.swing.*;
@@ -16,7 +16,7 @@ public class Main {
 
   public static void main(String[] args) throws Exception {
 
-        /* handle input arguments */
+    /* handle input arguments */
     final File file;
     if (args.length == 1) {
       switch(args[0]) {
@@ -29,11 +29,11 @@ public class Main {
           file = new File(args[0]);
       }
     } else
-      file = new File("/Users/Dominic/Documents/Studium/Bachelor_of_Disaster/microtrafficsim/maps/Hier_wohnt_Dominic.osm");
+      file = null;
 
     SwingUtilities.invokeLater(() -> {
       GUIController controller = new SimulationController(
-              Scenario::new,
+              RandomRouteScenario::new,
               new TileBasedMapViewer());
       controller.transiate(GUIEvent.CREATE, file);
     });
@@ -41,7 +41,7 @@ public class Main {
 
   private static void printUsage() {
     System.out.println("");
-    System.out.println("MicroTrafficSim - GUI.");
+    System.out.println("MicroTrafficSim - GUI Example.");
     System.out.println("");
     System.out.println("usage:");
     System.out.println("  microtrafficsim                Run this example without a map");

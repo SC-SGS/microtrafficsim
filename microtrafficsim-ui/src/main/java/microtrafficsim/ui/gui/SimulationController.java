@@ -10,9 +10,9 @@ import microtrafficsim.core.vis.SimulationOverlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
-import microtrafficsim.ui.preferences.ComponentId;
+import microtrafficsim.ui.preferences.PrefElement;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
-import microtrafficsim.ui.preferences.PreferencesFrame;
+import microtrafficsim.ui.preferences.impl.PreferencesFrame;
 import microtrafficsim.ui.vis.MapViewer;
 import microtrafficsim.ui.vis.TileBasedMapViewer;
 import org.slf4j.Logger;
@@ -60,7 +60,7 @@ public class SimulationController implements GUIController {
                               MapViewer mapviewer) {
     this(   simulationConstructor,
             mapviewer,
-            "MicroTrafficSim");
+            "MicroTrafficSim - GUI Example");
   }
 
   public SimulationController(SimulationConstructor simulationConstructor,
@@ -492,26 +492,26 @@ public class SimulationController implements GUIController {
   |=============|
   */
   private void showPreferences() {
-    boolean newSimulation = state == GUIState.SIM_NEW;
+    boolean newSim = state == GUIState.SIM_NEW;
 
     /* set enabled */
     // general
-    preferences.setEnabled(ComponentId.sliderSpeedup,         true);
-    preferences.setEnabled(ComponentId.ageForPause,           false);
-    preferences.setEnabled(ComponentId.maxVehicleCount,       false);
-    preferences.setEnabled(ComponentId.seed,                  true);
-    preferences.setEnabled(ComponentId.metersPerCell,         false);
+    preferences.setEnabled(PrefElement.sliderSpeedup,                   PrefElement.sliderSpeedup.isEnabled());
+    preferences.setEnabled(PrefElement.ageForPause,                     PrefElement.ageForPause.isEnabled());
+    preferences.setEnabled(PrefElement.maxVehicleCount,       newSim && PrefElement.maxVehicleCount.isEnabled());
+    preferences.setEnabled(PrefElement.seed,                  newSim && PrefElement.seed.isEnabled());
+    preferences.setEnabled(PrefElement.metersPerCell,         newSim &&  PrefElement.metersPerCell.isEnabled());
     // crossing logic
-    preferences.setEnabled(ComponentId.edgePriorityEnabled,   newSimulation);
-    preferences.setEnabled(ComponentId.priorityToThe,         newSimulation);
-    preferences.setEnabled(ComponentId.onlyOneVehicleEnabled, newSimulation);
-    preferences.setEnabled(ComponentId.friendlyStandingInJam, newSimulation);
+    preferences.setEnabled(PrefElement.edgePriority,          newSim && PrefElement.edgePriority.isEnabled());
+    preferences.setEnabled(PrefElement.priorityToThe,         newSim && PrefElement.priorityToThe.isEnabled());
+    preferences.setEnabled(PrefElement.onlyOneVehicle,        newSim && PrefElement.onlyOneVehicle.isEnabled());
+    preferences.setEnabled(PrefElement.friendlyStandingInJam, newSim && PrefElement.friendlyStandingInJam.isEnabled());
     // visualization
-    preferences.setEnabled(ComponentId.projection,            false);
+    preferences.setEnabled(PrefElement.projection,                      PrefElement.projection.isEnabled());
     // concurrency
-    preferences.setEnabled(ComponentId.nThreads,              false);
-    preferences.setEnabled(ComponentId.vehiclesPerRunnable,   false);
-    preferences.setEnabled(ComponentId.nodesPerThread,        false);
+    preferences.setEnabled(PrefElement.nThreads,              newSim && PrefElement.nThreads.isEnabled());
+    preferences.setEnabled(PrefElement.vehiclesPerRunnable,             PrefElement.vehiclesPerRunnable.isEnabled());
+    preferences.setEnabled(PrefElement.nodesPerThread,                  PrefElement.nodesPerThread.isEnabled());
 
     /* init values */
     preferences.setSettings(config);

@@ -33,7 +33,6 @@ import java.util.function.Supplier;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public abstract class AbstractSimulation implements Simulation {
-
   protected final SimulationConfig config;
   protected final StreetGraph graph;
   // simulation steps
@@ -204,8 +203,6 @@ public abstract class AbstractSimulation implements Simulation {
     simManager.updateNodes(graph.getNodeIterator());
     prepared = true;
   }
-
-
 
   @Override
   public int getAge() {

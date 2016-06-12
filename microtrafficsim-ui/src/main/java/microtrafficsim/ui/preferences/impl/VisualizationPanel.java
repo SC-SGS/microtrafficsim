@@ -1,6 +1,8 @@
-package microtrafficsim.ui.preferences;
+package microtrafficsim.ui.preferences.impl;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.ui.preferences.PrefElement;
+import microtrafficsim.ui.preferences.IncorrectSettingsException;
 
 import javax.swing.*;
 
@@ -46,7 +48,7 @@ public class VisualizationPanel extends PreferencesPanel {
   }
 
   @Override
-  public void setEnabled(ComponentId id, boolean enabled) {
+  public void setEnabled(PrefElement id, boolean enabled) {
     switch (id) {
       case projection:
         tfProjection.setEnabled(enabled);

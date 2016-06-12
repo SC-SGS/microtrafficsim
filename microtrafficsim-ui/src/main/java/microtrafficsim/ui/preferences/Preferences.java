@@ -9,7 +9,7 @@ public interface Preferences {
   void create();
   void setSettings(SimulationConfig config);
   SimulationConfig getCorrectSettings() throws IncorrectSettingsException;
-  void setEnabled(ComponentId id, boolean enabled);
+  void setEnabled(PrefElement id, boolean enabled);
   void setAllEnabled(boolean enabled);
   default void addSubpreferences(Preferences preferences) {
 
