@@ -5,8 +5,8 @@ import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.*;
-import microtrafficsim.core.simulation.controller.Simulation;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.Simulation;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.Visualization;
 import microtrafficsim.core.vis.VisualizationPanel;
@@ -37,177 +37,177 @@ import java.util.function.Predicate;
 
 
 public class Example {
-    private static final Logger logger = LoggerFactory.getLogger(Example.class);
+  private static final Logger logger = LoggerFactory.getLogger(Example.class);
 
-    public static final int WINDOW_WIDTH = 1600;
-    public static final int WINDOW_HEIGHT = 900;
-    public static final int MSAA = 4;
-    public static final int NUM_SEGMENT_WORKERS = 2;
+  public static final int WINDOW_WIDTH = 1600;
+  public static final int WINDOW_HEIGHT = 900;
+  public static final int MSAA = 4;
+  public static final int NUM_SEGMENT_WORKERS = 2;
 
 
-    public static void printSeed(long seed) {
-        logger.debug("Initializing simulation with seed '0x" + Long.toHexString(seed).toUpperCase() + "'");
+  public static void printSeed(long seed) {
+    logger.debug("Initializing simulation with seed '0x" + Long.toHexString(seed).toUpperCase() + "'");
+  }
+
+
+  public static SegmentBasedVisualization createVisualization(
+          SegmentLayerProvider provider,
+          Simulation sim) {
+    SegmentBasedVisualization vis = new SegmentBasedVisualization(
+            WINDOW_WIDTH,
+            WINDOW_HEIGHT,
+            provider,
+            NUM_SEGMENT_WORKERS);
+
+
+    vis.getKeyController().addKeyCommand(
+            KeyEvent.EVENT_KEY_PRESSED,
+            KeyEvent.VK_F12,
+            e -> Utils.asyncScreenshot(vis.getRenderContext()));
+
+    vis.getKeyController().addKeyCommand(
+            KeyEvent.EVENT_KEY_PRESSED,
+            KeyEvent.VK_SPACE,
+            e -> {
+              if (sim.isPaused())
+                sim.run();
+              else
+                sim.cancel();
+            });
+
+    vis.getKeyController().addKeyCommand(
+            KeyEvent.EVENT_KEY_PRESSED,
+            KeyEvent.VK_RIGHT,
+            e -> {
+              while (!sim.isPaused())
+                sim.cancel();
+              sim.runOneStep();
+            });
+
+    vis.getKeyController().addKeyCommand(
+            KeyEvent.EVENT_KEY_PRESSED,
+            KeyEvent.VK_ESCAPE,
+            e -> Runtime.getRuntime().halt(0));
+
+    vis.getRenderContext().setUncaughtExceptionHandler(new Utils.DebugExceptionHandler());
+
+
+    return vis;
+  }
+
+  public static VisualizationPanel createVisualizationPanel(SegmentBasedVisualization vis)
+          throws UnsupportedFeatureException {
+
+    VisualizerConfig config = vis.getDefaultConfig();
+
+    if (MSAA > 1) {
+      config.glcapabilities.setSampleBuffers(true);
+      config.glcapabilities.setNumSamples(MSAA);
     }
 
-
-    public static SegmentBasedVisualization createVisualization(
-            SegmentLayerProvider provider,
-            Simulation sim) {
-        SegmentBasedVisualization vis = new SegmentBasedVisualization(
-                WINDOW_WIDTH,
-                WINDOW_HEIGHT,
-                provider,
-                NUM_SEGMENT_WORKERS);
+    return new VisualizationPanel(vis, config);
+  }
 
 
-        vis.getKeyController().addKeyCommand(
-                KeyEvent.EVENT_KEY_PRESSED,
-                KeyEvent.VK_F12,
-                e -> Utils.asyncScreenshot(vis.getRenderContext()));
+  public static OSMParser getParser(SimulationConfig simcfg) {
 
-        vis.getKeyController().addKeyCommand(
-                KeyEvent.EVENT_KEY_PRESSED,
-                KeyEvent.VK_SPACE,
-                e -> {
-                    if (sim.isPaused())
-                        sim.run();
-                    else
-                        sim.cancel();
-                });
+    // predicates to match/select features
+    Predicate<Way> streetgraphMatcher = w -> {
+      if (!w.visible) return false;
+      if (w.tags.get("highway") == null) return false;
+      if (w.tags.get("area") != null && !w.tags.get("area").equals("no")) return false;
 
-        vis.getKeyController().addKeyCommand(
-                KeyEvent.EVENT_KEY_PRESSED,
-                KeyEvent.VK_RIGHT,
-                e -> {
-                    while (!sim.isPaused())
-                        sim.cancel();
-                    sim.runOneStep();
-                });
+      switch (w.tags.get("highway")) {
+        case "motorway":
+          return true;
+        case "trunk":
+          return true;
+        case "primary":
+          return true;
+        case "secondary":
+          return true;
+        case "tertiary":
+          return true;
+        case "unclassified":
+          return true;
+        case "residential":
+          return true;
+        //case "service":			return true;
 
-        vis.getKeyController().addKeyCommand(
-                KeyEvent.EVENT_KEY_PRESSED,
-                KeyEvent.VK_ESCAPE,
-                e -> Runtime.getRuntime().halt(0));
+        case "motorway_link":
+          return true;
+        case "trunk_link":
+          return true;
+        case "primary_link":
+          return true;
+        case "tertiary_link":
+          return true;
 
-        vis.getRenderContext().setUncaughtExceptionHandler(new Utils.DebugExceptionHandler());
+        case "living_street":
+          return true;
+        case "track":
+          return true;
+        case "road":
+          return true;
+      }
 
+      return false;
+    };
 
-        return vis;
-    }
+    // set the generator-indices
+    int genindexBefore = 256;
+    int genindexStreetGraph = 512;
 
-    public static VisualizationPanel createVisualizationPanel(SegmentBasedVisualization vis)
-            throws UnsupportedFeatureException {
+    // define the features
+    MapFeatureDefinition<Street> streets = new MapFeatureDefinition<>(
+            "streets:all",
+            genindexStreetGraph + 1,        // generate after StreetGraph
+            new StreetFeatureGenerator(),
+            n -> false,
+            streetgraphMatcher);
 
-        VisualizerConfig config = vis.getDefaultConfig();
+    StreetGraphFeatureDefinition streetgraph = new StreetGraphFeatureDefinition(
+            "streetgraph",
+            genindexStreetGraph,
+            new StreetGraphGenerator(simcfg),
+            n -> false,
+            streetgraphMatcher);
 
-        if (MSAA > 1) {
-            config.glcapabilities.setSampleBuffers(true);
-            config.glcapabilities.setNumSamples(MSAA);
-        }
-
-        return new VisualizationPanel(vis, config);
-    }
-
-
-    public static OSMParser getParser(SimulationConfig simcfg) {
-
-        // predicates to match/select features
-        Predicate<Way> streetgraphMatcher = w -> {
-            if (!w.visible) return false;
-            if (w.tags.get("highway") == null) return false;
-            if (w.tags.get("area") != null && !w.tags.get("area").equals("no")) return false;
-
-            switch (w.tags.get("highway")) {
-                case "motorway":
-                    return true;
-                case "trunk":
-                    return true;
-                case "primary":
-                    return true;
-                case "secondary":
-                    return true;
-                case "tertiary":
-                    return true;
-                case "unclassified":
-                    return true;
-                case "residential":
-                    return true;
-                //case "service":			return true;
-
-                case "motorway_link":
-                    return true;
-                case "trunk_link":
-                    return true;
-                case "primary_link":
-                    return true;
-                case "tertiary_link":
-                    return true;
-
-                case "living_street":
-                    return true;
-                case "track":
-                    return true;
-                case "road":
-                    return true;
-            }
-
-            return false;
-        };
-
-        // set the generator-indices
-        int genindexBefore = 256;
-        int genindexStreetGraph = 512;
-
-        // define the features
-        MapFeatureDefinition<Street> streets = new MapFeatureDefinition<>(
-                "streets:all",
-                genindexStreetGraph + 1,        // generate after StreetGraph
-                new StreetFeatureGenerator(),
-                n -> false,
-                streetgraphMatcher);
-
-        StreetGraphFeatureDefinition streetgraph = new StreetGraphFeatureDefinition(
-                "streetgraph",
-                genindexStreetGraph,
-                new StreetGraphGenerator(simcfg),
-                n -> false,
-                streetgraphMatcher);
-
-        return new OSMParser.Config()
-                .setGeneratorIndexBefore(genindexBefore)
-                .setGeneratorIndexStreetGraph(genindexStreetGraph)
-                .setStreetGraphFeatureDefinition(streetgraph)
-                .putMapFeatureDefinition(streets)
-                .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
-                .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
-                .putRelationInitializer("restriction", new RestrictionRelationFactory())
-                .createParser();
-    }
+    return new OSMParser.Config()
+            .setGeneratorIndexBefore(genindexBefore)
+            .setGeneratorIndexStreetGraph(genindexStreetGraph)
+            .setStreetGraphFeatureDefinition(streetgraph)
+            .putMapFeatureDefinition(streets)
+            .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
+            .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
+            .putRelationInitializer("restriction", new RestrictionRelationFactory())
+            .createParser();
+  }
 
 
-    public static Set<LayerDefinition> getLayerDefinitions() {
-        HashSet<LayerDefinition> layers = new HashSet<>();
+  public static Set<LayerDefinition> getLayerDefinitions() {
+    HashSet<LayerDefinition> layers = new HashSet<>();
 
-        ShaderProgramSource progStreets = new ShaderProgramSource("streets");
-        progStreets.addSource(GL3.GL_VERTEX_SHADER, new PackagedResource(Visualization.class, "/shaders/basic.vs"));
-        progStreets.addSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(Visualization.class, "/shaders/basic.fs"));
+    ShaderProgramSource progStreets = new ShaderProgramSource("streets");
+    progStreets.addSource(GL3.GL_VERTEX_SHADER, new PackagedResource(Visualization.class, "/shaders/basic.vs"));
+    progStreets.addSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(Visualization.class, "/shaders/basic.fs"));
 
-        Style streets = new Style(progStreets);
-        streets.uniforms.put("u_color", () -> Color.fromRGB(0x000000).toVec4f());
+    Style streets = new Style(progStreets);
+    streets.uniforms.put("u_color", () -> Color.fromRGB(0x000000).toVec4f());
 
-        layers.add(new LayerDefinition("streets", 0,
-                new FeatureSegmentLayerSource("streets:all", streets)));
+    layers.add(new LayerDefinition("streets", 0,
+            new FeatureSegmentLayerSource("streets:all", streets)));
 
-        return layers;
-    }
+    return layers;
+  }
 
-    public static SegmentLayerProvider getSegmentLayerProvider(Projection projection, Set<LayerDefinition> layers) {
-        LayeredMapSegment provider = new LayeredMapSegment(projection);
+  public static SegmentLayerProvider getSegmentLayerProvider(Projection projection, Set<LayerDefinition> layers) {
+    LayeredMapSegment provider = new LayeredMapSegment(projection);
 
-        FeatureSegmentLayerGenerator generator = new FeatureSegmentLayerGenerator();
-        provider.putGenerator(FeatureSegmentLayerSource.class, generator);
+    FeatureSegmentLayerGenerator generator = new FeatureSegmentLayerGenerator();
+    provider.putGenerator(FeatureSegmentLayerSource.class, generator);
 
-        layers.forEach(provider::addLayer);
-        return provider;
-    }
+    layers.forEach(provider::addLayer);
+    return provider;
+  }
 }

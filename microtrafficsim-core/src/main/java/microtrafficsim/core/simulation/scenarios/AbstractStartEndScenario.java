@@ -8,8 +8,8 @@ import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.map.polygon.Polygon;
-import microtrafficsim.core.simulation.controller.AbstractSimulation;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.AbstractSimulation;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.Distribution;
 import microtrafficsim.math.random.WheelOfFortune;
@@ -66,9 +66,9 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
         // used for creating vehicles and routes etc.
         startFields = new HashMap<>();
         endFields = new HashMap<>();
-        startWheel = new WheelOfFortune(config.seed().get());
-        endWheel = new WheelOfFortune(config.seed().get());
-        random = new Random(config.seed().get());
+        startWheel = new WheelOfFortune(config.seed);
+        endWheel = new WheelOfFortune(config.seed);
+        random = new Random(config.seed);
         // used for printing vehicle creation process
         lastPercentage = 0;
         percentageDelta = 5; // > 0 !!!
@@ -170,7 +170,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
     private void multiThreadedVehicleCreation(ProgressListener listener) {
 
         final int maxVehicleCount = config.maxVehicleCount;
-        final int nThreads = config.multiThreading().nThreads().get();
+        final int nThreads = config.multiThreading.nThreads;
         ExecutorService pool = Executors.newFixedThreadPool(nThreads);
         ArrayList<Callable<Object>> todo = new ArrayList<>(nThreads);
 
@@ -251,7 +251,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
         int percentage = (100 * finished) / total;
         synchronized (percentageDelta) {
             if (percentage - lastPercentage >= percentageDelta) {
-                config.logger().info(percentage + "% vehicles created.");
+                config.logger.info(percentage + "% vehicles created.");
                 if (listener != null)
                     listener.didProgress(percentage);
                 lastPercentage += percentageDelta;
@@ -385,19 +385,19 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
 
         if (startFields.size() <= 0 || endFields.size() <= 0) {
             if (startFields.size() <= 0)
-                config.logger().info("You are using no or only empty start fields!");
+                config.logger.info("You are using no or only empty start fields!");
             if (endFields.size() <= 0)
-                config.logger().info("You are using no or only empty end fields!");
+                config.logger.info("You are using no or only empty end fields!");
         } else {
-            config.logger().info("CREATING VEHICLES started");
+            config.logger.info("CREATING VEHICLES started");
             long time = System.nanoTime();
 
-            if (config.multiThreading().nThreads().get() > 1)
+            if (config.multiThreading.nThreads > 1)
                 multiThreadedVehicleCreation(listener);
             else
                 singleThreadedVehicleCreation(listener);
 
-            config.logger().infoNanoseconds("CREATING VEHICLES finished after ", System.nanoTime() - time);
+            config.logger.infoNanoseconds("CREATING VEHICLES finished after ", System.nanoTime() - time);
         }
     }
 }

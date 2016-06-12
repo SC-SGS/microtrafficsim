@@ -5,9 +5,8 @@ import microtrafficsim.core.frameworks.shortestpath.astar.impl.FastestWayAStar;
 import microtrafficsim.core.frameworks.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.EndOfTheWorldScenario;
-import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 
 import java.util.Random;
 import java.util.function.Supplier;

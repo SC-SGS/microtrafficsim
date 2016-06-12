@@ -8,7 +8,7 @@ import javax.xml.stream.XMLStreamException;
 
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.parser.StreetGraphGenerator;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.osm.parser.Parser;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.features.FeatureDefinition;

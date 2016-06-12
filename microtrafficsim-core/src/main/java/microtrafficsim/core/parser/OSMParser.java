@@ -162,8 +162,8 @@ public class OSMParser {
 		StreetGraph streetgraph = null;
 		if (config.streetgraph != null)
 			streetgraph = config.streetgraph.getGenerator().getStreetGraph();
-		
-		return new Result(new MapSegment(extractor.bounds, featureset), streetgraph);
+
+    return new Result(new MapSegment(extractor.bounds, featureset), streetgraph);
 	}
 	
 	

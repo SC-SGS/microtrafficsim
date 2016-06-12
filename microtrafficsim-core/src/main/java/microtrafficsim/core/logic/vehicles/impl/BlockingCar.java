@@ -2,8 +2,7 @@ package microtrafficsim.core.logic.vehicles.impl;
 
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
-import microtrafficsim.utils.id.LongIDGenerator;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 
 /**
  * @author Dominic Parga Cacheiro

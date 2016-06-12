@@ -5,7 +5,7 @@ import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.*;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.Visualization;
 import microtrafficsim.core.vis.VisualizationPanel;
@@ -45,16 +45,16 @@ public class Example {
 
 
     public static void initSimulationConfig(SimulationConfig config) {
-        config.seed().set(new Random().nextLong());
+        config.seed = new Random().nextLong();
 //        config.seed.set(0xC6D6253AE649B7BCL);
-        printSeed(config.seed().get());
+        printSeed(config.seed);
         config.maxVehicleCount = 10000;
-        config.multiThreading().nThreads().set(8);
-        config.crossingLogic().drivingOnTheRight().set(true);
-        config.crossingLogic().edgePriorityEnabled = true;
-        config.crossingLogic().priorityToTheRightEnabled = true;
-        config.crossingLogic().goWithoutPriorityEnabled = true;
-        config.crossingLogic().setOnlyOneVehicle(false);
+        config.multiThreading.nThreads = 8;
+        config.crossingLogic.drivingOnTheRight = true;
+        config.crossingLogic.edgePriorityEnabled = true;
+        config.crossingLogic.priorityToTheRightEnabled = true;
+        config.crossingLogic.friendlyStandingInJamEnabled = true;
+        config.crossingLogic.setOnlyOneVehicle(false);
     }
 
     private static void printSeed(long seed) {
