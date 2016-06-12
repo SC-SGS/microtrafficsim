@@ -316,7 +316,6 @@ public class TileManager {
 
     public void display(RenderContext context) {
         GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
-        context.DepthTest.disable(gl);
 
         provider.beforeRendering(context);
         for (Tile tile : prebuilt)

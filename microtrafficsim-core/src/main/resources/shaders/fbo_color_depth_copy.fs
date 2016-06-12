@@ -12,4 +12,3 @@ void main() {
     out_color    = texture(u_color_sampler, v_texcoord).rgba;
     gl_FragDepth = texture(u_depth_sampler, v_texcoord).r;
 }
-

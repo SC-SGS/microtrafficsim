@@ -96,7 +96,7 @@ public class TileGridOverlay implements Overlay {
     public void resize(RenderContext context, View view) {}
 
     @Override
-    public void display(RenderContext context, View view) {
+    public void display(RenderContext context, View view, MapBuffer buffer) {
         GL3 gl = context.getDrawable().getGL().getGL3();
         context.DepthTest.disable(gl);
         gl.glDepthMask(false);

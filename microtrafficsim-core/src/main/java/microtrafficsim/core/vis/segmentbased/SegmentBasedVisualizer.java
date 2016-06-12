@@ -195,7 +195,7 @@ public class SegmentBasedVisualizer implements Visualizer {
 		manager.display(context);
 		
 		for (Overlay overlay : overlays.values())
-			overlay.display(context, view);
+			overlay.display(context, view, null);			// TODO: do not pass null
 	}
 
 	@Override

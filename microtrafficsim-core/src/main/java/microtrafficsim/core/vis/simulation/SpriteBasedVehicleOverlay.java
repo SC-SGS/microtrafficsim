@@ -195,7 +195,7 @@ public class SpriteBasedVehicleOverlay implements Overlay {
 	public void resize(RenderContext context, View view) {}
 
 	@Override
-	public void display(RenderContext context, View view) {
+	public void display(RenderContext context, View view, MapBuffer map) {
         if (!enabled || simulation == null) return;
 		GL3 gl = context.getDrawable().getGL().getGL3();
 		

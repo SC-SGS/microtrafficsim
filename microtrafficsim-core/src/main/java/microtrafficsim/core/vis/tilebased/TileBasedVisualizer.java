@@ -1,6 +1,7 @@
 package microtrafficsim.core.vis.tilebased;
 
 import com.jogamp.opengl.GL3;
+import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import microtrafficsim.core.map.style.StyleSheet;
@@ -15,14 +16,20 @@ import microtrafficsim.core.vis.context.VertexAttributeManager;
 import microtrafficsim.core.vis.map.tiles.TileManager;
 import microtrafficsim.core.vis.map.tiles.TileProvider;
 import microtrafficsim.core.vis.opengl.DataTypes;
+import microtrafficsim.core.vis.opengl.shader.Shader;
+import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
+import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformMat4f;
+import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.opengl.utils.DebugUtils;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.core.vis.view.View;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.utils.resources.PackagedResource;
+import microtrafficsim.utils.resources.Resource;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,12 +46,23 @@ public class TileBasedVisualizer implements Visualizer {
     private static final int DEFAULT_FPS = 60;
     private static final String GL_PROFILE = GLProfile.GL3;
 
+    private static final Resource FBO_COLOR_DEPTH_COPY_VS = new PackagedResource(TileBasedVisualizer.class, "/shaders/fbo_color_depth_copy.vs");
+    private static final Resource FBO_COLOR_DEPTH_COPY_FS = new PackagedResource(TileBasedVisualizer.class, "/shaders/fbo_color_depth_copy.fs");
+
+    private static final int FBO_COLOR_TEXUNIT = 0;
+    private static final int FBO_DEPTH_TEXUNIT = 1;
+
     private RenderContext context;
     private OrthographicView view;
 
     private TileProvider provider;
     private TileManager manager;
-    private TreeMap<Integer, Overlay> overlays;
+    private TreeMap<Integer, Overlay> overlays = new TreeMap<>();
+
+    // back buffer for the map
+    private Overlay.MapBuffer backbuffer = null;
+    private VertexArrayObject empty;
+    private ShaderProgram fboCopyShader;
 
     // global uniforms
     private UniformMat4f uView;
@@ -62,8 +80,6 @@ public class TileBasedVisualizer implements Visualizer {
         this.context = context;
         this.view = view;
         this.provider = provider;
-
-        this.overlays = new TreeMap<>();
 
         this.manager = new TileManager(provider, worker);
         provider.addTileChangeListener(new TileChangeListenerImpl());
@@ -98,13 +114,17 @@ public class TileBasedVisualizer implements Visualizer {
     @Override
     public VisualizerConfig getDefaultConfig() throws UnsupportedFeatureException {
         GLProfile profile = GLProfile.get(GL_PROFILE);
+        GLCapabilities caps = new GLCapabilities(profile);
+
+        caps.setDoubleBuffered(true);
+        caps.setDepthBits(16);
 
         // check if required features are available
         ArrayList<String> missing = checkGLFeatureSet(profile);
         if (!missing.isEmpty())
             throw new UnsupportedFeatureException(missing);
 
-        return new VisualizerConfig(profile, new GLCapabilities(profile), DEFAULT_FPS);
+        return new VisualizerConfig(profile, caps, DEFAULT_FPS);
     }
 
     private ArrayList<String> checkGLFeatureSet(GLProfile profile) {
@@ -159,44 +179,181 @@ public class TileBasedVisualizer implements Visualizer {
 
         gl.glEnable(GL3.GL_CULL_FACE);
 
+        // initialize the framebuffer
+        initFrameBuffer(context);
+
+        // initialize the subsystems
         resetView();
 
         manager.initialize(context);
-
         for (Overlay overlay: overlays.values())
             overlay.init(context, view);
     }
 
     @Override
     public void dispose(RenderContext context) {
-        manager.dispose(context);
+        // dispose the framebuffer
+        disposeFrameBuffer(context);
 
+        // dispose the subsystems
+        manager.dispose(context);
         for (Overlay overlay: overlays.values())
             overlay.dispose(context);
     }
 
+    private void initFrameBuffer(RenderContext context) {
+        GLAutoDrawable drawable = context.getDrawable();
+
+        GL3 gl = drawable.getGL().getGL3();
+        final int width = drawable.getSurfaceWidth();
+        final int height = drawable.getSurfaceHeight();
+        int[] obj = { -1, -1, -1 };
+
+        // create empty VAO for buffer-copying
+        empty = VertexArrayObject.create(gl);
+        empty.bind(gl);
+        empty.unbind(gl);
+
+        // create shader for buffer-copying
+        Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "fbo_color_depth_copy.vs")
+                .loadFromResource(FBO_COLOR_DEPTH_COPY_VS)
+                .compile(gl);
+
+        Shader fs = Shader.create(gl, GL3.GL_FRAGMENT_SHADER, "fbo_color_depth_copy.fs")
+                .loadFromResource(FBO_COLOR_DEPTH_COPY_FS)
+                .compile(gl);
+
+        fboCopyShader = ShaderProgram.create(gl, context, "fbo_color_depth_copy")
+                .attach(gl, vs, fs)
+                .link(gl)
+                .detach(gl, vs, fs);
+
+        UniformSampler2D uFboColorSampler = (UniformSampler2D) fboCopyShader.getUniform("u_color_sampler");
+        UniformSampler2D uFboDepthSampler = (UniformSampler2D) fboCopyShader.getUniform("u_depth_sampler");
+        uFboColorSampler.set(FBO_COLOR_TEXUNIT);
+        uFboDepthSampler.set(FBO_DEPTH_TEXUNIT);
+
+        // create backbuffer
+        gl.glGenTextures(2, obj, 0);
+        gl.glGenFramebuffers(1, obj, 2);
+        backbuffer = new Overlay.MapBuffer(obj[2], obj[0], obj[1]);
+
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, backbuffer.color);
+        gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
+        gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
+        gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_NEAREST);
+        gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_NEAREST);
+        gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, width, height, 0, GL3.GL_RGBA, GL3.GL_BYTE, null);
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, backbuffer.depth);
+        gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
+        gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
+        gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_NEAREST);
+        gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_NEAREST);
+        gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_COMPARE_MODE, GL3.GL_NONE);
+        gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT16, width, height, 0, GL3.GL_DEPTH_COMPONENT, GL3.GL_BYTE, null);
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+
+        // create framebuffer
+        gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, backbuffer.fbo);
+        gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, backbuffer.color, 0);
+        gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_DEPTH_ATTACHMENT, GL3.GL_TEXTURE_2D, backbuffer.depth, 0);
+        int status = gl.glCheckFramebufferStatus(GL3.GL_FRAMEBUFFER);
+        gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+
+        if (status != GL3.GL_FRAMEBUFFER_COMPLETE)
+            throw new RuntimeException("Failed to create framebuffer object (status: 0x"
+                    + Integer.toHexString(status) + ")");
+    }
+
+    private void resizeFrameBuffer(RenderContext context, int width, int height) {
+        if (backbuffer == null) return;
+        GL3 gl = context.getDrawable().getGL().getGL3();
+
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, backbuffer.color);
+        gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, width, height, 0, GL3.GL_RGBA, GL3.GL_BYTE, null);
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, backbuffer.depth);
+        gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT16, width, height, 0, GL3.GL_DEPTH_COMPONENT, GL3.GL_BYTE, null);
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+    }
+
+    private void disposeFrameBuffer(RenderContext context) {
+        if (backbuffer == null) return;
+
+        GL3 gl = context.getDrawable().getGL().getGL3();
+        int[] obj= { backbuffer.fbo, backbuffer.color, backbuffer.depth };
+
+        // detach textures
+        gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, backbuffer.fbo);
+        gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_COLOR_ATTACHMENT0, GL3.GL_TEXTURE_2D, 0, 0);
+        gl.glFramebufferTexture2D(GL3.GL_FRAMEBUFFER, GL3.GL_DEPTH_ATTACHMENT, GL3.GL_TEXTURE_2D, 0, 0);
+        gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+
+        // delete objects
+        gl.glDeleteFramebuffers(1, obj, 0);
+        gl.glDeleteTextures(2, obj, 1);
+
+        backbuffer = null;
+
+        // delete vao, shader
+        empty.dispose(gl);
+        fboCopyShader.dispose(gl);
+    }
+
     @Override
     public void display(RenderContext context) throws Exception {
+        GL3 gl = context.getDrawable().getGL().getGL3();
+
         uView.set(view.getViewMatrix());
         uProjection.set(view.getProjectionMatrix());
 
-        // clear
-        GL3 gl = context.getDrawable().getGL().getGL3();
-        context.ClearColor.set(gl, bgcolor);
-        context.ClearDepth.set(gl, 1.f);
-        gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
+        context.DepthTest.enable(gl);
+        context.DepthTest.setFunction(gl, GL3.GL_ALWAYS);
 
-        // update and draw
+        // draw map to framebuffer
+        gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, backbuffer.fbo);
+
+        gl.glClearBufferfv(GL3.GL_COLOR, 0, new float[]{bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a}, 0);
+        gl.glClearBufferfv(GL3.GL_DEPTH, 0, new float[]{ 0.0f }, 0);
+
         manager.update(context, view);
         manager.display(context);
 
+        gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+
+        // draw back-buffer to window-buffer
+        context.BlendMode.enable(gl);
+        context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
+        context.BlendMode.setFactors(gl, GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
+
+        empty.bind(gl);
+        fboCopyShader.bind(gl);
+
+        gl.glActiveTexture(GL3.GL_TEXTURE0 + FBO_COLOR_TEXUNIT);
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, backbuffer.color);
+
+        gl.glActiveTexture(GL3.GL_TEXTURE0 + FBO_DEPTH_TEXUNIT);
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, backbuffer.depth);
+
+        gl.glDrawArrays(GL3.GL_TRIANGLES, 0, 3);
+
+        fboCopyShader.unbind(gl);
+        empty.unbind(gl);
+
+        context.DepthTest.setFunction(gl, GL3.GL_GEQUAL);
+
+        // draw overlays
         for (Overlay overlay : overlays.values())
-            overlay.display(context, view);
+            overlay.display(context, view, backbuffer);
     }
 
     @Override
     public void reshape(RenderContext context, int x, int y, int width, int height) {
         view.resize(width, height);
+        resizeFrameBuffer(context, width, height);
 
         for (Overlay overlay : overlays.values())
             overlay.resize(context, view);
