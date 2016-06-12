@@ -1,8 +1,10 @@
 package microtrafficsim.core.vis.simulation;
 
 import com.jogamp.opengl.GL3;
-import microtrafficsim.core.frameworks.vehicle.LogicVehicleEntity;
+import microtrafficsim.core.frameworks.street.StreetEntity;
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.frameworks.vehicle.LogicVehicleEntity;
+import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.simulation.Simulation;
 import microtrafficsim.core.vis.SimulationOverlay;
@@ -36,6 +38,7 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 
 	private final static float VEHICLE_SIZE = 10.f;
 	private final static float VEHICLE_SCALE_NORM = 1.f / (1 << 18);
+    private final static float VEHICLE_LANE_OFFSET = 6.f;
 	private final static int VIEWPORT_CULLING_EXPANSION = 20;
 
 	private final static int TEX_UNIT_SPRITE = 0;
@@ -199,7 +202,10 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 	public void display(RenderContext context, View view, MapBuffer map) {
         if (!enabled || simulation == null) return;
 		GL3 gl = context.getDrawable().getGL().getGL3();
-		
+
+        // get direction of lane offset
+        int laneOffsetSign = simulation.getConfig().crossingLogic.drivingOnTheRight ? 1 : -1;
+
 		// disable depth test
 		context.DepthTest.disable(gl);
 		
@@ -248,13 +254,21 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 			Coordinate cpos = v.getPosition();
 			Vec2d pos = projection.project(cpos);
 
+            Coordinate ctarget = v.getTarget();
+            Vec2d dir = projection.project(ctarget).sub(pos).normalize();
+
+            DirectedEdge edge = logic.getDirectedEdge();
+            if (edge == null) continue;
+            StreetEntity street = edge.getEntity();
+            if (street.getBackwardEdge() != null && street.getForwardEdge() != null) {
+                pos.x += dir.y * laneOffsetSign * VEHICLE_LANE_OFFSET * VEHICLE_SCALE_NORM;
+                pos.y -= dir.x * laneOffsetSign * VEHICLE_LANE_OFFSET * VEHICLE_SCALE_NORM;
+            }
+
 			// continue if out of bounds
 			if (pos.x < left || pos.x > right || pos.y < bottom || pos.y > top)
 				continue;
-			
-			Coordinate ctarget = v.getTarget();
-			Vec2d dir = projection.project(ctarget).sub(pos).normalize();
-			
+
 			buffer.putFloat((float) pos.x);
 			buffer.putFloat((float) pos.y);
             buffer.putFloat(v.getLayer());

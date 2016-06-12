@@ -1,6 +1,7 @@
 package microtrafficsim.core.frameworks.vehicle;
 
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.vis.opengl.utils.Color;
 
 

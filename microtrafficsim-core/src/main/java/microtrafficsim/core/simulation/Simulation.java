@@ -116,6 +116,12 @@ public interface Simulation extends VehicleStateListener {
 	|==========|
 	*/
 	/**
+	 * Returns the list of spawned (i.e. visible and ready to drive) vehicles.
+	 * Note: The state of the vehicles contained in this list may change due to
+	 * the asynchronous nature of the simulation, this means the associated
+	 * {@link microtrafficsim.core.logic.DirectedEdge DirectedEdge} is {@code null}
+	 * if the vehicle has de-spawned.
+	 *
 	 * @return A copy of the list containing all spawned vehicles. This list
 	 *         does not contain a copy of the vehicles, but the vehicles itself.
 	 */
