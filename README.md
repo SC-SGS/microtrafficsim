@@ -3,31 +3,30 @@ with OpenStreetMap data.
 
 
 ## News
-On 18 June 2016, we will have a stand at the
-[Tag der Wissenschaft Uni Stuttgart](http://www.uni-stuttgart.de/tag/2016/). You are welcome to visit us.
+On 18 June 2016, we will have a stand at the [Tag der Wissenschaft Uni
+Stuttgart](http://www.uni-stuttgart.de/tag/2016/). You are welcome to visit
+us.
 
 
 ## Demonstration and Examples
-Demonstrations and examples can be executed using `gradle`. All
-OpenStreetMap (OSM) files need to be in the OSM XML format, as, for
-example, provided by the
+Demonstrations and examples can be executed using `gradle`. All OpenStreetMap
+(OSM) files need to be in the OSM XML format, as, for example, provided by the
 [OpenStreetMap web interface](https://www.openstreetmap.org).
 
-
 #### Main UI
-The main UI provides an overview of the simulation. The scenario is currently fixed (random routes), however various simulation parameters, as well as the number of vehicles and the used map, can be adjusted. At the moment, the main ui uses a tile-based visualization, which is faster than the segment-based one when using large maps. The main UI can be executed using
+The main UI provides an overview of the simulation. The scenario is currently
+fixed (random routes), however various simulation parameters, as well as the
+number of vehicles and the used map, can be adjusted
 
 ```shell
 ./gradlew :microtrafficsim-ui:run
 ```
 
-The temporary branch `tmp/presentation` currently contains an
-experimental implementation using a tile-based visualization.
-
-
 #### Fixed Simulation Example
 The fixed simulation example features a fixed scenario, fixed parameters,
-and a segment-based visualization. It represents a former state of development, therefore the visualization is quite simple and the simulation parameters can't be changed without changing code. It can be executed using
+and a segment-based visualization. It represents a former state of development,
+therefore the visualization is quite simple and the simulation parameters can't
+be changed without changing code. It can be executed using
 ```shell
 ./gradlew :examples:simulation:run -Dexec.args="<path to OSM-XML file>"
 ```
@@ -45,7 +44,8 @@ for the segment based version.
 
 
 ## Supported traffic attributes
-* different vehicle types (inclusive different max velocities, acceleration functions etc.)
+* different vehicle types (inclusive different max velocities, acceleration
+  functions etc.)
 * static routing: fastest vs. shortest route
 * streets' max velocity
 * single laned streets
@@ -53,7 +53,8 @@ for the segment based version.
 All following attributes can be en-/disabled.
 * crossing logic: street priorities
 * crossing logic: right-before-left XOR left-before-right XOR random
-* "friendly-standing-in-jam": If a vehicle has to wait at a crossroad, it relinquishes its right of way for an other vehicle that has not to wait.
+* "friendly-standing-in-jam": If a vehicle has to wait at a crossroad, it
+  relinquishes its right of way for an other vehicle that has not to wait.
 
 
 ## Please Note
