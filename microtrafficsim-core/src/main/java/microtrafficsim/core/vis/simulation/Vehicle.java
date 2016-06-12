@@ -14,6 +14,7 @@ public class Vehicle implements IVisualizationVehicle {
 
 	private VehicleEntity entity;
 	private Coordinate position;
+	private float layer;
 	private Coordinate target;
 	private Color color;
 
@@ -54,6 +55,7 @@ public class Vehicle implements IVisualizationVehicle {
 	public void updatePosition() {
 		DirectedEdge edge = entity.getLogic().getDirectedEdge();
 		Street geom = edge.getEntity().getGeometry();
+		layer = geom.layer;
 		
 		double pos = entity.getLogic().getCellPosition() + 0.5f;
 		pos = pos * (geom.length / edge.getLength());
@@ -120,7 +122,13 @@ public class Vehicle implements IVisualizationVehicle {
 		position.lon = a.lon + (b.lon - a.lon) * pSegment;
 	}
 
+    @Override
 	public Coordinate getPosition() {
 		return position;
+	}
+
+    @Override
+	public float getLayer() {
+		return layer;
 	}
 }

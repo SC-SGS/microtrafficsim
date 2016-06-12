@@ -22,6 +22,7 @@ import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformMat4f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
+import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.opengl.utils.DebugUtils;
 import microtrafficsim.core.vis.view.OrthographicView;
@@ -67,6 +68,7 @@ public class TileBasedVisualizer implements Visualizer {
     // global uniforms
     private UniformMat4f uView;
     private UniformMat4f uProjection;
+    private UniformVec4f uViewport;
 
     private Color bgcolor = Color.fromRGBA(0x000000FF);
 
@@ -95,7 +97,7 @@ public class TileBasedVisualizer implements Visualizer {
         uView = (UniformMat4f) uniforms.putGlobalUniform("u_view", DataTypes.FLOAT_MAT4);
         uProjection = (UniformMat4f) uniforms.putGlobalUniform("u_projection", DataTypes.FLOAT_MAT4);
         uniforms.putGlobalUniform("u_viewscale", DataTypes.FLOAT);
-        uniforms.putGlobalUniform("u_viewport", DataTypes.FLOAT_VEC4);
+        uViewport = (UniformVec4f) uniforms.putGlobalUniform("u_viewport", DataTypes.FLOAT_VEC4);
 
         // initialize default attribute bindings
         attributes.putDefaultAttributeBinding("a_position", VertexAttributes.POSITION3);
@@ -306,9 +308,12 @@ public class TileBasedVisualizer implements Visualizer {
     @Override
     public void display(RenderContext context) throws Exception {
         GL3 gl = context.getDrawable().getGL().getGL3();
+        int width = context.getDrawable().getSurfaceWidth();
+        int height = context.getDrawable().getSurfaceHeight();
 
         uView.set(view.getViewMatrix());
         uProjection.set(view.getProjectionMatrix());
+        uViewport.set(width, height, 1.f / width, 1.f / height);
 
         context.DepthTest.enable(gl);
         context.DepthTest.setFunction(gl, GL3.GL_ALWAYS);

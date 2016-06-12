@@ -39,7 +39,8 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 	private final static int VIEWPORT_CULLING_EXPANSION = 20;
 
 	private final static int TEX_UNIT_SPRITE = 0;
-	
+    private final static int TEX_UNIT_MAP_DEPTH = 1;
+
 	private final static Resource SHADER_VERT = new PackagedResource(
 			ShaderBasedVehicleOverlay.class,
 			"/shaders/overlay/vehicle/spritebased/vehicle_overlay.vs"
@@ -63,8 +64,7 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 	private VertexAttributePointer ptrColor;
 
 	private ShaderProgram prog;
-	private UniformSampler2D uSpriteSampler;
-	
+
 	private boolean enabled;
 
 
@@ -86,8 +86,7 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 		this.ptrColor = null;
 
 		this.prog = null;
-		this.uSpriteSampler = null;
-		
+
 		this.enabled = true;
 	}
 	
@@ -112,9 +111,13 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 		vs.dispose(gl);
 		fs.dispose(gl);
 		
-		// load uniforms
-		uSpriteSampler = (UniformSampler2D) prog.getUniform("u_sprite_sampler");
-		
+		// set samplers
+		UniformSampler2D uSpriteSampler = (UniformSampler2D) prog.getUniform("u_sprite_sampler");
+        UniformSampler2D uMapDepth = (UniformSampler2D) prog.getUniform("u_map_depth");
+
+        uSpriteSampler.set(TEX_UNIT_SPRITE);
+        uMapDepth.set(TEX_UNIT_MAP_DEPTH);
+
 		// load texture data
 		TextureData2D texdata = TextureData2D.loadFromResource(this.getClass(),
 				"/shaders/overlay/vehicle/spritebased/vehicle_sprite.png");
@@ -142,10 +145,7 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 		gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR_MIPMAP_LINEAR);
 		gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
 		gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
-		
-		// set uniform sampler
-		uSpriteSampler.set(TEX_UNIT_SPRITE);
-		
+
 		// create vbo, vao
 		gl.glGenVertexArrays(1, obj, 1);
 		gl.glGenBuffers(1, obj, 2);
@@ -153,9 +153,9 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 		vao = obj[1];
 		
 		vbo = new BufferStorage(GL3.GL_ARRAY_BUFFER, obj[2]);
-		ptrPosition = VertexAttributePointer.create(VertexAttributes.POSITION2, DataTypes.FLOAT_2, vbo, 20, 0);
-		ptrNormal = VertexAttributePointer.create(VertexAttributes.NORMAL2, DataTypes.FLOAT_2, vbo, 20, 8);
-		ptrColor = VertexAttributePointer.create(VertexAttributes.COLOR, DataTypes.UNSIGNED_BYTE_4, vbo, 20, 16);
+		ptrPosition = VertexAttributePointer.create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, vbo, 24, 0);
+		ptrNormal = VertexAttributePointer.create(VertexAttributes.NORMAL2, DataTypes.FLOAT_2, vbo, 24, 12);
+		ptrColor = VertexAttributePointer.create(VertexAttributes.COLOR, DataTypes.UNSIGNED_BYTE_4, vbo, 24, 20);
 
 		// set up vertex array
 		gl.glBindVertexArray(vao);
@@ -170,7 +170,7 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 		
 		// allocate initial buffer
 		gl.glBindBuffer(vbo.target, vbo.handle);
-		gl.glBufferData(vbo.target, 1000 * 5 * 4L, null, GL3.GL_DYNAMIC_DRAW);
+		gl.glBufferData(vbo.target, 1000 * 6 * 4L, null, GL3.GL_DYNAMIC_DRAW);
 		gl.glBindBuffer(vbo.target, 0);
 	}
 
@@ -235,9 +235,9 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 		
 		// orphan last buffer and load it to a new one
 		gl.glBindBuffer(vbo.target, vbo.handle);
-		gl.glBufferData(vbo.target, len * 5 * 4L, null, GL3.GL_DYNAMIC_DRAW);
+		gl.glBufferData(vbo.target, len * 6 * 4L, null, GL3.GL_DYNAMIC_DRAW);
 		
-		ByteBuffer buffer = gl.glMapBufferRange(vbo.target, 0, len * 5 * 4L,
+		ByteBuffer buffer = gl.glMapBufferRange(vbo.target, 0, len * 6 * 4L,
 				GL3.GL_MAP_WRITE_BIT | GL3.GL_MAP_INVALIDATE_BUFFER_BIT);
 		
 		// write positions
@@ -247,7 +247,7 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 			
 			Coordinate cpos = v.getPosition();
 			Vec2d pos = projection.project(cpos);
-			
+
 			// continue if out of bounds
 			if (pos.x < left || pos.x > right || pos.y < bottom || pos.y > top)
 				continue;
@@ -257,6 +257,7 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 			
 			buffer.putFloat((float) pos.x);
 			buffer.putFloat((float) pos.y);
+            buffer.putFloat(v.getLayer());
 			buffer.putFloat((float) dir.x);
 			buffer.putFloat((float) dir.y);
 			buffer.putInt(v.getBaseColor().toIntABGR());
@@ -266,10 +267,13 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 		gl.glUnmapBuffer(vbo.target);	
 		gl.glBindBuffer(vbo.target, 0);
 		
-		// bind texture
+		// bind textures
 		gl.glActiveTexture(GL3.GL_TEXTURE0 + TEX_UNIT_SPRITE);
 		gl.glBindTexture(GL3.GL_TEXTURE_2D, sprite);
-		
+
+        gl.glActiveTexture(GL3.GL_TEXTURE0 + TEX_UNIT_MAP_DEPTH);
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, map.depth);
+
 		// draw
 		prog.bind(gl);
 		gl.glBindVertexArray(vao);
@@ -305,8 +309,8 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 	public Simulation getSimulation() {
 		return simulation;
 	}
-	
-	
+
+
 	public Supplier<IVisualizationVehicle> getVehicleFactory() {
 		return vehicleFactory;
 	}

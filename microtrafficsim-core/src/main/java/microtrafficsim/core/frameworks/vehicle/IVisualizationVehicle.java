@@ -10,9 +10,10 @@ public interface IVisualizationVehicle {
 	void setEntity(VehicleEntity entity);
 
 	void updatePosition();
-	Coordinate getPosition();
 	Coordinate getTarget();
-	
+	Coordinate getPosition();
+	float getLayer();
+
 	Color getBaseColor();
 	void setBaseColor(Color color);
 }
