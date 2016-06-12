@@ -95,7 +95,6 @@ public class TCrossroadScenario extends ValidationScenario {
 
   @Override
   protected void updateScenarioState(VehicleState vehicleState) {
-
     int updateGraphDelay = justInitialized ? 0 : 1;
 
     if (vehicleState == VehicleState.DESPAWNED && getVehiclesCount() == 0) {
@@ -121,8 +120,7 @@ public class TCrossroadScenario extends ValidationScenario {
 
   @Override
   protected void createAndAddVehicles(ProgressListener listener) {
-
-        /* sort by lon */
+    /* sort by lon */
     Iterator<Node> iter = graph.getNodeIterator();
     ArrayList<Node> sortedNodes = new ArrayList<>(4);
     while (iter.hasNext())

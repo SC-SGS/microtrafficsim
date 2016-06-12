@@ -11,6 +11,7 @@ import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.segments.SegmentLayerProvider;
 import microtrafficsim.core.vis.segmentbased.SegmentBasedVisualization;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
+import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 
 import javax.swing.*;
 import javax.xml.stream.XMLStreamException;
@@ -40,10 +41,10 @@ public class Main {
 
   public static void initSimulationConfig(SimulationConfig config) {
     config.metersPerCell = 7.5f;
-    config.maxVehicleCount = 3;
+    config.longIDGenerator = new ConcurrentLongIDGenerator();
     config.seed = 1455374755807L;
     Example.printSeed(config.seed);
-    config.multiThreading.nThreads = 8;
+    config.multiThreading.nThreads = 1;
     config.logger.enabled = false;
   }
 

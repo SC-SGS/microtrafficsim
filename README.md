@@ -55,7 +55,7 @@ for the segment based version.
 * single laned streets
 
 All following attributes can be en-/disabled.
-* crossing logic: street priorities (roundabouts are handled with right-before-left)
+* crossing logic: street priorities
 * crossing logic: right-before-left XOR left-before-right XOR random
 * "friendly-standing-in-jam": If a vehicle has to wait at a crossroad, it relinquishes its right of way for an other vehicle that has not to wait.
 

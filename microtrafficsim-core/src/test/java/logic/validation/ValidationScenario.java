@@ -77,6 +77,7 @@ public abstract class ValidationScenario extends AbstractSimulation {
   @Override
   protected void prepareScenario() {
     // empty
+    System.out.println("asdfasdfasdfasdfasdfs");
     graph.getNodeIterator().forEachRemaining((Node node) -> System.out.println(node.getCoordinate()));
   }
 
