@@ -5,10 +5,8 @@ import microtrafficsim.core.frameworks.shortestpath.astar.impl.FastestWayAStar;
 import microtrafficsim.core.frameworks.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.simulation.controller.Simulation;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.EndOfTheWorldScenario;
-import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 
 import java.util.Random;
 import java.util.function.Supplier;
@@ -38,14 +36,14 @@ public class Scenario extends EndOfTheWorldScenario {
     protected Supplier<ShortestPathAlgorithm> createScoutFactory() {
         return new Supplier<ShortestPathAlgorithm>() {
 
-            private Random random = new Random(config.seed().get());
+            private Random random = new Random(config.seed);
 
             @Override
             public ShortestPathAlgorithm get() {
                 if (random.nextFloat() < 70f) {
-                    return new FastestWayAStar(config.metersPerCell().get());
+                    return new FastestWayAStar(config.metersPerCell);
                 } else {
-                    return new LinearDistanceAStar(config.metersPerCell().get());
+                    return new LinearDistanceAStar(config.metersPerCell);
                 }
             }
         };

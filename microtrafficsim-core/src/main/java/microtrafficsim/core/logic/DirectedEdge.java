@@ -3,7 +3,7 @@ package microtrafficsim.core.logic;
 import microtrafficsim.core.frameworks.shortestpath.IDijkstrableEdge;
 import microtrafficsim.core.frameworks.street.ILogicEdge;
 import microtrafficsim.core.frameworks.street.StreetEntity;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Vec2f;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
@@ -46,10 +46,10 @@ public class DirectedEdge implements IDijkstrableEdge, ILogicEdge {
 	public DirectedEdge(SimulationConfig config, float lengthInMeters, Vec2f originDirection, Vec2f destinationDirection, float maxVelocity,
 			int noOfLines, Node origin, Node destination, byte priorityLevel) {
 
-		ID = config.longIDGenerator().get().next();
+		ID = config.longIDGenerator.next();
 		
 		// important for shortest path: round up
-		numberOfCells = Math.max(1, (int)(Math.ceil(lengthInMeters / config.metersPerCell().get())));
+		numberOfCells = Math.max(1, (int)(Math.ceil(lengthInMeters / config.metersPerCell)));
 		this.originDirection = originDirection.normalize();
 		this.destinationDirection = destinationDirection.normalize();
 
@@ -59,7 +59,7 @@ public class DirectedEdge implements IDijkstrableEdge, ILogicEdge {
 		this.origin = origin;
 		this.destination = destination;
 		// maxVelocity in km/h, but this.maxVelocity in cells/s
-		this.maxVelocity = Math.max(1, (int)Math.round(maxVelocity / 3.6 / config.metersPerCell().get()));
+		this.maxVelocity = Math.max(1, (int)Math.round(maxVelocity / 3.6 / config.metersPerCell));
         this.priorityLevel = priorityLevel;
 
 		this.entity = null;

@@ -3,8 +3,8 @@ package microtrafficsim.core.simulation.scenarios;
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
-import microtrafficsim.core.simulation.controller.Simulation;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.Simulation;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.HaversineDistanceCalculator;
@@ -234,7 +234,7 @@ public class MeasuringScenario implements Simulation {
                 public void run() {
                     doRunOneStep();
                 }
-            }, 0, 1000 / config.speedup().get());
+            }, 0, 1000 / config.speedup);
             paused = false;
         }
     }

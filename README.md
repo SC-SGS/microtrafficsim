@@ -15,11 +15,7 @@ example, provided by the
 
 
 #### Main UI
-The main UI provides an overview of the simulation. The scenario is
-currently fixed, however various simulation parameters, as well as the
-used map, can be adjusted. At the moment, the main ui uses a segment-based
-visualization and thus may be slow when using large maps. It can be
-executed using
+The main UI provides an overview of the simulation. The scenario is currently fixed (random routes), however various simulation parameters, as well as the number of vehicles and the used map, can be adjusted. At the moment, the main ui uses a tile-based visualization, which is faster than the segment-based one when using large maps. The main UI can be executed using
 
 ```shell
 ./gradlew :microtrafficsim-ui:run
@@ -31,7 +27,7 @@ experimental implementation using a tile-based visualization.
 
 #### Fixed Simulation Example
 The fixed simulation example features a fixed scenario, fixed parameters,
-and a segment-based visualization. It can be executed using
+and a segment-based visualization. It represents a former state of development, therefore the visualization is quite simple and the simulation parameters can't be changed without changing code. It can be executed using
 ```shell
 ./gradlew :examples:simulation:run -Dexec.args="<path to OSM-XML file>"
 ```
@@ -55,7 +51,7 @@ for the segment based version.
 * single laned streets
 
 All following attributes can be en-/disabled.
-* crossing logic: street priorities (roundabouts are handled with right-before-left)
+* crossing logic: street priorities
 * crossing logic: right-before-left XOR left-before-right XOR random
 * "friendly-standing-in-jam": If a vehicle has to wait at a crossroad, it relinquishes its right of way for an other vehicle that has not to wait.
 

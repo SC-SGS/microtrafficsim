@@ -3,6 +3,7 @@ package microtrafficsim.core.parser;
 import java.util.HashSet;
 import java.util.Set;
 
+import microtrafficsim.core.map.features.info.StreetType;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,7 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.features.info.OnewayInfo;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.DistanceCalculator;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.HaversineDistanceCalculator;
@@ -133,7 +134,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
 		// finish
 		graph.calcEdgeIndicesPerNode();
 		this.graph = graph;
-		logger.info("finished generating StreetGraph");
+    logger.info("finished generating StreetGraph");
 	}
 
 	/**
@@ -161,6 +162,10 @@ public class StreetGraphGenerator implements FeatureGenerator {
 		DirectedEdge backward = null;
 
 		float length = getLength(dataset, way);
+    byte priorityLevel = config.streetPriorityLevel.apply(
+            streetinfo.roundabout
+                    ? StreetType.ROUNDABOUT
+                    : streetinfo.streettype);
 
 		if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.FORWARD
 				|| streetinfo.oneway == OnewayInfo.REVERSIBLE) {
@@ -173,7 +178,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
 					(float) (lastNode.lat - secondLastNode.lat));
 
 			forward = new DirectedEdge(config, length, originDirection, destinationDirection, streetinfo.maxspeed.forward,
-					1, start, end, config.streetPrios.get(streetinfo.streettype));
+					1, start, end, priorityLevel);
 		}
 
 		if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.BACKWARD) {
@@ -187,7 +192,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
 
 			backward = new DirectedEdge(config, length, originDirection, destinationDirection,
 					streetinfo.maxspeed.backward, 1, end, start,
-					config.streetPrios.get(streetinfo.streettype));
+					priorityLevel);
 		}
 
 		// create component for ECS

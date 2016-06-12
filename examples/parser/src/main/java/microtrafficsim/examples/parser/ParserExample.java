@@ -16,7 +16,7 @@ import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
 import microtrafficsim.osm.parser.features.streets.StreetFeatureGenerator;
 import microtrafficsim.core.parser.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.StreetGraphGenerator;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.processing.osm.sanitizer.SanitizerWayComponent;
 import microtrafficsim.osm.parser.processing.osm.sanitizer.SanitizerWayComponentFactory;

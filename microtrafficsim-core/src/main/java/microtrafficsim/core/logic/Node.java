@@ -5,8 +5,7 @@ import microtrafficsim.core.frameworks.shortestpath.IDijkstrableNode;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.simulation.controller.configs.CrossingLogicConfig;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.Vec2f;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
@@ -45,8 +44,8 @@ public class Node implements IDijkstrableNode {
 	 */
 	public Node(SimulationConfig config, Coordinate coordinate) {
 		this.config = config;
-		ID = config.longIDGenerator().get().next();
-		random = new Random(config.seed().get());
+		ID = config.longIDGenerator.next();
+		random = new Random(config.seed);
 		this.coordinate = coordinate;
 
 		// crossing logic
@@ -97,14 +96,14 @@ public class Node implements IDijkstrableNode {
                 // compare priorities of origins
                 byte cmp = (byte) (v1.getDirectedEdge().getPriorityLevel()
                         - v2.getDirectedEdge().getPriorityLevel());
-                boolean edgePriorityEnabled = config.crossingLogic().edgePriorityEnabled;
+                boolean edgePriorityEnabled = config.crossingLogic.edgePriorityEnabled;
                 if (cmp == 0 || !edgePriorityEnabled) {
                     // compare priorities of destinations
                     cmp = (byte) (v1.peekNextRouteSection().getPriorityLevel()
                             - v2.peekNextRouteSection().getPriorityLevel());
                     if (cmp == 0 || !edgePriorityEnabled) {
                         // compare right before left (or left before right)
-                        if (config.crossingLogic().priorityToTheRightEnabled) {
+                        if (config.crossingLogic.priorityToTheRightEnabled) {
                             byte leftmostMatchingIdx = IndicesCalculator.leftmostIndexInMatching(origin1,
                                     destination1, origin2, destination2, indicesPerNode);
                             if (leftmostMatchingIdx == origin1)
@@ -126,7 +125,7 @@ public class Node implements IDijkstrableNode {
 	}
 
     void reset() {
-        random = new Random(config.seed().get());
+        random = new Random(config.seed);
 
         // crossing logic
         assessedVehicles = new HashSet<>();
@@ -142,7 +141,7 @@ public class Node implements IDijkstrableNode {
 
 			// get vehicles with max prio
 			int maxPrio = Integer.MIN_VALUE;
-            boolean goWithoutPriorityEnabled = config.crossingLogic().goWithoutPriorityEnabled;
+            boolean goWithoutPriorityEnabled = config.crossingLogic.friendlyStandingInJamEnabled;
 			while (iter.hasNext()) {
 				AbstractVehicle v = iter.next();
 				// if
@@ -152,8 +151,8 @@ public class Node implements IDijkstrableNode {
                     // next route has space for current vehicle
                     // BUT
                     // configs has to be false to enable going without priority:
-                    // false <=>  config.goWithoutPriorityEnabled && !anyChangeSinceUpdate
-                    // true  <=> !config.goWithoutPriorityEnabled || anyChangeSinceUpdate
+                    // false <=>  config.friendlyStandingInJamEnabled && !anyChangeSinceUpdate
+                    // true  <=> !config.friendlyStandingInJamEnabled || anyChangeSinceUpdate
                     if (!goWithoutPriorityEnabled
                             || anyChangeSinceUpdate
                             || v.peekNextRouteSection().getLane(0).getMaxInsertionIndex() >= 0) {
@@ -175,7 +174,7 @@ public class Node implements IDijkstrableNode {
 				// case #2: deadlock OR tooManyVehicles
 				// => choose random vehicle
 				if (maxPrio < assessedVehicles.size() - 1
-						|| (config.crossingLogic().isOnlyOneVehicleEnabled() && maxPrioVehicles.size() > 1)) {
+						|| (config.crossingLogic.isOnlyOneVehicleEnabled() && maxPrioVehicles.size() > 1)) {
 					Iterator<AbstractVehicle> bla = maxPrioVehicles.iterator();
 					for (int i = 0; i < random.nextInt(maxPrioVehicles.size()); i++) {
 						bla.next();
@@ -340,7 +339,7 @@ public class Node implements IDijkstrableNode {
 		Queue<Vec2f> sortedVectors = Geometry.sortClockwiseAsc(
                 zero,
                 edges.keySet(),
-                !config.crossingLogic().drivingOnTheRight().get());
+                !config.crossingLogic.drivingOnTheRight);
 		byte nextCrossingIndex = 0;
 		while (!sortedVectors.isEmpty()) {
 			ArrayList<DirectedEdge> nextEdges = edges.remove(sortedVectors.poll());

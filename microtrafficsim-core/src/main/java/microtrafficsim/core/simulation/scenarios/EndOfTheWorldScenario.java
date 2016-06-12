@@ -6,9 +6,8 @@ import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.polygon.Polygon;
 import microtrafficsim.core.map.polygon.Rect;
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.HaversineDistanceCalculator;
-import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 
 import java.util.function.Supplier;
 

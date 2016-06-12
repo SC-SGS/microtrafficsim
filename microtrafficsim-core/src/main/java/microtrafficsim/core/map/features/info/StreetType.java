@@ -19,6 +19,7 @@ public enum StreetType {
 	UNCLASSIFIED,
 	RESIDENTIAL,
 	SERVICE,
+  ROUNDABOUT,
 	
 	// link types
 	MOTORWAY_LINK,

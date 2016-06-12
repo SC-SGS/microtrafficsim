@@ -1,10 +1,10 @@
 package microtrafficsim.core.vis.simulation;
 
 import com.jogamp.opengl.GL3;
-import microtrafficsim.core.frameworks.vehicle.ILogicVehicle;
+import microtrafficsim.core.frameworks.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.simulation.controller.Simulation;
+import microtrafficsim.core.simulation.Simulation;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
@@ -206,7 +206,7 @@ public class ShaderBasedVehicleOverlay implements Overlay {
 		double top = viewpos.y + vy;
 		
 		// update vehicle list
-		Collection<? extends ILogicVehicle> vehicles = simulation.getSpawnedVehicles();
+		Collection<? extends LogicVehicleEntity> vehicles = simulation.getSpawnedVehicles();
 		int len = vehicles.size();
 		if (len == 0) return;
 		
@@ -219,7 +219,7 @@ public class ShaderBasedVehicleOverlay implements Overlay {
 		
 		// write positions
 		int vehicleCount = 0;
-		for (ILogicVehicle logic : vehicles) {
+		for (LogicVehicleEntity logic : vehicles) {
 			IVisualizationVehicle v = logic.getEntity().getVisualization();
 			
 			Coordinate cpos = v.getPosition();

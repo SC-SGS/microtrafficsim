@@ -1,16 +1,11 @@
 package microtrafficsim.core.vis.simulation;
 
-import java.nio.ByteBuffer;
-import java.util.Collection;
-import java.util.function.Supplier;
-
 import com.jogamp.opengl.GL3;
-
-import microtrafficsim.core.frameworks.vehicle.ILogicVehicle;
+import microtrafficsim.core.frameworks.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.simulation.controller.Simulation;
-import microtrafficsim.core.vis.Overlay;
+import microtrafficsim.core.simulation.Simulation;
+import microtrafficsim.core.vis.SimulationOverlay;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.opengl.BufferStorage;
@@ -24,12 +19,18 @@ import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.opengl.utils.TextureData2D;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.core.vis.view.View;
-import microtrafficsim.math.*;
+import microtrafficsim.math.Vec2d;
+import microtrafficsim.math.Vec2i;
+import microtrafficsim.math.Vec3d;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
+import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.function.Supplier;
 
-public class SpriteBasedVehicleOverlay implements Overlay {
+
+public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 
 	private final static Color DEFAULT_FG_COLOR = Color.fromRGBA(0xCC4C1AF0);
 
@@ -228,7 +229,7 @@ public class SpriteBasedVehicleOverlay implements Overlay {
 		double top = viewpos.y + vy;
 		
 		// update vehicle list
-		Collection<? extends ILogicVehicle> vehicles = simulation.getSpawnedVehicles();
+		Collection<? extends LogicVehicleEntity> vehicles = simulation.getSpawnedVehicles();
         int len = vehicles.size();
 		if (len == 0) return;
 		
@@ -241,7 +242,7 @@ public class SpriteBasedVehicleOverlay implements Overlay {
 		
 		// write positions
 		int vehicleCount = 0;
-		for (ILogicVehicle logic : vehicles) {
+		for (LogicVehicleEntity logic : vehicles) {
 			IVisualizationVehicle v = logic.getEntity().getVisualization();
 			
 			Coordinate cpos = v.getPosition();

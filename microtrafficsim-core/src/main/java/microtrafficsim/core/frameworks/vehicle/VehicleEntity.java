@@ -1,20 +1,20 @@
 package microtrafficsim.core.frameworks.vehicle;
 
-import microtrafficsim.core.simulation.controller.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 
 public class VehicleEntity {
 	
-	private ILogicVehicle logic;
+	private LogicVehicleEntity logic;
 	private IVisualizationVehicle visualization;
 	private SimulationConfig config;
 
-	public VehicleEntity(SimulationConfig config, ILogicVehicle logic, IVisualizationVehicle visualization) {
+	public VehicleEntity(SimulationConfig config, LogicVehicleEntity logic, IVisualizationVehicle visualization) {
 		this.config = config;
 		this.logic = logic;
 		this.visualization = visualization;
 	}
 	
-	public ILogicVehicle getLogic() {
+	public LogicVehicleEntity getLogic() {
 		return logic;
 	}
 
