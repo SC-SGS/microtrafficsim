@@ -33,13 +33,6 @@ class MTSMenuLogic extends JMenu {
   }
 
   public void addActions(GUIController guiController) {
-    itemEditSim.addActionListener(e -> guiController.transiate(GUIEvent.EDIT_SIM));
-    guiController.addKeyCommand(
-            KeyEvent.EVENT_KEY_RELEASED,
-            KeyEvent.VK_COMMA,
-            e -> guiController.transiate(GUIEvent.EDIT_SIM)
-    );
-    itemNewSim.addActionListener(e -> guiController.transiate(GUIEvent.NEW_SIM));
     itemRunPause.addActionListener(e -> guiController.transiate(isPaused ? GUIEvent.RUN_SIM : GUIEvent.PAUSE_SIM));
     guiController.addKeyCommand(
             KeyEvent.EVENT_KEY_RELEASED,
@@ -50,5 +43,17 @@ class MTSMenuLogic extends JMenu {
             KeyEvent.EVENT_KEY_RELEASED,
             KeyEvent.VK_RIGHT,
             e -> guiController.transiate(GUIEvent.RUN_SIM_ONE_STEP));
+    itemEditSim.addActionListener(e -> guiController.transiate(GUIEvent.EDIT_SIM));
+    guiController.addKeyCommand(
+            KeyEvent.EVENT_KEY_RELEASED,
+            KeyEvent.VK_COMMA,
+            e -> guiController.transiate(GUIEvent.EDIT_SIM)
+    );
+    itemNewSim.addActionListener(e -> guiController.transiate(GUIEvent.NEW_SIM));
+    guiController.addKeyCommand(
+            KeyEvent.EVENT_KEY_RELEASED,
+            KeyEvent.VK_N,
+            e -> guiController.transiate(GUIEvent.NEW_SIM)
+    );
   }
 }

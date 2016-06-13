@@ -142,6 +142,7 @@ public class SimulationController implements GUIController {
             }
           }
         }
+        updateMenuBar();
         break;
       case DID_PARSE:
         switch (state) {
@@ -150,6 +151,7 @@ public class SimulationController implements GUIController {
           case PARSING_SIM_PAUSE:
             state = GUIState.MAP;
         }
+        updateMenuBar();
         break;
       case NEW_SIM:
         switch (state) {
@@ -161,6 +163,7 @@ public class SimulationController implements GUIController {
             setState(GUIState.SIM_NEW);
             showPreferences();
         }
+        updateMenuBar();
         break;
       case ACCEPT:
         switch (state) {
@@ -178,6 +181,7 @@ public class SimulationController implements GUIController {
               setState(GUIState.SIM_PAUSE);
             }
         }
+        updateMenuBar();
         break;
       case CANCEL:
         switch (state) {
@@ -186,6 +190,7 @@ public class SimulationController implements GUIController {
             closePreferences();
             setState(previousState);
         }
+        updateMenuBar();
         break;
       case EDIT_SIM:
         switch (state) {
@@ -196,55 +201,61 @@ public class SimulationController implements GUIController {
             setState(GUIState.SIM_EDIT);
             showPreferences();
         }
+        updateMenuBar();
         break;
       case RUN_SIM:
-        lock_gui.tryLock();
-        switch (state) {
-          case SIM_PAUSE:
-            runSim();
-            setState(GUIState.SIM_RUN);
-            break;
-          case PARSING_SIM_PAUSE:
-            runSim();
-            setState(GUIState.PARSING_SIM_RUN);
+        if (lock_gui.tryLock()) {
+          switch (state) {
+            case SIM_PAUSE:
+              runSim();
+              setState(GUIState.SIM_RUN);
+              break;
+            case PARSING_SIM_PAUSE:
+              runSim();
+              setState(GUIState.PARSING_SIM_RUN);
+          }
+          updateMenuBar();
+          lock_gui.unlock();
         }
-        lock_gui.unlock();
         break;
       case RUN_SIM_ONE_STEP:
-        lock_gui.tryLock();
-        switch (state) {
-          case SIM_RUN:
-            pauseSim();
-            setState(GUIState.SIM_PAUSE);
-          case SIM_PAUSE:
-            runSimOneStep();
-            break;
-          case PARSING_SIM_RUN:
-            pauseSim();
-            setState(GUIState.PARSING_SIM_PAUSE);
-          case PARSING_SIM_PAUSE:
-            runSimOneStep();
+        if (lock_gui.tryLock()) {
+          switch (state) {
+            case SIM_RUN:
+              pauseSim();
+              setState(GUIState.SIM_PAUSE);
+            case SIM_PAUSE:
+              runSimOneStep();
+              break;
+            case PARSING_SIM_RUN:
+              pauseSim();
+              setState(GUIState.PARSING_SIM_PAUSE);
+            case PARSING_SIM_PAUSE:
+              runSimOneStep();
+          }
+          updateMenuBar();
+          lock_gui.unlock();
         }
-        lock_gui.unlock();
         break;
       case PAUSE_SIM:
-        lock_gui.tryLock();
-        switch (state) {
-          case SIM_RUN:
-            pauseSim();
-            setState(GUIState.SIM_PAUSE);
-            break;
-          case PARSING_SIM_RUN:
-            pauseSim();
-            setState(GUIState.PARSING_SIM_PAUSE);
+        if (lock_gui.tryLock()) {
+          switch (state) {
+            case SIM_RUN:
+              pauseSim();
+              setState(GUIState.SIM_PAUSE);
+              break;
+            case PARSING_SIM_RUN:
+              pauseSim();
+              setState(GUIState.PARSING_SIM_PAUSE);
+          }
+          updateMenuBar();
+          lock_gui.unlock();
         }
-        lock_gui.unlock();
         break;
       case EXIT:
         exit();
     }
 
-    updateMenuBar();
     logger.debug("GUIState after transiate  = GUIState." + state);
   }
 
@@ -469,20 +480,22 @@ public class SimulationController implements GUIController {
       /* parse file and create tiled provider */
         OSMParser.Result result = mapviewer.parse(file);
 
+        lock_gui.lock();
+        transiate(GUIEvent.DID_PARSE);
+        lock_gui.unlock(); // todo N = new sim and resetView centers view
         cleanupSimulation();
         streetgraph = result.streetgraph;
 
         mapviewer.changeMap(result);
         frame.setTitle("MicroTrafficSim - " + file.getName());
       } catch (XMLStreamException | IOException | InterruptedException e) {
+        lock_gui.lock();
+        transiate(GUIEvent.DID_PARSE);
+        lock_gui.unlock();
         frame.setTitle(oldTitle);
         e.printStackTrace();
         Runtime.getRuntime().halt(1);
       }
-
-      lock_gui.lock();
-      transiate(GUIEvent.DID_PARSE);
-      lock_gui.unlock();
     }).start();
   }
 
