@@ -1,5 +1,7 @@
 #version 150
 
+#define EPSILON 0.00001
+
 in vec2 vehicle_normal;
 in vec4 vehicle_vert_color;
 in float vehicle_layer;
@@ -16,9 +18,9 @@ out vec4 out_color;
 void main() {
 	vec4 base_color = vehicle_vert_color;
 
-	float normalized_layer = (vehicle_layer + 5) / 10;
+	float normalized_layer = (vehicle_layer + 10) / 20;
 	float map_depth = texture(u_map_depth, gl_FragCoord.xy * u_viewport.zw).r;
-	if (normalized_layer < map_depth)
+	if (normalized_layer + EPSILON < map_depth)
 	    base_color *= vec4(1, 1, 1, 0.5);
 
 	float c = dot(vehicle_normal, vec2(0, 1));
