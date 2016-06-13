@@ -23,10 +23,9 @@ number of vehicles and the used map, can be adjusted
 ```
 
 #### Fixed Simulation Example
-The fixed simulation example features a fixed scenario, fixed parameters,
-and a segment-based visualization. It represents a former state of development,
-therefore the visualization is quite simple and the simulation parameters can't
-be changed without changing code. It can be executed using
+The fixed simulation example features a fixed scenario and fixed parameters, It
+represents a former state of development, therefore the simulation parameters
+can't be changed without changing code. It can be executed using
 ```shell
 ./gradlew :examples:simulation:run -Dexec.args="<path to OSM-XML file>"
 ```
