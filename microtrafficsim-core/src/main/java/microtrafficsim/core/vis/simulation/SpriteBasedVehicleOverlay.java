@@ -118,8 +118,8 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 		UniformSampler2D uSpriteSampler = (UniformSampler2D) prog.getUniform("u_sprite_sampler");
         UniformSampler2D uMapDepth = (UniformSampler2D) prog.getUniform("u_map_depth");
 
-        uSpriteSampler.set(TEX_UNIT_SPRITE);
-        uMapDepth.set(TEX_UNIT_MAP_DEPTH);
+       	if (uSpriteSampler != null) uSpriteSampler.set(TEX_UNIT_SPRITE);
+        if (uMapDepth != null) uMapDepth.set(TEX_UNIT_MAP_DEPTH);
 
 		// load texture data
 		TextureData2D texdata = TextureData2D.loadFromResource(this.getClass(),
@@ -220,7 +220,7 @@ public class SpriteBasedVehicleOverlay implements SimulationOverlay {
 		
 		context.Points.setPointSpriteCoordOrigin(gl, GL3.GL_LOWER_LEFT);
 		context.Points.setPointSize(gl, ptsize);
-		
+
 		// calculate bounding rectangle, assumes top-down (z-axis) orthographic view
 		double invscale = 1.f / ((OrthographicView) view).getScale();
 		Vec3d viewpos = view.getPosition();

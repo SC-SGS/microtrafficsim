@@ -199,6 +199,11 @@ public class ShaderProgram {
 		
 		return active;
 	}
+
+	public int getUniformLocation(String name) {
+		UniformBinding binding = uniforms.get(name);
+		return binding != null ? uniforms.get(name).location : -1;
+	}
 	
 	
 	private void reloadActiveAttributes(GL2ES2 gl) {
