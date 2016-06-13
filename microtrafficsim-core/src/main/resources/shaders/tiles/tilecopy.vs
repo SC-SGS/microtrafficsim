@@ -1,13 +1,13 @@
 #version 150
 
-in vec3 a_position;
+in highp vec3 a_position;
 in vec2 a_texcoord;
 
 out vec2 v_texcoord;
 
 uniform mat4 u_tilecopy;
-uniform mat4 u_view;
-uniform mat4 u_projection;
+uniform highp mat4 u_view;
+uniform highp mat4 u_projection;
 
 #define FP_FLICKER_OFFSET   0.00001
 

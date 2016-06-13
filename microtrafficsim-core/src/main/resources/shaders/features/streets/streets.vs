@@ -1,11 +1,11 @@
 #version 150
 
-in vec3 a_position;
-out vec4 vertex_color_gs;
+in highp vec3 a_position;
+out lowp vec4 vertex_color_gs;
 
-uniform vec4 u_color;
-uniform mat4 u_view;
-uniform mat4 u_projection;
+uniform lowp vec4 u_color;
+uniform highp mat4 u_view;
+uniform highp mat4 u_projection;
 
 void main() {
     vertex_color_gs = u_color;

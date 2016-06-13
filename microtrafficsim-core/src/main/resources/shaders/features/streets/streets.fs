@@ -2,8 +2,8 @@
 
 uniform float u_lineblur = 5.0;
 
-in vec4 vertex_color;
-in vec3 vertex_line;
+in lowp vec4 vertex_color;
+in mediump vec3 vertex_line;
 out vec4 frag_color;
 
 

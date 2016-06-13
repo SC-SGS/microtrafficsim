@@ -1,11 +1,11 @@
 #version 150
 
-in vec3 a_position;
+in highp vec3 a_position;
 in vec2 a_normal2;
 in vec4 a_color;
 
-uniform mat4 u_view;
-uniform mat4 u_projection;
+uniform highp mat4 u_view;
+uniform highp mat4 u_projection;
 
 out vec2 vehicle_normal;
 out vec4 vehicle_vert_color;

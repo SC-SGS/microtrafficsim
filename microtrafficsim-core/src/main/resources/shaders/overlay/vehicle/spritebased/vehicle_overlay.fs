@@ -2,8 +2,8 @@
 
 #define EPSILON 0.00001
 
-in vec2 vehicle_normal;
-in vec4 vehicle_vert_color;
+in mediump vec2 vehicle_normal;
+in lowp vec4 vehicle_vert_color;
 in float vehicle_layer;
 
 uniform vec4 u_viewport;

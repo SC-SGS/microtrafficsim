@@ -21,9 +21,9 @@
 layout(lines_adjacency) in;
 layout(triangle_strip, max_vertices = 22) out;
 
-in vec4[] vertex_color_gs;
-out vec4  vertex_color;
-out vec3  vertex_line;
+in lowp vec4[] vertex_color_gs;
+out lowp vec4  vertex_color;
+out mediump vec3  vertex_line;
 
 uniform vec4  u_viewport;
 uniform float u_viewscale;
