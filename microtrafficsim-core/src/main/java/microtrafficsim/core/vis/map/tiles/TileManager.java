@@ -8,6 +8,7 @@ import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.context.tasks.RenderTask;
 import microtrafficsim.core.vis.view.OrthographicView;
+import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.Rect2d;
 
@@ -314,12 +315,32 @@ public class TileManager {
     }
 
 
-    public void display(RenderContext context) {
+    public void display(RenderContext context, OrthographicView view) {
         GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
+        Rect2d viewbounds = view.getViewportBounds();
 
         provider.beforeRendering(context);
-        for (Tile tile : prebuilt)
+        for (Tile tile : prebuilt) {
+            Rect2d tilebounds = provider.getTilingScheme().getBounds(tile.getId());
+
+            // translate from [[-1, -1],[1, 1]] to [bounds]
+            double tsx = (tilebounds.xmax - tilebounds.xmin) / 2.0;
+            double tsy = (tilebounds.ymax - tilebounds.ymin) / 2.0;
+            double ttx = tilebounds.xmin + tsx;
+            double tty = tilebounds.ymin + tsy;
+            double vsx = (viewbounds.xmax - viewbounds.xmin) / 2.0;
+            double vsy = (viewbounds.ymax - viewbounds.ymin) / 2.0;
+            double vtx = viewbounds.xmin + vsx;
+            double vty = viewbounds.ymin + vsy;
+
+            tile.getTransformation().set(Mat4f.identity()
+                    .scale((float) (1.0 / vsx), (float) (1 / vsy), 1)
+                    .translate((float) (ttx - vtx), (float) (tty - vty), 0)
+                    .scale((float) tsx, (float) tsy, 1)
+            );
+
             tile.display(context);
+        }
         provider.afterRendering(context);
 
         context.ShaderState.unbind(gl);
@@ -359,21 +380,6 @@ public class TileManager {
             } catch (InterruptedException e) {
                 throw new CancellationException();      // cancel this task
             }
-            if (tile == null) return null;
-
-            // set tile transformation matrix
-            Rect2d bounds = provider.getTilingScheme().getBounds(id);
-
-            // translate from [[-1, -1],[1, 1]] to [bounds]
-            double sx = (bounds.xmax - bounds.xmin) / 2.0;
-            double sy = (bounds.ymax - bounds.ymin) / 2.0;
-            tile.getTransformation().set(
-                    (float) sx,        0.f, 0.f, (float) (bounds.xmin + sx),
-                           0.f, (float) sy, 0.f, (float) (bounds.ymin + sy),
-                           0.f,        0.f, 1.f,                        0.f,
-                           0.f,        0.f, 0.f,                        1.f
-            );
-
             return tile;
         }
     }

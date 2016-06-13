@@ -27,6 +27,7 @@ import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.opengl.utils.DebugUtils;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.core.vis.view.View;
+import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -311,21 +312,22 @@ public class TileBasedVisualizer implements Visualizer {
         int width = context.getDrawable().getSurfaceWidth();
         int height = context.getDrawable().getSurfaceHeight();
 
-        uView.set(view.getViewMatrix());
-        uProjection.set(view.getProjectionMatrix());
         uViewport.set(width, height, 1.f / width, 1.f / height);
 
         context.DepthTest.enable(gl);
         context.DepthTest.setFunction(gl, GL3.GL_ALWAYS);
 
         // draw map to framebuffer
+        uView.set(Mat4f.identity());
+        uProjection.set(Mat4f.identity());
+
         gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, backbuffer.fbo);
 
         gl.glClearBufferfv(GL3.GL_COLOR, 0, new float[]{bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a}, 0);
         gl.glClearBufferfv(GL3.GL_DEPTH, 0, new float[]{ 0.0f }, 0);
 
         manager.update(context, view);
-        manager.display(context);
+        manager.display(context, view);
 
         gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 
@@ -351,6 +353,9 @@ public class TileBasedVisualizer implements Visualizer {
         context.DepthTest.setFunction(gl, GL3.GL_GEQUAL);
 
         // draw overlays
+        uView.set(view.getViewMatrix());
+        uProjection.set(view.getProjectionMatrix());
+
         for (Overlay overlay : overlays.values())
             overlay.display(context, view, backbuffer);
     }
