@@ -338,7 +338,7 @@ public class TileBasedVisualizer implements Visualizer {
         fboCopyShader.bind(gl);
 
         gl.glActiveTexture(GL3.GL_TEXTURE0 + FBO_COLOR_TEXUNIT);
-        gl.glBindTexture(GL3.GL_TEXTURE_2D, backbuffer.depth);
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, backbuffer.color);
 
         gl.glActiveTexture(GL3.GL_TEXTURE0 + FBO_DEPTH_TEXUNIT);
         gl.glBindTexture(GL3.GL_TEXTURE_2D, backbuffer.depth);
