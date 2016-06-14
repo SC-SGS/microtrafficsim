@@ -15,19 +15,19 @@ import java.util.Set;
 /**
  * @author Dominic Parga Cacheiro
  */
-public class RubberBandSelection implements Selection {
+public class RubberBandSelection<T extends Selectable> implements Selection<T> {
 
   public static final double STROKE_WIDTH = 1;
   public static final Color STROKE_COLOR = Color.BLUE;
   public static final Color FILL_COLOR = Color.LIGHTBLUE.deriveColor(0, 1.2, 1, 0.6);
 
   private Rectangle rect;
-  private boolean enabled;
+  private boolean isActive;
   private DragContext dragContext;
-  private Set<Selectable> selectedItems;
+  private Set<T> selectedItems;
 
   public RubberBandSelection() {
-    enabled = false;
+    isActive = false;
     dragContext = new DragContext();
     selectedItems = new HashSet<>();
 
@@ -39,23 +39,23 @@ public class RubberBandSelection implements Selection {
   }
 
   /*
-  |===============|
-  | (i) Selection |
-  |===============|
-  */
+    |===============|
+    | (i) Selection |
+    |===============|
+    */
   @Override
-  public Set<Selectable> getSelectedItems() {
-    return new HashSet<>(selectedItems);
+  public Set<T> getSelectedItems() {
+    return selectedItems;
   }
 
   @Override
-  public void select(Selectable selectable) {
+  public void select(T selectable) {
     selectedItems.add(selectable);
     selectable.setSelected(true);
   }
 
   @Override
-  public void unselect(Selectable selectable) {
+  public void unselect(T selectable) {
     selectedItems.remove(selectable);
     selectable.setSelected(false);
   }
@@ -67,35 +67,21 @@ public class RubberBandSelection implements Selection {
   }
 
   @Override
-  public boolean isEnabled() {
-    return enabled;
+  public boolean isActive() {
+    return isActive;
   }
 
   @Override
-  public void activate(Pane parent, SelectionModel selectionModel) {
-    /* press event */
-    parent.addEventHandler(MouseEvent.MOUSE_PRESSED, event -> {
-      startSelection(parent, event.getSceneX(), event.getSceneY());
-      event.consume();
-    });
-
-    /* drag event */
-    parent.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> {
-      holdSelection(event.getSceneX(), event.getSceneY());
-      event.consume();
-    });
-
-    /* release event */
-    parent.addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
-      stopSeleciton(parent, selectionModel);
-      event.consume();
-    });
+  public void activate(Pane parent, SelectionModel<T> selectionModel) {
+    parent.addEventHandler(MouseEvent.DRAG_DETECTED, event -> startSelection(parent, event.getSceneX(), event.getSceneY()));
+    parent.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> holdSelection(event.getSceneX(), event.getSceneY()));
+    parent.addEventHandler(MouseEvent.MOUSE_RELEASED, event -> stopSelection(parent, selectionModel));
   }
 
   @Override
   public void startSelection(Pane parent, double x, double y) {
-    if (enabled)
-      return;
+    if (isActive)
+      throw new RuntimeException("Selection is already running!");
     dragContext.mouseAnchorX = x;
     dragContext.mouseAnchorY = y;
 
@@ -105,13 +91,13 @@ public class RubberBandSelection implements Selection {
     rect.setHeight(0);
 
     parent.getChildren().add(rect);
-    enabled = true;
+    isActive = true;
   }
 
   @Override
   public void holdSelection(double x, double y) {
-    if (!enabled)
-      return;
+    if (!isActive)
+      throw new RuntimeException("Selection is not running!");
     double offsetX = x - dragContext.mouseAnchorX;
     double offsetY = y - dragContext.mouseAnchorY;
 
@@ -130,25 +116,22 @@ public class RubberBandSelection implements Selection {
   }
 
   @Override
-  public void stopSeleciton(Pane parent, SelectionModel selectionModel) {
-    for (Selectable selectable : selectionModel.getSelectables()) {
-      if (selectable.getBoundsInParent().intersects(rect.getBoundsInParent())) {
-        boolean alreadyExists = !selectedItems.add(selectable);
-//        if (alreadyExists) {
-//          selectedItems.remove(selectable);
-//          selectable.setSelected(false);
-//        } else {
-          selectable.setSelected(true);
-//        }
-      }
-    }
+  public void stopSelection(Pane parent, SelectionModel<T> selectionModel) {
+    if (!isActive)
+      throw new RuntimeException("Selection is not running!");
+    selectionModel.getSelectables().stream()
+            .filter(selectable -> selectable.getBoundsInParent().intersects(rect.getBoundsInParent()))
+            .forEach(selectable -> {
+      selectedItems.add(selectable);
+      selectable.setSelected(true);
+    });
     rect.setX(0);
     rect.setY(0);
     rect.setWidth(0);
     rect.setHeight(0);
 
     parent.getChildren().remove(rect);
-    enabled = false;
+    isActive = false;
   }
 
   /*

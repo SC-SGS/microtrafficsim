@@ -4,8 +4,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Circle;
 import microtrafficsim.osmcreator.user.controller.UserController;
 import microtrafficsim.osmcreator.user.controller.UserEvent;
+import microtrafficsim.osmcreator.user.gestures.draggable.DragDelta;
 import microtrafficsim.osmcreator.user.gestures.draggable.Draggable;
-import microtrafficsim.osmcreator.user.gestures.draggable.DraggableMaker;
 import microtrafficsim.osmcreator.user.gestures.selection.ColoredSelectable;
 
 import java.util.HashMap;
@@ -28,9 +28,9 @@ public abstract class Crossroad extends Circle implements Draggable, ColoredSele
     super(x, y, RADIUS);
     this.userController = userController;
     streets = new HashMap<>();
+    dragDelta = new DragDelta();
 
     setLook();
-    DraggableMaker.makeDraggable(this);
   }
 
   /**
@@ -55,6 +55,18 @@ public abstract class Crossroad extends Circle implements Draggable, ColoredSele
   | (i) Draggable |
   |===============|
   */
+  private DragDelta dragDelta;
+  @Override
+  public DragDelta getDragDelta() {
+    return dragDelta;
+  }
+
+  @Override
+  public void setDragDelta(double x, double y) {
+    dragDelta.x = x;
+    dragDelta.y = y;
+  }
+
   @Override
   public double getDragX() {
     return getCenterX();
@@ -73,10 +85,5 @@ public abstract class Crossroad extends Circle implements Draggable, ColoredSele
   @Override
   public void setDragY(double y) {
     setCenterY(y);
-  }
-
-  @Override
-  public void mouseDidPress(MouseEvent mouseEvent) {
-    userController.transiate(UserEvent.CLICK_CROSSROAD, mouseEvent, this);
   }
 }

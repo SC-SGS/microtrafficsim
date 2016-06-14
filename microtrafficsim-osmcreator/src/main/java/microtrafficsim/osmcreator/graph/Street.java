@@ -18,19 +18,19 @@ public abstract class Street extends Line implements ColoredSelectable {
     private DoubleProperty xStartProperty, yStartProperty, xEndProperty, yEndProperty;
     private void bind(DoubleProperty xStart, DoubleProperty yStart, DoubleProperty xEnd, DoubleProperty yEnd) {
       /* origin */
-      binded.xStartProperty = new SimpleDoubleProperty();
-      binded.yStartProperty = new SimpleDoubleProperty();
-      binded.xStartProperty.addListener((observable, oldValue, newValue) -> setStartX(newValue.doubleValue()));
-      binded.yStartProperty.addListener((observable, oldValue, newValue) -> setStartY(newValue.doubleValue()));
-      binded.xStartProperty.bind(origin.centerXProperty());
-      binded.yStartProperty.bind(origin.centerYProperty());
+      xStartProperty = new SimpleDoubleProperty();
+      yStartProperty = new SimpleDoubleProperty();
+      xStartProperty.addListener((observable, oldValue, newValue) -> setStartX(newValue.doubleValue()));
+      yStartProperty.addListener((observable, oldValue, newValue) -> setStartY(newValue.doubleValue()));
+      xStartProperty.bind(origin.centerXProperty());
+      yStartProperty.bind(origin.centerYProperty());
       /* destination */
-      binded.xEndProperty = new SimpleDoubleProperty();
-      binded.yEndProperty = new SimpleDoubleProperty();
-      binded.xEndProperty.addListener((observable, oldValue, newValue) -> setEndX(newValue.doubleValue()));
-      binded.yEndProperty.addListener((observable, oldValue, newValue) -> setEndY(newValue.doubleValue()));
-      binded.xEndProperty.bind(destination.centerXProperty());
-      binded.yEndProperty.bind(destination.centerYProperty());
+      xEndProperty = new SimpleDoubleProperty();
+      yEndProperty = new SimpleDoubleProperty();
+      xEndProperty.addListener((observable, oldValue, newValue) -> setEndX(newValue.doubleValue()));
+      yEndProperty.addListener((observable, oldValue, newValue) -> setEndY(newValue.doubleValue()));
+      xEndProperty.bind(destination.centerXProperty());
+      yEndProperty.bind(destination.centerYProperty());
     }
     public void unbind() {
       xStartProperty.unbind();
@@ -64,8 +64,6 @@ public abstract class Street extends Line implements ColoredSelectable {
             origin.centerYProperty(),
             destination.centerXProperty(),
             destination.centerYProperty());
-
-    setMouseListener();
   }
 
   public void unbind() {
@@ -75,32 +73,6 @@ public abstract class Street extends Line implements ColoredSelectable {
   public void removeFromCrossroads() {
     origin.remove(this);
     destination.remove(this);
-  }
-
-  private void setMouseListener() {
-    setOnMousePressed(mouseEvent -> {
-      if (mouseEvent.isPrimaryButtonDown()) {
-        getScene().setCursor(Cursor.CLOSED_HAND);
-        mouseEvent.consume();
-      }
-    });
-    setOnMouseReleased(mouseEvent -> {
-      getScene().setCursor(Cursor.HAND);
-      userController.transiate(UserEvent.CLICK_STREET, mouseEvent, this);
-      mouseEvent.consume();
-    });
-    setOnMouseEntered(mouseEvent -> {
-      if (!mouseEvent.isPrimaryButtonDown()) {
-        getScene().setCursor(Cursor.HAND);
-        mouseEvent.consume();
-      }
-    });
-    setOnMouseExited(mouseEvent -> {
-      if (!mouseEvent.isPrimaryButtonDown()) {
-        getScene().setCursor(Cursor.DEFAULT);
-        mouseEvent.consume();
-      }
-    });
   }
 
   /*

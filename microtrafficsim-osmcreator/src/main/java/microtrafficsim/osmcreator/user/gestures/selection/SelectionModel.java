@@ -5,14 +5,14 @@ import java.util.Set;
 /**
  * @author Dominic Parga Cacheiro
  */
-public interface SelectionModel {
-  Set<Selectable> getSelectables();
-  void add(Selectable selectable);
+public interface SelectionModel<T extends Selectable> {
+  Set<T> getSelectables();
+  void add(T selectable);
 
   /**
    * @param selectable
    *
    * @return {@code true} if this model contained the specified element
    */
-  boolean remove(Selectable selectable);
+  boolean remove(T selectable);
 }

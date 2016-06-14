@@ -7,5 +7,6 @@ import javafx.geometry.Bounds;
  */
 public interface Selectable {
   void setSelected(boolean selected);
+  boolean isSelected();
   Bounds getBoundsInParent();
 }

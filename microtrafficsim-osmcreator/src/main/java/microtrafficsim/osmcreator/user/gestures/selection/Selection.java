@@ -7,15 +7,15 @@ import java.util.Set;
 /**
  * @author Dominic Parga Cacheiro
  */
-public interface Selection {
-  boolean isEnabled();
-  Set<Selectable> getSelectedItems();
-  void select(Selectable selectable);
-  void unselect(Selectable selectable);
+public interface Selection<T extends Selectable> {
+  boolean isActive();
+  Set<T> getSelectedItems();
+  void select(T selectable);
+  void unselect(T selectable);
   void unselectAll();
   /* marking */
-  void activate(Pane parent, SelectionModel selectionModel);
+  void activate(Pane parent, SelectionModel<T> selectionModel);
   void startSelection(Pane parent, double x, double y);
   void holdSelection(double x, double y);
-  void stopSeleciton(Pane parent, SelectionModel selectionModel);
+  void stopSelection(Pane parent, SelectionModel<T> selectionModel);
 }
