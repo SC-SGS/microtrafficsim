@@ -25,7 +25,7 @@ vec4 color_sprite() {
 }
 
 vec4 color_depth() {
-    vec2 tc = gl_FragCoord.xy * u_viewport.zw;   // TODO: use gl_PointCoord.xy to determine depth
+    vec2 tc = gl_FragCoord.xy * u_viewport.zw;   // TODO: use gl_PointCoord.xy to determine depth?
 
 	float normalized_layer = (vehicle_layer + 10) / 20;
 	float map_depth = texture(u_map_depth, tc).r;
@@ -39,5 +39,4 @@ vec4 color_depth() {
 
 void main() {
     out_color = vehicle_vert_color * color_sprite() * color_depth();
-    //out_color = color_sprite() * vec4(gl_PointCoord.xy, 0, 1);
 }
