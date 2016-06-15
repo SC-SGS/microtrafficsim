@@ -7,7 +7,7 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.impl.Car;
-import microtrafficsim.core.map.polygon.Polygon;
+import microtrafficsim.core.map.area.Area;
 import microtrafficsim.core.simulation.AbstractSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.interesting.progressable.ProgressListener;
@@ -41,7 +41,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
   // used for multithreaded vehicle creation
   private int orderIdx;
   // used for creating vehicles and routes etc.
-  private HashMap<Polygon, ArrayList<Node>> startFields, endFields;
+  private HashMap<Area, ArrayList<Node>> startFields, endFields;
   private WheelOfFortune startWheel, endWheel;
   private Random random;
   // used for printing vehicle creation process
@@ -104,7 +104,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
    * @param field
    * @return
    */
-  protected final Node getRandomStartNode(Polygon field) {
+  protected final Node getRandomStartNode(Area field) {
     ArrayList<Node> nodeField = startFields.get(field);
     return nodeField.get(random.nextInt(nodeField.size()));
   }
@@ -114,11 +114,11 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
    * <br>
    * random depends on {@link Random#nextInt(int)}
    *
-   * @param polygon
+   * @param area
    * @return
    */
-  protected final Node getRandomEndNode(Polygon polygon) {
-    ArrayList<Node> nodeField = endFields.get(polygon);
+  protected final Node getRandomEndNode(Area area) {
+    ArrayList<Node> nodeField = endFields.get(area);
     return nodeField.get(random.nextInt(nodeField.size()));
   }
 
@@ -274,12 +274,12 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
    *
    * multiple calls doesn't matter
    *
-   * @param polygon start field
+   * @param area start field
    * @param probabilitySize given to {@link WheelOfFortune#addField(Object, int)}
    */
-  protected final void addStartField(Polygon polygon, int probabilitySize) {
-    startFields.put(polygon, new ArrayList<>());
-    startWheel.addField(polygon, probabilitySize);
+  protected final void addStartField(Area area, int probabilitySize) {
+    startFields.put(area, new ArrayList<>());
+    startWheel.addField(area, probabilitySize);
   }
 
   /**
@@ -287,12 +287,12 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
    *
    * multiple calls doesn't matter
    *
-   * @param polygon end field
+   * @param area end field
    * @param probabilitySize given to {@link WheelOfFortune#addField(Object, int)}
    */
-  protected final void addEndField(Polygon polygon, int probabilitySize) {
-    endFields.put(polygon, new ArrayList<>());
-    endWheel.addField(polygon, probabilitySize);
+  protected final void addEndField(Area area, int probabilitySize) {
+    endFields.put(area, new ArrayList<>());
+    endWheel.addField(area, probabilitySize);
   }
 
   /*
@@ -321,8 +321,8 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
    *     &bull creating start and end fields<br>
    *     &bull filling data structures for nodes being in the start and end fields<br>
    *     You should extend {@link AbstractStartEndScenario#createNodeFields()} to define node fields for start/end
-   *     using {@link AbstractStartEndScenario#addStartField(Polygon, int)}} and
-   *     {@link AbstractStartEndScenario#addEndField(Polygon, int)}.
+   *     using {@link AbstractStartEndScenario#addStartField(Area, int)}} and
+   *     {@link AbstractStartEndScenario#addEndField(Area, int)}.
    * </p>
    */
   @Override
@@ -330,8 +330,8 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
 
     createNodeFields();
 
-    HashSet<Polygon> emptyStartFields = new HashSet<>(startFields.keySet());
-    HashSet<Polygon> emptyEndFields = new HashSet<>(endFields.keySet());
+    HashSet<Area> emptyStartFields = new HashSet<>(startFields.keySet());
+    HashSet<Area> emptyEndFields = new HashSet<>(endFields.keySet());
 
     Iterator<Node> nodes = graph.getNodeIterator();
     while (nodes.hasNext()) {
@@ -370,13 +370,13 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
         e.printStackTrace();
       }
     }
-//        emptyStartFields.forEach(polygon -> {
-//            startFields.remove(polygon);
-//            startWheel.remove(polygon);
+//        emptyStartFields.forEach(area -> {
+//            startFields.remove(area);
+//            startWheel.remove(area);
 //        });
-//        emptyEndFields.forEach(polygon -> {
-//            endFields.remove(polygon);
-//            endWheel.remove(polygon);
+//        emptyEndFields.forEach(area -> {
+//            endFields.remove(area);
+//            endWheel.remove(area);
 //        });
   }
 

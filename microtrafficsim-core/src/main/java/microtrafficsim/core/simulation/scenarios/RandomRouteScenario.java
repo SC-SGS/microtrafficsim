@@ -6,7 +6,7 @@ import microtrafficsim.core.frameworks.shortestpath.astar.impl.LinearDistanceASt
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.map.polygon.Rect;
+import microtrafficsim.core.map.area.RectangleArea;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 
 import java.util.Random;
@@ -39,8 +39,8 @@ public class RandomRouteScenario extends AbstractStartEndScenario {
 
   @Override
   protected final void createNodeFields() {
-    addStartField(new Rect(graph.minLat, graph.maxLat, graph.minLon, graph.maxLon), 1);
-    addEndField(new Rect(graph.minLat, graph.maxLat, graph.minLon, graph.maxLon), 1);
+    addStartField(new RectangleArea(graph.minLat, graph.minLon, graph.maxLat, graph.maxLon), 1);
+    addEndField(new RectangleArea(graph.minLat, graph.minLon, graph.maxLat, graph.maxLon), 1);
   }
 
   @Override

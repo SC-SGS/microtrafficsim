@@ -4,8 +4,8 @@ import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.map.polygon.Polygon;
-import microtrafficsim.core.map.polygon.Rect;
+import microtrafficsim.core.map.area.Area;
+import microtrafficsim.core.map.area.RectangleArea;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.HaversineDistanceCalculator;
 
@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 public abstract class EndOfTheWorldScenario extends AbstractStartEndScenario {
 
     // routing
-    private final Rect leftEnd, rightEnd, topEnd, bottomEnd;
+    private final RectangleArea leftEnd, rightEnd, topEnd, bottomEnd;
 
     /**
      * Standard constructor.
@@ -42,17 +42,17 @@ public abstract class EndOfTheWorldScenario extends AbstractStartEndScenario {
         // routing
         float latLength = Math.min(0.01f, 0.1f * (graph.maxLat - graph.minLat));
         float lonLength = Math.min(0.01f, 0.1f * (graph.maxLon - graph.minLon));
-        leftEnd = new Rect(graph.minLat, graph.maxLat, graph.minLon, graph.minLon + lonLength);
-        bottomEnd = new Rect(graph.minLat, graph.minLat + latLength, graph.minLon, graph.maxLon);
-        rightEnd = new Rect(graph.minLat, graph.maxLat, graph.maxLon - lonLength, graph.maxLon);
-        topEnd = new Rect(graph.maxLat - latLength, graph.maxLat, graph.minLon, graph.maxLon);
+        leftEnd = new RectangleArea(graph.minLat, graph.minLon, graph.maxLat, graph.minLon + lonLength);
+        bottomEnd = new RectangleArea(graph.minLat, graph.minLon, graph.minLat + latLength, graph.maxLon);
+        rightEnd = new RectangleArea(graph.minLat, graph.maxLon - lonLength, graph.maxLat, graph.maxLon);
+        topEnd = new RectangleArea(graph.maxLat - latLength, graph.minLon, graph.maxLat, graph.maxLon);
     }
 
     @Override
     protected void createNodeFields() {
 
         // start field
-        addStartField(new Rect(graph.minLat, graph.maxLat, graph.minLon, graph.maxLon), 1);
+        addStartField(new RectangleArea(graph.minLat, graph.minLon, graph.maxLat, graph.maxLon), 1);
 
         // end fields
         addEndField(leftEnd, 1);
@@ -71,49 +71,49 @@ public abstract class EndOfTheWorldScenario extends AbstractStartEndScenario {
         // if start is below center
         boolean isBottom = center.lat - startCoord.lat > 0;
         boolean isLeft = center.lon - startCoord.lon > 0;
-        Polygon endPolygon;
+        Area endArea;
         if (isBottom) {
             if (isLeft) {
                 // bottom left
                 double latDistance = HaversineDistanceCalculator.getDistance(
                         startCoord,
-                        new Coordinate(bottomEnd.minLat, startCoord.lon));
+                        new Coordinate(bottomEnd.minlat, startCoord.lon));
                 double lonDistance = HaversineDistanceCalculator.getDistance(
                         startCoord,
-                        new Coordinate(startCoord.lat, leftEnd.minLon));
-                endPolygon = latDistance > lonDistance ? leftEnd : bottomEnd;
+                        new Coordinate(startCoord.lat, leftEnd.minlon));
+                endArea = latDistance > lonDistance ? leftEnd : bottomEnd;
             } else {
                 // bottom right
                 double latDistance = HaversineDistanceCalculator.getDistance(
                         startCoord,
-                        new Coordinate(bottomEnd.minLat, startCoord.lon));
+                        new Coordinate(bottomEnd.minlat, startCoord.lon));
                 double lonDistance = HaversineDistanceCalculator.getDistance(
                         startCoord,
-                        new Coordinate(startCoord.lat, rightEnd.maxLon));
-                endPolygon = latDistance > lonDistance ? rightEnd : bottomEnd;
+                        new Coordinate(startCoord.lat, rightEnd.maxlon));
+                endArea = latDistance > lonDistance ? rightEnd : bottomEnd;
             }
         } else {
             if (isLeft) {
                 // top left
                 double latDistance = HaversineDistanceCalculator.getDistance(
                         startCoord,
-                        new Coordinate(topEnd.maxLat, startCoord.lon));
+                        new Coordinate(topEnd.maxlat, startCoord.lon));
                 double lonDistance = HaversineDistanceCalculator.getDistance(
                         startCoord,
-                        new Coordinate(startCoord.lat, leftEnd.minLon));
-                endPolygon = latDistance > lonDistance ? leftEnd : topEnd;
+                        new Coordinate(startCoord.lat, leftEnd.minlon));
+                endArea = latDistance > lonDistance ? leftEnd : topEnd;
             } else {
                 // top right
                 double latDistance = HaversineDistanceCalculator.getDistance(
                         startCoord,
-                        new Coordinate(topEnd.maxLat, startCoord.lon));
+                        new Coordinate(topEnd.maxlat, startCoord.lon));
                 double lonDistance = HaversineDistanceCalculator.getDistance(
                         startCoord,
-                        new Coordinate(startCoord.lat, rightEnd.maxLon));
-                endPolygon = latDistance > lonDistance ? rightEnd : topEnd;
+                        new Coordinate(startCoord.lat, rightEnd.maxlon));
+                endArea = latDistance > lonDistance ? rightEnd : topEnd;
             }
         }
 
-        return new Node[]{ start, getRandomEndNode(endPolygon) };
+        return new Node[]{ start, getRandomEndNode(endArea) };
     }
 }
