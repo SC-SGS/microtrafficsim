@@ -39,6 +39,7 @@ import java.util.function.Predicate;
  * @author Dominic Parga Cacheiro
  */
 public class TileBasedMapViewer implements MapViewer {
+
   /* -- window parameters -------------------------------------------------------------------- */
 
   /**

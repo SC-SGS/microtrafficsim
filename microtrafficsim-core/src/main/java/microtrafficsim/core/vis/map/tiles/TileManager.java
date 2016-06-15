@@ -17,7 +17,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-public class TileManager {
+public strictfp class TileManager {
     private static final Comparator<Tile> CMP_TILE = new TileComparator();
 
     private TileProvider provider;
@@ -360,7 +360,7 @@ public class TileManager {
         }
     }
 
-    private static class Loader implements Callable<Tile> {
+    private strictfp static class Loader implements Callable<Tile> {
 
         private RenderContext context;
         private TileProvider provider;
