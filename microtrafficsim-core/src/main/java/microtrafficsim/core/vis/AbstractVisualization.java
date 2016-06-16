@@ -1,8 +1,8 @@
 package microtrafficsim.core.vis;
 
+import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.vis.context.RenderContext;
-import microtrafficsim.core.vis.input.KeyController;
 
 import java.util.Collection;
 
@@ -11,16 +11,11 @@ public abstract class AbstractVisualization implements Visualization {
 
     private RenderContext context;
     private Visualizer visualizer;
-    private KeyController keyController;
-    private MouseListener mouseController;
 
 
-    public AbstractVisualization(RenderContext context, Visualizer visualizer, MouseListener mouseController,
-                                 KeyController keyController) {
+    public AbstractVisualization(RenderContext context, Visualizer visualizer) {
         this.context = context;
         this.visualizer = visualizer;
-        this.keyController = keyController;
-        this.mouseController = mouseController;
 
         context.setRenderer(visualizer);
     }
@@ -31,15 +26,6 @@ public abstract class AbstractVisualization implements Visualization {
         return visualizer.getDefaultConfig();
     }
 
-    @Override
-    public MouseListener getMouseController() {
-        return mouseController;
-    }
-
-    @Override
-    public KeyController getKeyController() {
-        return keyController;
-    }
 
     @Override
     public RenderContext getRenderContext() {

@@ -13,6 +13,7 @@ public interface Visualization {
 	
 	MouseListener getMouseController();
 	KeyListener getKeyController();
+
 	RenderContext getRenderContext();
 	Visualizer getVisualizer();
 

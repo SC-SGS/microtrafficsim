@@ -1,9 +1,11 @@
 package microtrafficsim.core.vis;
 
-import java.util.Collection;
-
+import com.jogamp.newt.event.KeyListener;
+import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.view.View;
+
+import java.util.Collection;
 
 
 public interface Visualizer extends Renderer {

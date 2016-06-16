@@ -16,7 +16,6 @@ import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
-import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.core.vis.view.View;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -65,20 +64,20 @@ public class ScenarioAreaOverlay implements Overlay {
 
     // TMP initialization for tokyo-tiny, TODO: remove
     private void tmpInit() {
-        target.add(new RectangleArea(35.614000, 139.72120, 35.63920, 139.72508));
-        target.add(new RectangleArea(35.614000, 139.72120, 35.61652, 139.75990));
-        target.add(new RectangleArea(35.614000, 139.75603, 35.63920, 139.75990));
-        target.add(new RectangleArea(35.636677, 139.72120, 35.63920, 139.75990));
+        // target.add(new RectangleArea(35.614000, 139.72120, 35.63920, 139.72508));
+        // target.add(new RectangleArea(35.614000, 139.72120, 35.61652, 139.75990));
+        // target.add(new RectangleArea(35.614000, 139.75603, 35.63920, 139.75990));
+        // target.add(new RectangleArea(35.636677, 139.72120, 35.63920, 139.75990));
 
-        // start.add(new RectangleArea(35.6140, 139.72120, 35.63920, 139.75990));
+        start.add(new RectangleArea(35.6140, 139.72120, 35.63920, 139.75990));
 
-        // target.add(new SimplePolygon(new Coordinate[]{
-        //         new Coordinate(35.61400, 139.72120),
-        //         new Coordinate(35.63920, 139.72120),
-        //         new Coordinate(35.61652, 139.72508),
-        //         new Coordinate(35.61652, 139.75990),
-        //         new Coordinate(35.61400, 139.75990)
-        // }));
+        target.add(new SimplePolygon(new Coordinate[]{
+                new Coordinate(35.61400, 139.72120),
+                new Coordinate(35.63920, 139.72120),
+                new Coordinate(35.61652, 139.72508),
+                new Coordinate(35.61652, 139.75990),
+                new Coordinate(35.61400, 139.75990)
+        }));
     }
 
 
@@ -211,8 +210,8 @@ public class ScenarioAreaOverlay implements Overlay {
 
         GL3 gl = context.getDrawable().getGL().getGL3();
 
-        context.DepthTest.disable(gl);
         gl.glDepthMask(false);
+        context.DepthTest.disable(gl);
 
         context.BlendMode.enable(gl);
         context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD, GL3.GL_FUNC_ADD);
@@ -227,6 +226,7 @@ public class ScenarioAreaOverlay implements Overlay {
         targetMesh.display(context, targetMeshVao);
 
         shader.unbind(gl);
+        gl.glDepthMask(true);
     }
 
 

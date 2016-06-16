@@ -1,7 +1,10 @@
 package microtrafficsim.core.vis.segmentbased;
 
+import com.jogamp.newt.event.KeyListener;
+import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.vis.AbstractVisualization;
 import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.core.vis.input.KeyController;
 import microtrafficsim.core.vis.input.OrthoInputController;
 import microtrafficsim.core.vis.map.segments.SegmentLayerProvider;
 import microtrafficsim.core.vis.view.OrthographicView;
@@ -16,6 +19,7 @@ public class SegmentBasedVisualization extends AbstractVisualization {
 	private static final float Z_NEAR = 0.1f;
 	private static final float Z_FAR = 1000.f;
 
+	private OrthoInputController controller;
 
 	public SegmentBasedVisualization(int width, int height, SegmentLayerProvider provider, int nWorkerThreads) {
 		this(
@@ -37,6 +41,18 @@ public class SegmentBasedVisualization extends AbstractVisualization {
 
 	private SegmentBasedVisualization(RenderContext context, OrthographicView view, SegmentLayerProvider provider,
 								   OrthoInputController controller, int nWorkerThreads) {
-		super(context, new SegmentBasedVisualizer(context, view, provider, nWorkerThreads), controller, controller);
+		super(context, new SegmentBasedVisualizer(context, view, provider, nWorkerThreads));
+		this.controller = controller;
+	}
+
+
+	@Override
+	public MouseListener getMouseController() {
+		return controller;		// TODO: overlays
+	}
+
+	@Override
+	public KeyController getKeyController() {
+		return controller;		// TODO: overlays
 	}
 }

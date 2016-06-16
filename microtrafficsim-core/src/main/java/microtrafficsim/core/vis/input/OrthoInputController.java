@@ -1,14 +1,12 @@
 package microtrafficsim.core.vis.input;
 
-import java.util.HashMap;
-
 import com.jogamp.newt.event.KeyEvent;
-import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
-
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Vec3d;
+
+import java.util.HashMap;
 
 
 public class OrthoInputController implements MouseListener, KeyController {
