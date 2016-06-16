@@ -16,7 +16,6 @@ import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.view.OrthographicView;
-import microtrafficsim.core.vis.view.View;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -29,6 +28,8 @@ public class TileGridOverlay implements Overlay {
     private static final Resource VERTEX_SHADER = new PackagedResource(TileGridOverlay.class, "/shaders/basic.vs");
     private static final Resource FRAGMENT_SHADER = new PackagedResource(TileGridOverlay.class, "/shaders/basic.fs");
     private static final Color COLOR = Color.fromRGB(0xFF0000);
+
+    private OrthographicView view;
 
     private boolean enabled;
     private TilingScheme scheme;
@@ -46,9 +47,13 @@ public class TileGridOverlay implements Overlay {
         this.shader = null;
     }
 
+    public void setView(OrthographicView view) {
+        this.view = view;
+    }
+
 
     @Override
-    public void init(RenderContext context, View view) {
+    public void init(RenderContext context) {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         /* load shaders */
@@ -93,10 +98,10 @@ public class TileGridOverlay implements Overlay {
     }
 
     @Override
-    public void resize(RenderContext context, View view) {}
+    public void resize(RenderContext context) {}
 
     @Override
-    public void display(RenderContext context, View view, MapBuffer buffer) {
+    public void display(RenderContext context, MapBuffer buffer) {
         GL3 gl = context.getDrawable().getGL().getGL3();
         context.DepthTest.disable(gl);
         gl.glDepthMask(false);

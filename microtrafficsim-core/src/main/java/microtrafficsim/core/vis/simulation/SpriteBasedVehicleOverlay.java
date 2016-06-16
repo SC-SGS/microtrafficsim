@@ -55,6 +55,9 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
 	private Simulation simulation;
 	private Projection projection;
+
+	private OrthographicView view;
+
 	private final Supplier<IVisualizationVehicle> vehicleFactory;
 	
 	private int sprite;
@@ -91,10 +94,15 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
 		this.enabled = true;
 	}
+
+
+	public void setView(OrthographicView view) {
+		this.view = view;
+	}
 	
 
 	@Override
-	public void init(RenderContext context, View view) {
+	public void init(RenderContext context) {
 		GL3 gl = context.getDrawable().getGL().getGL3();
 		
 		Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "spritebased.vehicle_overlay.vs")
@@ -195,10 +203,10 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 	}
 
 	@Override
-	public void resize(RenderContext context, View view) {}
+	public void resize(RenderContext context) {}
 
 	@Override
-	public void display(RenderContext context, View view, MapBuffer map) {
+	public void display(RenderContext context, MapBuffer map) {
         if (!enabled || simulation == null) return;
 		GL3 gl = context.getDrawable().getGL().getGL3();
 

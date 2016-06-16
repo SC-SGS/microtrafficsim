@@ -1,5 +1,6 @@
 package microtrafficsim.core.vis.simulation;
 
+import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.opengl.GL2ES3;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.Coordinate;
@@ -16,8 +17,10 @@ import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
-import microtrafficsim.core.vis.view.View;
+import microtrafficsim.core.vis.view.OrthographicView;
+import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.math.Vec2i;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 import org.slf4j.Logger;
@@ -55,6 +58,10 @@ public class ScenarioAreaOverlay implements Overlay {
 
     private ShaderProgram shader;
     private UniformVec4f uColor;
+
+    private OrthographicView view;
+
+    private MouseListener mouseListener = new MouseListenerImpl();
 
 
     public ScenarioAreaOverlay(Projection projection) {
@@ -143,8 +150,13 @@ public class ScenarioAreaOverlay implements Overlay {
     }
 
 
+    public void setView(OrthographicView view) {
+        this.view = view;
+    }
+
+
     @Override
-    public void init(RenderContext context, View view) {
+    public void init(RenderContext context) {
         GL2ES3 gl = context.getDrawable().getGL().getGL2ES3();
 
         // create shader
@@ -195,10 +207,10 @@ public class ScenarioAreaOverlay implements Overlay {
     }
 
     @Override
-    public void resize(RenderContext context, View view) {}
+    public void resize(RenderContext context) {}
 
     @Override
-    public void display(RenderContext context, View view, MapBuffer map) {
+    public void display(RenderContext context, MapBuffer map) {
         if (reloadStartMesh) {
             startMesh.load(context, true);
             reloadStartMesh = false;
@@ -243,5 +255,31 @@ public class ScenarioAreaOverlay implements Overlay {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+
+    @Override
+    public MouseListener getMouseListener() {
+        return mouseListener;
+    }
+
+
+    private class MouseListenerImpl implements MouseListener {
+
+        @Override
+        public boolean mouseClicked(MouseEvent e) {
+            System.out.println(unporject(e.getX(), e.getY()).toString());
+            return false;
+        }
+
+        private Coordinate unporject(int x, int y) {
+            Vec2i viewport = view.getSize();
+            Rect2d bounds = view.getViewportBounds();
+
+            return projection.unproject(new Vec2d(
+                    (x / (double) viewport.x) * (bounds.xmax - bounds.xmin) + bounds.xmin,
+                    (y / (double) viewport.y) * (bounds.ymax - bounds.ymin) + bounds.ymin
+            ));
+        }
     }
 }

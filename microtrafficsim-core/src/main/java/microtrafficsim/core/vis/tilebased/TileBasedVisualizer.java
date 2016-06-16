@@ -190,7 +190,7 @@ public class TileBasedVisualizer implements Visualizer {
 
         manager.initialize(context);
         for (Overlay overlay: overlays.values())
-            overlay.init(context, view);
+            overlay.init(context);
     }
 
     @Override
@@ -357,7 +357,7 @@ public class TileBasedVisualizer implements Visualizer {
         uProjection.set(view.getProjectionMatrix());
 
         for (Overlay overlay : overlays.values())
-            overlay.display(context, view, backbuffer);
+            overlay.display(context, backbuffer);
     }
 
     @Override
@@ -366,7 +366,7 @@ public class TileBasedVisualizer implements Visualizer {
         resizeFrameBuffer(context, width, height);
 
         for (Overlay overlay : overlays.values())
-            overlay.resize(context, view);
+            overlay.resize(context);
     }
 
 
@@ -403,6 +403,7 @@ public class TileBasedVisualizer implements Visualizer {
 
     @Override
     public Overlay putOverlay(int index, Overlay overlay) {
+        overlay.setView(view);
         return overlays.put(index, overlay);
     }
 

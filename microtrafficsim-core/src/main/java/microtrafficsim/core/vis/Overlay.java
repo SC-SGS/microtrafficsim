@@ -3,15 +3,18 @@ package microtrafficsim.core.vis;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.MouseEvent;
 import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.core.vis.view.View;
 
 
 public interface Overlay {
 
-	void init(RenderContext context, View view);
+	void setView(OrthographicView view);
+
+	void init(RenderContext context);
 	void dispose(RenderContext context);
-	void resize(RenderContext context, View view);
-	void display(RenderContext context, View view, MapBuffer map);
+	void resize(RenderContext context);
+	void display(RenderContext context, MapBuffer map);
 	
 	void enable();
 	void disable();

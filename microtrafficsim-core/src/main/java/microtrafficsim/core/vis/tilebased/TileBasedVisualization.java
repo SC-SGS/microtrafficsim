@@ -118,7 +118,7 @@ public class TileBasedVisualization extends AbstractVisualization {
                     .filter(listener -> listener != null)
                     .collect(Collectors.toCollection(ArrayList::new));
 
-            for (int i = listeners.size() - 1; i > 0; i--)
+            for (int i = listeners.size() - 1; i >= 0; i--)
                 if (call.test(listeners.get(i), e))
                     return;
 

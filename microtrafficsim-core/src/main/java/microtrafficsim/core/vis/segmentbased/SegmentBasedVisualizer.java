@@ -161,7 +161,7 @@ public class SegmentBasedVisualizer implements Visualizer {
 		resetView();
 		
 		for (Overlay overlay: overlays.values())
-			overlay.init(context, view);
+			overlay.init(context);
 	}
 
 	@Override
@@ -195,7 +195,7 @@ public class SegmentBasedVisualizer implements Visualizer {
 		manager.display(context);
 		
 		for (Overlay overlay : overlays.values())
-			overlay.display(context, view, null);			// TODO: do not pass null
+			overlay.display(context, null);			// TODO: do not pass null
 	}
 
 	@Override
@@ -203,7 +203,7 @@ public class SegmentBasedVisualizer implements Visualizer {
 		view.resize(width, height);
 		
 		for (Overlay overlay : overlays.values())
-			overlay.resize(context, view);
+			overlay.resize(context);
 	}
 
 
@@ -240,6 +240,7 @@ public class SegmentBasedVisualizer implements Visualizer {
 
 	@Override
 	public Overlay putOverlay(int index, Overlay overlay) {
+		overlay.setView(view);
 		return overlays.put(index, overlay);
 	}
 	

@@ -18,7 +18,6 @@ import microtrafficsim.core.vis.opengl.shader.uniforms.Uniform1f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec2f;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.view.OrthographicView;
-import microtrafficsim.core.vis.view.View;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.Vec2f;
 import microtrafficsim.math.Vec2i;
@@ -59,6 +58,9 @@ public class ShaderBasedVehicleOverlay implements Overlay {
 	
 	private Simulation simulation;
 	private Projection projection;
+
+	private OrthographicView view;
+
 	private final Supplier<IVisualizationVehicle> vehicleFactory;
 
 	private int vao;
@@ -73,7 +75,7 @@ public class ShaderBasedVehicleOverlay implements Overlay {
 	private Uniform1f uVehicleScale;
 	
 	private boolean enabled;
-	
+
 	
 	public ShaderBasedVehicleOverlay(Projection projection) {
 		this(projection, DEFAULT_FG_COLOR);
@@ -99,9 +101,13 @@ public class ShaderBasedVehicleOverlay implements Overlay {
 		this.enabled = true;
 	}
 
+	public void setView(OrthographicView view) {
+		this.view = view;
+	}
+
 	
 	@Override
-	public void init(RenderContext context, View view) {
+	public void init(RenderContext context) {
 		GL3 gl = context.getDrawable().getGL().getGL3();
 		
 		// load shader
@@ -179,10 +185,10 @@ public class ShaderBasedVehicleOverlay implements Overlay {
 	}
 	
 	@Override
-	public void resize(RenderContext context, View view) {}
+	public void resize(RenderContext context) {}
 	
 	@Override
-	public void display(RenderContext context, View view, MapBuffer map) {
+	public void display(RenderContext context, MapBuffer map) {
 		if (!enabled || simulation == null) return;
 		GL3 gl = context.getDrawable().getGL().getGL3();
 		
