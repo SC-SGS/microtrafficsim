@@ -1,15 +1,6 @@
-package microtrafficsim.core.vis.mesh.features;
+package microtrafficsim.core.vis.mesh.impl;
 
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2GL3;
-
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.mesh.Mesh;
 import microtrafficsim.core.vis.mesh.MeshBucket;
@@ -21,8 +12,16 @@ import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
 import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
 
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public class StreetMesh implements Mesh {
+
+// TODO: generalize?
+public class Pos3IndexedMesh implements Mesh {
 	private State state;
 
 	private int usage;
@@ -42,7 +41,7 @@ public class StreetMesh implements Mesh {
 	private HashSet<LifeTimeObserver<Mesh>> ltObservers;
 
 	
-	public StreetMesh(int usage, int mode, FloatBuffer vertices, IntBuffer indices) {
+	public Pos3IndexedMesh(int usage, int mode, FloatBuffer vertices, IntBuffer indices) {
 		this.state = State.UNINITIALIZED;
 		
 		this.usage = usage;
@@ -55,6 +54,15 @@ public class StreetMesh implements Mesh {
 		this.ibo = null;
 
 		this.ltObservers = new HashSet<>();
+	}
+
+
+	public void setVertexBuffer(FloatBuffer vertices) {
+		this.vertices = vertices;
+	}
+
+	public void setIndexBuffer(IntBuffer indices) {
+		this.indices = indices;
 	}
 
 	public void setBuckets(List<Bucket> buckets) {
@@ -79,10 +87,12 @@ public class StreetMesh implements Mesh {
 			// dispose old
 			vbo.dispose(gl);
 			ibo.dispose(gl);
+			vao.dispose(gl);
 		}
 
-		vbo = BufferStorage.create(gl, GL.GL_ARRAY_BUFFER);
-		ibo = BufferStorage.create(gl, GL.GL_ELEMENT_ARRAY_BUFFER);
+		vbo = BufferStorage.create(gl, GL2GL3.GL_ARRAY_BUFFER);
+		ibo = BufferStorage.create(gl, GL2GL3.GL_ELEMENT_ARRAY_BUFFER);
+		vao = VertexArrayObject.create(gl);
 
 		ptrPosition = VertexAttributePointer.create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, vbo);
 
@@ -95,7 +105,7 @@ public class StreetMesh implements Mesh {
 		boolean disposable = state != State.DISPOSED && state != State.UNINITIALIZED;
 
         if (disposable) {
-            GL gl = context.getDrawable().getGL();
+			GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
 
             vbo.dispose(gl);
             ibo.dispose(gl);
@@ -112,13 +122,9 @@ public class StreetMesh implements Mesh {
 	@Override
 	public boolean load(RenderContext context, boolean force) {
 		if (state == State.DISPOSED || state == State.UNINITIALIZED) return false;
+		if (state == State.LOADED && !force) return false;
 
 		GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
-		if (state == State.LOADED) {
-			if (!force) return false;
-
-			vao.dispose(gl);
-		}
 
 		// vertices
 		gl.glBindBuffer(vbo.target, vbo.handle);
@@ -131,7 +137,6 @@ public class StreetMesh implements Mesh {
 		gl.glBindBuffer(ibo.target, 0);
 		
 		// generate dummy vao
-		vao = VertexArrayObject.create(gl);
 
 		state = State.LOADED;
 		return true;
@@ -205,7 +210,6 @@ public class StreetMesh implements Mesh {
 
 
 	public class Bucket implements MeshBucket {
-
 		private final float zIndex;
 		private final int offset;
 		private final int count;
@@ -216,6 +220,7 @@ public class StreetMesh implements Mesh {
 			this.count = count;
 		}
 
+		@Override
 		public float getZIndex() {
 			return zIndex;
 		}

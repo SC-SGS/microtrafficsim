@@ -7,7 +7,6 @@ import microtrafficsim.core.frameworks.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.simulation.Simulation;
-import microtrafficsim.core.vis.SimulationOverlay;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.opengl.BufferStorage;
@@ -32,7 +31,7 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 
-public class SpriteBasedVehicleOverlay implements SimulationOverlay {
+public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
 	private final static Color DEFAULT_FG_COLOR = Color.fromRGBA(0xCC4C1AF0);
 

@@ -11,7 +11,7 @@ import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.mesh.Mesh;
-import microtrafficsim.core.vis.mesh.features.StreetMesh;
+import microtrafficsim.core.vis.mesh.impl.Pos3IndexedMesh;
 import microtrafficsim.core.vis.mesh.style.Style;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
@@ -101,8 +101,8 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         ib.rewind();
 
         // create mesh and buckets
-        StreetMesh mesh = new StreetMesh(GL3.GL_STATIC_DRAW, mode, vb, ib);
-        ArrayList<StreetMesh.Bucket> buckets = new ArrayList<>();
+        Pos3IndexedMesh mesh = new Pos3IndexedMesh(GL3.GL_STATIC_DRAW, mode, vb, ib);
+        ArrayList<Pos3IndexedMesh.Bucket> buckets = new ArrayList<>();
 
         int offset = 0;
         for (ArrayList<Integer> indexbucket : indices) {

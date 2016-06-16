@@ -22,6 +22,7 @@ import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerGenerator;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
+import microtrafficsim.core.vis.simulation.ScenarioAreaOverlay;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
 import microtrafficsim.examples.simulation.scenarios.Scenario;
@@ -144,21 +145,22 @@ public class Main {
 		}
 
 		/* create the visualization overlay */
-		SpriteBasedVehicleOverlay overlay = new SpriteBasedVehicleOverlay(PROJECTION);
+		SpriteBasedVehicleOverlay vehicleOverlay = new SpriteBasedVehicleOverlay(PROJECTION);
+		ScenarioAreaOverlay scenarioOverlay = new ScenarioAreaOverlay(PROJECTION);
 
 		/* create the simulation */
-		Simulation sim = new Scenario(config, result.streetgraph, overlay.getVehicleFactory());
-		overlay.setSimulation(sim);
+		Simulation sim = new Scenario(config, result.streetgraph, vehicleOverlay.getVehicleFactory());
+		vehicleOverlay.setSimulation(sim);
 
 		/* create and display the frame */
 		SwingUtilities.invokeLater(() -> {
 
 			/* create the actual visualizer */
 			TileBasedVisualization visualization = createVisualization(provider, sim);
-			visualization.putOverlay(0, overlay);
+			visualization.putOverlay(0, vehicleOverlay);
+            visualization.putOverlay(1, scenarioOverlay);
 
 			VisualizationPanel vpanel;
-
 			try {
 				vpanel = createVisualizationPanel(visualization);
 			} catch (UnsupportedFeatureException e) {

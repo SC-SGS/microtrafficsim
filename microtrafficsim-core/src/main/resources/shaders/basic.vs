@@ -3,7 +3,7 @@
 in vec3 a_position;
 out vec4 vertex_color;
 
-uniform vec4 u_color;
+uniform vec4 u_color = vec4(0, 0, 0, 1);
 uniform mat4 u_view;
 uniform mat4 u_projection;
 

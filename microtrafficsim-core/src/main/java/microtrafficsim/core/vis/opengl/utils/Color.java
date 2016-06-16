@@ -42,7 +42,11 @@ public class Color {
 	public static Color from(int r, int g, int b, int a) {
 		return new Color(r / 255.f, g / 255.f, b / 255.f, a / 255.f);
 	}
-	
+
+	public static Color from(float r, float g, float b, float a) {
+		return new Color(r, g, b, a);
+	}
+
 	public static Color fromRGB(int rgb) {
 		return new Color(
 				((rgb >> 16) & 0xFF) / 255.f,

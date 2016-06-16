@@ -1,8 +1,8 @@
 package microtrafficsim.core.vis.simulation;
 
 import com.jogamp.opengl.GL3;
-import microtrafficsim.core.frameworks.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.frameworks.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.simulation.Simulation;
 import microtrafficsim.core.vis.Overlay;
