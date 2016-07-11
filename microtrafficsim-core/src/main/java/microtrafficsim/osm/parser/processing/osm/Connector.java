@@ -41,4 +41,9 @@ public class Connector {
 				.add(to)
 				.getHash();
 	}
+
+	@Override
+	public String toString() {
+		return this.getClass().toString() + " { " + from.id + " >-- (" + via.id + ") --> " + to.id + " } ";
+	}
 }

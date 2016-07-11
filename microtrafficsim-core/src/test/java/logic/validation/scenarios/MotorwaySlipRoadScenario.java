@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Supplier;
 
+
 /**
  * This class defines a concrete scenarios of a simulation. This means it
  * contains an extension of {@link SimulationConfig} to define simulation
@@ -28,102 +29,92 @@ import java.util.function.Supplier;
  */
 public class MotorwaySlipRoadScenario extends ValidationScenario {
 
-  public static void setupConfig(SimulationConfig config){
+    private static final String OSM_FILENAME   = "motorway_slip-road.osm";
+    private Node                bottomMotorway = null;
+    private Node                interception   = null;
+    private Node                topMotorway    = null;
+    private Node                bottomRight    = null;
+    private NextScenarioState   nextScenarioState;
 
-    // super attributes
-    config.longIDGenerator = new ConcurrentLongIDGenerator();
-    config.speedup = 5;
-    config.maxVehicleCount = 3;
-    config.crossingLogic.drivingOnTheRight = true;
-    config.crossingLogic.edgePriorityEnabled = true;
-    config.crossingLogic.priorityToTheRightEnabled = true;
-    config.crossingLogic.setOnlyOneVehicle(false);
-    config.crossingLogic.friendlyStandingInJamEnabled = false;
-    // own attributes
-    config.ageForPause = -1;
-    ValidationCar.maxVelocity = 1;
-  }
-
-  private static final String OSM_FILENAME = "motorway_slip-road.osm";
-
-  public static void main(String[] args) throws Exception {
-    File file;
-
-    if (args.length == 1) {
-      switch(args[0]) {
-        case "-h":
-        case "--help":
-          Main.printUsage();
-          return;
-        default:
-          file = new File(args[0]);
-      }
-    } else {
-      file = new PackagedResource(Main.class, OSM_FILENAME).asTemporaryFile();
+    /**
+     * Default constructor.
+     *
+     * @param config         The used config file for this scenarios.
+     * @param graph          The streetgraph used for this scenarios.
+     * @param vehicleFactory This creates vehicles.
+     */
+    public MotorwaySlipRoadScenario(SimulationConfig config, StreetGraph graph,
+                                    Supplier<IVisualizationVehicle> vehicleFactory) {
+        super(config, graph, vehicleFactory);
+        nextScenarioState = NextScenarioState.PRIORITY_TO_THE_MOTORWAY;
     }
 
-    SimulationConfig config = new SimulationConfig();
-    setupConfig(config);
-    Main.show(
-            config.visualization.projection,
-            file,
-            config,
-            MotorwaySlipRoadScenario.class);
-  }
+    private static void setupConfig(SimulationConfig config) {
 
-  private enum NextScenarioState {
-    PRIORITY_TO_THE_MOTORWAY;
-  }
-
-  private Node bottomMotorway = null, interception = null, topMotorway = null, bottomRight = null;
-  private NextScenarioState nextScenarioState;
-
-  /**
-   * Default constructor.
-   *
-   * @param config         The used config file for this scenarios.
-   * @param graph          The streetgraph used for this scenarios.
-   * @param vehicleFactory This creates vehicles.
-   */
-  public MotorwaySlipRoadScenario(SimulationConfig config, StreetGraph graph,
-                                  Supplier<IVisualizationVehicle> vehicleFactory) {
-    super(config,
-            graph,
-            vehicleFactory);
-    nextScenarioState = NextScenarioState.PRIORITY_TO_THE_MOTORWAY;
-  }
-
-  @Override
-  protected void updateScenarioState(VehicleState vehicleState) {
-
-    int updateGraphDelay = justInitialized ? 0 : 1;
-
-    if (vehicleState == VehicleState.DESPAWNED && getVehiclesCount() == 0) {
-      switch (nextScenarioState) {
-        case PRIORITY_TO_THE_MOTORWAY:
-          createAndAddCar(bottomMotorway, topMotorway, 0);
-          createAndAddCar(bottomRight, topMotorway, 2 + updateGraphDelay);
-      }
+        // super attributes
+        config.longIDGenerator                            = new ConcurrentLongIDGenerator();
+        config.speedup                                    = 5;
+        config.maxVehicleCount                            = 3;
+        config.crossingLogic.drivingOnTheRight            = true;
+        config.crossingLogic.edgePriorityEnabled          = true;
+        config.crossingLogic.priorityToTheRightEnabled    = true;
+        config.crossingLogic.friendlyStandingInJamEnabled = false;
+        config.crossingLogic.setOnlyOneVehicle(false);
+        // own attributes
+        config.ageForPause        = -1;
+        ValidationCar.maxVelocity = 1;
     }
-  }
 
-  @Override
-  protected void createAndAddVehicles(ProgressListener listener) {
+    public static void main(String[] args) throws Exception {
+        File file;
+
+        if (args.length == 1) {
+            switch (args[0]) {
+            case "-h":
+            case "--help": Main.printUsage(); return;
+            default: file = new File(args[0]);
+            }
+        } else {
+            file = new PackagedResource(Main.class, OSM_FILENAME).asTemporaryFile();
+        }
+
+        SimulationConfig config = new SimulationConfig();
+        setupConfig(config);
+        Main.show(config.visualization.projection, file, config, MotorwaySlipRoadScenario.class);
+    }
+
+    @Override
+    protected void updateScenarioState(VehicleState vehicleState) {
+        int updateGraphDelay = justInitialized ? 0 : 1;
+
+        if (vehicleState == VehicleState.DESPAWNED && getVehiclesCount() == 0) {
+            switch (nextScenarioState) {
+            case PRIORITY_TO_THE_MOTORWAY:
+                createAndAddCar(bottomMotorway, topMotorway, 0);
+                createAndAddCar(bottomRight, topMotorway, 2 + updateGraphDelay);
+            }
+        }
+    }
+
+    @Override
+    protected void createAndAddVehicles(ProgressListener listener) {
 
         /* sort by lon */
-    Iterator<Node> iter = graph.getNodeIterator();
-    ArrayList<Node> sortedNodes = new ArrayList<>(4);
-    while (iter.hasNext())
-      sortedNodes.add(iter.next());
+        Iterator<Node>  iter        = graph.getNodeIterator();
+        ArrayList<Node> sortedNodes = new ArrayList<>(4);
+        while (iter.hasNext())
+            sortedNodes.add(iter.next());
 
-    sortedNodes.sort((n1, n2) -> n1.getCoordinate().lon > n2.getCoordinate().lon ? 1 : -1);
+        sortedNodes.sort((n1, n2) -> n1.getCoordinate().lon > n2.getCoordinate().lon ? 1 : -1);
 
-    bottomMotorway = sortedNodes.get(0);
-    interception = sortedNodes.get(1);
-    topMotorway = sortedNodes.get(2);
-    bottomRight = sortedNodes.get(3);
+        bottomMotorway = sortedNodes.get(0);
+        interception   = sortedNodes.get(1);
+        topMotorway    = sortedNodes.get(2);
+        bottomRight    = sortedNodes.get(3);
 
-    updateScenarioState(VehicleState.DESPAWNED);
-    justInitialized = false;
-  }
+        updateScenarioState(VehicleState.DESPAWNED);
+        justInitialized = false;
+    }
+
+    private enum NextScenarioState { PRIORITY_TO_THE_MOTORWAY; }
 }

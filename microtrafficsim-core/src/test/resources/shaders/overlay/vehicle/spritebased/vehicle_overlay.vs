@@ -12,7 +12,7 @@ out vec4 vehicle_vert_color;
 
 
 void main() {
-	vehicle_normal = a_normal2;
-	vehicle_vert_color = a_color;
-	gl_Position = u_projection * u_view * vec4(a_position2.xy, 0.0, 1.0);
+    vehicle_normal = a_normal2;
+    vehicle_vert_color = a_color;
+    gl_Position = u_projection * u_view * vec4(a_position2.xy, 0.0, 1.0);
 }

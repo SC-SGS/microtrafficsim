@@ -26,113 +26,107 @@ import java.util.function.Supplier;
 
 public class Main {
 
-  private static final boolean PRINT_FRAME_STATS = false;
+    private static final boolean PRINT_FRAME_STATS = false;
 
-  public static void printUsage() {
-    System.out.println("MicroTrafficSim - Simulation Example");
-    System.out.println("");
-    System.out.println("Usage:");
-    System.out.println("  simulation                Run this example with the default map-file");
-    System.out.println("  simulation <file>         Run this example with the specified map-file");
-    System.out.println("  simulation --help | -h    Show this help message.");
-    System.out.println("");
-  }
-
-
-  public static void initSimulationConfig(SimulationConfig config) {
-    config.metersPerCell = 7.5f;
-    config.longIDGenerator = new ConcurrentLongIDGenerator();
-    config.seed = 1455374755807L;
-    Example.printSeed(config.seed);
-    config.multiThreading.nThreads = 1;
-    config.logger.enabled = false;
-  }
-
-  public static void show(Projection projection,
-                          File file,
-                          SimulationConfig scencfg,
-                          Class<? extends Simulation> simClazz)
-          throws Exception {
-
-		/* create configuration for scenarios */
-    initSimulationConfig(scencfg);
-
-		/* set up visualization style and sources */
-    Set<LayerDefinition> layers = Example.getLayerDefinitions();
-    SegmentLayerProvider provider = Example.getSegmentLayerProvider(projection, layers);
-
-		/* parse the OSM file */
-    OSMParser parser = Example.getParser(scencfg);
-    OSMParser.Result result;
-
-    try {
-      result = parser.parse(file);
-    } catch (XMLStreamException | IOException e) {
-      e.printStackTrace();
-      return;
+    public static void printUsage() {
+        System.out.println("MicroTrafficSim - Simulation Example");
+        System.out.println("");
+        System.out.println("Usage:");
+        System.out.println("  simulation                Run this example with the default map-file");
+        System.out.println("  simulation <file>         Run this example with the specified map-file");
+        System.out.println("  simulation --help | -h    Show this help message.");
+        System.out.println("");
     }
 
-    Utils.setFeatureProvider(layers, result.segment);
 
-		/* create the visualization overlay */
-    // ShaderBasedVehicleOverlay overlay = new ShaderBasedVehicleOverlay(projection);
-    SpriteBasedVehicleOverlay overlay = new SpriteBasedVehicleOverlay(projection);
+    public static void initSimulationConfig(SimulationConfig config) {
+        config.metersPerCell           = 7.5f;
+        config.longIDGenerator         = new ConcurrentLongIDGenerator();
+        config.seed                    = 1455374755807L;
+        config.multiThreading.nThreads = 1;
+        config.logger.enabled          = false;
+        Example.printSeed(config.seed);
+    }
 
-		/* create the simulation */
-    Simulation sim = simClazz.getConstructor(
-            scencfg.getClass(),
-            StreetGraph.class,
-            Supplier.class)
-            .newInstance(scencfg, result.streetgraph, overlay.getVehicleFactory());
-    overlay.setSimulation(sim);
+    public static void show(Projection projection, File file, SimulationConfig scencfg,
+                            Class<? extends Simulation> simClazz) throws Exception {
 
-		/* create and display the frame */
-    SwingUtilities.invokeLater(() -> {
+        /* create configuration for scenarios */
+        initSimulationConfig(scencfg);
 
-			/* create the actual visualizer */
-      SegmentBasedVisualization visualization = Example.createVisualization(provider, sim);
-      visualization.putOverlay(0, overlay);
+        /* set up visualization style and sources */
+        Set<LayerDefinition> layers   = Example.getLayerDefinitions();
+        SegmentLayerProvider provider = Example.getSegmentLayerProvider(projection, layers);
 
-      VisualizationPanel vpanel;
+        /* parse the OSM file */
+        OSMParser        parser = Example.getParser(scencfg);
+        OSMParser.Result result;
 
-      try {
-        vpanel = Example.createVisualizationPanel(visualization);
-      } catch (UnsupportedFeatureException e) {
-        e.printStackTrace();
-        Runtime.getRuntime().halt(0);
-        return;
-      }
-
-			/* create and initialize the JFrame */
-      JFrame frame = new JFrame("MicroTrafficSim - Simulation Example");
-      frame.setSize(Example.WINDOW_WIDTH, Example.WINDOW_HEIGHT);
-      frame.add(vpanel);
-
-			/*
-			 * Note: JOGL automatically calls glViewport, we need to make
-			 * sure that this function is not called with a height or width
-			 * of 0! Otherwise the program crashes.
-			 */
-      frame.setMinimumSize(new Dimension(100, 100));
-
-      // on close: stop the visualization and exit
-      frame.addWindowListener(new WindowAdapter() {
-        public void windowClosing(WindowEvent e) {
-          vpanel.stop();
-          System.exit(0);
+        try {
+            result = parser.parse(file);
+        } catch (XMLStreamException | IOException e) {
+            e.printStackTrace();
+            return;
         }
-      });
 
-			/* show the frame and start the render-loop */
-      frame.setVisible(true);
-      vpanel.start();
+        Utils.setFeatureProvider(layers, result.segment);
 
-      if (PRINT_FRAME_STATS)
-        visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
-    });
+        /* create the visualization overlay */
+        // ShaderBasedVehicleOverlay overlay = new ShaderBasedVehicleOverlay(projection);
+        SpriteBasedVehicleOverlay overlay = new SpriteBasedVehicleOverlay(projection);
 
-		/* initialize the simulation */
-    sim.prepare();
-    sim.runOneStep();
-  }
+        /* create the simulation */
+        Simulation sim = simClazz.getConstructor(scencfg.getClass(), StreetGraph.class, Supplier.class)
+                                 .newInstance(scencfg, result.streetgraph, overlay.getVehicleFactory());
+        overlay.setSimulation(sim);
+
+        /* create and display the frame */
+        SwingUtilities.invokeLater(() -> {
+
+            /* create the actual visualizer */
+            SegmentBasedVisualization visualization = Example.createVisualization(provider, sim);
+            visualization.putOverlay(0, overlay);
+
+            VisualizationPanel vpanel;
+
+            try {
+                vpanel = Example.createVisualizationPanel(visualization);
+            } catch (UnsupportedFeatureException e) {
+                e.printStackTrace();
+                Runtime.getRuntime().halt(0);
+                return;
+            }
+
+            /* create and initialize the JFrame */
+            JFrame frame = new JFrame("MicroTrafficSim - Simulation Example");
+            frame.setSize(Example.WINDOW_WIDTH, Example.WINDOW_HEIGHT);
+            frame.add(vpanel);
+
+            /*
+             * Note: JOGL automatically calls glViewport, we need to make
+             * sure that this function is not called with a height or width
+             * of 0! Otherwise the program crashes.
+             */
+            frame.setMinimumSize(new Dimension(100, 100));
+
+            // on close: stop the visualization and exit
+            frame.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    vpanel.stop();
+                    System.exit(0);
+                }
+            });
+
+            /* show the frame and start the render-loop */
+            frame.setVisible(true);
+            vpanel.start();
+
+            if (PRINT_FRAME_STATS)
+                visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
+        });
+
+        /* initialize the simulation */
+        sim.prepare();
+        sim.runOneStep();
+    }
 }
