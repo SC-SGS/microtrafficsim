@@ -410,18 +410,16 @@ public class Main {
 			default:
 				file = new File(args[0]);
 			}
+		    show(file);
 		} else {
-			file = new File("map.osm");
-		}
-		
-		show(file);
+            System.out.println("INFO: Exit without correct input map.");
+        }
 	}
 	
 	private static void printUsage() {
 		System.out.println("MicroTrafficSim - Simulation Example");
 		System.out.println("");
 		System.out.println("Usage:");
-		System.out.println("  simulation                Run this example with the default map-file");
 		System.out.println("  simulation <file>         Run this example with the specified map-file");
 		System.out.println("  simulation --help | -h    Show this help message.");
 		System.out.println("");

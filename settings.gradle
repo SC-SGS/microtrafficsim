@@ -1,6 +1,5 @@
 rootProject.name = 'microtrafficsim'
 
-include 'microtrafficsim-osmcreator'
 include 'microtrafficsim-ui'
 include 'microtrafficsim-core'
 
@@ -8,8 +7,6 @@ include 'examples:parser'
 include 'examples:simulation'
 include 'examples:mapviewer_tilebased'
 include 'examples:mapviewer_segmentbased'
-include 'examples:measurements'
-include 'examples:tag_der_wissenschaft'
 
 include 'experimental:transparency'
 include 'experimental:lines'
