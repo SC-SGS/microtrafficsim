@@ -40,7 +40,7 @@ def visualize(input_filepath, output_filepath, show):
     f = open(input_filepath)
     values = iter(f.read().split(';'))
     f.close()
-    
+
     x = []
     y_mean = []
     y_min = []
@@ -48,7 +48,7 @@ def visualize(input_filepath, output_filepath, show):
     y_median = []
     y_highQuartile = []
     y_max = []
-    
+
     iterValues = iter(values)
     for v in iterValues:
         x.append(v)
@@ -90,20 +90,11 @@ if __name__ == '__main__':
     args = docopt(usage, version='OSM data visualization 1.0')
 
     input_filepath = args['--in']
-    legalInputEndings = [
-        'csv'
-    ]
+    legalInputEndings = [ 'csv' ]
 
     output_filepath = args['--out']
-    legalOutputEndings = [
-        'png',
-        'jpg',
-        'jpeg',
-        'JPEG',
-        'pdf',
-        'PDF'
-    ]
-    
+    legalOutputEndings = [ 'png', 'jpg', 'jpeg', 'JPEG', 'pdf', 'PDF' ]
+
     okayOut = False
     if any(output_filepath.split('.')[-1] == ending for ending in legalOutputEndings):
         okayOut = True

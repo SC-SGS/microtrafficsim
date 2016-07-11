@@ -1,15 +1,15 @@
 import java.io.File;
 import java.util.*;
 
+
 /**
- * Created by Dominic on 04.04.16.
+ * @author Dominic Parga Cacheiro
  */
 public class Main {
-
-    private static final String sep = System.getProperty("file.separator");
-    private static final String PATH_TO_DATA_INPUT = "data" + sep + "input";
+    private static final String sep                 = System.getProperty("file.separator");
+    private static final String PATH_TO_DATA_INPUT  = "data" + sep + "input";
     private static final String PATH_TO_DATA_OUTPUT = "data" + sep + "csv";
-    private static FileManager fileManager;
+    private static FileManager  fileManager;
 
     private enum VisType {
         age("age", "age_when_despawning.csv"),
@@ -24,8 +24,8 @@ public class Main {
 
         private VisType(String typename, String avgFilename) {
             this.pathToInputData = PATH_TO_DATA_INPUT + sep + typename;
-            pathToOutputData = PATH_TO_DATA_OUTPUT;
-            this.avgFilename = avgFilename;
+            pathToOutputData     = PATH_TO_DATA_OUTPUT;
+            this.avgFilename     = avgFilename;
         }
     }
 
@@ -35,26 +35,19 @@ public class Main {
 
         if (args.length == 1) {
             switch (args[0]) {
-                case "-h":
-                case "--help":
-                    printUsage();
-                    return;
-                case "age":
-                    age();
-                case "anger":
-                    anger();
-                case "linear_distance":
-                    linearDistance();
-                case "spawned_count":
-                    spawnedCount();
-                case "total_anger":
-                    totalAnger();
-                case "all":
-                    age();
-                    anger();
-                    linearDistance();
-                    spawnedCount();
-                    totalAnger();
+            case "-h":
+            case "--help": printUsage(); return;
+            case "age": age();
+            case "anger": anger();
+            case "linear_distance": linearDistance();
+            case "spawned_count": spawnedCount();
+            case "total_anger": totalAnger();
+            case "all":
+                age();
+                anger();
+                linearDistance();
+                spawnedCount();
+                totalAnger();
             }
         }
         System.out.println("age() started");
@@ -88,13 +81,12 @@ public class Main {
     }
 
     private static ArrayList<File> getdirectoryList(String path) {
-        File dir = new File(path);
-        File[] protodirectoryList = dir.listFiles();
+        File dir                      = new File(path);
+        File[] protodirectoryList     = dir.listFiles();
         ArrayList<File> directoryList = new ArrayList<>();
         if (directoryList != null)
             for (File file : protodirectoryList)
-                if (file.getName().endsWith(".csv"))
-                    directoryList.add(file);
+                if (file.getName().endsWith(".csv")) directoryList.add(file);
 
         return directoryList;
     }
@@ -103,8 +95,8 @@ public class Main {
         ArrayList<File> directoryList = getdirectoryList(vistype.pathToInputData);
         if (!directoryList.isEmpty()) {
             HashMap<Integer, Number> buxtehude = new HashMap<>();
-            StringBuilder data = new StringBuilder();
-            int totalDespawned = 0;
+            StringBuilder data           = new StringBuilder();
+            int           totalDespawned = 0;
 
             for (File file : directoryList) {
                 // get data from file
@@ -131,12 +123,12 @@ public class Main {
 
             LinkedList<Integer> list = new LinkedList<>(buxtehude.keySet());
             Collections.sort(list);
-            float lastPercent = 0f;
-            float curPercent = 0f;
-            float delta = 0.05f;
-            Iterator<Integer> keys = list.iterator();
+            float             lastPercent = 0f;
+            float             curPercent  = 0f;
+            float             delta       = 0.05f;
+            Iterator<Integer> keys        = list.iterator();
             while (keys.hasNext()) {
-                int key = keys.next();
+                int key      = keys.next();
                 int rawvalue = buxtehude.get(key).intValue();
 
                 curPercent = curPercent + rawvalue / (float) totalDespawned;
@@ -148,11 +140,7 @@ public class Main {
                     }
                 }
             }
-            fileManager.writeDataToFile(
-                    vistype.pathToOutputData,
-                    vistype.avgFilename,
-                    data.toString(),
-                    true);
+            fileManager.writeDataToFile(vistype.pathToOutputData, vistype.avgFilename, data.toString(), true);
         } else {
             // Handle the case where dir is not really a directory.
             // Checking dir.isDirectory() above would not be sufficient
@@ -168,8 +156,8 @@ public class Main {
         ArrayList<File> directoryList = getdirectoryList(vistype.pathToInputData);
         if (!directoryList.isEmpty()) {
             HashMap<Integer, Number> buxtehude = new HashMap<>();
-            StringBuilder data = new StringBuilder();
-            int totalDespawned = 0;
+            StringBuilder data           = new StringBuilder();
+            int           totalDespawned = 0;
 
             for (File file : directoryList) {
                 // get data from file
@@ -193,17 +181,17 @@ public class Main {
 
             LinkedList<Integer> list = new LinkedList<>(buxtehude.keySet());
             Collections.sort(list);
-            float lastPercent = 0f;
-            float curPercent = 0f;
-            float delta = 0.05f;
-            Iterator<Integer> keys = list.iterator();
+            float             lastPercent = 0f;
+            float             curPercent  = 0f;
+            float             delta       = 0.05f;
+            Iterator<Integer> keys        = list.iterator();
             while (keys.hasNext()) {
-                int key = keys.next();
+                int key      = keys.next();
                 int rawvalue = buxtehude.get(key).intValue();
 
                 curPercent = curPercent + rawvalue / (float) totalDespawned;
                 if (curPercent >= lastPercent + delta || !keys.hasNext()) {
-                    float x = key / (float)roundFactor;
+                    float x = key / (float) roundFactor;
                     data.append(x + ";" + curPercent);
                     if (keys.hasNext()) {
                         data.append(";");
@@ -211,11 +199,7 @@ public class Main {
                     }
                 }
             }
-            fileManager.writeDataToFile(
-                    vistype.pathToOutputData,
-                    vistype.avgFilename,
-                    data.toString(),
-                    true);
+            fileManager.writeDataToFile(vistype.pathToOutputData, vistype.avgFilename, data.toString(), true);
         } else {
             // Handle the case where dir is not really a directory.
             // Checking dir.isDirectory() above would not be sufficient
@@ -279,20 +263,20 @@ public class Main {
                 while (allScannersHasNext) {
 
                     // for each timestep:
-                    long sum = 0;
-                    long totalValueCount = 0;
-                    ArrayList<Integer> angers = new ArrayList<>();
+                    long               sum             = 0;
+                    long               totalValueCount = 0;
+                    ArrayList<Integer> angers          = new ArrayList<>();
                     for (Scanner scanner : scanners) {
                         // for boxfake
                         int valueCount = Integer.parseInt(scanner.next());
-                        scanner.next(); // timestep shit
+                        scanner.next();    // timestep shit
                         totalValueCount += valueCount;
                         for (int i = 0; i < valueCount; i++) {
                             try {
                                 int anger = Integer.parseInt(scanner.next());
                                 angers.add(anger);
-                                sum += anger; // for avg
-                            } catch(NoSuchElementException e) {
+                                sum += anger;    // for avg
+                            } catch (NoSuchElementException e) {
                                 System.out.println(scanner.hashCode());
                                 System.out.println(timestep);
                             }
@@ -304,14 +288,14 @@ public class Main {
                     // calculate this timestep
                     if (!angers.isEmpty()) {
                         data.append(";" + timestep++ + ";");
-                        data.append(sum / (float) totalValueCount + ";"); // mean
+                        data.append(sum / (float) totalValueCount + ";");    // mean
                         Collections.sort(angers);
                         int n = angers.size() - 1;
-                        data.append(angers.get(0) + ";"); // min
-                        data.append(angers.get(n / 4) + ";"); // low quartile
-                        data.append(angers.get(n / 2) + ";"); // median
-                        data.append(angers.get(n * 3 / 4) + ";"); // high quartile
-                        data.append(angers.get(n)); // max
+                        data.append(angers.get(0) + ";");            // min
+                        data.append(angers.get(n / 4) + ";");        // low quartile
+                        data.append(angers.get(n / 2) + ";");        // median
+                        data.append(angers.get(n * 3 / 4) + ";");    // high quartile
+                        data.append(angers.get(n));                  // max
                     }
                 }
 
@@ -327,44 +311,37 @@ public class Main {
 
             // write to file
             fileManager.writeDataToFile(
-                    VisType.anger.pathToOutputData,
-                    VisType.anger.avgFilename,
-                    data.toString(),
-                    true);
+                    VisType.anger.pathToOutputData, VisType.anger.avgFilename, data.toString(), true);
 
             // filter file
             Scanner scanner = fileManager.openScanner(
                     new File(VisType.anger.pathToOutputData + sep + VisType.anger.avgFilename));
-            float lastAvg = 0f;
-            int lastMin = 0;
-            int lastLowQuartile = 0;
-            int lastMedian = 0;
-            int lastHighQuartile = 0;
-            int lastMax = 0;
-            data = new StringBuilder();
+            float lastAvg          = 0f;
+            int   lastMin          = 0;
+            int   lastLowQuartile  = 0;
+            int   lastMedian       = 0;
+            int   lastHighQuartile = 0;
+            int   lastMax          = 0;
+            data                   = new StringBuilder();
             // start filter
             float delta = 0.5f;
             while (scanner.hasNext()) {
-                timestep = Integer.parseInt(scanner.next());
-                float avg = Float.parseFloat(scanner.next());
-                int min = Integer.parseInt(scanner.next());
-                int lowQuartile = Integer.parseInt(scanner.next());
-                int median = Integer.parseInt(scanner.next());
-                int highQuartile = Integer.parseInt(scanner.next());
-                int max = Integer.parseInt(scanner.next());
+                timestep           = Integer.parseInt(scanner.next());
+                float avg          = Float.parseFloat(scanner.next());
+                int   min          = Integer.parseInt(scanner.next());
+                int   lowQuartile  = Integer.parseInt(scanner.next());
+                int   median       = Integer.parseInt(scanner.next());
+                int   highQuartile = Integer.parseInt(scanner.next());
+                int   max          = Integer.parseInt(scanner.next());
 
                 boolean newPoint = false;
                 newPoint |= Math.abs(lastAvg - avg) >= delta * lastAvg;
-                if (lastMin > 0)
-                    newPoint |= Math.abs(lastMin - min) >= delta * lastMin;
-                if (lastLowQuartile > 0)
-                    newPoint |= Math.abs(lastLowQuartile - lowQuartile) >= delta * lastLowQuartile;
-                if (lastMedian > 0)
-                    newPoint |= Math.abs(lastMedian - median) >= delta * lastMedian;
+                if (lastMin > 0) newPoint |= Math.abs(lastMin - min) >= delta * lastMin;
+                if (lastLowQuartile > 0) newPoint |= Math.abs(lastLowQuartile - lowQuartile) >= delta * lastLowQuartile;
+                if (lastMedian > 0) newPoint |= Math.abs(lastMedian - median) >= delta * lastMedian;
                 if (lastHighQuartile > 0)
                     newPoint |= Math.abs(lastHighQuartile - highQuartile) >= delta * lastHighQuartile;
-                if (lastMax > 0)
-                    newPoint |= Math.abs(lastMax - max) >= delta * lastMax;
+                if (lastMax > 0) newPoint |= Math.abs(lastMax - max) >= delta * lastMax;
                 newPoint |= !scanner.hasNext();
 
                 if (newPoint) {
@@ -376,24 +353,20 @@ public class Main {
                     data.append(highQuartile + ";");
                     data.append(max);
 
-                    lastAvg = avg;
-                    lastMin = min;
-                    lastLowQuartile = lowQuartile;
-                    lastMedian = median;
+                    lastAvg          = avg;
+                    lastMin          = min;
+                    lastLowQuartile  = lowQuartile;
+                    lastMedian       = median;
                     lastHighQuartile = highQuartile;
-                    lastMax = max;
+                    lastMax          = max;
 
-                    if (scanner.hasNext())
-                        data.append(";");
+                    if (scanner.hasNext()) data.append(";");
                 }
             }
 
             // write to file
             fileManager.writeDataToFile(
-                    VisType.anger.pathToOutputData,
-                    VisType.anger.avgFilename,
-                    data.toString(),
-                    true);
+                    VisType.anger.pathToOutputData, VisType.anger.avgFilename, data.toString(), true);
         }
     }
 
@@ -431,7 +404,7 @@ public class Main {
                 scanners.add(fileManager.openScanner(file));
             }
 
-            int timestep = 1;
+            int timestep  = 1;
             int fileCount = directoryList.size();
             // while there is a timestep
             while (!scanners.isEmpty()) {
@@ -452,7 +425,7 @@ public class Main {
 
                     // calculate this timestep
                     data.append(";" + timestep++ + ";");
-                    data.append(sum / (float) fileCount); // avg
+                    data.append(sum / (float) fileCount);    // avg
                 }
 
                 // remove finished scanners
@@ -467,20 +440,17 @@ public class Main {
 
             // write to file
             fileManager.writeDataToFile(
-                    VisType.spawned_count.pathToOutputData,
-                    VisType.spawned_count.avgFilename,
-                    data.toString(),
-                    true);
+                    VisType.spawned_count.pathToOutputData, VisType.spawned_count.avgFilename, data.toString(), true);
 
             // filter file
             Scanner scanner = fileManager.openScanner(
                     new File(VisType.spawned_count.pathToOutputData + sep + VisType.spawned_count.avgFilename));
             float lastAvg = 0f;
-            data = new StringBuilder();
+            data          = new StringBuilder();
             // start filter
             float delta = 0.05f;
             while (scanner.hasNext()) {
-                timestep = Integer.parseInt(scanner.next());
+                timestep  = Integer.parseInt(scanner.next());
                 float avg = Float.parseFloat(scanner.next());
 
                 boolean newPoint = false;
@@ -493,17 +463,13 @@ public class Main {
 
                     lastAvg = avg;
 
-                    if (scanner.hasNext())
-                        data.append(";");
+                    if (scanner.hasNext()) data.append(";");
                 }
             }
 
             // write to file
             fileManager.writeDataToFile(
-                    VisType.spawned_count.pathToOutputData,
-                    VisType.spawned_count.avgFilename,
-                    data.toString(),
-                    true);
+                    VisType.spawned_count.pathToOutputData, VisType.spawned_count.avgFilename, data.toString(), true);
         }
     }
 
@@ -521,18 +487,3 @@ public class Main {
         processInts(VisType.total_anger, true);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

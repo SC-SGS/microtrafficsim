@@ -31,16 +31,16 @@ def visualize(input_filepath, output_filepath, show):
     title = 'age upon reaching destination' #\n(%i despawned)' % totalDespawned
     xlabel = 'age'
     ylabel = '# vehicles reaching destination\nwith age <= age (in %)'
-    
+
     for plotcounter in range(4):
         bla = input_filepath + str(plotcounter) + ".csv"
-    
+
         f = open(bla)
         values = f.read().split(';')
         f.close()
         x = []
         y = []
-    
+
         iterValues = iter(values)
         totalDespawned = float(next(iterValues))
         # plotting preparation
@@ -74,20 +74,11 @@ if __name__ == '__main__':
     args = docopt(usage, version='OSM data visualization 1.0')
 
     input_filepath = args['--in']
-    legalInputEndings = [
-        'csv'
-    ]
+    legalInputEndings = [ 'csv' ]
 
     output_filepath = args['--out']
-    legalOutputEndings = [
-        'png',
-        'jpg',
-        'jpeg',
-        'JPEG',
-        'pdf',
-        'PDF'
-    ]
-    
+    legalOutputEndings = [ 'png', 'jpg', 'jpeg', 'JPEG', 'pdf', 'PDF' ]
+
     okayOut = False
     if any(output_filepath.split('.')[-1] == ending for ending in legalOutputEndings):
         okayOut = True

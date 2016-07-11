@@ -36,7 +36,7 @@ def visualize(input_filepath, output_filepath, show):
     ylabel = ''
     x = []
     y = []
-    
+
     iterValues = iter(values)
     totalDespawned = float(next(iterValues))
     # plotting preparation
@@ -72,20 +72,11 @@ if __name__ == '__main__':
     args = docopt(usage, version='OSM data visualization 1.0')
 
     input_filepath = args['--in']
-    legalInputEndings = [
-        'csv'
-    ]
+    legalInputEndings = [ 'csv' ]
 
     output_filepath = args['--out']
-    legalOutputEndings = [
-        'png',
-        'jpg',
-        'jpeg',
-        'JPEG',
-        'pdf',
-        'PDF'
-    ]
-    
+    legalOutputEndings = [ 'png', 'jpg', 'jpeg', 'JPEG', 'pdf', 'PDF' ]
+
     okayOut = False
     if any(output_filepath.split('.')[-1] == ending for ending in legalOutputEndings):
         okayOut = True

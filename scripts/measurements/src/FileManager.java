@@ -4,9 +4,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
 
+
 /**
  * This class allows the user to work with the data files.
- * 
+ *
  * @author Dominic Parga Cacheiro
  */
 public class FileManager {
@@ -14,40 +15,37 @@ public class FileManager {
     private HashMap<Scanner, File> activeScannersReverse;
 
     public FileManager() {
-        activeScanners = new HashMap<>();
+        activeScanners        = new HashMap<>();
         activeScannersReverse = new HashMap<>();
     }
 
-	/**
-	 * Write the given String to a txt-file with name fileName.
-	 * 
-	 * @param pathname
-	 *            Name of the data file's path
-	 * @param data
-	 *            String of data
-	 * @param overwrite
-	 *            YES, if the file with the given name already exists and shall
-	 *            be overwritten
-	 */
-	public void writeDataToFile(String path, String filename, String data,
-			boolean overwrite) {
+    /**
+     * Write the given String to a txt-file with name fileName.
+     *
+     * @param pathname
+     *            Name of the data file's path
+     * @param data
+     *            String of data
+     * @param overwrite
+     *            YES, if the file with the given name already exists and shall
+     *            be overwritten
+     */
+    public void writeDataToFile(String path, String filename, String data, boolean overwrite) {
 
-		File dirs = new File(path);
-		if (!dirs.exists()) {
-			dirs.mkdirs();
-		}
+        File dirs = new File(path);
+        if (!dirs.exists()) { dirs.mkdirs(); }
 
-		try {
-			PrintWriter outputStream = new PrintWriter(new FileOutputStream(
-					path + System.getProperty("file.separator") + filename, !overwrite));
+        try {
+            PrintWriter outputStream = new PrintWriter(
+                    new FileOutputStream(path + System.getProperty("file.separator") + filename, !overwrite));
 
-			outputStream.print(data);
+            outputStream.print(data);
 
-			outputStream.close();
-		} catch (IOException e) {
-			System.err.println("Couldn't open/create file " + path + System.getProperty("file.separator") + filename);
-		}
-	}
+            outputStream.close();
+        } catch (IOException e) {
+            System.err.println("Couldn't open/create file " + path + System.getProperty("file.separator") + filename);
+        }
+    }
 
     public Scanner openScanner(File file) {
         if (!activeScanners.containsKey(file)) {
