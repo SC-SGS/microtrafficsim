@@ -1,0 +1,50 @@
+Language:                                   Java
+
+IndentWidth:                                4
+ContinuationIndentWidth:                    8
+TabWidth:                                   4
+UseTab:                                     Never
+ColumnLimit:                                120
+
+IndentCaseLabels:                           false
+
+BreakBeforeBraces:                          Attach
+
+AlignAfterOpenBracket:                      true
+AlignConsecutiveAssignments:                true
+AlignConsecutiveDeclarations:               true
+AlignEscapedNewlinesLeft:                   true
+AlignOperands:                              true
+AlignTrailingComments:                      true
+SpacesBeforeTrailingComments:               4
+
+BinPackArguments:                           true
+BinPackParameters:                          true
+AllowAllParametersOfDeclarationOnNextLine:  true
+ExperimentalAutoDetectBinPacking:           true
+
+AllowShortBlocksOnASingleLine:              true
+AllowShortCaseLabelsOnASingleLine:          true
+AllowShortFunctionsOnASingleLine:           Empty
+AllowShortIfStatementsOnASingleLine:        true
+AllowShortLoopsOnASingleLine:               false
+
+AlwaysBreakAfterDefinitionReturnType:       None
+AlwaysBreakAfterReturnType:                 None
+AlwaysBreakBeforeMultilineStrings:          true
+BreakBeforeBinaryOperators:                 All
+BreakBeforeTernaryOperators:                true
+
+KeepEmptyLinesAtTheStartOfBlocks:           true
+MaxEmptyLinesToKeep:                        3
+
+SpaceAfterCStyleCast:                       true
+SpacesInCStyleCastParentheses:              false
+SpaceBeforeAssignmentOperators:             true
+SpaceBeforeParens:                          ControlStatements
+SpaceInEmptyParentheses:                    false
+SpacesInParentheses:                        false
+SpacesInSquareBrackets:                     false
+
+ReflowComments:                             true
+SortIncludes:                               true
