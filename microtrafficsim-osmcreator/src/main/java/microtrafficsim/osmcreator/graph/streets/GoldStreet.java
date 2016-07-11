@@ -1,6 +1,5 @@
 package microtrafficsim.osmcreator.graph.streets;
 
-import com.sun.tools.internal.jxc.ap.Const;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeType;
 import microtrafficsim.osmcreator.Constants;
