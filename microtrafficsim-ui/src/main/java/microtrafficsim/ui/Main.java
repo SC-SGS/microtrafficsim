@@ -4,11 +4,11 @@ import microtrafficsim.core.simulation.scenarios.RandomRouteScenario;
 import microtrafficsim.ui.gui.GUIController;
 import microtrafficsim.ui.gui.GUIEvent;
 import microtrafficsim.ui.gui.SimulationController;
-import microtrafficsim.ui.preferences.PrefElement;
 import microtrafficsim.ui.vis.TileBasedMapViewer;
 
 import javax.swing.*;
 import java.io.File;
+
 
 /**
  * @author Dominic Parga Cacheiro
@@ -17,17 +17,17 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-    /* handle input arguments */
+        /* handle input arguments */
         final File file;
         if (args.length == 1) {
-            switch(args[0]) {
-                case "-h":
-                case "--help":
-                    printUsage();
-                    return;
+            switch (args[0]) {
+            case "-h":
+            case "--help":
+                printUsage();
+                return;
 
-                default:
-                    file = new File(args[0]);
+            default:
+                file = new File(args[0]);
             }
         } else
             file = null;
@@ -53,9 +53,7 @@ public class Main {
         */
 
         SwingUtilities.invokeLater(() -> {
-            GUIController controller = new SimulationController(
-                    RandomRouteScenario::new,
-                    new TileBasedMapViewer());
+            GUIController controller = new SimulationController(RandomRouteScenario::new, new TileBasedMapViewer());
             controller.transiate(GUIEvent.CREATE, file);
         });
     }

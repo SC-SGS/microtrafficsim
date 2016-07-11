@@ -1,128 +1,113 @@
 package microtrafficsim.ui.vis;
 
-import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.map.layers.TileLayerDefinition;
-import microtrafficsim.core.map.layers.TileLayerSource;
-import microtrafficsim.core.map.style.StyleSheet;
-import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.vis.*;
+import microtrafficsim.core.vis.Overlay;
+import microtrafficsim.core.vis.UnsupportedFeatureException;
+import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.input.KeyCommand;
-import microtrafficsim.core.vis.map.tiles.PreRenderedTileProvider;
 import microtrafficsim.core.vis.map.tiles.TileProvider;
-import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerGenerator;
-import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
-import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
-import microtrafficsim.osm.parser.features.streets.StreetComponent;
-import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
-import microtrafficsim.osm.parser.processing.osm.sanitizer.SanitizerWayComponent;
-import microtrafficsim.osm.parser.processing.osm.sanitizer.SanitizerWayComponentFactory;
-import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 
-import javax.swing.*;
 import javax.xml.stream.XMLStreamException;
-import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+
 
 /**
  * @author Dominic Parga Cacheiro
  */
 public interface MapViewer {
-  VisualizationPanel getVisualizationPanel();
-  void addOverlay(int index, Overlay overlay);
+    VisualizationPanel getVisualizationPanel();
 
-  /**
-   * @throws UnsupportedFeatureException
-   *          if not all required OpenGL features are available
-   */
-  default void create() throws UnsupportedFeatureException {
-    create(null);
-  }
+    void addOverlay(int index, Overlay overlay);
 
-  /**
-   * @throws UnsupportedFeatureException
-   *          if not all required OpenGL features are available
-   */
-  void create(SimulationConfig config) throws UnsupportedFeatureException;
+    /**
+     * @throws UnsupportedFeatureException if not all required OpenGL features
+     *                                     are available
+     */
+    default void create() throws UnsupportedFeatureException {
+        create(null);
+    }
 
-  /**
-   * Set up this example. Layer definitions describe the visual layers
-   * to be rendered and are used to create a layer provider. With this
-   * provider a tile provider is created, capable of returning drawable
-   * tiles. These tiles are rendered using the visualization object. A
-   * parser is created to parse the specified file (asynchronously) and
-   * update the layers (respectively their sources).
-   */
-  void show();
+    /**
+     * @throws UnsupportedFeatureException if not all required OpenGL features
+     *                                     are available
+     */
+    void create(SimulationConfig config) throws UnsupportedFeatureException;
 
-  void stop();
+    /**
+     * Set up this example. Layer definitions describe the visual layers
+     * to be rendered and are used to create a layer provider. With this
+     * provider a tile provider is created, capable of returning drawable
+     * tiles. These tiles are rendered using the visualization object. A
+     * parser is created to parse the specified file (asynchronously) and
+     * update the layers (respectively their sources).
+     */
+    void show();
 
-  /**
-   * Create the (tile-based) visualization object. The visualization object is
-   * used to bind input and display structures together.
-   *
-   * @param provider  the provider providing the tiles to be displayed
-   * @return the created visualization object
-   */
-  TileBasedVisualization createVisualization(TileProvider provider);
+    void stop();
 
-  /**
-   * Create a visualization panel. The visualization panel is the interface
-   * between the Java UI toolkit (Swing) and the OpenGL-based visualization.
-   * Thus it is used to display the visualization.
-   *
-   * @param vis   the visualization to show on the panel
-   * @return      the created visualization panel
-   *
-   * @throws UnsupportedFeatureException
-  if not all required OpenGL features are available
-   */
-  VisualizationPanel createVisualizationPanel(TileBasedVisualization vis)
-          throws UnsupportedFeatureException;
+    /**
+     * Create the (tile-based) visualization object. The visualization object is
+     * used to bind input and display structures together.
+     *
+     * @param provider the provider providing the tiles to be displayed
+     * @return the created visualization object
+     */
+    TileBasedVisualization createVisualization(TileProvider provider);
 
-  void addKeyCommand(short event, short vk, KeyCommand command);
+    /**
+     * Create a visualization panel. The visualization panel is the interface
+     * between the Java UI toolkit (Swing) and the OpenGL-based visualization.
+     * Thus it is used to display the visualization.
+     *
+     * @param vis the visualization to show on the panel
+     * @return the created visualization panel
+     * @throws UnsupportedFeatureException if not all required OpenGL features
+     *                                     are available
+     */
+    VisualizationPanel createVisualizationPanel(TileBasedVisualization vis) throws UnsupportedFeatureException;
 
-  /**
-   * Creates and sets up the parser used to parse OSM files. The parser
-   * processes the file in two major steps: first a simple extraction,
-   * based on the feature set requested (using {@code putMapFeatureDefinition},
-   * and second a transformation of the extracted data to the final
-   * representation, using the {@code FeatureGenerator}s associated with
-   * the feature definition. {@code FeatureGenerator}s may require the
-   * presence of certain components for ways and nodes (such as the
-   * {@code StreetComponent}), or factories to initialize relations
-   * (such as the {@code RestrictionRelationFactory}). The in this example
-   * provided components and initializers are enough for most use-cases.
-   *
-   * @return the created parser
-   */
-  default OSMParser createParser() {
-    return createParser(null);
-  }
+    void addKeyCommand(short event, short vk, KeyCommand command);
 
-  OSMParser createParser(SimulationConfig simconfig);
+    /**
+     * Creates and sets up the parser used to parse OSM files. The parser
+     * processes the file in two major steps: first a simple extraction,
+     * based on the feature set requested (using {@code putMapFeatureDefinition},
+     * and second a transformation of the extracted data to the final
+     * representation, using the {@code FeatureGenerator}s associated with
+     * the feature definition. {@code FeatureGenerator}s may require the
+     * presence of certain components for ways and nodes (such as the
+     * {@code StreetComponent}), or factories to initialize relations
+     * (such as the {@code RestrictionRelationFactory}). The in this example
+     * provided components and initializers are enough for most use-cases.
+     *
+     * @return the created parser
+     */
+    default OSMParser createParser() {
+        return createParser(null);
+    }
 
-  /**
-   * Creates a {@code TileLayerProvider} from the given layer definitions.
-   * The {@code TileLayerProvider} is used to provide map-layers and their
-   * style to the visualization. {@code TileLayerDefinition}s describe such
-   * a layer in dependence of a source object. {@code TileLayerGenerator}s
-   * are used to generate a renderable {@code TileLayer} from a specified
-   * source.
-   *
-   * @param layers    the layer definitions for the provider
-   * @return          the created layer provider
-   */
-  TileLayerProvider createLayerProvider(Collection<TileLayerDefinition> layers);
+    OSMParser createParser(SimulationConfig simconfig);
 
-  void changeMap(OSMParser.Result result) throws InterruptedException;
+    /**
+     * Creates a {@code TileLayerProvider} from the given layer definitions.
+     * The {@code TileLayerProvider} is used to provide map-layers and their
+     * style to the visualization. {@code TileLayerDefinition}s describe such
+     * a layer in dependence of a source object. {@code TileLayerGenerator}s
+     * are used to generate a renderable {@code TileLayer} from a specified
+     * source.
+     *
+     * @param layers the layer definitions for the provider
+     * @return the created layer provider
+     */
+    TileLayerProvider createLayerProvider(Collection<TileLayerDefinition> layers);
 
-  OSMParser.Result parse(File file) throws IOException, XMLStreamException;
+    void changeMap(OSMParser.Result result) throws InterruptedException;
+
+    OSMParser.Result parse(File file) throws IOException, XMLStreamException;
 }
