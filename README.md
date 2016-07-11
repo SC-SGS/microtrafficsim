@@ -3,9 +3,7 @@ with OpenStreetMap data.
 
 
 ## News
-On 18 June 2016, we will have a stand at the [Tag der Wissenschaft Uni
-Stuttgart](http://www.uni-stuttgart.de/tag/2016/). You are welcome to visit
-us.
+We are cleaning up the existing project. This includes detailed Javadocs, removing quick fixes or creating branches for them.
 
 
 ## Demonstration and Examples
@@ -58,4 +56,4 @@ All following attributes can be en-/disabled.
 
 ## Please Note
 This software is still in an experimental state. Due to a few deadlines, the
-documentation is sparse and will be provided later, expect it after the 18.06.
+documentation is sparse. We are currently working on this.
