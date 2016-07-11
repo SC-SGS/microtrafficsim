@@ -17,7 +17,7 @@ run {
 }
 
 
-mainClassName = "microtrafficsim.ui.Main"	// TODO
+mainClassName = "microtrafficsim.ui.Main"   // TODO
 
 
 
