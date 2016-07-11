@@ -3,13 +3,15 @@ with OpenStreetMap data.
 
 
 ## News
-We are cleaning up the existing project. This includes detailed Javadocs, removing quick fixes or creating branches for them.
+We are cleaning up the existing project. This includes detailed Javadocs,
+removing quick fixes or creating branches for them.
 
 
 ## Demonstration and Examples
 Demonstrations and examples can be executed using `gradle`. All OpenStreetMap
 (OSM) files need to be in the OSM XML format, as, for example, provided by the
-[OpenStreetMap web interface](https://www.openstreetmap.org).
+[OpenStreetMap web interface](https://www.openstreetmap.org). A (somewhat)
+stable demonstration can be executed from the `tmp/tdw`-branch (see Main UI).
 
 #### Main UI
 The main UI provides an overview of the simulation. The scenario is currently
@@ -29,7 +31,7 @@ can't be changed without changing code. It can be executed using
 ```
 
 #### Map-Viewer Example
-Map-Viewer examples can be executed using 
+Map-Viewer examples can be executed using
 ```shell
 ./gradlew :examples:mapviewer_tilebased:run -Dexec.args="<path to OSM-XML file>"
 ```
