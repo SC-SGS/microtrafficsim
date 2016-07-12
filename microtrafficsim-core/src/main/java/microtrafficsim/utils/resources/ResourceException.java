@@ -4,23 +4,23 @@ import java.io.IOException;
 
 
 public class ResourceException extends IOException {
-	
-	private static final long serialVersionUID = 2537380971878927752L;
-	
 
-	public ResourceException() {
-		super();
-	}
+    private static final long serialVersionUID = 2537380971878927752L;
 
-	public ResourceException(String message) {
-		super(message);
-	}
 
-	public ResourceException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public ResourceException() {
+        super();
+    }
 
-	public ResourceException(Throwable cause) {
-		super(cause);
-	}
+    public ResourceException(String message) {
+        super(message);
+    }
+
+    public ResourceException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ResourceException(Throwable cause) {
+        super(cause);
+    }
 }

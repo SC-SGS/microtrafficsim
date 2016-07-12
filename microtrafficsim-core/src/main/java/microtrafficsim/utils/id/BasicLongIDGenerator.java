@@ -9,16 +9,16 @@ package microtrafficsim.utils.id;
  * @author Maximilian Luz
  */
 public class BasicLongIDGenerator implements LongIDGenerator {
-	
-	private long id;
-	
-	public BasicLongIDGenerator() {
-		this.id = 0;
-	}
 
-	
-	@Override
-	public long next() {
-		return id++;
-	}
+    private long id;
+
+    public BasicLongIDGenerator() {
+        this.id = 0;
+    }
+
+
+    @Override
+    public long next() {
+        return id++;
+    }
 }

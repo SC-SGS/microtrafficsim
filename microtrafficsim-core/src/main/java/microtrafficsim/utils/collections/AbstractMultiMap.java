@@ -12,8 +12,38 @@ public class AbstractMultiMap<K, V, C extends Collection<V>> implements MultiMap
 
 
     public AbstractMultiMap(Map<K, C> map, Supplier<C> constructor) {
-        this.map = map;
+        this.map         = map;
         this.constructor = constructor;
+    }
+
+    static <K, V, C extends Collection<V>> Map<K, C> baseMap(
+            Map<K, C> to,
+            Map<? extends K, ? extends V> from,
+            Supplier<? extends C> provider)
+    {
+        for (Map.Entry<? extends K, ? extends V> e : from.entrySet()) {
+            C bucket = provider.get();
+            bucket.add(e.getValue());
+
+            to.put(e.getKey(), bucket);
+        }
+
+        return to;
+    }
+
+    static <K, V, C extends Collection<V>> Map<K, C> baseMap(
+            Map<K, C> to,
+            MultiMap<? extends K, ? extends V, ? extends Collection<V>> from,
+            Supplier<? extends C> provider)
+    {
+        for (Map.Entry<? extends K, ? extends Collection<V>> e : from.entrySet()) {
+            C bucket = provider.get();
+            bucket.addAll(e.getValue());
+
+            to.put(e.getKey(), bucket);
+        }
+
+        return to;
     }
 
 
@@ -51,8 +81,7 @@ public class AbstractMultiMap<K, V, C extends Collection<V>> implements MultiMap
     @Override
     public boolean containsValue(Object value) {
         for (C c : map.values())
-            if (c.contains(value))
-                return true;
+            if (c.contains(value)) return true;
 
         return false;
     }
@@ -142,8 +171,7 @@ public class AbstractMultiMap<K, V, C extends Collection<V>> implements MultiMap
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof AbstractMultiMap))
-            return false;
+        if (!(obj instanceof AbstractMultiMap)) return false;
 
         AbstractMultiMap<?, ?, ?> other = (AbstractMultiMap<?, ?, ?>) obj;
 
@@ -153,36 +181,5 @@ public class AbstractMultiMap<K, V, C extends Collection<V>> implements MultiMap
     @Override
     public int hashCode() {
         return map.hashCode();
-    }
-
-
-    protected static <K, V, C extends Collection<V>> Map<K, C> baseMap(
-            Map<K, C> to,
-            Map<? extends K, ? extends V> from,
-            Supplier<? extends C> provider)
-    {
-        for (Map.Entry<? extends K, ? extends V> e : from.entrySet()) {
-            C bucket = provider.get();
-            bucket.add(e.getValue());
-
-            to.put(e.getKey(), bucket);
-        }
-
-        return to;
-    }
-
-    protected static <K, V, C extends Collection<V>> Map<K, C> baseMap(
-            Map<K, C> to,
-            MultiMap<? extends K, ? extends V, ? extends Collection<V>> from,
-            Supplier<? extends C> provider)
-    {
-        for (Map.Entry<? extends K, ? extends Collection<V>> e : from.entrySet()) {
-            C bucket = provider.get();
-            bucket.addAll(e.getValue());
-
-            to.put(e.getKey(), bucket);
-        }
-
-        return to;
     }
 }

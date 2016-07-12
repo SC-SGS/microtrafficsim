@@ -1,5 +1,6 @@
 package microtrafficsim.utils.datacollection;
 
+
 /**
  * TODO
  *
@@ -9,16 +10,15 @@ public class Data {
 
     private Object obj;
 
-    public int size() {
-        return 1;
-    }
-
     Data(Object obj) {
-
         if (obj instanceof Data)
             this.obj = ((Data) obj).obj;
         else
             this.obj = obj;
+    }
+
+    public int size() {
+        return 1;
     }
 
     Object get() {
@@ -40,9 +40,7 @@ public class Data {
 
     @Override
     public boolean equals(Object obj) {
-
-        if (!(obj instanceof Data))
-            return this.obj.equals(obj);
+        if (!(obj instanceof Data)) return this.obj.equals(obj);
 
         Data other = (Data) obj;
         return this.obj.equals(other.obj);

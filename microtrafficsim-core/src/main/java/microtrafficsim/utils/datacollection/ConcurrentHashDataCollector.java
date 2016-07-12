@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantLock;
 
+
 /**
  * TODO
  *
@@ -11,17 +12,17 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class ConcurrentHashDataCollector implements DataCollector<Object> {
 
-    private HashMap<Tag, Data> dataMap;
     private final ReentrantLock lock;
+    private HashMap<Tag, Data> dataMap;
 
     public ConcurrentHashDataCollector() {
         dataMap = new HashMap<>();
-        lock = new ReentrantLock(true);
+        lock    = new ReentrantLock(true);
     }
 
     @Override
     public int size(String tag) {
-        Tag t = new Tag(tag);
+        Tag t    = new Tag(tag);
         int size = 0;
         lock.lock();
         if (dataMap.containsKey(t))
@@ -59,9 +60,9 @@ public class ConcurrentHashDataCollector implements DataCollector<Object> {
         lock.lock();
         return new Iterator<Object>() {
 
-            private Iterator<Tag> tags = dataMap.keySet().iterator();
-            private Iterator<Data> bundle = null;
-            private boolean finished = false;
+            private Iterator<Tag>  tags     = dataMap.keySet().iterator();
+            private Iterator<Data> bundle   = null;
+            private boolean        finished = false;
 
             @Override
             public boolean hasNext() {
@@ -88,10 +89,9 @@ public class ConcurrentHashDataCollector implements DataCollector<Object> {
 
                 if (!finished) {
                     if (bundle != null)
-                        if (bundle.hasNext())
-                            return bundle.next();
+                        if (bundle.hasNext()) return bundle.next();
 
-                    Tag t = tags.next();
+                    Tag  t = tags.next();
                     Data d = dataMap.get(t);
                     if (d instanceof Bundle) {
                         bundle = ((Bundle) d).iterator();

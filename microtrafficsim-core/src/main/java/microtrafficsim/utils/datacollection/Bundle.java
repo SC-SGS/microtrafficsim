@@ -3,6 +3,7 @@ package microtrafficsim.utils.datacollection;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+
 /**
  * TODO
  *
@@ -24,11 +25,11 @@ public class Bundle extends Data implements Iterable<Data> {
 
     @Override
     Data set(Object obj) {
-
         if (obj instanceof Data)
             list.add((Data) obj);
         else
             list.add(new Data(obj));
+
         return this;
     }
 

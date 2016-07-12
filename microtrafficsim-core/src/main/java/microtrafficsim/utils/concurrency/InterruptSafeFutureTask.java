@@ -42,9 +42,9 @@
 
 package microtrafficsim.utils.concurrency;
 
-
 import java.util.concurrent.*;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
+
 
 /**
  * A interrupt-safe Future implementation, modelled after the OpenJDK Future implementation.
@@ -111,11 +111,11 @@ public class InterruptSafeFutureTask<V> implements RunnableFuture<V> {
     /**
      * Sets the result of this future to the given value unless this future
      * has already been set or has been cancelled.
-     *
+     * <p>
      * This method is invoked internally by the <tt>run()</tt> method upon
      * successful completion of the computation.
      *
-     * @param value         the value
+     * @param value the value
      */
     protected void set(V value) {
         sync.set(value);
@@ -125,11 +125,11 @@ public class InterruptSafeFutureTask<V> implements RunnableFuture<V> {
      * Causes this future to report an ExecutionException with the given
      * throwable as its cause, unless this future has already been set or
      * has been cancelled.
-     *
+     * <p>
      * This method is invoked internally by the <tt>run()</tt> method upon
      * successful completion of the computation.
      *
-     * @param exception     cause of the failure
+     * @param exception cause of the failure
      */
     protected void setException(Throwable exception) {
         sync.setException(exception);
@@ -150,16 +150,15 @@ public class InterruptSafeFutureTask<V> implements RunnableFuture<V> {
 
 
     private final class Synchronizer extends AbstractQueuedSynchronizer {
-
         private static final int READY     = 0;
         private static final int RUNNING   = 1;
         private static final int RAN       = 2;
         private static final int CANCELLED = 4;
 
         private volatile Thread runner;
-        private Callable<V> task;
-        private V result;
-        private Throwable exception;
+        private Callable<V>     task;
+        private V               result;
+        private Throwable       exception;
 
         Synchronizer(Callable<V> task) {
             this.task = task;
@@ -191,23 +190,19 @@ public class InterruptSafeFutureTask<V> implements RunnableFuture<V> {
             int state;
             while (true) {
                 state = getState();
-                if (stateIsRanOrCancelled(state))
-                    return false;
-                if (state == RUNNING)               // if running, try cancelling
+                if (stateIsRanOrCancelled(state)) return false;
+                if (state == RUNNING)    // if running, try cancelling
                     break;
-                if (compareAndSetState(state, CANCELLED))
-                    break;
+                if (compareAndSetState(state, CANCELLED)) break;
             }
 
             if (mayInterruptIfRunning) {
-                if (runner != null)
-                    runner.interrupt();
+                if (runner != null) runner.interrupt();
             }
 
             releaseShared(0);
 
-            if (state != RUNNING)
-                done();
+            if (state != RUNNING) done();
 
             return true;
         }
@@ -215,21 +210,16 @@ public class InterruptSafeFutureTask<V> implements RunnableFuture<V> {
         V get() throws InterruptedException, ExecutionException {
             acquireSharedInterruptibly(0);
 
-            if (getState() == CANCELLED)
-                throw new CancellationException();
-            if (exception != null)
-                throw new ExecutionException(exception);
+            if (getState() == CANCELLED) throw new CancellationException();
+            if (exception != null) throw new ExecutionException(exception);
 
             return result;
         }
 
         V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            if (!tryAcquireSharedNanos(0, unit.toNanos(timeout)))
-                throw new TimeoutException();
-            if (getState() == CANCELLED)
-                throw new CancellationException();
-            if (exception != null)
-                throw new ExecutionException(exception);
+            if (!tryAcquireSharedNanos(0, unit.toNanos(timeout))) throw new TimeoutException();
+            if (getState() == CANCELLED) throw new CancellationException();
+            if (exception != null) throw new ExecutionException(exception);
 
             return result;
         }
@@ -237,8 +227,7 @@ public class InterruptSafeFutureTask<V> implements RunnableFuture<V> {
         void set(V value) {
             while (true) {
                 int state = getState();
-                if (state == RAN)
-                    return;
+                if (state == RAN) return;
                 if (compareAndSetState(state, RAN)) {
                     result = value;
                     releaseShared(0);
@@ -251,8 +240,7 @@ public class InterruptSafeFutureTask<V> implements RunnableFuture<V> {
         void setException(Throwable t) {
             while (true) {
                 int state = getState();
-                if (state == RAN)
-                    return;
+                if (state == RAN) return;
                 if (state == CANCELLED) {
                     releaseShared(0);
                     return;
@@ -267,8 +255,7 @@ public class InterruptSafeFutureTask<V> implements RunnableFuture<V> {
         }
 
         void run() {
-            if (!compareAndSetState(READY, RUNNING))
-                return;
+            if (!compareAndSetState(READY, RUNNING)) return;
 
             runner = Thread.currentThread();
             if (getState() == RUNNING) {    // recheck after setting thread
@@ -285,18 +272,16 @@ public class InterruptSafeFutureTask<V> implements RunnableFuture<V> {
                 }
                 set(result);
             } else {
-                releaseShared(0);           // cancel
+                releaseShared(0);    // cancel
             }
         }
 
         boolean runAndReset() {
-            if (!compareAndSetState(READY, RUNNING))
-                return false;
+            if (!compareAndSetState(READY, RUNNING)) return false;
 
             try {
                 runner = Thread.currentThread();
-                if (getState() == RUNNING)
-                    task.call();
+                if (getState() == RUNNING) task.call();
                 runner = null;
                 return compareAndSetState(RUNNING, READY);
             } catch (Throwable ex) {
@@ -322,4 +307,3 @@ public class InterruptSafeFutureTask<V> implements RunnableFuture<V> {
         }
     }
 }
-

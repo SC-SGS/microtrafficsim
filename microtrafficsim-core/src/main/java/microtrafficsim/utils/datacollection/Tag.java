@@ -1,5 +1,6 @@
 package microtrafficsim.utils.datacollection;
 
+
 /**
  * TODO
  *
@@ -20,8 +21,7 @@ public class Tag {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Tag || obj instanceof String))
-            return false;
+        if (!(obj instanceof Tag || obj instanceof String)) return false;
 
         String other;
         if (obj instanceof Tag)

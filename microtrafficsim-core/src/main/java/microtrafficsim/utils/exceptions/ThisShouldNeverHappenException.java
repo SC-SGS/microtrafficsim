@@ -19,8 +19,7 @@ public class ThisShouldNeverHappenException extends RuntimeException {
         super(cause);
     }
 
-    protected ThisShouldNeverHappenException(String message, Throwable cause,
-                                             boolean enableSuppression,
+    protected ThisShouldNeverHappenException(String message, Throwable cause, boolean enableSuppression,
                                              boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }

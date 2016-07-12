@@ -1,9 +1,10 @@
 package microtrafficsim.utils.collections;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 
-public class HashMultiMap<K, V> extends AbstractMultiMap<K, V, Set<V>> {
+public class HashMultiMap<K, V> extends AbstractMultiMap<K, V, HashSet<V>> {
 
     public HashMultiMap() {
         super(new HashMap<>(), HashSet<V>::new);
@@ -22,6 +23,6 @@ public class HashMultiMap<K, V> extends AbstractMultiMap<K, V, Set<V>> {
     }
 
     public HashMultiMap(MultiMap<? extends K, ? extends V, ? extends Collection<V>> map) {
-        super(AbstractMultiMap.baseMap(new HashMap<K, Set<V>>(), map, HashSet<V>::new), HashSet<V>::new);
+        super(AbstractMultiMap.baseMap(new HashMap<K, HashSet<V>>(), map, HashSet<V>::new), HashSet<V>::new);
     }
 }

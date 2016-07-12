@@ -9,28 +9,22 @@ public class InterruptSafeExecutors {
     private InterruptSafeExecutors() {}
 
     public static ExecutorService newFixedThreadPool(int nThreads) {
-        return new InteruptSafeThreadPoolExecutor(nThreads, nThreads,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>());
+        return new InterruptSafeThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS,
+                                                   new LinkedBlockingQueue<>());
     }
 
     public static ExecutorService newFixedThreadPool(int nThreads, ThreadFactory threadFactory) {
-        return new InteruptSafeThreadPoolExecutor(nThreads, nThreads,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<>(),
-                threadFactory);
+        return new InterruptSafeThreadPoolExecutor(nThreads, nThreads, 0L, TimeUnit.MILLISECONDS,
+                                                   new LinkedBlockingQueue<>(), threadFactory);
     }
 
     public static ExecutorService newCachedThreadPool() {
-        return new InteruptSafeThreadPoolExecutor(0, Integer.MAX_VALUE,
-                60L, TimeUnit.SECONDS,
-                new SynchronousQueue<>());
+        return new InterruptSafeThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS,
+                                                   new SynchronousQueue<>());
     }
 
     public static ExecutorService newCachedThreadPool(ThreadFactory threadFactory) {
-        return new InteruptSafeThreadPoolExecutor(0, Integer.MAX_VALUE,
-                60L, TimeUnit.SECONDS,
-                new SynchronousQueue<>(),
-                threadFactory);
+        return new InterruptSafeThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS,
+                                                   new SynchronousQueue<>(), threadFactory);
     }
 }
