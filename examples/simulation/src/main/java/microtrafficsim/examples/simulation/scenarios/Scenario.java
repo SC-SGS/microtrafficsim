@@ -1,15 +1,16 @@
 package microtrafficsim.examples.simulation.scenarios;
 
+import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.impl.FastestWayAStar;
 import microtrafficsim.core.shortestpath.impl.LinearDistanceAStar;
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
-import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.EndOfTheWorldScenario;
 
 import java.util.Random;
 import java.util.function.Supplier;
+
 
 /**
  * @author Dominic Parga Cacheiro

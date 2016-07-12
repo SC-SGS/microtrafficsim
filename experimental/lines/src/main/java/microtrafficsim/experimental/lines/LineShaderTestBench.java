@@ -148,7 +148,7 @@ class LineShaderTestBench implements Renderer {
 
                     switch (extension) {
                     case "png": return true;
-                    default: return false;
+                    default:    return false;
                     }
                 }
             });
@@ -169,7 +169,10 @@ class LineShaderTestBench implements Renderer {
                         logger.error("could not create file" + file.getName());
                         return;
                     }
-                } catch (IOException e) { return; }
+                } catch (IOException e) {
+                    logger.error("could not create file" + file.getName());
+                    return;
+                }
 
                 context.addTask(c -> {
                     try {

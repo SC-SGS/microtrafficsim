@@ -5,6 +5,8 @@ import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
 import microtrafficsim.core.vis.opengl.shader.ShaderCompileError;
 import microtrafficsim.core.vis.opengl.shader.ShaderLinkError;
 import microtrafficsim.core.vis.opengl.utils.FramebufferUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -14,96 +16,107 @@ import java.io.PrintStream;
 
 
 public class Utils {
-	
-	public static void asyncScreenshot(RenderContext context) {
-		new Thread(() -> {
-			JFileChooser chooser = new JFileChooser();
-			chooser.setFileFilter(new FileFilter() {
+    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
-				@Override
-				public String getDescription() {
-					return ".png";
-				}
+    static void asyncScreenshot(RenderContext context) {
+        new Thread(() -> {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileFilter(new FileFilter() {
 
-				@Override
-				public boolean accept(File f) {
-					if (f.isDirectory()) return true;
+                @Override
+                public String getDescription() {
+                    return ".png";
+                }
 
-					String extension = null;
+                @Override
+                public boolean accept(File f) {
+                    if (f.isDirectory()) return true;
 
-					String s = f.getName();
-					int i = s.lastIndexOf('.');
+                    String extension = null;
 
-					if (i > 0 &&  i < s.length() - 1)
-						extension = s.substring(i+1).toLowerCase();
+                    String s = f.getName();
+                    int    i = s.lastIndexOf('.');
 
-					if (extension == null) return false;
+                    if (i > 0 && i < s.length() - 1) extension = s.substring(i + 1).toLowerCase();
 
-					switch (extension) {
-					case "png":		return true;
-					default:		return false;
-					}
-				}
-			});
+                    if (extension == null) return false;
 
-			int action = chooser.showSaveDialog(null);
-		
-			if (action == JFileChooser.APPROVE_OPTION) {
-				File file = chooser.getSelectedFile();
-				if (file.exists()) file.delete();
+                    switch (extension) {
+                        case "png": return true;
+                        default:    return false;
+                    }
+                }
+            });
 
-				try {
-					file.createNewFile();
-				} catch (IOException e) {
-					return;
-				}
+            int action = chooser.showSaveDialog(null);
 
-				context.addTask(c -> {
-					try {
-						FramebufferUtils.writeFramebuffer(c.getDrawable(), "png", file);
-					} catch (IOException e) {
-						/* ignore if we can't write to the file and clean up */
-						if (file.exists())
-							file.delete();
-					}
-					return null;
-				});
-			}
-		}).start();
-	}
-	
-	public static class DebugExceptionHandler implements UncaughtExceptionHandler {
-	
-		@Override
-		public void uncaughtException(RenderContext context, Throwable exception) {
-			if (exception instanceof ShaderCompileError)
-				exceptionPrintf(System.err, (ShaderCompileError) exception);
-			else if (exception instanceof ShaderLinkError)
-				exceptionPrintf(System.err, (ShaderLinkError) exception);
-			else
-				exception.printStackTrace();
-		
-			// XXX: clean exit strategy?
-			Runtime.getRuntime().halt(1);
-		}
-		
-		private void exceptionPrintf(PrintStream out, ShaderCompileError error) {
-			out.println(error.toString());
-			out.println("-- LOG -------------------------------------------------------------------------");
-			out.println(error.getShaderInfoLog());
-			out.println("-- SOURCE ----------------------------------------------------------------------");
-			out.println(error.getShaderSource());
-			out.println("-- STACK TRACE -----------------------------------------------------------------");
-			error.printStackTrace(out);
-		}
-		
-		private void exceptionPrintf(PrintStream out, ShaderLinkError error) {
-			out.println(error.toString());
-			out.println("-- LOG -------------------------------------------------------------------------");
-			out.println(error.getProgramInfoLog());
-			out.println("-- STACK TRACE -----------------------------------------------------------------");
-			error.printStackTrace(out);
-		}
-	}
+            if (action == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                if (file.exists()) {
+                    if (!file.delete()) {
+                        logger.error("could not delete file" + file.getName());
+                        return;
+                    }
+                }
 
+                try {
+                    if (!file.createNewFile()) {
+                        logger.error("could not create file" + file.getName());
+                        return;
+                    }
+                } catch (IOException e) {
+                    logger.error("could not create file" + file.getName());
+                    return;
+                }
+
+                context.addTask(c -> {
+                    try {
+                        FramebufferUtils.writeFramebuffer(c.getDrawable(), "png", file);
+                    } catch (IOException e) {
+                        /* ignore if we can't write to the file and clean up */
+                        if (file.exists()) {
+                            if (!file.delete())
+                                logger.error("could not delete file" + file.getName());
+                        }
+                    }
+                    return null;
+                });
+            }
+        }).start();
+    }
+
+    public static class DebugExceptionHandler implements UncaughtExceptionHandler {
+
+        @Override
+        public void uncaughtException(RenderContext context, Throwable exception) {
+            if (exception instanceof ShaderCompileError)
+                exceptionPrintf(System.err, (ShaderCompileError) exception);
+            else if (exception instanceof ShaderLinkError)
+                exceptionPrintf(System.err, (ShaderLinkError) exception);
+            else
+                exception.printStackTrace();
+
+            // XXX: clean exit strategy?
+            Runtime.getRuntime().halt(1);
+        }
+
+        private void exceptionPrintf(PrintStream out, ShaderCompileError error) {
+            out.println(error.toString());
+            out.println("-- LOG -------------------------------------------------------------------------");
+            out.println(error.getShaderInfoLog());
+            out.println("-- SOURCE ----------------------------------------------------------------------");
+            out.println(error.getShaderSource());
+            out.println("-- STACK TRACE -----------------------------------------------------------------");
+            error.printStackTrace(out);
+        }
+
+        private void exceptionPrintf(PrintStream out, ShaderLinkError error) {
+            out.println(error.toString());
+            out.println("-- LOG -------------------------------------------------------------------------");
+            out.println(error.getProgramInfoLog());
+            out.println("-- STACK TRACE -----------------------------------------------------------------");
+            error.printStackTrace(out);
+        }
+    }
 }
+

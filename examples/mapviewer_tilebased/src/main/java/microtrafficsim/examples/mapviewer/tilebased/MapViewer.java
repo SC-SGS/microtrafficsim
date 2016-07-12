@@ -105,28 +105,27 @@ public class MapViewer {
      * update the layers (respectively their sources).
      *
      * @param file the file to parse
-     * @throws UnsupportedFeatureException
-     *          if not all required OpenGL features are available
+     * @throws UnsupportedFeatureException if not all required OpenGL features are available
      */
     private static void show(File file) throws UnsupportedFeatureException {
         /* set up layer and tile provider */
-        Collection<TileLayerDefinition> layers = STYLE.getLayers();
-        TileLayerProvider layerProvider = createLayerProvider(layers);
-        PreRenderedTileProvider provider = new PreRenderedTileProvider(layerProvider);
+        Collection<TileLayerDefinition> layers        = STYLE.getLayers();
+        TileLayerProvider               layerProvider = createLayerProvider(layers);
+        PreRenderedTileProvider         provider      = new PreRenderedTileProvider(layerProvider);
 
         /* create the visualizer */
         TileBasedVisualization visualization = createVisualization(provider);
-        
+
         /* parse the OSM file asynchronously and update the sources */
         OSMParser parser = createParser();
         asyncParse(parser, file, layers, visualization.getVisualizer());
-        
+
         /* create and initialize the VisualizationPanel and JFrame */
         VisualizationPanel vpanel = createVisualizationPanel(visualization);
-        JFrame frame = new JFrame("MicroTrafficSim - OSM MapViewer Example");
+        JFrame             frame  = new JFrame("MicroTrafficSim - OSM MapViewer Example");
         frame.setSize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
         frame.add(vpanel);
-        
+
         /*
          * Note: JOGL automatically calls glViewport, we need to make sure that this
          * function is not called with a height or width of 0! Otherwise the program
@@ -147,38 +146,30 @@ public class MapViewer {
         vpanel.start();
 
         /* if specified, print frame statistics */
-        if (PRINT_FRAME_STATS)
-            visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
+        if (PRINT_FRAME_STATS) visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
     }
 
     /**
      * Create the (tile-based) visualization object. The visualization object is
      * used to bind input and display structures together.
      *
-     * @param provider  the provider providing the tiles to be displayed
+     * @param provider the provider providing the tiles to be displayed
      * @return the created visualization object
      */
     private static TileBasedVisualization createVisualization(TileProvider provider) {
         /* create a new visualization object */
-        TileBasedVisualization vis = new TileBasedVisualization(
-                INITIAL_WINDOW_WIDTH,
-                INITIAL_WINDOW_HEIGHT,
-                provider,
-                NUM_TILE_WORKERS);
+        TileBasedVisualization vis
+                = new TileBasedVisualization(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, provider, NUM_TILE_WORKERS);
 
         /* apply the style (background color) */
         vis.apply(STYLE);
 
         /* add some key commands */
         vis.getKeyController().addKeyCommand(
-                KeyEvent.EVENT_KEY_PRESSED,
-                KeyEvent.VK_F12,
-                e -> Utils.asyncScreenshot(vis.getRenderContext()));
+                KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_F12, e -> Utils.asyncScreenshot(vis.getRenderContext()));
 
         vis.getKeyController().addKeyCommand(
-                KeyEvent.EVENT_KEY_PRESSED,
-                KeyEvent.VK_ESCAPE,
-                e -> Runtime.getRuntime().halt(0));
+                KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_ESCAPE, e -> Runtime.getRuntime().halt(0));
 
         /* set an exception handler, catching all unhandled exceptions on the render thread (for debugging purposes) */
         vis.getRenderContext().setUncaughtExceptionHandler(new Utils.DebugExceptionHandler());
@@ -194,12 +185,11 @@ public class MapViewer {
      * between the Java UI toolkit (Swing) and the OpenGL-based visualization.
      * Thus it is used to display the visualization.
      *
-     * @param vis   the visualization to show on the panel
-     * @return      the created visualization panel
-     *
-     * @throws UnsupportedFeatureException
-                    if not all required OpenGL features are available
+     * @param vis the visualization to show on the panel
+     * @return the created visualization panel
+     * @throws UnsupportedFeatureException if not all required OpenGL features are available
      */
+    @SuppressWarnings("ConstantConditions")
     private static VisualizationPanel createVisualizationPanel(TileBasedVisualization vis)
             throws UnsupportedFeatureException {
 
@@ -235,12 +225,13 @@ public class MapViewer {
         StyleSheet.ParserConfig styleconfig = STYLE.getParserConfiguration();
 
         /* create a configuration, add factories for parsed components */
-        OSMParser.Config config = new OSMParser.Config()
-                .setGeneratorIndexBefore(styleconfig.generatorIndexOfUnification)
-                .setGeneratorIndexStreetGraph(styleconfig.generatorIndexOfStreetGraph)
-                .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
-                .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
-                .putRelationInitializer("restriction", new RestrictionRelationFactory());
+        OSMParser.Config config
+                = new OSMParser.Config()
+                          .setGeneratorIndexBefore(styleconfig.generatorIndexOfUnification)
+                          .setGeneratorIndexStreetGraph(styleconfig.generatorIndexOfStreetGraph)
+                          .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
+                          .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
+                          .putRelationInitializer("restriction", new RestrictionRelationFactory());
 
         /* add the features defined in the style to the parser */
         STYLE.getFeatureDefinitions().forEach(config::putMapFeatureDefinition);
@@ -257,8 +248,8 @@ public class MapViewer {
      * are used to generate a renderable {@code TileLayer} from a specified
      * source.
      *
-     * @param layers    the layer definitions for the provider
-     * @return          the created layer provider
+     * @param layers the layer definitions for the provider
+     * @return the created layer provider
      */
     private static TileLayerProvider createLayerProvider(Collection<TileLayerDefinition> layers) {
         /* create the layer provider */
@@ -279,27 +270,27 @@ public class MapViewer {
      * Asynchronously parses the given file with the given parser, updates
      * the specified layers and resets the view of the visualizer.
      *
-     * @param parser    the parser with which to parse the file
-     * @param file      the file to be parsed
-     * @param layers    the layers of the visualization, the sources of these
-     *                  layers are set to the parsed result
-     * @param vis       the visualizer which is used to draw the parsed segment
-     *                  and which's view should be reset
+     * @param parser the parser with which to parse the file
+     * @param file   the file to be parsed
+     * @param layers the layers of the visualization, the sources of these
+     *               layers are set to the parsed result
+     * @param vis    the visualizer which is used to draw the parsed segment
+     *               and which's view should be reset
      */
-    private static void asyncParse(OSMParser parser, File file, Collection<TileLayerDefinition> layers, Visualizer vis) {
+    private static void
+    asyncParse(OSMParser parser, File file, Collection<TileLayerDefinition> layers, Visualizer vis) {
         new Thread(() -> {
             try {
                 /* parse file and create tiled provider */
-                OSMParser.Result result = parser.parse(file);
-                QuadTreeTiledMapSegment tiled = new QuadTreeTiledMapSegment.Generator()
+                OSMParser.Result        result = parser.parse(file);
+                QuadTreeTiledMapSegment tiled  = new QuadTreeTiledMapSegment.Generator()
                         .generate(result.segment, TILING_SCHEME, TILE_GRID_LEVEL);
 
                 /* update the feature sources, so that they will use the created provider */
                 for (TileLayerDefinition def : layers) {
                     TileLayerSource src = def.getSource();
 
-                    if (src instanceof FeatureTileLayerSource)
-                        ((FeatureTileLayerSource) src).setFeatureProvider(tiled);
+                    if (src instanceof FeatureTileLayerSource) ((FeatureTileLayerSource) src).setFeatureProvider(tiled);
                 }
 
                 /* center the view to the parsed area */
@@ -314,20 +305,21 @@ public class MapViewer {
 
     /**
      * Main method, runs this example.
-     * @param args          command line arguments
+     *
+     * @param args command line arguments
      */
     public static void main(String[] args) {
         File file;
 
         if (args.length == 1) {
-            switch(args[0]) {
-                case "-h":
-                case "--help":
-                    printUsage();
-                    return;
+            switch (args[0]) {
+            case "-h":
+            case "--help":
+                printUsage();
+                return;
 
-                default:
-                    file = new File(args[0]);
+            default:
+                file = new File(args[0]);
             }
         } else {
             file = new File("map.osm");
