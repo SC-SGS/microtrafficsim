@@ -256,7 +256,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 		// write positions
 		int vehicleCount = 0;
 		for (LogicVehicleEntity logic : vehicles) {
-			IVisualizationVehicle v = logic.getEntity().getVisualization();
+			Vehicle v = (Vehicle) logic.getEntity().getVisualization();
 			
 			Coordinate cpos = v.getPosition();
 			Vec2d pos = projection.project(cpos);
