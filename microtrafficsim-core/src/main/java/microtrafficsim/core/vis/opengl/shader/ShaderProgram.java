@@ -23,7 +23,7 @@ import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
 
 
 public class ShaderProgram {
-	protected final static Logger logger = LoggerFactory.getLogger(ShaderProgram.class);
+	protected static final Logger logger = LoggerFactory.getLogger(ShaderProgram.class);
 	
 	
 	public static ShaderProgram create(GL2ES2 gl, RenderContext context, String name) {

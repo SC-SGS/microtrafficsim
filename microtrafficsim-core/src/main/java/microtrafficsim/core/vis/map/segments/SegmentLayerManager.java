@@ -22,7 +22,7 @@ import microtrafficsim.math.Rect2d;
 
 public class SegmentLayerManager {
 	
-	private final static Comparator<SegmentLayerBucket> CMP_BUCKET = new BucketComparator();
+	private static final Comparator<SegmentLayerBucket> CMP_BUCKET = new BucketComparator();
 	
 	
 	private SegmentLayerProvider provider;

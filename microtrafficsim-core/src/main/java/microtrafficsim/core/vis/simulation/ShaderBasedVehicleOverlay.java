@@ -34,23 +34,23 @@ import java.util.function.Supplier;
 
 public class ShaderBasedVehicleOverlay implements Overlay {
 	
-	private final static Color DEFAULT_FG_COLOR = Color.fromRGB(0xCC4C1A);
+	private static final Color DEFAULT_FG_COLOR = Color.fromRGB(0xCC4C1A);
 	
-	private final static Vec2f VEHICLE_SIZE = new Vec2f(7.5f, 7.5f);
-	private final static float VEHICLE_SCALE_NORM = 1.f / (1 << 18);
-	private final static int VIEWPORT_CULLING_EXPANSION = 20;
+	private static final Vec2f VEHICLE_SIZE = new Vec2f(7.5f, 7.5f);
+	private static final float VEHICLE_SCALE_NORM = 1.f / (1 << 18);
+	private static final int VIEWPORT_CULLING_EXPANSION = 20;
 	
-	private final static Resource SHADER_VERT = new PackagedResource(
+	private static final Resource SHADER_VERT = new PackagedResource(
 			ShaderBasedVehicleOverlay.class,
 			"/shaders/overlay/vehicle/shaderbased/vehicle_overlay.vs"
 	);
 	
-	private final static Resource SHADER_GEOM = new PackagedResource(
+	private static final Resource SHADER_GEOM = new PackagedResource(
 			ShaderBasedVehicleOverlay.class,
 			"/shaders/overlay/vehicle/shaderbased/vehicle_overlay.gs"
 	);
 	
-	private final static Resource SHADER_FRAG = new PackagedResource(
+	private static final Resource SHADER_FRAG = new PackagedResource(
 			ShaderBasedVehicleOverlay.class,
 			"/shaders/overlay/vehicle/shaderbased/vehicle_overlay.fs"
 	);

@@ -10,7 +10,7 @@ import microtrafficsim.core.vis.opengl.utils.Color;
 
 public class Vehicle implements IVisualizationVehicle {
 
-    private final static float MIN_TARGET_DISTANCE = 1.0f;
+    private static final float MIN_TARGET_DISTANCE = 1.0f;
 
     private VehicleEntity entity;
     private Coordinate position;

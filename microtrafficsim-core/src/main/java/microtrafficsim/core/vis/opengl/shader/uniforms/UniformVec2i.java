@@ -11,7 +11,7 @@ import microtrafficsim.math.Vec2i;
 
 public class UniformVec2i extends Uniform<Vec2i> {
 	
-	public final static UniformFactory FACTORY = (name, type) -> {
+	public static final UniformFactory FACTORY = (name, type) -> {
 		if (DataTypes.INT_VEC2.equals(type))
 			return new UniformVec2i(name);
 		else

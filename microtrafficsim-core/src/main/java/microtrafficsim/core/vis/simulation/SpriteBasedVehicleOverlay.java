@@ -32,22 +32,22 @@ import java.util.function.Supplier;
 
 public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
-	private final static Color DEFAULT_FG_COLOR = Color.fromRGBA(0xCC4C1AF0);
+	private static final Color DEFAULT_FG_COLOR = Color.fromRGBA(0xCC4C1AF0);
 
-	private final static float VEHICLE_SIZE = 10.f;
-	private final static float VEHICLE_SCALE_NORM = 1.f / (1 << 18);
-    private final static float VEHICLE_LANE_OFFSET = 6.f;
-	private final static int VIEWPORT_CULLING_EXPANSION = 20;
+	private static final float VEHICLE_SIZE = 10.f;
+	private static final float VEHICLE_SCALE_NORM = 1.f / (1 << 18);
+    private static final float VEHICLE_LANE_OFFSET = 6.f;
+	private static final int VIEWPORT_CULLING_EXPANSION = 20;
 
-	private final static int TEX_UNIT_SPRITE = 0;
-    private final static int TEX_UNIT_MAP_DEPTH = 1;
+	private static final int TEX_UNIT_SPRITE = 0;
+    private static final int TEX_UNIT_MAP_DEPTH = 1;
 
-	private final static Resource SHADER_VERT = new PackagedResource(
+	private static final Resource SHADER_VERT = new PackagedResource(
 			ShaderBasedVehicleOverlay.class,
 			"/shaders/overlay/vehicle/spritebased/vehicle_overlay.vs"
 	);
 	
-	private final static Resource SHADER_FRAG = new PackagedResource(
+	private static final Resource SHADER_FRAG = new PackagedResource(
 			ShaderBasedVehicleOverlay.class,
 			"/shaders/overlay/vehicle/spritebased/vehicle_overlay.fs"
 	);

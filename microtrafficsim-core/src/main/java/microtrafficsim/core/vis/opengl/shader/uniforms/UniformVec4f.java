@@ -12,7 +12,7 @@ import microtrafficsim.math.Vec4f;
 
 public class UniformVec4f extends Uniform<Vec4f> {
 	
-	public final static UniformFactory FACTORY = (name, type) -> {
+	public static final UniformFactory FACTORY = (name, type) -> {
 		if (DataTypes.FLOAT_VEC4.equals(type))
 			return new UniformVec4f(name);
 		else

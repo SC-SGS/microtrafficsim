@@ -10,7 +10,7 @@ import microtrafficsim.core.vis.opengl.shader.UniformFactory;
 
 public class Uniform1f extends Uniform<Float> {
 	
-	public final static UniformFactory FACTORY = (name, type) -> {
+	public static final UniformFactory FACTORY = (name, type) -> {
 		if (DataTypes.FLOAT.equals(type))
 			return new Uniform1f(name);
 		else

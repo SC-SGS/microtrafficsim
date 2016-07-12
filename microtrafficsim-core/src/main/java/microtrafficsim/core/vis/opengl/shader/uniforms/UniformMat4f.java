@@ -11,7 +11,7 @@ import microtrafficsim.math.Mat4f;
 
 public class UniformMat4f extends Uniform<Mat4f> {
 	
-	public final static UniformFactory FACTORY = (name, type) -> {
+	public static final UniformFactory FACTORY = (name, type) -> {
 		if (DataTypes.FLOAT_MAT4.equals(type))
 			return new UniformMat4f(name);
 		else

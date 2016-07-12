@@ -10,7 +10,7 @@ import microtrafficsim.core.vis.opengl.shader.UniformFactory;
 
 public class UniformSampler2D extends Uniform<Integer> {
 	
-	public final static UniformFactory FACTORY = (name, type) -> {
+	public static final UniformFactory FACTORY = (name, type) -> {
 		if (DataTypes.SAMPLER_2D.equals(type))
 			return new UniformSampler2D(name);
 		else
