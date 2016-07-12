@@ -1,4 +1,4 @@
-package microtrafficsim.core.frameworks.vehicle;
+package microtrafficsim.core.entities.vehicle;
 
 import microtrafficsim.core.vis.opengl.utils.Color;
 

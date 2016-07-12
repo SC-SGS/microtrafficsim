@@ -1,6 +1,6 @@
 package microtrafficsim.core.vis.simulation;
 
-import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.simulation.Simulation;
 import microtrafficsim.core.vis.Overlay;
 

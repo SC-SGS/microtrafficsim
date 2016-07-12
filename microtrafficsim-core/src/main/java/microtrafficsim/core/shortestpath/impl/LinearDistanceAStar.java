@@ -1,8 +1,8 @@
-package microtrafficsim.core.frameworks.shortestpath.astar.impl;
+package microtrafficsim.core.shortestpath.impl;
 
-import microtrafficsim.core.frameworks.shortestpath.astar.AbstractAStarAlgorithm;
-import microtrafficsim.core.frameworks.shortestpath.IDijkstrableEdge;
-import microtrafficsim.core.frameworks.shortestpath.IDijkstrableNode;
+import microtrafficsim.core.shortestpath.astar.AbstractAStarAlgorithm;
+import microtrafficsim.core.shortestpath.ShortestPathEdge;
+import microtrafficsim.core.shortestpath.ShortestPathNode;
 import microtrafficsim.math.HaversineDistanceCalculator;
 
 /**
@@ -21,12 +21,12 @@ public class LinearDistanceAStar extends AbstractAStarAlgorithm {
 	}
 	
 	@Override
-	protected <T extends IDijkstrableEdge> float getEdgeWeight(T edge) {
+	protected <T extends ShortestPathEdge> float getEdgeWeight(T edge) {
 		return edge.getLength();
 	}
 
 	@Override
-	protected <T extends IDijkstrableNode> float estimate(T destination, T routeDestination) {
+	protected <T extends ShortestPathNode> float estimate(T destination, T routeDestination) {
 		return (float) HaversineDistanceCalculator.getDistance(destination.getCoordinate(), routeDestination.getCoordinate()) / metersPerCell;
 	}
 }

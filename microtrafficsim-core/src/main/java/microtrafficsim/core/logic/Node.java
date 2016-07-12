@@ -1,7 +1,7 @@
 package microtrafficsim.core.logic;
 
-import microtrafficsim.core.frameworks.shortestpath.IDijkstrableEdge;
-import microtrafficsim.core.frameworks.shortestpath.IDijkstrableNode;
+import microtrafficsim.core.shortestpath.ShortestPathEdge;
+import microtrafficsim.core.shortestpath.ShortestPathNode;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.map.Coordinate;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class Node implements IDijkstrableNode {
+public class Node implements ShortestPathNode {
 
 	private SimulationConfig config;
 	private Random random;
@@ -358,8 +358,8 @@ public class Node implements IDijkstrableNode {
     |======================|
     */
 	@Override
-	public Iterator<IDijkstrableEdge> getLeavingEdges(IDijkstrableEdge incoming) {
-		HashSet<IDijkstrableEdge> returnEdges = new HashSet<>();
+	public Iterator<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming) {
+		HashSet<ShortestPathEdge> returnEdges = new HashSet<>();
 
 		if (incoming != null) {
 			for (Lane incomingLane : ((DirectedEdge) incoming).getLanes()) {

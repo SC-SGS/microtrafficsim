@@ -1,7 +1,7 @@
 package microtrafficsim.core.logic.vehicles;
 
-import microtrafficsim.core.frameworks.vehicle.LogicVehicleEntity;
-import microtrafficsim.core.frameworks.vehicle.VehicleEntity;
+import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
+import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Lane;
 import microtrafficsim.core.logic.Route;

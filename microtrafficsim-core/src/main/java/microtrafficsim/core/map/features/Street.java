@@ -1,6 +1,6 @@
 package microtrafficsim.core.map.features;
 
-import microtrafficsim.core.frameworks.street.StreetEntity;
+import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.map.Coordinate;
 
 

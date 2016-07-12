@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation;
 
-import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.simulation.configs.SimulationConfig;

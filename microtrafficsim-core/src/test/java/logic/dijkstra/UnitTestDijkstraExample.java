@@ -1,7 +1,7 @@
 package logic.dijkstra;
 
-import microtrafficsim.core.frameworks.shortestpath.IDijkstrableEdge;
-import microtrafficsim.core.frameworks.shortestpath.astar.impl.ShortestWayDijkstra;
+import microtrafficsim.core.shortestpath.ShortestPathEdge;
+import microtrafficsim.core.shortestpath.impl.ShortestWayDijkstra;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
@@ -28,7 +28,7 @@ public class UnitTestDijkstraExample {
     private static ShortestWayDijkstra dijkstra;
     private static Vec2f               rubbish;
     private final int                  maxVelocity = -1;
-    private Queue<? extends IDijkstrableEdge> correctShortestPath;
+    private Queue<? extends ShortestPathEdge> correctShortestPath;
     private LinkedList<DirectedEdge>          shortestPath;
     private StreetGraph                       graph;
     private Node                              start, end;

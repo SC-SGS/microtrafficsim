@@ -1,13 +1,13 @@
-package microtrafficsim.core.frameworks.shortestpath.astar;
+package microtrafficsim.core.shortestpath.astar;
 
-import microtrafficsim.core.frameworks.shortestpath.*;
+import microtrafficsim.core.shortestpath.*;
 
 import java.util.*;
 
 /**
  * This class represents an abstract A* algorithm. It is abstract because you
  * have to extend "getEdgeWeight(@IDijkstrableEdge edge)" and
- * "estimate({@link IDijkstrableEdge} edge)". Therefore you are just allowed to use
+ * "estimate({@link ShortestPathEdge} edge)". Therefore you are just allowed to use
  * positive edge weights.
  * 
  * In case you want to implement Dijkstra's algorithm, you have to extend this
@@ -20,8 +20,8 @@ import java.util.*;
  */
 public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
 
-	private HashSet<IDijkstrableNode> visitedNodes;
-	private HashMap<IDijkstrableNode, EdgeWeightTuple> predecessors;
+	private HashSet<ShortestPathNode> visitedNodes;
+	private HashMap<ShortestPathNode, EdgeWeightTuple> predecessors;
 	private PriorityQueue<WeightedNode> queue;
 
 	/**
@@ -42,7 +42,7 @@ public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
 	 *            algorithm.
 	 * @return Edge weight.
 	 */
-	protected abstract <T extends IDijkstrableEdge> float getEdgeWeight(T edge);
+	protected abstract <T extends ShortestPathEdge> float getEdgeWeight(T edge);
 
 	/**
 	 * <p>
@@ -70,7 +70,7 @@ public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
 	 *         E.g. return 0 for Dijkstra's algorithm or the linear distance as
 	 *         usual used approximation.
 	 */
-	protected abstract <T extends IDijkstrableNode> float estimate(T destination, T routeDestination);
+	protected abstract <T extends ShortestPathNode> float estimate(T destination, T routeDestination);
 
 	/**
 	 * Standard constructor.
@@ -85,9 +85,9 @@ public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
 	// | (i) IShortestPathAlgorithm |
 	// |============================|
 	@Override
-	public Queue<? extends IDijkstrableEdge> findShortestPath(IDijkstrableNode start, IDijkstrableNode end) {
+	public Queue<? extends ShortestPathEdge> findShortestPath(ShortestPathNode start, ShortestPathNode end) {
 		
-		LinkedList<IDijkstrableEdge> shortestPath = new LinkedList<>();
+		LinkedList<ShortestPathEdge> shortestPath = new LinkedList<>();
 		if (start != end) {
 			// INIT (the same as in the while-loop below)
 			// this is needed to guarantee that each node in the queue has a
@@ -96,10 +96,10 @@ public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
 			WeightedNode origin = new WeightedNode(start, 0f, estimate(start, end));
 			visitedNodes.add(origin.node);
 			// iterate over all leaving edges
-			Iterator<IDijkstrableEdge> leavingEdges = origin.node.getLeavingEdges(null);
+			Iterator<ShortestPathEdge> leavingEdges = origin.node.getLeavingEdges(null);
 			while (leavingEdges.hasNext()) {
-				IDijkstrableEdge edge = leavingEdges.next();
-				IDijkstrableNode dest = edge.getDestination();
+				ShortestPathEdge edge = leavingEdges.next();
+				ShortestPathNode dest = edge.getDestination();
 				float g = origin.g + getEdgeWeight(edge);
 
 				// update predecessors
@@ -128,10 +128,10 @@ public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
 					// if shortest path to end is already found
 					if (origin.node == end) {
 						// create shortest path
-						IDijkstrableNode curNode = end;
+						ShortestPathNode curNode = end;
 	
 						while (curNode != start) {
-							IDijkstrableEdge curEdge = predecessors.get(curNode).edge;
+							ShortestPathEdge curEdge = predecessors.get(curNode).edge;
 							// "unchecked" cast is checked
 							shortestPath.addFirst(curEdge);
 							curNode = curEdge.getOrigin();
@@ -145,8 +145,8 @@ public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
 					// iterate over all leaving edges
 					leavingEdges = origin.node.getLeavingEdges(predecessors.get(origin.node).edge);
 					while (leavingEdges.hasNext()) {
-						IDijkstrableEdge edge = leavingEdges.next();
-						IDijkstrableNode dest = edge.getDestination();
+						ShortestPathEdge edge = leavingEdges.next();
+						ShortestPathNode dest = edge.getDestination();
 						float g = origin.g + getEdgeWeight(edge);
 						
 						// update predecessors

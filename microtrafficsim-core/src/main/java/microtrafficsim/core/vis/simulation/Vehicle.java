@@ -1,7 +1,7 @@
 package microtrafficsim.core.vis.simulation;
 
-import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
-import microtrafficsim.core.frameworks.vehicle.VehicleEntity;
+import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.features.Street;

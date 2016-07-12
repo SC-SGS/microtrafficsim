@@ -1,6 +1,6 @@
 package microtrafficsim.ui.gui;
 
-import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.Simulation;

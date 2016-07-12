@@ -1,9 +1,9 @@
 package microtrafficsim.core.vis.simulation;
 
 import com.jogamp.opengl.GL3;
-import microtrafficsim.core.frameworks.street.StreetEntity;
-import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
-import microtrafficsim.core.frameworks.vehicle.LogicVehicleEntity;
+import microtrafficsim.core.entities.street.StreetEntity;
+import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.simulation.Simulation;
@@ -19,7 +19,6 @@ import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.opengl.utils.TextureData2D;
 import microtrafficsim.core.vis.view.OrthographicView;
-import microtrafficsim.core.vis.view.View;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.Vec2i;
 import microtrafficsim.math.Vec3d;

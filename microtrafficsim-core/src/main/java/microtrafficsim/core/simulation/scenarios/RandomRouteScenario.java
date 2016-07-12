@@ -1,9 +1,9 @@
 package microtrafficsim.core.simulation.scenarios;
 
-import microtrafficsim.core.frameworks.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.frameworks.shortestpath.astar.impl.FastestWayAStar;
-import microtrafficsim.core.frameworks.shortestpath.astar.impl.LinearDistanceAStar;
-import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
+import microtrafficsim.core.shortestpath.impl.FastestWayAStar;
+import microtrafficsim.core.shortestpath.impl.LinearDistanceAStar;
+import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.area.RectangleArea;

@@ -1,4 +1,4 @@
-package microtrafficsim.core.frameworks.shortestpath;
+package microtrafficsim.core.shortestpath;
 
 import java.util.Queue;
 
@@ -6,8 +6,8 @@ import java.util.Queue;
  * <p>
  * This interface allows using a shortest path algorithm without knowing the
  * algorithm. You don't have to know very much about the nodes and edges,
- * because they just have to implement {@link IDijkstrableNode} and
- * {@link IDijkstrableEdge}. Therefore you can implement this interface in many
+ * because they just have to implement {@link ShortestPathNode} and
+ * {@link ShortestPathEdge}. Therefore you can implement this interface in many
  * algorithms and graph types.
  * </p>
  * <p>
@@ -15,7 +15,7 @@ import java.util.Queue;
  * in them, not in a graph structure.
  * </p>
  * <p>
- * To serve flexibility, the used edge type extending {@link IDijkstrableEdge},
+ * To serve flexibility, the used edge type extending {@link ShortestPathEdge},
  * that are part of the shortest path, is given as a generic type.
  * </p>
  *
@@ -29,5 +29,5 @@ public interface ShortestPathAlgorithm {
 	 * @return A sequence of edges, starting from the start node to
 	 *         the end node.
 	 */
-	public Queue<? extends IDijkstrableEdge> findShortestPath(IDijkstrableNode start, IDijkstrableNode end);
+	public Queue<? extends ShortestPathEdge> findShortestPath(ShortestPathNode start, ShortestPathNode end);
 }

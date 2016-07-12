@@ -2,9 +2,9 @@ package logic.validation;
 
 import logic.validation.cars.ValidationBlockingCar;
 import logic.validation.cars.ValidationCar;
-import microtrafficsim.core.frameworks.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.frameworks.shortestpath.astar.impl.LinearDistanceAStar;
-import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
+import microtrafficsim.core.shortestpath.impl.LinearDistanceAStar;
+import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;

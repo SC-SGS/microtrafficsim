@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import microtrafficsim.core.frameworks.street.StreetEntity;
+import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.Feature;
 import microtrafficsim.core.map.features.Street;

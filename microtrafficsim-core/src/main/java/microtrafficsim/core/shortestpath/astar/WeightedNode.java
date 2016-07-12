@@ -1,7 +1,7 @@
-package microtrafficsim.core.frameworks.shortestpath.astar;
+package microtrafficsim.core.shortestpath.astar;
 
-import microtrafficsim.core.frameworks.shortestpath.IDijkstrableEdge;
-import microtrafficsim.core.frameworks.shortestpath.IDijkstrableNode;
+import microtrafficsim.core.shortestpath.ShortestPathEdge;
+import microtrafficsim.core.shortestpath.ShortestPathNode;
 
 /**
  * <p>
@@ -16,22 +16,22 @@ import microtrafficsim.core.frameworks.shortestpath.IDijkstrableNode;
  */
 class WeightedNode implements Comparable<WeightedNode> {
 
-	final IDijkstrableNode node;
+	final ShortestPathNode node;
 	final float g;
 	final float f; // f = g + h
-	IDijkstrableEdge predecessor;
+	ShortestPathEdge predecessor;
 
 	/**
 	 * Standard constructor.
 	 * 
 	 * @param node
-	 *            {@link IDijkstrableNode}
+	 *            {@link ShortestPathNode}
 	 * @param g
 	 *            Real weight from the start to this node.
 	 * @param h
 	 *            Estimated weight of the way from this node to the end.
 	 */
-	WeightedNode(IDijkstrableNode node, float g, float h) {
+	WeightedNode(ShortestPathNode node, float g, float h) {
 		this.node = node;
 		this.g = g;
 		f = g + h;

@@ -1,4 +1,4 @@
-package microtrafficsim.core.frameworks.street;
+package microtrafficsim.core.entities.street;
 
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.map.features.Street;

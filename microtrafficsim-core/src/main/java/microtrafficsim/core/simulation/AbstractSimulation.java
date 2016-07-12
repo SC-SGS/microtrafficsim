@@ -1,7 +1,7 @@
 package microtrafficsim.core.simulation;
 
-import microtrafficsim.core.frameworks.vehicle.IVisualizationVehicle;
-import microtrafficsim.core.frameworks.vehicle.VehicleEntity;
+import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.configs.SimulationConfig;

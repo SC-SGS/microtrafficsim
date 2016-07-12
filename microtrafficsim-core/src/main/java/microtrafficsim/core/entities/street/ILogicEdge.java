@@ -1,4 +1,4 @@
-package microtrafficsim.core.frameworks.street;
+package microtrafficsim.core.entities.street;
 
 public interface ILogicEdge {
 

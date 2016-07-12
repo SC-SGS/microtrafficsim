@@ -1,8 +1,8 @@
 package microtrafficsim.core.logic;
 
-import microtrafficsim.core.frameworks.shortestpath.IDijkstrableEdge;
-import microtrafficsim.core.frameworks.street.ILogicEdge;
-import microtrafficsim.core.frameworks.street.StreetEntity;
+import microtrafficsim.core.shortestpath.ShortestPathEdge;
+import microtrafficsim.core.entities.street.ILogicEdge;
+import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Vec2f;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
@@ -14,7 +14,7 @@ import microtrafficsim.utils.hashing.FNVHashBuilder;
  * 
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class DirectedEdge implements IDijkstrableEdge, ILogicEdge {
+public class DirectedEdge implements ShortestPathEdge, ILogicEdge {
 
 	final long ID;
 	private Node origin;
