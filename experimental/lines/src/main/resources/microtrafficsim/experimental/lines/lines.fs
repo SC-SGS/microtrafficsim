@@ -22,10 +22,10 @@ void main()
     // float len = max(abs(vertex_line.x), abs(vertex_line.y));
 
     float alpha = 1.0 - smoothstep(vertex_line.z - u_lineblur, vertex_line.z, len);
-	//frag_color = vec4(vertex_color.rgb, alpha);
+    //frag_color = vec4(vertex_color.rgb, alpha);
 
     vec4 color_a = vec4(0.56, 0.76, 0.44, 1);
     vec4 color_b = vec4(0.00, 0.55, 0.80, 1);
     float gradient = (vertex_line.y + vertex_line.z) / (vertex_line.z * 2);
-	frag_color = vec4(mix(color_a, color_b, gradient).rgb, alpha);
+    frag_color = vec4(mix(color_a, color_b, gradient).rgb, alpha);
 }

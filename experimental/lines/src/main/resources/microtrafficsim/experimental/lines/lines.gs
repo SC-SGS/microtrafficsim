@@ -246,7 +246,7 @@ void emit_miter_join_a(vec4 position, vec2 normal, vec2 line, float linewidth, v
     float e_len = linewidth / angle_s;
 
     bool intersecting = isnan(e_len)
-			|| e_len * e_len > length(line) * length(line) + linewidth * linewidth;
+            || e_len * e_len > length(line) * length(line) + linewidth * linewidth;
 
     /* line parameters */
     vec2 e_inner = -median_normal * e_len;
@@ -257,9 +257,9 @@ void emit_miter_join_a(vec4 position, vec2 normal, vec2 line, float linewidth, v
     vec3 p0 = vec3(0,  s * linewidth, linewidth);
     vec3 p1 = vec3(0, -s * linewidth, linewidth);
 
-	/* bevel join if angle is too small, miter otherwise */
+    /* bevel join if angle is too small, miter otherwise */
     if (angle_s < MITER_ANGLE_LIMIT) {
-    	float minline = min(length(line), length(line_adj));
+        float minline = min(length(line), length(line_adj));
         e_center = e_inner * angle_s * min(minline / (2 * linewidth), 1);
         e_outer = median_normal * linewidth * angle_s;
         p_center = vec3(0, -s * linewidth * angle_s, linewidth);
@@ -269,8 +269,8 @@ void emit_miter_join_a(vec4 position, vec2 normal, vec2 line, float linewidth, v
         p_center = vec3(0, 0, linewidth);
     }
 
-	/* slight overlap to remove fp-precision caused artifacts */
-	e_center -= normal * 0.1 / linewidth;
+    /* slight overlap to remove fp-precision caused artifacts */
+    e_center -= normal * 0.1 / linewidth;
 
     /* vertices */
     vec4 v0 = p_to_s(vec4(position.xy + s * e_outer,  position.zw));
@@ -278,41 +278,41 @@ void emit_miter_join_a(vec4 position, vec2 normal, vec2 line, float linewidth, v
     vec4 v2 = p_to_s(vec4(position.xy + s * normal,   position.zw));
     vec4 v3 = p_to_s(vec4(position.xy + s * e_center, position.zw));
 
-	/* draw */
+    /* draw */
     if (s < 0) {
-        emit_vertex(v2, p0,       color);			// outer join
+        emit_vertex(v2, p0,       color);           // outer join
         emit_vertex(v3, p_center, color);
         emit_vertex(v0, p0,       color);
         EndPrimitive();
 
         if (!intersecting) {
-            emit_vertex(v3, p_center, color);		// inner join
+            emit_vertex(v3, p_center, color);       // inner join
             emit_vertex(v2, p0,       color);
             emit_vertex(v1, p1,       color);
             EndPrimitive();
 
-            emit_vertex(v1, p1, color);				// connector
+            emit_vertex(v1, p1, color);             // connector
             emit_vertex(v2, p0, color);
         } else {
-            emit_vertex(v3, p_center, color);		// connector
+            emit_vertex(v3, p_center, color);       // connector
             emit_vertex(v2, p0,       color);
         }
     } else {
-        emit_vertex(v2, p0,       color);			// outer join
+        emit_vertex(v2, p0,       color);           // outer join
         emit_vertex(v0, p0,       color);
         emit_vertex(v3, p_center, color);
         EndPrimitive();
 
         if (!intersecting) {
-            emit_vertex(v2, p0,       color);		// inner join
+            emit_vertex(v2, p0,       color);       // inner join
             emit_vertex(v3, p_center, color);
             emit_vertex(v1, p1,       color);
             EndPrimitive();
 
-            emit_vertex(v2, p0, color);				// connector
+            emit_vertex(v2, p0, color);             // connector
             emit_vertex(v1, p1, color);
         } else {
-            emit_vertex(v2, p0,       color);		// connector
+            emit_vertex(v2, p0,       color);       // connector
             emit_vertex(v3, p_center, color);
         }
     }
@@ -340,7 +340,7 @@ void emit_miter_join_b(vec4 position, vec2 normal, vec2 line, float linewidth, v
     float e_len = linewidth / angle_s;
 
     bool intersecting = isnan(e_len)
-			|| e_len * e_len > length(line) * length(line) + linewidth * linewidth;
+            || e_len * e_len > length(line) * length(line) + linewidth * linewidth;
 
     /* line parameters */
     vec2 e_inner = -median_normal * e_len;
@@ -351,9 +351,9 @@ void emit_miter_join_b(vec4 position, vec2 normal, vec2 line, float linewidth, v
     vec3 p0 = vec3(0,  s * linewidth, linewidth);
     vec3 p1 = vec3(0, -s * linewidth, linewidth);
 
-	/* bevel join if angle is too small, miter otherwise */
+    /* bevel join if angle is too small, miter otherwise */
     if (angle_s < MITER_ANGLE_LIMIT) {
-    	float minline = min(length(line), length(line_adj));
+        float minline = min(length(line), length(line_adj));
         e_center = e_inner * angle_s * min(minline / (2 * linewidth), 1);
         e_outer = median_normal * linewidth * angle_s;
         p_center = vec3(0, -s * linewidth * angle_s, linewidth);
@@ -363,8 +363,8 @@ void emit_miter_join_b(vec4 position, vec2 normal, vec2 line, float linewidth, v
         p_center = vec3(0, 0, linewidth);
     }
 
-	/* slight overlap to remove fp-precision-caused artifacts */
-	e_center -= normal * 0.1 / linewidth;
+    /* slight overlap to remove fp-precision-caused artifacts */
+    e_center -= normal * 0.1 / linewidth;
 
     /* vertices */
     vec4 v0 = p_to_s(vec4(position.xy + s * e_outer,  position.zw));
@@ -374,31 +374,31 @@ void emit_miter_join_b(vec4 position, vec2 normal, vec2 line, float linewidth, v
 
     if (s < 0) {
         if (!intersecting) {
-            emit_vertex(v1, p1, color);				// connector & inner join
+            emit_vertex(v1, p1, color);             // connector & inner join
             emit_vertex(v2, p0, color);
             emit_vertex(v3, p_center, color);
 
             EndPrimitive();
-            emit_vertex(v3, p_center, color);		// outer join
+            emit_vertex(v3, p_center, color);       // outer join
             emit_vertex(v2, p0,       color);
             emit_vertex(v0, p0,       color);
         } else {
-            emit_vertex(v3, p_center, color);		// connector & outer join
+            emit_vertex(v3, p_center, color);       // connector & outer join
             emit_vertex(v2, p0,       color);
             emit_vertex(v0, p0,       color);
         }
     } else {
         if (!intersecting) {
-            emit_vertex(v2, p0, color);				// connector & inner join
+            emit_vertex(v2, p0, color);             // connector & inner join
             emit_vertex(v1, p1, color);
             emit_vertex(v3, p_center, color);
 
             EndPrimitive();
-            emit_vertex(v2, p0,       color);		// outer join
+            emit_vertex(v2, p0,       color);       // outer join
             emit_vertex(v3, p_center, color);
             emit_vertex(v0, p0,       color);
         } else {
-            emit_vertex(v2, p0,       color);		// connector & outer join
+            emit_vertex(v2, p0,       color);       // connector & outer join
             emit_vertex(v3, p_center, color);
             emit_vertex(v0, p0,       color);
         }
@@ -427,7 +427,7 @@ void emit_bevel_join_a(vec4 position, vec2 normal, vec2 line, float linewidth, v
     float e_len = linewidth / angle_s;
 
     bool intersecting = isnan(e_len)
-			|| e_len * e_len > length(line) * length(line) + linewidth * linewidth;
+            || e_len * e_len > length(line) * length(line) + linewidth * linewidth;
 
     /* extrusion vectors */
     vec2 e_inner = -median_normal * e_len;
@@ -447,41 +447,41 @@ void emit_bevel_join_a(vec4 position, vec2 normal, vec2 line, float linewidth, v
     vec4 v2 = p_to_s(vec4(position.xy + s * normal,   position.zw));
     vec4 v3 = p_to_s(vec4(position.xy + s * e_center, position.zw));
 
-	/* draw */
+    /* draw */
     if (s < 0) {
-        emit_vertex(v2, p0,       color);			// outer join
+        emit_vertex(v2, p0,       color);           // outer join
         emit_vertex(v3, p_center, color);
         emit_vertex(v0, p0,       color);
         EndPrimitive();
 
         if (!intersecting) {
-            emit_vertex(v3, p_center, color);		// inner join
+            emit_vertex(v3, p_center, color);       // inner join
             emit_vertex(v2, p0,       color);
             emit_vertex(v1, p1,       color);
             EndPrimitive();
 
-            emit_vertex(v1, p1, color);				// connector
+            emit_vertex(v1, p1, color);             // connector
             emit_vertex(v2, p0, color);
         } else {
-            emit_vertex(v3, p_center, color);		// connector
+            emit_vertex(v3, p_center, color);       // connector
             emit_vertex(v2, p0,       color);
         }
     } else {
-        emit_vertex(v2, p0,       color);			// outer join
+        emit_vertex(v2, p0,       color);           // outer join
         emit_vertex(v0, p0,       color);
         emit_vertex(v3, p_center, color);
         EndPrimitive();
 
         if (!intersecting) {
-            emit_vertex(v2, p0,       color);		// inner join
+            emit_vertex(v2, p0,       color);       // inner join
             emit_vertex(v3, p_center, color);
             emit_vertex(v1, p1,       color);
             EndPrimitive();
 
-            emit_vertex(v2, p0, color);				// connector
+            emit_vertex(v2, p0, color);             // connector
             emit_vertex(v1, p1, color);
         } else {
-            emit_vertex(v2, p0,       color);		// connector
+            emit_vertex(v2, p0,       color);       // connector
             emit_vertex(v3, p_center, color);
         }
     }
@@ -509,7 +509,7 @@ void emit_bevel_join_b(vec4 position, vec2 normal, vec2 line, float linewidth, v
     float e_len = linewidth / angle_s;
 
     bool intersecting = isnan(e_len)
-			|| e_len * e_len > length(line) * length(line) + linewidth * linewidth;
+            || e_len * e_len > length(line) * length(line) + linewidth * linewidth;
 
     /* extrusion vectors */
     vec2 e_inner = -median_normal * e_len;
@@ -532,31 +532,31 @@ void emit_bevel_join_b(vec4 position, vec2 normal, vec2 line, float linewidth, v
     /* draw */
     if (s < 0) {
         if (!intersecting) {
-            emit_vertex(v1, p1, color);				// connector & inner join
+            emit_vertex(v1, p1, color);             // connector & inner join
             emit_vertex(v2, p0, color);
             emit_vertex(v3, p_center, color);
 
             EndPrimitive();
             emit_vertex(v3, p_center, color);
-            emit_vertex(v2, p0,       color);		// outer join
+            emit_vertex(v2, p0,       color);       // outer join
             emit_vertex(v0, p0,       color);
         } else {
-            emit_vertex(v3, p_center, color);		// connector & outer join
+            emit_vertex(v3, p_center, color);       // connector & outer join
             emit_vertex(v2, p0,       color);
             emit_vertex(v0, p0,       color);
         }
     } else {
         if (!intersecting) {
-            emit_vertex(v2, p0, color);				// connector & inner join
+            emit_vertex(v2, p0, color);             // connector & inner join
             emit_vertex(v1, p1, color);
             emit_vertex(v3, p_center, color);
 
             EndPrimitive();
-            emit_vertex(v2, p0,       color);		// outer join
+            emit_vertex(v2, p0,       color);       // outer join
             emit_vertex(v3, p_center, color);
             emit_vertex(v0, p0,       color);
         } else {
-            emit_vertex(v2, p0,       color);		// connector & outer join
+            emit_vertex(v2, p0,       color);       // connector & outer join
             emit_vertex(v3, p_center, color);
             emit_vertex(v0, p0,       color);
         }
@@ -586,7 +586,7 @@ void emit_round_join_a(vec4 position, vec2 normal, vec2 line, float linewidth, v
     float e_len = linewidth / angle_s;
 
     bool intersecting = isnan(e_len)
-			|| e_len * e_len > length(line) * length(line) + linewidth * linewidth;
+            || e_len * e_len > length(line) * length(line) + linewidth * linewidth;
 
     bool miter = 1 < 2 * angle_s;
 
@@ -700,7 +700,7 @@ void emit_round_join_b(vec4 position, vec2 normal, vec2 line, float linewidth, v
     float e_len = linewidth / angle_s;
 
     bool intersecting = isnan(e_len)
-			|| e_len * e_len > length(line) * length(line) + linewidth * linewidth;
+            || e_len * e_len > length(line) * length(line) + linewidth * linewidth;
 
     bool miter = 1 < 2 * angle_s;
 
