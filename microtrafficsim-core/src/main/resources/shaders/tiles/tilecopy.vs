@@ -13,9 +13,9 @@ uniform highp mat4 u_projection;
 
 void main() {
     v_texcoord = a_texcoord;
-	vec4 pos = u_projection * u_view * u_tilecopy * vec4(a_position.xyz, 1.0);
+    vec4 pos = u_projection * u_view * u_tilecopy * vec4(a_position.xyz, 1.0);
 
-	// fix border flickering issues due to fp-precision with slight offsets
-	pos.xy += FP_FLICKER_OFFSET * (2*a_texcoord - vec2(1, 1));
-	gl_Position = pos;
+    // fix border flickering issues due to fp-precision with slight offsets
+    pos.xy += FP_FLICKER_OFFSET * (2*a_texcoord - vec2(1, 1));
+    gl_Position = pos;
 }

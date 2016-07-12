@@ -106,7 +106,7 @@ void emit_round_join_a(vec4 position, vec2 normal, vec2 line, float linewidth, v
     float e_len = linewidth / angle_s;
 
     bool intersecting = isnan(e_len)
-			|| e_len * e_len > length(line) * length(line) + linewidth * linewidth;
+            || e_len * e_len > length(line) * length(line) + linewidth * linewidth;
 
     bool miter = 1 < 2 * angle_s;
 
@@ -220,7 +220,7 @@ void emit_round_join_b(vec4 position, vec2 normal, vec2 line, float linewidth, v
     float e_len = linewidth / angle_s;
 
     bool intersecting = isnan(e_len)
-			|| e_len * e_len > length(line) * length(line) + linewidth * linewidth;
+            || e_len * e_len > length(line) * length(line) + linewidth * linewidth;
 
     bool miter = 1 < 2 * angle_s;
 
@@ -320,27 +320,27 @@ void main() {
 
     /* draw line start */
     if (gl_in[0].gl_Position.xy == gl_in[1].gl_Position.xy) {           // cap
-		if (linewidth > LINE_WIDTH_LIMIT_CAP)
-        	emit_round_cap_a(p1, normal, linewidth, vertex_color_gs[1]);
-		else
-			emit_none(p1, normal, linewidth, vertex_color_gs[1]);
+        if (linewidth > LINE_WIDTH_LIMIT_CAP)
+            emit_round_cap_a(p1, normal, linewidth, vertex_color_gs[1]);
+        else
+            emit_none(p1, normal, linewidth, vertex_color_gs[1]);
     } else {                                                            // join
-		if (linewidth > LINE_WIDTH_LIMIT_JOIN)
-        	emit_round_join_a(p1, normal, line, linewidth, vertex_color_gs[1]);
-		else
-			emit_none(p1, normal, linewidth, vertex_color_gs[1]);
+        if (linewidth > LINE_WIDTH_LIMIT_JOIN)
+            emit_round_join_a(p1, normal, line, linewidth, vertex_color_gs[1]);
+        else
+            emit_none(p1, normal, linewidth, vertex_color_gs[1]);
     }
 
     /* draw line end */
     if (gl_in[2].gl_Position.xy == gl_in[3].gl_Position.xy) {           // cap
-		if (linewidth > LINE_WIDTH_LIMIT_CAP)
-        	emit_round_cap_b(p2, normal, linewidth, vertex_color_gs[2]);
-		else
-			emit_none(p2, normal, linewidth, vertex_color_gs[2]);
+        if (linewidth > LINE_WIDTH_LIMIT_CAP)
+            emit_round_cap_b(p2, normal, linewidth, vertex_color_gs[2]);
+        else
+            emit_none(p2, normal, linewidth, vertex_color_gs[2]);
     } else {                                                            // join
-		if (linewidth > LINE_WIDTH_LIMIT_JOIN)
-        	emit_round_join_b(p2, normal, line, linewidth, vertex_color_gs[2]);
-		else
-			emit_none(p2, normal, linewidth, vertex_color_gs[2]);
+        if (linewidth > LINE_WIDTH_LIMIT_JOIN)
+            emit_round_join_b(p2, normal, line, linewidth, vertex_color_gs[2]);
+        else
+            emit_none(p2, normal, linewidth, vertex_color_gs[2]);
     }
 }
