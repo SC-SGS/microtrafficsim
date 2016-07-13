@@ -212,7 +212,10 @@ class TransparencyDemo implements Renderer {
                                 .loadFromResource(DEFAULT_FRAG_SHADER)
                                 .compile(gl);
 
-            defaultShader = ShaderProgram.create(gl, context, "default").attach(gl, vs, fs).link(gl).detach(gl, vs, fs);
+            defaultShader = ShaderProgram.create(gl, context, "default")
+                    .attach(gl, vs, fs)
+                    .link(gl)
+                    .detach(gl, vs, fs);
 
             vs.dispose(gl);
             fs.dispose(gl);
@@ -252,9 +255,12 @@ class TransparencyDemo implements Renderer {
                                 .loadFromResource(OIT_BLEND_FRAG_SHADER)
                                 .compile(gl);
 
-            blendShader = ShaderProgram.create(gl, context, "oit_blend").attach(gl, vs, fs).link(gl).detach(gl, vs, fs);
+            blendShader = ShaderProgram.create(gl, context, "oit_blend")
+                    .attach(gl, vs, fs)
+                    .link(gl)
+                    .detach(gl, vs, fs);
 
-            uMode            = (Uniform1i) blendShader.getUniform("u_mode");
+            uMode = (Uniform1i) blendShader.getUniform("u_mode");
             UniformSampler2D uTexAccumulation = (UniformSampler2D) blendShader.getUniform("u_accumulation");
             UniformSampler2D uTexRevealage    = (UniformSampler2D) blendShader.getUniform("u_revealage");
 
@@ -293,21 +299,21 @@ class TransparencyDemo implements Renderer {
 
 
         // init geometry vertex attribute pointers
-        VertexAttributePointer ptrPosition
-                = VertexAttributePointer.create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, geomVBO, 28, 0);
-        assert ptrPosition != null;
+        VertexAttributePointer ptrPosition = VertexAttributePointer
+                .create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, geomVBO, 28, 0);
 
-        VertexAttributePointer ptrColor
-                = VertexAttributePointer.create(VertexAttributes.COLOR, DataTypes.FLOAT_4, geomVBO, 28, 12);
+        VertexAttributePointer ptrColor = VertexAttributePointer
+                .create(VertexAttributes.COLOR, DataTypes.FLOAT_4, geomVBO, 28, 12);
+
+        assert ptrPosition != null;
         assert ptrColor != null;
 
         // set up forward geometry
         {
             // generate and load index buffer data
             IntBuffer ibodata = IntBuffer.allocate(GEOM_INDICES_FWD.length);
-            for (int i : GEOM_INDICES_FWD) {
+            for (int i : GEOM_INDICES_FWD)
                 ibodata.put(i);
-            }
             ibodata.rewind();
 
             geomFwdIBO = BufferStorage.create(gl, GL3.GL_ELEMENT_ARRAY_BUFFER);

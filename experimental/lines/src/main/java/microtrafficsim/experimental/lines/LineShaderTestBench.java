@@ -361,7 +361,8 @@ class LineShaderTestBench implements Renderer {
                 (UniformVec4f) context.getUniformManager().putGlobalUniform("u_color", DataTypes.FLOAT_VEC4),
                 (Uniform1f) context.getUniformManager().putGlobalUniform("u_linewidth", DataTypes.FLOAT),
                 (Uniform1i) context.getUniformManager().putGlobalUniform("u_cap_type", DataTypes.INT),
-                (Uniform1i) context.getUniformManager().putGlobalUniform("u_join_type", DataTypes.INT));
+                (Uniform1i) context.getUniformManager().putGlobalUniform("u_join_type", DataTypes.INT)
+        );
 
         // set default attributes
         context.getVertexAttribManager().putDefaultAttributeBinding("a_position", VertexAttributes.POSITION3);
@@ -374,19 +375,22 @@ class LineShaderTestBench implements Renderer {
         boolean error = false;
 
         try {
-            Shader vs
-                    = Shader.create(gl, GL3.GL_VERTEX_SHADER, "lines.vs").loadFromResource(linesVertShader).compile(gl);
+            Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "lines.vs")
+                    .loadFromResource(linesVertShader)
+                    .compile(gl);
 
             Shader gs = Shader.create(gl, GL3.GL_GEOMETRY_SHADER, "lines.gs")
-                                .loadFromResource(linesGeomShader)
-                                .compile(gl);
+                    .loadFromResource(linesGeomShader)
+                    .compile(gl);
 
             Shader fs = Shader.create(gl, GL3.GL_FRAGMENT_SHADER, "adjacency.fs")
-                                .loadFromResource(linesFragShader)
-                                .compile(gl);
+                    .loadFromResource(linesFragShader)
+                    .compile(gl);
 
-            this.shader
-                    = ShaderProgram.create(gl, context, "lines").attach(gl, vs, gs, fs).link(gl).detach(gl, vs, gs, fs);
+            this.shader = ShaderProgram.create(gl, context, "lines")
+                    .attach(gl, vs, gs, fs)
+                    .link(gl)
+                    .detach(gl, vs, gs, fs);
 
             vs.dispose(gl);
             gs.dispose(gl);
