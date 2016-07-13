@@ -1,6 +1,10 @@
 package microtrafficsim.math.random;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Random;
+
 
 /**
  * TODO (also test)
@@ -12,13 +16,13 @@ public class WheelOfFortune {
     private Random random;
     private HashMap<Object, Integer> fields;
     private ArrayList<Object> orderedObjects;
-    private int n;
+    private int               n;
 
     public WheelOfFortune(long seed) {
-        random = new Random(seed);
-        fields = new HashMap<>();
+        random         = new Random(seed);
+        fields         = new HashMap<>();
         orderedObjects = new ArrayList<>();
-        n = 0;
+        n              = 0;
     }
 
     /**
@@ -60,12 +64,11 @@ public class WheelOfFortune {
     }
 
     public Object nextObject() {
-        if (n <= 0)
-            return null;
+        if (n <= 0) return null;
 
-        int i = random.nextInt(n);
+        int              i       = random.nextInt(n);
         Iterator<Object> objects = orderedObjects.iterator();
-        Object lastObj = null;
+        Object           lastObj = null;
         if (objects.hasNext()) {
             do {
                 lastObj = objects.next();
