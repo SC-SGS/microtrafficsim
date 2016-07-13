@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class LayeredTileMap implements TileLayerProvider {
 
     private TilingScheme scheme;
-    private Projection projection;
+    private Projection   projection;
 
     private Rect2d bounds;
 
@@ -24,22 +24,22 @@ public class LayeredTileMap implements TileLayerProvider {
     private HashMap<Class<? extends TileLayerSource>, TileLayerGenerator> generators;
 
     private TileLayerSource.LayerSourceChangeListener sourceListener;
-    private Layer.LayerStateChangeListener layerListener;
-    private List<LayerChangeListener> listeners;
+    private Layer.LayerStateChangeListener            layerListener;
+    private List<LayerChangeListener>                 listeners;
 
 
     public LayeredTileMap(TilingScheme scheme) {
-        this.scheme = scheme;
+        this.scheme     = scheme;
         this.projection = scheme.getProjection();
 
         this.bounds = null;
 
-        this.layers = new HashMap<>();
+        this.layers     = new HashMap<>();
         this.generators = new HashMap<>();
 
-        this.listeners = new ArrayList<>();
+        this.listeners      = new ArrayList<>();
         this.sourceListener = new LayerSourceChangeListenerImpl();
-        this.layerListener = new LayerStateChangeListenerImpl();
+        this.layerListener  = new LayerStateChangeListenerImpl();
     }
 
 
@@ -66,14 +66,14 @@ public class LayeredTileMap implements TileLayerProvider {
 
 
     public TileLayerDefinition addLayer(TileLayerDefinition def) {
-        Layer layer = new Layer(def.getName(), def.getIndex(), def.getMinimumZoomLevel(), def.getMaximumZoomLevel(), def.getSource());
+        Layer layer = new Layer(def.getName(), def.getIndex(), def.getMinimumZoomLevel(), def.getMaximumZoomLevel(),
+                                def.getSource());
         Layer old = layers.put(layer.getName(), layer);
 
         layer.getSource().addLayerSourceChangeListener(sourceListener);
         layer.addLayerStateChangeListener(layerListener);
 
-        if (old != null)
-            old.getSource().removeLayerSourceChangeListener(sourceListener);
+        if (old != null) old.getSource().removeLayerSourceChangeListener(sourceListener);
 
         if (layer.getSource().isAvailable() || (old != null && old.getSource().isAvailable())) {
             updateBounds();
@@ -86,7 +86,7 @@ public class LayeredTileMap implements TileLayerProvider {
             return null;
         else
             return new TileLayerDefinition(old.getName(), old.getIndex(), old.getMinimumZoomLevel(),
-                    old.getMaximumZoomLevel(), old.getSource());
+                                           old.getMaximumZoomLevel(), old.getSource());
     }
 
     public TileLayerDefinition removeLayer(String name) {
@@ -104,7 +104,7 @@ public class LayeredTileMap implements TileLayerProvider {
             }
 
             return new TileLayerDefinition(layer.getName(), layer.getIndex(), layer.getMinimumZoomLevel(),
-                    layer.getMaximumZoomLevel(), layer.getSource());
+                                           layer.getMaximumZoomLevel(), layer.getSource());
         } else {
             return null;
         }
@@ -127,7 +127,8 @@ public class LayeredTileMap implements TileLayerProvider {
 
     @Override
     public Set<String> getAvailableLayers() {
-        return layers.values().stream()
+        return layers.values()
+                .stream()
                 .filter(d -> d.getSource().isAvailable())
                 .map(Layer::getName)
                 .collect(Collectors.toCollection(HashSet::new));
@@ -135,7 +136,8 @@ public class LayeredTileMap implements TileLayerProvider {
 
     @Override
     public Set<String> getAvailableLayers(TileId tile) {
-        return layers.values().stream()
+        return layers.values()
+                .stream()
                 .filter(d -> d.isAvailableFor(tile))
                 .filter(d -> d.getSource().isAvailable())
                 .map(Layer::getName)
@@ -149,7 +151,8 @@ public class LayeredTileMap implements TileLayerProvider {
 
 
     @Override
-    public TileLayer require(RenderContext context, String name, TileId tile, Rect2d target) throws InterruptedException {
+    public TileLayer require(RenderContext context, String name, TileId tile, Rect2d target)
+            throws InterruptedException {
         Layer layer = layers.get(name);
         if (layer == null) return null;
 
@@ -206,7 +209,8 @@ public class LayeredTileMap implements TileLayerProvider {
         public void sourceChanged(TileLayerSource source) {
             updateBounds();
 
-            HashSet<String> changed = layers.values().stream()
+            HashSet<String> changed = layers.values()
+                    .stream()
                     .filter(d -> d.getSource().equals(source))
                     .map(Layer::getName)
                     .collect(Collectors.toCollection(HashSet::new));
@@ -218,7 +222,8 @@ public class LayeredTileMap implements TileLayerProvider {
         public void sourceChanged(TileLayerSource source, TileId tile) {
             updateBounds();
 
-            HashSet<String> changed = layers.values().stream()
+            HashSet<String> changed = layers.values()
+                    .stream()
                     .filter(d -> d.getSource().equals(source))
                     .map(Layer::getName)
                     .collect(Collectors.toCollection(HashSet::new));

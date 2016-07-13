@@ -20,37 +20,53 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public strictfp class TileManager {
     private static final Comparator<Tile> CMP_TILE = new TileComparator();
 
-    private TileProvider provider;
+    private TileProvider    provider;
     private ExecutorService worker;
 
     private TileRect tiles;
 
-    private HashMap<TileId, Tile> visible;
+    private HashMap<TileId, Tile>         visible;
     private HashMap<TileId, Future<Tile>> loading;
-    private ArrayList<Future<Tile>> cancelling;         // cleanup cancelled tiles out-of-cycle, to avoid deadlock
-    private ArrayList<Tile> prebuilt;
+    private ArrayList<Future<Tile>> cancelling;    // cleanup cancelled tiles out-of-cycle, to avoid deadlock
+    private ArrayList<Tile>         prebuilt;
 
     private ConcurrentLinkedQueue<TileId> changed;
-    private AtomicBoolean reload;
+    private AtomicBoolean                 reload;
 
 
     public TileManager(TileProvider provider, ExecutorService worker) {
         this.provider = provider;
-        this.worker = worker;
+        this.worker   = worker;
 
         this.tiles = new TileRect(0, 0, 0, 0, 0);
 
-        this.visible = new HashMap<>();
-        this.loading = new HashMap<>();
+        this.visible    = new HashMap<>();
+        this.loading    = new HashMap<>();
         this.cancelling = new ArrayList<>();
-        this.prebuilt = new ArrayList<>();
+        this.prebuilt   = new ArrayList<>();
 
         this.changed = new ConcurrentLinkedQueue<>();
-        this.reload = new AtomicBoolean(true);
+        this.reload  = new AtomicBoolean(true);
 
         this.provider.addTileChangeListener(new TileChangeListenerImpl());
     }
 
+    private static <V> V getFromTaskIgnoringCancellation(Future<V> task)
+            throws ExecutionException, InterruptedException {
+        try {
+            return task.get();
+        } catch (CancellationException e) { /* ignore, we cancelled this task */ }
+
+        return null;
+    }
+
+    private static boolean containsAllInView(Set<TileId> set, TileRect rect, TileRect view) {
+        for (int x = Math.max(rect.xmin, view.xmin); x <= Math.min(rect.xmax, view.xmax); x++)
+            for (int y = Math.max(rect.ymin, view.ymin); y <= Math.min(rect.ymax, view.ymax); y++)
+                if (!set.contains(new TileId(x, y, view.zoom))) return false;
+
+        return true;
+    }
 
     public Bounds getBounds() {
         return provider.getBounds();
@@ -59,7 +75,6 @@ public strictfp class TileManager {
     public Rect2d getProjectedBounds() {
         return provider.getProjectedBounds();
     }
-
 
     public void initialize(RenderContext context) {
         provider.initialize(context);
@@ -86,7 +101,6 @@ public strictfp class TileManager {
         context.addTask(new TileCleanupTask(cancelling));
     }
 
-
     public void update(RenderContext context, OrthographicView observer)
             throws ExecutionException, InterruptedException {
 
@@ -94,12 +108,12 @@ public strictfp class TileManager {
 
         // view parameters
         Rect2d viewport = observer.getViewportBounds();
-        double zoom = observer.getZoomLevel();
+        double zoom     = observer.getZoomLevel();
 
         // get bounds, relative to the current view
-        TileRect view = scheme.getTiles(viewport, zoom);
+        TileRect view     = scheme.getTiles(viewport, zoom);
         TileRect provided = scheme.getTiles(provider.getProjectedBounds(), zoom);
-        TileRect common = provided != null ? TileRect.intersect(view, provided) : null;     // provided and in view
+        TileRect common   = provided != null ? TileRect.intersect(view, provided) : null;    // provided and in view
 
         // load tiles asynchronously, move loaded tiles to visible, update
         boolean rebuild = mgmtReload(context, common);
@@ -119,8 +133,7 @@ public strictfp class TileManager {
         this.tiles = view;
     }
 
-    private boolean mgmtReload(RenderContext context, TileRect common)
-            throws ExecutionException, InterruptedException {
+    private boolean mgmtReload(RenderContext context, TileRect common) throws ExecutionException, InterruptedException {
 
         if (common == null) return false;
         boolean change = false;
@@ -132,7 +145,7 @@ public strictfp class TileManager {
                 for (int y = common.ymin; y <= common.ymax; y++)
                     change |= mgmtAsyncReload(context, new TileId(x, y, common.zoom));
 
-        // else: reload only tiles that are explicitly marked as invalidated or newly in view
+            // else: reload only tiles that are explicitly marked as invalidated or newly in view
         } else {
             int xmin = MathUtils.clamp(this.tiles.xmin, common.xmin, common.xmax + 1);
             int ymin = MathUtils.clamp(this.tiles.ymin, common.ymin, common.ymax + 1);
@@ -159,7 +172,7 @@ public strictfp class TileManager {
 
             // changed tiles
             TileId id;
-            while((id = changed.poll()) != null) {
+            while ((id = changed.poll()) != null) {
                 if (id.x >= xmin && id.x <= xmax && id.y >= ymin && id.x <= ymax && id.z == common.zoom)
                     change |= mgmtAsyncReload(context, id);
             }
@@ -168,8 +181,7 @@ public strictfp class TileManager {
         return change;
     }
 
-    private boolean mgmtAsyncReload(RenderContext context, TileId id)
-            throws ExecutionException, InterruptedException {
+    private boolean mgmtAsyncReload(RenderContext context, TileId id) throws ExecutionException, InterruptedException {
 
         Future<Tile> prev = loading.put(id, worker.submit(new Loader(context, provider, id)));
         if (prev == null) return false;
@@ -189,18 +201,17 @@ public strictfp class TileManager {
         return true;
     }
 
-    private boolean mgmtMoveLoaded(RenderContext context)
-            throws ExecutionException, InterruptedException {
+    private boolean mgmtMoveLoaded(RenderContext context) throws ExecutionException, InterruptedException {
 
-        boolean changed = false;
-        HashSet<TileId> remove = new HashSet<>();
+        boolean         changed = false;
+        HashSet<TileId> remove  = new HashSet<>();
 
         for (Map.Entry<TileId, Future<Tile>> entry : loading.entrySet()) {
-            TileId id = entry.getKey();
+            TileId       id   = entry.getKey();
             Future<Tile> task = entry.getValue();
 
-            if (task.isDone()) {                    // if task is done, remove it
-                if (!task.isCancelled()) {          // if task is done and has not been cancelled, add the result
+            if (task.isDone()) {              // if task is done, remove it
+                if (!task.isCancelled()) {    // if task is done and has not been cancelled, add the result
                     provider.release(context, visible.put(id, getFromTaskIgnoringCancellation(task)));
                     changed = true;
                 }
@@ -216,8 +227,8 @@ public strictfp class TileManager {
     private boolean mgmtRemoveInvisible(RenderContext context, TilingScheme scheme, TileRect common)
             throws ExecutionException, InterruptedException {
 
-        boolean changed = false;
-        HashSet<TileId> remove = new HashSet<>();
+        boolean         changed = false;
+        HashSet<TileId> remove  = new HashSet<>();
 
         // remove from visible
         for (Map.Entry<TileId, Tile> entry : visible.entrySet()) {
@@ -226,8 +237,8 @@ public strictfp class TileManager {
             boolean rem = common == null;
             if (!rem) {
                 TileRect rect = scheme.getTiles(id, common.zoom);
-                rem = rect.xmax < common.xmin || rect.xmin > common.xmax
-                        || rect.ymax < common.ymin || rect.ymin > common.ymax;
+                rem           = rect.xmax < common.xmin || rect.xmin > common.xmax || rect.ymax < common.ymin
+                      || rect.ymin > common.ymax;
             }
 
             if (rem) {
@@ -241,7 +252,7 @@ public strictfp class TileManager {
 
         // remove from loading
         for (Map.Entry<TileId, Future<Tile>> entry : loading.entrySet()) {
-            TileId id = entry.getKey();
+            TileId       id   = entry.getKey();
             Future<Tile> task = entry.getValue();
 
             if (common == null || !common.contains(id)) {
@@ -256,7 +267,7 @@ public strictfp class TileManager {
     }
 
     private void mgmtRemoveOccluded(RenderContext context, TilingScheme scheme, TileRect common) {
-        Set<TileId> remove = new HashSet<>();
+        Set<TileId> remove  = new HashSet<>();
         Set<TileId> visible = this.visible.keySet();
 
         for (Map.Entry<TileId, Tile> entry : this.visible.entrySet()) {
@@ -273,10 +284,7 @@ public strictfp class TileManager {
 
     private void mgmtRebuild() {
         prebuilt.clear();
-        visible.values().stream()
-                .filter(x -> x != null)
-                .sorted(CMP_TILE)
-                .forEach(prebuilt::add);
+        visible.values().stream().filter(x -> x != null).sorted(CMP_TILE).forEach(prebuilt::add);
     }
 
     private void mgmtCleanupCancelled(RenderContext context) throws ExecutionException, InterruptedException {
@@ -293,30 +301,8 @@ public strictfp class TileManager {
         }
     }
 
-
-    private static <V> V getFromTaskIgnoringCancellation(Future<V> task)
-            throws ExecutionException, InterruptedException {
-        try {
-            return task.get();
-        } catch (CancellationException e) {
-            /* ignore, we cancelled this task */
-        }
-
-        return null;
-    }
-
-    private static boolean containsAllInView(Set<TileId> set, TileRect rect, TileRect view) {
-        for (int x = Math.max(rect.xmin, view.xmin); x <= Math.min(rect.xmax, view.xmax); x++)
-            for (int y = Math.max(rect.ymin, view.ymin); y <= Math.min(rect.ymax, view.ymax); y++)
-                if (!set.contains(new TileId(x, y, view.zoom)))
-                    return false;
-
-        return true;
-    }
-
-
     public void display(RenderContext context, OrthographicView view) {
-        GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
+        GL2ES2 gl         = context.getDrawable().getGL().getGL2ES2();
         Rect2d viewbounds = view.getViewportBounds();
 
         provider.beforeRendering(context);
@@ -336,8 +322,7 @@ public strictfp class TileManager {
             tile.getTransformation().set(Mat4f.identity()
                     .scale((float) (1.0 / vsx), (float) (1 / vsy), 1)
                     .translate((float) (ttx - vtx), (float) (tty - vty), 0)
-                    .scale((float) tsx, (float) tsy, 1)
-            );
+                    .scale((float) tsx, (float) tsy, 1));
 
             tile.display(context);
         }
@@ -346,6 +331,40 @@ public strictfp class TileManager {
         context.ShaderState.unbind(gl);
     }
 
+    private strictfp static class Loader implements Callable<Tile> {
+
+        private RenderContext context;
+        private TileProvider  provider;
+        private TileId        id;
+
+        private Loader(RenderContext context, TileProvider provider, TileId id) {
+            this.context  = context;
+            this.provider = provider;
+            this.id       = id;
+        }
+
+        @Override
+        public Tile call() throws CancellationException, ExecutionException {
+            Tile tile;
+            try {
+                tile = provider.require(context, id);
+            } catch (InterruptedException e) {
+                throw new CancellationException();    // cancel this task
+            }
+            return tile;
+        }
+    }
+
+    private static class TileComparator implements Comparator<Tile> {
+
+        @Override
+        public int compare(Tile a, Tile b) {
+            int za = a.getId().z;
+            int zb = b.getId().z;
+
+            return za > zb ? 1 : za < zb ? -1 : 0;
+        }
+    }
 
     private class TileChangeListenerImpl implements TileProvider.TileChangeListener {
 
@@ -357,30 +376,6 @@ public strictfp class TileManager {
         @Override
         public void tileChanged(TileId tile) {
             changed.add(tile);
-        }
-    }
-
-    private strictfp static class Loader implements Callable<Tile> {
-
-        private RenderContext context;
-        private TileProvider provider;
-        private TileId id;
-
-        private Loader(RenderContext context, TileProvider provider, TileId id) {
-            this.context = context;
-            this.provider = provider;
-            this.id = id;
-        }
-
-        @Override
-        public Tile call() throws CancellationException, ExecutionException {
-            Tile tile;
-            try {
-                tile = provider.require(context, id);
-            } catch (InterruptedException e) {
-                throw new CancellationException();      // cancel this task
-            }
-            return tile;
         }
     }
 
@@ -409,21 +404,9 @@ public strictfp class TileManager {
                 it.remove();
             }
 
-            if (!cancelling.isEmpty())
-                context.addTask(this, true);
+            if (!cancelling.isEmpty()) context.addTask(this, true);
 
             return null;
-        }
-    }
-
-    private static class TileComparator implements Comparator<Tile> {
-
-        @Override
-        public int compare(Tile a, Tile b) {
-            int za = a.getId().z;
-            int zb = b.getId().z;
-
-            return za > zb ? 1 : za < zb ? -1 : 0;
         }
     }
 }

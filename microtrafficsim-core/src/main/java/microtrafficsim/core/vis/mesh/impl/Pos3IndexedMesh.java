@@ -22,90 +22,84 @@ import java.util.Set;
 
 // TODO: generalize?
 public class Pos3IndexedMesh implements Mesh {
-	private State state;
+    private State state;
 
-	private int usage;
-	private int mode;
-	
-	private FloatBuffer vertices;
-	private IntBuffer indices;
-	
-	private BufferStorage vbo;
-	private BufferStorage ibo;
-	private VertexArrayObject vao;		// from OpenGL 3.1 upwards a VAO is always required for drawing
-	
-	private VertexAttributePointer ptrPosition;
+    private int usage;
+    private int mode;
 
-	private List<Bucket> buckets;
-	
-	private HashSet<LifeTimeObserver<Mesh>> ltObservers;
+    private FloatBuffer vertices;
+    private IntBuffer   indices;
 
-	
-	public Pos3IndexedMesh(int usage, int mode, FloatBuffer vertices, IntBuffer indices) {
-		this.state = State.UNINITIALIZED;
-		
-		this.usage = usage;
-		this.mode = mode;
-		
-		this.vertices = vertices;
-		this.indices = indices;
-		
-		this.vbo = null;
-		this.ibo = null;
+    private BufferStorage     vbo;
+    private BufferStorage     ibo;
+    private VertexArrayObject vao;    // from OpenGL 3.1 upwards a VAO is always required for drawing
 
-		this.ltObservers = new HashSet<>();
-	}
+    private VertexAttributePointer ptrPosition;
+
+    private List<Bucket> buckets;
+
+    private HashSet<LifeTimeObserver<Mesh>> ltObservers;
 
 
-	public void setVertexBuffer(FloatBuffer vertices) {
-		this.vertices = vertices;
-	}
+    public Pos3IndexedMesh(int usage, int mode, FloatBuffer vertices, IntBuffer indices) {
+        this.state = State.UNINITIALIZED;
 
-	public void setIndexBuffer(IntBuffer indices) {
-		this.indices = indices;
-	}
+        this.usage = usage;
+        this.mode  = mode;
 
-	public void setBuckets(List<Bucket> buckets) {
-		this.buckets = buckets;
-	}
+        this.vertices = vertices;
+        this.indices  = indices;
 
+        this.vbo = null;
+        this.ibo = null;
 
-	@Override
-	public State getState() {
-		return state;
-	}
+        this.ltObservers = new HashSet<>();
+    }
 
 
-	@Override
-	public boolean initialize(RenderContext context, boolean force) {
-		if (state == State.DISPOSED) return false;
+    public void setVertexBuffer(FloatBuffer vertices) {
+        this.vertices = vertices;
+    }
 
-		GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
-		if (state == State.INITIALIZED || state == State.LOADED) {
-			if (!force) return false;
+    public void setIndexBuffer(IntBuffer indices) {
+        this.indices = indices;
+    }
 
-			// dispose old
-			vbo.dispose(gl);
-			ibo.dispose(gl);
-			vao.dispose(gl);
-		}
+    @Override
+    public State getState() {
+        return state;
+    }
 
-		vbo = BufferStorage.create(gl, GL2GL3.GL_ARRAY_BUFFER);
-		ibo = BufferStorage.create(gl, GL2GL3.GL_ELEMENT_ARRAY_BUFFER);
-		vao = VertexArrayObject.create(gl);
+    @Override
+    public boolean initialize(RenderContext context, boolean force) {
+        if (state == State.DISPOSED) return false;
 
-		ptrPosition = VertexAttributePointer.create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, vbo);
+        GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
+        if (state == State.INITIALIZED || state == State.LOADED) {
+            if (!force) return false;
 
-		state = State.INITIALIZED;
-		return true;
-	}
+            // dispose old
+            vbo.dispose(gl);
+            ibo.dispose(gl);
+            vao.dispose(gl);
+        }
 
-	@Override
-	public boolean dispose(RenderContext context) {
-		boolean disposable = state != State.DISPOSED && state != State.UNINITIALIZED;
+        vbo = BufferStorage.create(gl, GL2GL3.GL_ARRAY_BUFFER);
+        ibo = BufferStorage.create(gl, GL2GL3.GL_ELEMENT_ARRAY_BUFFER);
+        vao = VertexArrayObject.create(gl);
+
+        ptrPosition = VertexAttributePointer.create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, vbo);
+
+        state = State.INITIALIZED;
+        return true;
+    }
+
+    @Override
+    public boolean dispose(RenderContext context) {
+        boolean disposable = state != State.DISPOSED && state != State.UNINITIALIZED;
 
         if (disposable) {
-			GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
+            GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
 
             vbo.dispose(gl);
             ibo.dispose(gl);
@@ -113,141 +107,142 @@ public class Pos3IndexedMesh implements Mesh {
             state = State.DISPOSED;
         }
 
-		for (LifeTimeObserver<Mesh> lto : ltObservers)
-			lto.disposed(this);
+        for (LifeTimeObserver<Mesh> lto : ltObservers)
+            lto.disposed(this);
 
-		return disposable;
-	}
+        return disposable;
+    }
 
-	@Override
-	public boolean load(RenderContext context, boolean force) {
-		if (state == State.DISPOSED || state == State.UNINITIALIZED) return false;
-		if (state == State.LOADED && !force) return false;
+    @Override
+    public boolean load(RenderContext context, boolean force) {
+        if (state == State.DISPOSED || state == State.UNINITIALIZED) return false;
+        if (state == State.LOADED && !force) return false;
 
-		GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
+        GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
 
-		// vertices
-		gl.glBindBuffer(vbo.target, vbo.handle);
-		gl.glBufferData(vbo.target, vertices.capacity() * 4L, vertices, usage);
-		gl.glBindBuffer(vbo.target, 0);
-		
-		// indices
-		gl.glBindBuffer(ibo.target, ibo.handle);
-		gl.glBufferData(ibo.target, indices.capacity() * 4L, indices, usage);
-		gl.glBindBuffer(ibo.target, 0);
-		
-		// generate dummy vao
+        // vertices
+        gl.glBindBuffer(vbo.target, vbo.handle);
+        gl.glBufferData(vbo.target, vertices.capacity() * 4L, vertices, usage);
+        gl.glBindBuffer(vbo.target, 0);
 
-		state = State.LOADED;
-		return true;
-	}
+        // indices
+        gl.glBindBuffer(ibo.target, ibo.handle);
+        gl.glBufferData(ibo.target, indices.capacity() * 4L, indices, usage);
+        gl.glBindBuffer(ibo.target, 0);
 
-	@Override
-	public void display(RenderContext context, ShaderProgram shader) {
-		GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
-		
-		vao.bind(gl);
-		vbo.bind(gl);
-		ibo.bind(gl);
-		
-		ptrPosition.set(gl);
-		ptrPosition.enable(gl);
-		
-		gl.glDrawElements(mode, indices.capacity(), GL2GL3.GL_UNSIGNED_INT, 0);
-		
-		vao.unbind(gl);
-	}
-	
-	@Override
-	public void display(RenderContext context, VertexArrayObject vao) {
-		GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
-		
-		vao.bind(gl);
-		gl.glDrawElements(mode, indices.capacity(), GL2GL3.GL_UNSIGNED_INT, 0);
-		vao.unbind(gl);
-	}
+        // generate dummy vao
 
-	@Override
-	public VertexArrayObject createVAO(RenderContext context, ShaderProgram program) {
-		GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
+        state = State.LOADED;
+        return true;
+    }
 
-		VertexArrayObject vao = VertexArrayObject.create(gl);
+    @Override
+    public void display(RenderContext context, ShaderProgram shader) {
+        GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
 
-		vao.bind(gl);
-		vbo.bind(gl);
-		ibo.bind(gl);
+        vao.bind(gl);
+        vbo.bind(gl);
+        ibo.bind(gl);
 
-		ptrPosition.set(gl);
-		ptrPosition.enable(gl);
+        ptrPosition.set(gl);
+        ptrPosition.enable(gl);
 
-		vao.unbind(gl);
+        gl.glDrawElements(mode, indices.capacity(), GL2GL3.GL_UNSIGNED_INT, 0);
 
-		return vao;
-	}
+        vao.unbind(gl);
+    }
+
+    @Override
+    public void display(RenderContext context, VertexArrayObject vao) {
+        GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
+
+        vao.bind(gl);
+        gl.glDrawElements(mode, indices.capacity(), GL2GL3.GL_UNSIGNED_INT, 0);
+        vao.unbind(gl);
+    }
+
+    @Override
+    public VertexArrayObject createVAO(RenderContext context, ShaderProgram program) {
+        GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
+
+        VertexArrayObject vao = VertexArrayObject.create(gl);
+
+        vao.bind(gl);
+        vbo.bind(gl);
+        ibo.bind(gl);
+
+        ptrPosition.set(gl);
+        ptrPosition.enable(gl);
+
+        vao.unbind(gl);
+
+        return vao;
+    }
+
+    @Override
+    public List<MeshBucket> getBuckets() {
+        return Collections.unmodifiableList(buckets);
+    }
+
+    public void setBuckets(List<Bucket> buckets) {
+        this.buckets = buckets;
+    }
+
+    @Override
+    public void addLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
+        ltObservers.add(lto);
+    }
+
+    @Override
+    public void removeLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
+        ltObservers.remove(lto);
+    }
+
+    @Override
+    public Set<LifeTimeObserver<Mesh>> getLifeTimeObservers() {
+        return Collections.unmodifiableSet(ltObservers);
+    }
 
 
-	@Override
-	public List<MeshBucket> getBuckets() {
-		return Collections.unmodifiableList(buckets);
-	}
+    public class Bucket implements MeshBucket {
+        private final float zIndex;
+        private final int   offset;
+        private final int   count;
 
+        public Bucket(float zIndex, int offset, int count) {
+            this.zIndex = zIndex;
+            this.offset = offset;
+            this.count  = count;
+        }
 
-	@Override
-	public void addLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
-		ltObservers.add(lto);
-	}
+        @Override
+        public float getZIndex() {
+            return zIndex;
+        }
 
-	@Override
-	public void removeLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
-		ltObservers.remove(lto);
-	}
+        @Override
+        public void display(RenderContext context, ShaderProgram shader) {
+            GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
 
-	@Override
-	public Set<LifeTimeObserver<Mesh>> getLifeTimeObservers() {
-		return Collections.unmodifiableSet(ltObservers);
-	}
+            vao.bind(gl);
+            vbo.bind(gl);
+            ibo.bind(gl);
 
+            ptrPosition.set(gl);
+            ptrPosition.enable(gl);
 
+            gl.glDrawElements(mode, count, GL2GL3.GL_UNSIGNED_INT, offset * 4);
 
-	public class Bucket implements MeshBucket {
-		private final float zIndex;
-		private final int offset;
-		private final int count;
+            vao.unbind(gl);
+        }
 
-		public Bucket(float zIndex, int offset, int count) {
-			this.zIndex = zIndex;
-			this.offset = offset;
-			this.count = count;
-		}
+        @Override
+        public void display(RenderContext context, VertexArrayObject vao) {
+            GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
 
-		@Override
-		public float getZIndex() {
-			return zIndex;
-		}
-
-		@Override
-		public void display(RenderContext context, ShaderProgram shader) {
-			GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
-
-			vao.bind(gl);
-			vbo.bind(gl);
-			ibo.bind(gl);
-
-			ptrPosition.set(gl);
-			ptrPosition.enable(gl);
-
-			gl.glDrawElements(mode, count, GL2GL3.GL_UNSIGNED_INT, offset * 4);
-
-			vao.unbind(gl);
-		}
-
-		@Override
-		public void display(RenderContext context, VertexArrayObject vao) {
-			GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
-
-			vao.bind(gl);
-			gl.glDrawElements(mode, count, GL2GL3.GL_UNSIGNED_INT, offset * 4);
-			vao.unbind(gl);
-		}
-	}
+            vao.bind(gl);
+            gl.glDrawElements(mode, count, GL2GL3.GL_UNSIGNED_INT, offset * 4);
+            vao.unbind(gl);
+        }
+    }
 }

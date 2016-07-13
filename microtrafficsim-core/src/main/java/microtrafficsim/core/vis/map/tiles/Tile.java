@@ -10,6 +10,6 @@ public interface Tile {
 
     void display(RenderContext context);
 
-    void setTransformation(Mat4f m);
     Mat4f getTransformation();
+    void setTransformation(Mat4f m);
 }

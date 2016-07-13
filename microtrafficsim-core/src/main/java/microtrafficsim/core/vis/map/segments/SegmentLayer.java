@@ -7,14 +7,14 @@ import java.util.List;
 
 
 public abstract class SegmentLayer extends Layer {
-	
-	public SegmentLayer(String name, int index, LayerSource source) {
-		super(name, index, source);
-	}
-	
-	public abstract void initialize(RenderContext context);
-	public abstract void dispose(RenderContext context);
-	public abstract void display(RenderContext context);
 
-	public abstract List<? extends SegmentLayerBucket> getBuckets();
+    public SegmentLayer(String name, int index, LayerSource source) {
+        super(name, index, source);
+    }
+
+    public abstract void initialize(RenderContext context);
+    public abstract void dispose(RenderContext context);
+    public abstract void display(RenderContext context);
+
+    public abstract List<? extends SegmentLayerBucket> getBuckets();
 }

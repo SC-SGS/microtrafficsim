@@ -9,51 +9,51 @@ import microtrafficsim.core.vis.opengl.shader.UniformFactory;
 
 public class Uniform1i extends Uniform<Integer> {
 
-	public static final UniformFactory FACTORY = (name, type) -> {
-		if (DataTypes.INT.equals(type))
-			return new Uniform1i(name);
-		else
-			return null;
-	};
+    public static final UniformFactory FACTORY = (name, type) -> {
+        if (DataTypes.INT.equals(type))
+            return new Uniform1i(name);
+        else
+            return null;
+    };
 
 
-	private int value;
+    private int value;
 
-	public Uniform1i(String name) {
-		super(name);
-		this.value = 0;
-	}
-	
-	
-	public void set(int value) {
-		this.value = value;
-		notifyValueChange();
-	}
-	
-	@Override
-	public void set(Integer value) {
-		this.value = value;
-		notifyValueChange();
-	}
-	
-	@Override
-	public Integer get() {
-		return value;
-	}
+    public Uniform1i(String name) {
+        super(name);
+        this.value = 0;
+    }
 
-	
-	@Override
-	public void update(GL2ES2 gl, int location) {
-		gl.glUniform1i(location, value);
-	}
 
-	@Override
-	public DataType getType() {
-		return DataTypes.INT;
-	}
-	
-	@Override
-	public Class<Integer> getClientType() {
-		return Integer.class;
-	}
+    public void set(int value) {
+        this.value = value;
+        notifyValueChange();
+    }
+
+    @Override
+    public void set(Integer value) {
+        this.value = value;
+        notifyValueChange();
+    }
+
+    @Override
+    public Integer get() {
+        return value;
+    }
+
+
+    @Override
+    public void update(GL2ES2 gl, int location) {
+        gl.glUniform1i(location, value);
+    }
+
+    @Override
+    public DataType getType() {
+        return DataTypes.INT;
+    }
+
+    @Override
+    public Class<Integer> getClientType() {
+        return Integer.class;
+    }
 }

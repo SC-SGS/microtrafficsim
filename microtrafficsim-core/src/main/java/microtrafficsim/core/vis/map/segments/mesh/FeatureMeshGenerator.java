@@ -7,8 +7,9 @@ import microtrafficsim.core.vis.mesh.Mesh;
 
 
 public interface FeatureMeshGenerator {
-	interface FeatureMeshKey {}
+    interface FeatureMeshKey {}
 
-	FeatureMeshKey getKey(RenderContext context, FeatureSegmentLayerSource src, Projection projection);
-	Mesh generate(RenderContext context, FeatureSegmentLayerSource src, Projection projection) throws InterruptedException;
+    FeatureMeshKey getKey(RenderContext context, FeatureSegmentLayerSource src, Projection projection);
+    Mesh generate(RenderContext context, FeatureSegmentLayerSource src, Projection projection)
+            throws InterruptedException;
 }

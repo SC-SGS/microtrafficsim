@@ -8,36 +8,27 @@ import java.util.ArrayList;
 
 public class Layer {
 
-    public interface LayerStateChangeListener {
-        void layerStateChanged(String name);
-    }
-
-
-    private final String name;
-    private int index;
-    private int minzoom;
-    private int maxzoom;
-    private TileLayerSource source;
-    private boolean enabled;
-
+    private final String                        name;
+    private int                                 index;
+    private int                                 minzoom;
+    private int                                 maxzoom;
+    private TileLayerSource                     source;
+    private boolean                             enabled;
     private ArrayList<LayerStateChangeListener> listeners;
 
-
     public Layer(String name, int index, int minzoom, int maxzoom, TileLayerSource source) {
-        this.name = name;
-        this.index = index;
-        this.minzoom = minzoom;
-        this.maxzoom = maxzoom;
-        this.source = source;
-        this.enabled = true;
+        this.name      = name;
+        this.index     = index;
+        this.minzoom   = minzoom;
+        this.maxzoom   = maxzoom;
+        this.source    = source;
+        this.enabled   = true;
         this.listeners = new ArrayList<>();
     }
-
 
     public String getName() {
         return this.name;
     }
-
 
     public int getIndex() {
         return index;
@@ -47,11 +38,9 @@ public class Layer {
         this.index = index;
     }
 
-
     public TileLayerSource getSource() {
         return source;
     }
-
 
     public boolean isEnabled() {
         return enabled;
@@ -62,7 +51,6 @@ public class Layer {
         listeners.forEach(l -> l.layerStateChanged(name));
     }
 
-
     public int getMaximumZoomLevel() {
         return maxzoom;
     }
@@ -71,11 +59,9 @@ public class Layer {
         return minzoom;
     }
 
-
     public boolean isAvailableFor(TileId tile) {
         return minzoom <= tile.z && tile.z <= maxzoom;
     }
-
 
     public void addLayerStateChangeListener(LayerStateChangeListener listener) {
         listeners.add(listener);
@@ -84,5 +70,6 @@ public class Layer {
     public void removeLayerStateChangeListener(LayerStateChangeListener listener) {
         listeners.remove(listener);
     }
-}
 
+    public interface LayerStateChangeListener { void layerStateChanged(String name); }
+}

@@ -8,7 +8,6 @@ import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.math.Rect2d;
 
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 
@@ -22,7 +21,7 @@ public interface TileProvider {
     Bounds getBounds();
     Rect2d getProjectedBounds();
 
-    Projection getProjection();
+    Projection   getProjection();
     TilingScheme getTilingScheme();
 
     void initialize(RenderContext context);

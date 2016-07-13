@@ -15,16 +15,16 @@ import java.util.stream.Collectors;
 
 public class FeatureTileLayer extends TileLayer {
 
-    private Mesh mesh;
-    private FeatureStyle style;
+    private Mesh              mesh;
+    private FeatureStyle      style;
     private VertexArrayObject vao;
 
     public FeatureTileLayer(TileId tile, Layer layer, Mat4f transform, Mesh mesh, FeatureStyle style) {
         super(tile, layer, transform);
 
-        this.mesh = mesh;
+        this.mesh  = mesh;
         this.style = style;
-        this.vao = null;
+        this.vao   = null;
     }
 
 
@@ -38,7 +38,7 @@ public class FeatureTileLayer extends TileLayer {
 
     @Override
     public void dispose(RenderContext context) {
-        if (vao != null) {      // if initialized
+        if (vao != null) {    // if initialized
             vao.dispose(context.getDrawable().getGL().getGL2ES3());
             style.dispose(context);
         }
@@ -56,7 +56,8 @@ public class FeatureTileLayer extends TileLayer {
 
     @Override
     public List<? extends TileLayerBucket> getBuckets() {
-        return mesh.getBuckets().stream()
+        return mesh.getBuckets()
+                .stream()
                 .map(m -> new FeatureBucket(this, m))
                 .collect(Collectors.toCollection(ArrayList::new));
     }

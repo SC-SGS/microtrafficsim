@@ -26,8 +26,8 @@ public class ViewportState {
     }
 
     public void set(GL gl, int x, int y, int width, int height) {
-        if ((viewport.xmin == x) && (viewport.ymin == y)
-                && (viewport.xmax == x + width) && (viewport.ymax == y + height))
+        if ((viewport.xmin == x) && (viewport.ymin == y) && (viewport.xmax == x + width)
+                && (viewport.ymax == y + height))
             return;
 
         gl.glViewport(x, y, width, height);
@@ -35,8 +35,8 @@ public class ViewportState {
     }
 
     public void set(GL gl, int x, int y, int width, int height, boolean force) {
-        if ((viewport.xmin == x) && (viewport.ymin == y)
-                && (viewport.xmax == x + width) && (viewport.ymax == y + height)
+        if ((viewport.xmin == x) && (viewport.ymin == y) && (viewport.xmax == x + width)
+                && (viewport.ymax == y + height)
                 && !force)
             return;
 

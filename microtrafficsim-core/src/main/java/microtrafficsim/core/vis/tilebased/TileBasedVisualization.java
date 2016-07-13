@@ -23,16 +23,16 @@ import java.util.stream.Collectors;
 
 public class TileBasedVisualization extends AbstractVisualization {
 
-    private static final int ZOOM_LEVEL_MIN = 0;
-    private static final int ZOOM_LEVEL_MAX = 19;
-    private static final double ZOOM_FACTOR = 0.1;
+    private static final int    ZOOM_LEVEL_MIN = 0;
+    private static final int    ZOOM_LEVEL_MAX = 19;
+    private static final double ZOOM_FACTOR    = 0.1;
 
     private static final float Z_NEAR = 0.1f;
-    private static final float Z_FAR = 1000.f;
+    private static final float Z_FAR  = 1000.f;
 
     private OrthoInputController controller;
-    private MouseListener mouseController = new MouseControllerImpl();
-    private KeyController keyController = new KeyControllerImpl();
+    private MouseListener        mouseController = new MouseControllerImpl();
+    private KeyController        keyController   = new KeyControllerImpl();
 
 
     public TileBasedVisualization(int width, int height, TileProvider provider, int nWorkerThreads) {
@@ -47,7 +47,8 @@ public class TileBasedVisualization extends AbstractVisualization {
         this(new RenderContext(), view, provider, worker);
     }
 
-    private TileBasedVisualization(RenderContext context, OrthographicView view, TileProvider provider, ExecutorService worker) {
+    private TileBasedVisualization(RenderContext context, OrthographicView view, TileProvider provider,
+                                   ExecutorService worker) {
         super(context, new TileBasedVisualizer(context, view, provider, worker));
         this.controller = new OrthoInputController(view, ZOOM_FACTOR);
     }
@@ -89,7 +90,7 @@ public class TileBasedVisualization extends AbstractVisualization {
         @Override
         public void mouseMoved(MouseEvent e) {
             resolve(e, Overlay.MouseListener::mouseMoved, controller::mouseMoved);
-       }
+        }
 
         @Override
         public void mouseDragged(MouseEvent e) {
@@ -112,7 +113,8 @@ public class TileBasedVisualization extends AbstractVisualization {
         }
 
 
-        private void resolve(MouseEvent e, BiPredicate<Overlay.MouseListener, MouseEvent> call, Consumer<MouseEvent> toplevel) {
+        private void resolve(MouseEvent e, BiPredicate<Overlay.MouseListener, MouseEvent> call,
+                             Consumer<MouseEvent> toplevel) {
             ArrayList<Overlay.MouseListener> listeners = getAllOverlays().stream()
                     .map(Overlay::getMouseListener)
                     .filter(listener -> listener != null)

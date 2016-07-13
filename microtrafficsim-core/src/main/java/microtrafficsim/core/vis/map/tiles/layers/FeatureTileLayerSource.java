@@ -14,12 +14,12 @@ import java.util.ArrayList;
 
 public class FeatureTileLayerSource implements TileLayerSource {
 
-    private String feature;
-    private Style style;
+    private String              feature;
+    private Style               style;
     private TileFeatureProvider provider;
-	private long revision;
+    private long                revision;
 
-    private ArrayList<LayerSourceChangeListener> listeners;
+    private ArrayList<LayerSourceChangeListener>      listeners;
     private TileFeatureProvider.FeatureChangeListener featureListener;
 
 
@@ -28,35 +28,31 @@ public class FeatureTileLayerSource implements TileLayerSource {
     }
 
     public FeatureTileLayerSource(String feature, Style style, TileFeatureProvider provider) {
-        this.feature = feature;
-        this.style = style;
+        this.feature  = feature;
+        this.style    = style;
         this.provider = provider;
-		this.revision = 0;
+        this.revision = 0;
 
-        this.listeners = new ArrayList<>();
+        this.listeners       = new ArrayList<>();
         this.featureListener = new FeatureChangeListenerImpl();
 
-        if (provider != null)
-            provider.addFeatureChangeListener(featureListener);
-    }
-
-
-    public void setFeatureProvider(TileFeatureProvider provider) {
-        if (this.provider != null)
-            this.provider.removeFeatureChangeListener(featureListener);
-
-        if (provider != null)
-            provider.addFeatureChangeListener(featureListener);
-
-        this.provider = provider;
-		this.revision++;
-
-        for (LayerSourceChangeListener listener : listeners)
-            listener.sourceChanged(this);
+        if (provider != null) provider.addFeatureChangeListener(featureListener);
     }
 
     public TileFeatureProvider getFeatureProvider() {
         return provider;
+    }
+
+    public void setFeatureProvider(TileFeatureProvider provider) {
+        if (this.provider != null) this.provider.removeFeatureChangeListener(featureListener);
+
+        if (provider != null) provider.addFeatureChangeListener(featureListener);
+
+        this.provider = provider;
+        this.revision++;
+
+        for (LayerSourceChangeListener listener : listeners)
+            listener.sourceChanged(this);
     }
 
     public String getFeatureName() {
@@ -71,9 +67,9 @@ public class FeatureTileLayerSource implements TileLayerSource {
         return style;
     }
 
-	public long getRevision() {
-		return revision;
-	}
+    public long getRevision() {
+        return revision;
+    }
 
 
     @Override
@@ -89,8 +85,7 @@ public class FeatureTileLayerSource implements TileLayerSource {
 
     @Override
     public TilingScheme getTilingScheme() {
-        if (provider == null || !provider.hasFeature(feature))
-            return null;
+        if (provider == null || !provider.hasFeature(feature)) return null;
 
         return provider.getTilingScheme();
     }
@@ -98,16 +93,14 @@ public class FeatureTileLayerSource implements TileLayerSource {
 
     @Override
     public Bounds getBounds() {
-        if (provider == null || !provider.hasFeature(feature))
-            return null;
+        if (provider == null || !provider.hasFeature(feature)) return null;
 
         return provider.getBounds();
     }
 
     @Override
     public Rect2d getProjectedBounds() {
-        if (provider == null || !provider.hasFeature(feature))
-            return null;
+        if (provider == null || !provider.hasFeature(feature)) return null;
 
         return provider.getProjectedBounds();
     }
@@ -133,21 +126,21 @@ public class FeatureTileLayerSource implements TileLayerSource {
 
         @Override
         public void featuresChanged() {
-			revision++;
+            revision++;
             for (LayerSourceChangeListener l : listeners)
                 l.sourceChanged(FeatureTileLayerSource.this);
         }
 
         @Override
         public void featuresChanged(TileId tile) {
-			revision++;
+            revision++;
             for (LayerSourceChangeListener l : listeners)
                 l.sourceChanged(FeatureTileLayerSource.this, tile);
         }
 
         @Override
         public void featureChanged(String name) {
-			revision++;
+            revision++;
             if (feature != null && feature.equals(name))
                 for (LayerSourceChangeListener l : listeners)
                     l.sourceChanged(FeatureTileLayerSource.this);
@@ -155,7 +148,7 @@ public class FeatureTileLayerSource implements TileLayerSource {
 
         @Override
         public void featureChanged(String name, TileId tile) {
-			revision++;
+            revision++;
             if (feature != null && feature.equals(name))
                 for (LayerSourceChangeListener l : listeners)
                     l.sourceChanged(FeatureTileLayerSource.this, tile);

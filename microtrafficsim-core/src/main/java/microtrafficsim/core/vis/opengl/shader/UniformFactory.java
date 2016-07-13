@@ -4,5 +4,5 @@ import microtrafficsim.core.vis.opengl.DataType;
 
 
 public interface UniformFactory {
-	Uniform<?> create(String name, DataType type);
+    Uniform<?> create(String name, DataType type);
 }

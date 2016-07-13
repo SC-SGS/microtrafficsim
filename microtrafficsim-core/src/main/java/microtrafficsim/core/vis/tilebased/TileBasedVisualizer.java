@@ -45,26 +45,28 @@ import static microtrafficsim.build.BuildSetup.DEBUG_VISUALIZATION;
 
 public class TileBasedVisualizer implements Visualizer {
 
-    private static final int DEFAULT_FPS = 60;
+    private static final int DEFAULT_FPS   = 60;
     private static final String GL_PROFILE = GLProfile.GL3;
 
-    private static final Resource FBO_COLOR_DEPTH_COPY_VS = new PackagedResource(TileBasedVisualizer.class, "/shaders/fbo_color_depth_copy.vs");
-    private static final Resource FBO_COLOR_DEPTH_COPY_FS = new PackagedResource(TileBasedVisualizer.class, "/shaders/fbo_color_depth_copy.fs");
+    private static final Resource FBO_COLOR_DEPTH_COPY_VS = new PackagedResource(TileBasedVisualizer.class,
+                                                                                 "/shaders/fbo_color_depth_copy.vs");
+    private static final Resource FBO_COLOR_DEPTH_COPY_FS = new PackagedResource(TileBasedVisualizer.class,
+                                                                                 "/shaders/fbo_color_depth_copy.fs");
 
     private static final int FBO_COLOR_TEXUNIT = 0;
     private static final int FBO_DEPTH_TEXUNIT = 1;
 
-    private RenderContext context;
+    private RenderContext    context;
     private OrthographicView view;
 
     private TileProvider provider;
-    private TileManager manager;
+    private TileManager  manager;
     private TreeMap<Integer, Overlay> overlays = new TreeMap<>();
 
     // back buffer for the map
     private Overlay.MapBuffer backbuffer = null;
     private VertexArrayObject empty;
-    private ShaderProgram fboCopyShader;
+    private ShaderProgram     fboCopyShader;
 
     // global uniforms
     private UniformMat4f uView;
@@ -74,14 +76,12 @@ public class TileBasedVisualizer implements Visualizer {
     private Color bgcolor = Color.fromRGBA(0x000000FF);
 
 
-    public TileBasedVisualizer(
-            RenderContext context,
-            OrthographicView view,
-            TileProvider provider,
-            ExecutorService worker)
-    {
-        this.context = context;
-        this.view = view;
+    public TileBasedVisualizer(RenderContext    context,
+                               OrthographicView view,
+                               TileProvider     provider,
+                               ExecutorService  worker) {
+        this.context  = context;
+        this.view     = view;
         this.provider = provider;
 
         this.manager = new TileManager(provider, worker);
@@ -91,11 +91,11 @@ public class TileBasedVisualizer implements Visualizer {
     }
 
     private void initShaderBindings() {
-        UniformManager uniforms = context.getUniformManager();
+        UniformManager         uniforms   = context.getUniformManager();
         VertexAttributeManager attributes = context.getVertexAttribManager();
 
         // initialize global uniform variables
-        uView = (UniformMat4f) uniforms.putGlobalUniform("u_view", DataTypes.FLOAT_MAT4);
+        uView       = (UniformMat4f) uniforms.putGlobalUniform("u_view", DataTypes.FLOAT_MAT4);
         uProjection = (UniformMat4f) uniforms.putGlobalUniform("u_projection", DataTypes.FLOAT_MAT4);
         uniforms.putGlobalUniform("u_viewscale", DataTypes.FLOAT);
         uViewport = (UniformVec4f) uniforms.putGlobalUniform("u_viewport", DataTypes.FLOAT_VEC4);
@@ -116,16 +116,15 @@ public class TileBasedVisualizer implements Visualizer {
 
     @Override
     public VisualizerConfig getDefaultConfig() throws UnsupportedFeatureException {
-        GLProfile profile = GLProfile.get(GL_PROFILE);
-        GLCapabilities caps = new GLCapabilities(profile);
+        GLProfile      profile = GLProfile.get(GL_PROFILE);
+        GLCapabilities caps    = new GLCapabilities(profile);
 
         caps.setDoubleBuffered(true);
         caps.setDepthBits(16);
 
         // check if required features are available
         ArrayList<String> missing = checkGLFeatureSet(profile);
-        if (!missing.isEmpty())
-            throw new UnsupportedFeatureException(missing);
+        if (!missing.isEmpty()) throw new UnsupportedFeatureException(missing);
 
         return new VisualizerConfig(profile, caps, DEFAULT_FPS);
     }
@@ -138,14 +137,14 @@ public class TileBasedVisualizer implements Visualizer {
             return missing;
         }
 
-		/*
-		 * the above only checks for the major version, to check for the minor
-		 * version we have to parse the availability String for GL3. Note that
-		 * this is a check for the default device.
-		 */
-        String available = GLProfile.glAvailabilityToString();
-        Pattern gl31 = Pattern.compile(".*GL3 true \\[(\\d)\\.(\\d).*");
-        Matcher matcher = gl31.matcher(available);
+        /*
+         * the above only checks for the major version, to check for the minor
+         * version we have to parse the availability String for GL3. Note that
+         * this is a check for the default device.
+         */
+        String  available = GLProfile.glAvailabilityToString();
+        Pattern gl31      = Pattern.compile(".*GL3 true \\[(\\d)\\.(\\d).*");
+        Matcher matcher   = gl31.matcher(available);
 
         if (matcher.matches()) {
             int major = Integer.parseInt(matcher.group(1));
@@ -189,7 +188,7 @@ public class TileBasedVisualizer implements Visualizer {
         resetView();
 
         manager.initialize(context);
-        for (Overlay overlay: overlays.values())
+        for (Overlay overlay : overlays.values())
             overlay.init(context);
     }
 
@@ -200,17 +199,17 @@ public class TileBasedVisualizer implements Visualizer {
 
         // dispose the subsystems
         manager.dispose(context);
-        for (Overlay overlay: overlays.values())
+        for (Overlay overlay : overlays.values())
             overlay.dispose(context);
     }
 
     private void initFrameBuffer(RenderContext context) {
         GLAutoDrawable drawable = context.getDrawable();
 
-        GL3 gl = drawable.getGL().getGL3();
-        final int width = drawable.getSurfaceWidth();
+        GL3       gl     = drawable.getGL().getGL3();
+        final int width  = drawable.getSurfaceWidth();
         final int height = drawable.getSurfaceHeight();
-        int[] obj = { -1, -1, -1 };
+        int[] obj        = {-1, -1, -1};
 
         // create empty VAO for buffer-copying
         empty = VertexArrayObject.create(gl);
@@ -255,7 +254,8 @@ public class TileBasedVisualizer implements Visualizer {
         gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_NEAREST);
         gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_NEAREST);
         gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_COMPARE_MODE, GL3.GL_NONE);
-        gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT16, width, height, 0, GL3.GL_DEPTH_COMPONENT, GL3.GL_BYTE, null);
+        gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT16, width, height, 0,
+                        GL3.GL_DEPTH_COMPONENT, GL3.GL_BYTE, null);
         gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
 
         // create framebuffer
@@ -266,8 +266,8 @@ public class TileBasedVisualizer implements Visualizer {
         gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 
         if (status != GL3.GL_FRAMEBUFFER_COMPLETE)
-            throw new RuntimeException("Failed to create framebuffer object (status: 0x"
-                    + Integer.toHexString(status) + ")");
+            throw new RuntimeException("Failed to create framebuffer object (status: 0x" + Integer.toHexString(status)
+                                       + ")");
     }
 
     private void resizeFrameBuffer(RenderContext context, int width, int height) {
@@ -279,15 +279,16 @@ public class TileBasedVisualizer implements Visualizer {
         gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
 
         gl.glBindTexture(GL3.GL_TEXTURE_2D, backbuffer.depth);
-        gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT16, width, height, 0, GL3.GL_DEPTH_COMPONENT, GL3.GL_BYTE, null);
+        gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, GL3.GL_DEPTH_COMPONENT16, width, height, 0,
+                        GL3.GL_DEPTH_COMPONENT, GL3.GL_BYTE, null);
         gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
     }
 
     private void disposeFrameBuffer(RenderContext context) {
         if (backbuffer == null) return;
 
-        GL3 gl = context.getDrawable().getGL().getGL3();
-        int[] obj= { backbuffer.fbo, backbuffer.color, backbuffer.depth };
+        GL3 gl    = context.getDrawable().getGL().getGL3();
+        int[] obj = {backbuffer.fbo, backbuffer.color, backbuffer.depth};
 
         // detach textures
         gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, backbuffer.fbo);
@@ -308,8 +309,8 @@ public class TileBasedVisualizer implements Visualizer {
 
     @Override
     public void display(RenderContext context) throws Exception {
-        GL3 gl = context.getDrawable().getGL().getGL3();
-        int width = context.getDrawable().getSurfaceWidth();
+        GL3 gl     = context.getDrawable().getGL().getGL3();
+        int width  = context.getDrawable().getSurfaceWidth();
         int height = context.getDrawable().getSurfaceHeight();
 
         uViewport.set(width, height, 1.f / width, 1.f / height);
@@ -323,8 +324,8 @@ public class TileBasedVisualizer implements Visualizer {
 
         gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, backbuffer.fbo);
 
-        gl.glClearBufferfv(GL3.GL_COLOR, 0, new float[]{bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a}, 0);
-        gl.glClearBufferfv(GL3.GL_DEPTH, 0, new float[]{ 0.0f }, 0);
+        gl.glClearBufferfv(GL3.GL_COLOR, 0, new float[] { bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a }, 0);
+        gl.glClearBufferfv(GL3.GL_DEPTH, 0, new float[] { 0.0f }, 0);
 
         manager.update(context, view);
         manager.display(context, view);
@@ -435,6 +436,7 @@ public class TileBasedVisualizer implements Visualizer {
             resetView();
         }
 
-        @Override public void tileChanged(TileId tile) {}
+        @Override
+        public void tileChanged(TileId tile) {}
     }
 }

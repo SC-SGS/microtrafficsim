@@ -29,17 +29,15 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
     @Override
     public FeatureMeshKey getKey(RenderContext context, FeatureTileLayerSource source, TileId tile, Rect2d target) {
-        return new StreetMeshKey(
-                context,
-                getFeatureBounds(source, tile),
-                target,
-                source.getFeatureProvider(),
-                source.getFeatureName(),
-                source.getTilingScheme(),
-                source.getRevision(),
-                getPropAdjacency(source.getStyle()),
-                getPropJoinsWhenPossible(source.getStyle())
-        );
+        return new StreetMeshKey(context,
+                                 getFeatureBounds(source, tile),
+                                 target,
+                                 source.getFeatureProvider(),
+                                 source.getFeatureName(),
+                                 source.getTilingScheme(),
+                                 source.getRevision(),
+                                 getPropAdjacency(source.getStyle()),
+                                 getPropJoinsWhenPossible(source.getStyle()));
     }
 
     @Override
@@ -48,8 +46,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
     }
 
     @Override
-    public Mesh generate(RenderContext context, FeatureTileLayerSource src, TileId tile, Rect2d target) throws InterruptedException {
-        boolean adjacency = getPropAdjacency(src.getStyle());
+    public Mesh generate(RenderContext context, FeatureTileLayerSource src, TileId tile, Rect2d target)
+            throws InterruptedException {
+        boolean adjacency         = getPropAdjacency(src.getStyle());
         boolean joinsWhenPossible = getPropJoinsWhenPossible(src.getStyle());
 
         // expand to handle thick lines
@@ -60,14 +59,14 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         if (feature == null) return null;
 
         // get tile and source properties
-        TilingScheme scheme = src.getTilingScheme();
-        Projection projection = scheme.getProjection();
-        Rect2d bounds = scheme.getBounds(getFeatureBounds(src, tile));
+        TilingScheme scheme     = src.getTilingScheme();
+        Projection   projection = scheme.getProjection();
+        Rect2d       bounds     = scheme.getBounds(getFeatureBounds(src, tile));
 
         // generate mesh
-        ArrayList<Vertex> vertices = new ArrayList<>();
-        ArrayList<ArrayList<Integer>> indices = new ArrayList<>();
-        int mode;
+        ArrayList<Vertex>             vertices = new ArrayList<>();
+        ArrayList<ArrayList<Integer>> indices  = new ArrayList<>();
+        int                           mode;
 
         if (adjacency) {
             generateAdjacencyMesh(context, feature, joinsWhenPossible, vertices, indices);
@@ -92,7 +91,8 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
         // create index buffer
         int nIndices = 0;
-        for (ArrayList<Integer> i : indices) nIndices += i.size();
+        for (ArrayList<Integer> i : indices)
+            nIndices += i.size();
 
         IntBuffer ib = IntBuffer.allocate(nIndices);
         for (ArrayList<Integer> bucket : indices)
@@ -101,13 +101,13 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         ib.rewind();
 
         // create mesh and buckets
-        Pos3IndexedMesh mesh = new Pos3IndexedMesh(GL3.GL_STATIC_DRAW, mode, vb, ib);
+        Pos3IndexedMesh                   mesh    = new Pos3IndexedMesh(GL3.GL_STATIC_DRAW, mode, vb, ib);
         ArrayList<Pos3IndexedMesh.Bucket> buckets = new ArrayList<>();
 
         int offset = 0;
         for (ArrayList<Integer> indexbucket : indices) {
             float layer = vertices.get(indexbucket.get(0)).layer;
-            int count = indexbucket.size();
+            int   count = indexbucket.size();
 
             buckets.add(mesh.new Bucket(layer, offset, count));
             offset += count;
@@ -117,13 +117,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         return mesh;
     }
 
-    private void generateAdjacencyMesh(
-            RenderContext context,
-            TileFeature<? extends Street> feature,
-            boolean joinsWhenPossible,
-            ArrayList<Vertex> vertices,
-            ArrayList<ArrayList<Integer>> indices) throws InterruptedException
-    {
+    private void generateAdjacencyMesh(RenderContext context, TileFeature<? extends Street> feature,
+                                       boolean joinsWhenPossible, ArrayList<Vertex> vertices,
+                                       ArrayList<ArrayList<Integer>> indices) throws InterruptedException {
         int restartIndex = context.PrimitiveRestart.getIndex();
 
         // get all intersections
@@ -138,12 +134,11 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
         // generate line geometry
         int counter = 0;
-        HashMap<Vertex, Integer> indexmap = new HashMap<>();
-        HashMap<Float, ArrayList<Integer>> buckets = new HashMap<>();
+        HashMap<Vertex, Integer>           indexmap = new HashMap<>();
+        HashMap<Float, ArrayList<Integer>> buckets  = new HashMap<>();
 
         for (Street street : feature.getData()) {
-            if (Thread.interrupted())
-                throw new InterruptedException();
+            if (Thread.interrupted()) throw new InterruptedException();
 
             ArrayList<Integer> bucket = buckets.get(street.layer);
             if (bucket == null) {
@@ -157,8 +152,8 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 if (joinsWhenPossible && intersections.count(street.coordinates[0]) == 2) {
                     Coordinate xpoint = street.coordinates[0];
 
-                    Iterator<Street> it = intersections.get(xpoint).iterator();
-                    Street other = it.next();
+                    Iterator<Street> it        = intersections.get(xpoint).iterator();
+                    Street           other     = it.next();
                     if (other == street) other = it.next();
 
                     Coordinate c;
@@ -172,7 +167,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                     v = new Vertex(street.coordinates[0], street.layer);
                 }
 
-                int index;
+                int     index;
                 Integer indexobj = indexmap.get(v);
                 if (indexobj != null) {
                     index = indexobj;
@@ -189,7 +184,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             for (Coordinate c : street.coordinates) {
                 Vertex v = new Vertex(c, street.layer);
 
-                int index;
+                int     index;
                 Integer indexobj = indexmap.get(v);
                 if (indexobj != null) {
                     index = indexobj;
@@ -208,8 +203,8 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 if (joinsWhenPossible && intersections.count(street.coordinates[street.coordinates.length - 1]) == 2) {
                     Coordinate xpoint = street.coordinates[street.coordinates.length - 1];
 
-                    Iterator<Street> it = intersections.get(xpoint).iterator();
-                    Street other = it.next();
+                    Iterator<Street> it        = intersections.get(xpoint).iterator();
+                    Street           other     = it.next();
                     if (other == street) other = it.next();
 
                     Coordinate c;
@@ -223,7 +218,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                     v = new Vertex(street.coordinates[street.coordinates.length - 1], street.layer);
                 }
 
-                int index;
+                int     index;
                 Integer indexobj = indexmap.get(v);
                 if (indexobj != null) {
                     index = indexobj;
@@ -242,21 +237,16 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         indices.addAll(buckets.values());
     }
 
-    private void generateStandardMesh(
-            RenderContext context,
-            TileFeature<? extends Street> feature,
-            ArrayList<Vertex> vertices,
-            ArrayList<ArrayList<Integer>> indices) throws InterruptedException
-    {
+    private void generateStandardMesh( RenderContext context, TileFeature<? extends Street> feature,
+            ArrayList<Vertex> vertices, ArrayList<ArrayList<Integer>> indices) throws InterruptedException {
         int restartIndex = context.PrimitiveRestart.getIndex();
 
         int counter = 0;
-        HashMap<Vertex, Integer> indexmap = new HashMap<>();
-        HashMap<Float, ArrayList<Integer>> buckets = new HashMap<>();
+        HashMap<Vertex, Integer>           indexmap = new HashMap<>();
+        HashMap<Float, ArrayList<Integer>> buckets  = new HashMap<>();
 
         for (Street street : feature.getData()) {
-            if (Thread.interrupted())
-                throw new InterruptedException();
+            if (Thread.interrupted()) throw new InterruptedException();
 
             ArrayList<Integer> bucket = buckets.get(street.layer);
             if (bucket == null) {
@@ -267,7 +257,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             for (Coordinate c : street.coordinates) {
                 Vertex v = new Vertex(c, street.layer);
 
-                int index;
+                int     index;
                 Integer indexobj = indexmap.get(v);
                 if (indexobj != null) {
                     index = indexobj;
@@ -289,11 +279,10 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
     private static Vec2d project(Projection projection, Rect2d from, Rect2d to, Coordinate c) {
         Vec2d p = projection.project(c);
-        p.x = ((p.x - from.xmin) / (from.xmax - from.xmin)) * (to.xmax - to.xmin) + to.xmin;
-        p.y = ((p.y - from.ymin) / (from.ymax - from.ymin)) * (to.ymax - to.ymin) + to.ymin;
+        p.x     = ((p.x - from.xmin) / (from.xmax - from.xmin)) * (to.xmax - to.xmin) + to.xmin;
+        p.y     = ((p.y - from.ymin) / (from.ymax - from.ymin)) * (to.ymax - to.ymin) + to.ymin;
         return p;
     }
-
 
     private static boolean getPropAdjacency(Style style) {
         return style.getProperty("adjacency_primitives", false);
@@ -306,30 +295,25 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
     private static class Vertex {
         public final Coordinate coordinate;
-        public final float layer;
+        public final float      layer;
 
         public Vertex(Coordinate coordinate, float layer) {
             this.coordinate = coordinate;
-            this.layer = layer;
+            this.layer      = layer;
         }
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof Vertex))
-                return false;
+            if (!(obj instanceof Vertex)) return false;
 
             Vertex other = (Vertex) obj;
 
-            return this.coordinate.equals(other.coordinate)
-                    && this.layer == other.layer;
+            return this.coordinate.equals(other.coordinate) && this.layer == other.layer;
         }
 
         @Override
         public int hashCode() {
-            return new FNVHashBuilder()
-                    .add(coordinate)
-                    .add(layer)
-                    .getHash();
+            return new FNVHashBuilder().add(coordinate).add(layer).getHash();
         }
     }
 }

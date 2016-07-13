@@ -11,13 +11,12 @@ public class ShaderState {
         bound = null;
     }
 
+    public ShaderProgram getCurrentProgram() {
+        return bound;
+    }
 
     public void setCurrentProgram(ShaderProgram program) {
         this.bound = program;
-    }
-
-    public ShaderProgram getCurrentProgram() {
-        return bound;
     }
 
     public void unbind(GL2ES2 gl) {

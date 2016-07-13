@@ -26,7 +26,7 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
     private static final Rect2d MESH_TARGET = new Rect2d(-1.0, -1.0, 1.0, 1.0);
 
     private MeshPool<FeatureMeshGenerator.FeatureMeshKey> pool;
-    private HashSet<FeatureMeshGenerator.FeatureMeshKey> loading;
+    private HashSet<FeatureMeshGenerator.FeatureMeshKey>  loading;
     private HashMap<Class<? extends FeaturePrimitive>, FeatureMeshGenerator> generators;
 
 
@@ -35,18 +35,17 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
     }
 
     public FeatureTileLayerGenerator(boolean defaultInit) {
-        this.pool = new MeshPool<>();
-        this.loading = new HashSet<>();
+        this.pool       = new MeshPool<>();
+        this.loading    = new HashSet<>();
         this.generators = new HashMap<>();
 
-        if (defaultInit) {
-            generators.put(Street.class, new StreetMeshGenerator());
-        }
+        if (defaultInit) { generators.put(Street.class, new StreetMeshGenerator()); }
     }
 
 
     @Override
-    public FeatureTileLayer generate(RenderContext context, Layer layer, TileId tile, Rect2d target) throws InterruptedException {
+    public FeatureTileLayer generate(RenderContext context, Layer layer, TileId tile, Rect2d target)
+            throws InterruptedException {
         if (!(layer.getSource() instanceof FeatureTileLayerSource)) return null;
 
         FeatureTileLayerSource src = (FeatureTileLayerSource) layer.getSource();
@@ -55,14 +54,14 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
         FeatureMeshGenerator generator = generators.get(src.getFeatureType());
         if (generator == null) return null;
 
-        FeatureMeshGenerator.FeatureMeshKey key = generator.getKey(context, src, tile, MESH_TARGET);
-        ManagedMesh mesh = null;
+        FeatureMeshGenerator.FeatureMeshKey key  = generator.getKey(context, src, tile, MESH_TARGET);
+        ManagedMesh                         mesh = null;
 
         synchronized (this) {
             while (mesh == null) {
                 mesh = pool.get(key);
 
-			    if (mesh != null) {
+                if (mesh != null) {
                     mesh = mesh.require();
                 } else {
                     // if mesh is already being loaded, wait
@@ -70,9 +69,7 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
                         try {
                             while (loading.contains(key))
                                 this.wait();
-                        } catch (InterruptedException e) {
-                            return null;
-                        }
+                        } catch (InterruptedException e) { return null; }
                     } else {
                         loading.add(key);
                         break;
@@ -84,14 +81,13 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
         TileRect actual = generator.getFeatureBounds(src, tile);
 
         if (mesh == null) {
-            logger.debug("generating mesh for tile {"
-                    + actual.xmin + "-" + actual.xmax + "/" + actual.ymin + "-" + actual.ymax + "/" + actual.zoom
-                    + "}, feature '" + src.getFeatureName() + "'");
+            logger.debug("generating mesh for tile {" + actual.xmin + "-" + actual.xmax + "/" + actual.ymin + "-"
+                         + actual.ymax + "/" + actual.zoom + "}, feature '" + src.getFeatureName() + "'");
 
             Mesh m;
             try {
                 m = generator.generate(context, src, tile, MESH_TARGET);
-            }  catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 synchronized (this) {
                     loading.remove(key);
                     this.notifyAll();
@@ -126,17 +122,15 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
 
         double sx = sxMeshToBounds * sxBoundsToTile;
         double sy = syMeshToBounds * syBoundsToTile;
-        float sz = 0.1f;      // handle layer valuse from -10 to 10
+        float  sz = 0.1f;    // handle layer valuse from -10 to 10
 
         double tx = meshbounds.xmin - tilebounds.xmin;
         double ty = meshbounds.ymin - tilebounds.ymin;
 
         Mat4f transform = new Mat4f(
-                (float) (sx),          0.f, 0.f, (float) (target.xmin + sxBoundsToTile * tx - MESH_TARGET.xmin * sx),
-                         0.f, (float) (sy), 0.f, (float) (target.ymin + syBoundsToTile * ty - MESH_TARGET.ymin * sy),
-                         0.f,          0.f,  sz,                                                                 0.f,
-                         0.f,          0.f, 0.f,                                                                 1.f
-        );
+                (float) (sx), 0.f, 0.f, (float) (target.xmin + sxBoundsToTile * tx - MESH_TARGET.xmin * sx),
+                0.f, (float) (sy), 0.f, (float) (target.ymin + syBoundsToTile * ty - MESH_TARGET.ymin * sy),
+                0.f, 0.f, sz, 0.f, 0.f, 0.f, 0.f, 1.f);
 
         FeatureStyle style = new FeatureStyle(src.getStyle());
         return new FeatureTileLayer(tile, layer, transform, mesh, style);

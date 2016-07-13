@@ -6,5 +6,6 @@ import microtrafficsim.core.vis.map.projections.Projection;
 
 
 public interface SegmentLayerGenerator {
-	SegmentLayer generate(RenderContext context, LayerDefinition def, Projection projection) throws InterruptedException;
+    SegmentLayer generate(RenderContext context, LayerDefinition def, Projection projection)
+            throws InterruptedException;
 }

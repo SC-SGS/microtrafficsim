@@ -25,26 +25,26 @@ import java.nio.FloatBuffer;
 
 
 public class TileGridOverlay implements Overlay {
-    private static final Resource VERTEX_SHADER = new PackagedResource(TileGridOverlay.class, "/shaders/basic.vs");
+    private static final Resource VERTEX_SHADER   = new PackagedResource(TileGridOverlay.class, "/shaders/basic.vs");
     private static final Resource FRAGMENT_SHADER = new PackagedResource(TileGridOverlay.class, "/shaders/basic.fs");
-    private static final Color COLOR = Color.fromRGB(0xFF0000);
+    private static final Color COLOR              = Color.fromRGB(0xFF0000);
 
     private OrthographicView view;
 
-    private boolean enabled;
+    private boolean      enabled;
     private TilingScheme scheme;
 
     private ShaderProgram shader;
-    private UniformVec4f uColor;
+    private UniformVec4f  uColor;
 
-    private BufferStorage vbo;
+    private BufferStorage     vbo;
     private VertexArrayObject vao;
 
 
     public TileGridOverlay(TilingScheme scheme) {
         this.enabled = true;
-        this.scheme = scheme;
-        this.shader = null;
+        this.scheme  = scheme;
+        this.shader  = null;
     }
 
     public void setView(OrthographicView view) {
@@ -77,8 +77,10 @@ public class TileGridOverlay implements Overlay {
         vbo = BufferStorage.create(gl, GL3.GL_ARRAY_BUFFER);
 
         /* create vao */
-        VertexAttributePointer ptrPosition
-                = VertexAttributePointer.create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, vbo, 0, 0);
+        VertexAttributePointer ptrPosition = VertexAttributePointer.
+                create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, vbo, 0, 0);
+
+        assert ptrPosition != null;
 
         vao = VertexArrayObject.create(gl);
         vao.bind(gl);
@@ -107,10 +109,10 @@ public class TileGridOverlay implements Overlay {
         gl.glDepthMask(false);
 
         /* update tile grid */
-        double zoom = ((OrthographicView) view).getZoomLevel();
-        Rect2d bounds = ((OrthographicView) view).getViewportBounds();
+        double zoom   = view.getZoomLevel();
+        Rect2d bounds = view.getViewportBounds();
 
-        TileRect tiles = scheme.getTiles(bounds, zoom);       // bounds inclusive
+        TileRect tiles = scheme.getTiles(bounds, zoom);    // bounds inclusive
 
         int tx = tiles.xmax - tiles.xmin + 2;
         int ty = tiles.ymax - tiles.ymin + 2;
@@ -120,8 +122,8 @@ public class TileGridOverlay implements Overlay {
         vbo.bind(gl);
         gl.glBufferData(vbo.target, nVertices * 3 * 4L, null, GL3.GL_DYNAMIC_DRAW);
         FloatBuffer vertices = gl.glMapBufferRange(vbo.target, 0, nVertices * 3 * 4L,
-                GL3.GL_MAP_WRITE_BIT | GL3.GL_MAP_INVALIDATE_BUFFER_BIT)
-                .asFloatBuffer();
+                                                   GL3.GL_MAP_WRITE_BIT | GL3.GL_MAP_INVALIDATE_BUFFER_BIT)
+                                       .asFloatBuffer();
 
         for (int x = tiles.xmin; x <= tiles.xmax + 1; x++) {
             Vec2d a = scheme.getPosition(x, tiles.ymin, tiles.zoom);

@@ -13,15 +13,15 @@ public class Vehicle implements IVisualizationVehicle {
     private static final float MIN_TARGET_DISTANCE = 1.0f;
 
     private VehicleEntity entity;
-    private Coordinate position;
-    private float layer;
-    private Coordinate target;
-    private Color color;
+    private Coordinate    position;
+    private float         layer;
+    private Coordinate    target;
+    private Color         color;
 
     public Vehicle(Color color) {
-        this.entity = null;
+        this.entity   = null;
         this.position = new Coordinate(0, 0);
-        this.color = color;
+        this.color    = color;
 
         target = new Coordinate(1, 1);
     }
@@ -49,27 +49,26 @@ public class Vehicle implements IVisualizationVehicle {
     @Override
     public void updatePosition() {
         DirectedEdge edge = entity.getLogic().getDirectedEdge();
-        Street geom = edge.getEntity().getGeometry();
+        Street       geom = edge.getEntity().getGeometry();
         layer = geom.layer;
 
-        double pos = entity.getLogic().getCellPosition() + 0.5f;
-        pos = pos * (geom.length / edge.getLength());
+        double pos = (entity.getLogic().getCellPosition() + 0.5f) * (geom.length / edge.getLength());
 
         Coordinate a;
         Coordinate b;
         Coordinate c;
-        double dSegment = 0;
+
+        double dSegment   = 0;
         double dToSegment = 0;
 
         if (edge == edge.getEntity().getForwardEdge()) {
             int segment = 0;
             for (int i = 0; i < geom.distances.length; i++) {
-                segment = i;
+                segment  = i;
                 dSegment = geom.distances[i];
 
                 double nd = dToSegment + dSegment;
-                if (nd > pos)
-                    break;
+                if (nd > pos) break;
 
                 dToSegment = nd;
             }
@@ -84,12 +83,11 @@ public class Vehicle implements IVisualizationVehicle {
         } else {
             int segment = geom.distances.length - 1;
             for (int i = geom.distances.length - 1; i >= 0; i--) {
-                segment = i;
+                segment  = i;
                 dSegment = geom.distances[i];
 
                 double nd = dToSegment + dSegment;
-                if (nd > pos)
-                    break;
+                if (nd > pos) break;
 
                 dToSegment = nd;
             }

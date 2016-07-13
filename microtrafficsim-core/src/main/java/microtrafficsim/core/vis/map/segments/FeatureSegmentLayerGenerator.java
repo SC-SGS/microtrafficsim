@@ -19,67 +19,64 @@ import java.util.HashSet;
 
 
 public class FeatureSegmentLayerGenerator implements SegmentLayerGenerator {
-	private static final Logger logger = LoggerFactory.getLogger(FeatureSegmentLayerGenerator.class);
+    private static final Logger logger = LoggerFactory.getLogger(FeatureSegmentLayerGenerator.class);
 
-	private MeshPool<FeatureMeshGenerator.FeatureMeshKey> pool;
-	private HashSet<FeatureMeshGenerator.FeatureMeshKey> loading;
-	private HashMap<Class<? extends FeaturePrimitive>, FeatureMeshGenerator> generators;
-	
-	
-	public FeatureSegmentLayerGenerator() {
-		this(true);
-	}
-	
-	public FeatureSegmentLayerGenerator(boolean defaultInit) {
-		this.pool = new MeshPool<>();
-		this.loading = new HashSet<>();
-		this.generators = new HashMap<>();
-		
-		if (defaultInit) {
-            generators.put(Street.class, new StreetMeshGenerator());
-		}
-	}
-	
+    private MeshPool<FeatureMeshGenerator.FeatureMeshKey> pool;
+    private HashSet<FeatureMeshGenerator.FeatureMeshKey>  loading;
+    private HashMap<Class<? extends FeaturePrimitive>, FeatureMeshGenerator> generators;
 
-	@Override
-	public FeatureSegmentLayer generate(RenderContext context, LayerDefinition def, Projection projection) throws InterruptedException {
+
+    public FeatureSegmentLayerGenerator() {
+        this(true);
+    }
+
+    public FeatureSegmentLayerGenerator(boolean defaultInit) {
+        this.pool       = new MeshPool<>();
+        this.loading    = new HashSet<>();
+        this.generators = new HashMap<>();
+
+        if (defaultInit) { generators.put(Street.class, new StreetMeshGenerator()); }
+    }
+
+
+    @Override
+    public FeatureSegmentLayer generate(RenderContext context, LayerDefinition def, Projection projection)
+            throws InterruptedException {
         if (!(def.getSource() instanceof FeatureSegmentLayerSource)) return null;
 
-		FeatureSegmentLayerSource src = (FeatureSegmentLayerSource) def.getSource();
-		if (!src.isAvailable()) return null;
+        FeatureSegmentLayerSource src = (FeatureSegmentLayerSource) def.getSource();
+        if (!src.isAvailable()) return null;
 
-		FeatureMeshGenerator generator = generators.get(src.getFeatureType());
-		if (generator == null) return null;
-		
-		FeatureMeshGenerator.FeatureMeshKey key = generator.getKey(context, src, projection);
-		ManagedMesh mesh;
+        FeatureMeshGenerator generator = generators.get(src.getFeatureType());
+        if (generator == null) return null;
 
-		synchronized (this) {
-			mesh = pool.get(key);
-			if (mesh != null)
-				mesh = mesh.require();
+        FeatureMeshGenerator.FeatureMeshKey key = generator.getKey(context, src, projection);
+        ManagedMesh mesh;
 
-			if (mesh == null) {
-				// if mesh is already being loaded, wait
-				if (loading.contains(key)) {
-					try {
-						while (loading.contains(key))
-							this.wait();
-					} catch (InterruptedException e) {
-						return null;
-					}
+        synchronized (this) {
+            mesh = pool.get(key);
+            if (mesh != null)
+                mesh = mesh.require();
 
-					mesh = pool.get(key);
-					mesh = mesh.require();
+            if (mesh == null) {
+                // if mesh is already being loaded, wait
+                if (loading.contains(key)) {
+                    try {
+                        while (loading.contains(key))
+                            this.wait();
+                    } catch (InterruptedException e) { return null; }
 
-				} else {
-					loading.add(key);
-				}
-			}
-		}
+                    mesh = pool.get(key);
+                    mesh = mesh.require();
 
-		if (mesh == null) {
-			logger.debug("re-generating mesh for feature '" + src.getFeatureName() + "'");
+                } else {
+                    loading.add(key);
+                }
+            }
+        }
+
+        if (mesh == null) {
+            logger.debug("re-generating mesh for feature '" + src.getFeatureName() + "'");
             {
                 Mesh m = generator.generate(context, src, projection);
                 if (m == null) return null;
@@ -87,14 +84,14 @@ public class FeatureSegmentLayerGenerator implements SegmentLayerGenerator {
                 mesh = new ManagedMesh(m);
             }
 
-			synchronized (this) {
-				pool.put(key, mesh);
-				loading.remove(key);
-				this.notifyAll();
-			}
-		}
+            synchronized (this) {
+                pool.put(key, mesh);
+                loading.remove(key);
+                this.notifyAll();
+            }
+        }
 
-		FeatureStyle style = new FeatureStyle(src.getStyle());
-		return new FeatureSegmentLayer(def.getName(), def.getIndex(), def.getSource(), mesh, style);
-	}
+        FeatureStyle style = new FeatureStyle(src.getStyle());
+        return new FeatureSegmentLayer(def.getName(), def.getIndex(), def.getSource(), mesh, style);
+    }
 }

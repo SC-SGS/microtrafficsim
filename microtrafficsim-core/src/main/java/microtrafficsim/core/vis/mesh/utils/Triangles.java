@@ -1,7 +1,7 @@
 package microtrafficsim.core.vis.mesh.utils;
 
-
 import microtrafficsim.math.Vec2d;
+
 
 public class Triangles {
     private Triangles() {}

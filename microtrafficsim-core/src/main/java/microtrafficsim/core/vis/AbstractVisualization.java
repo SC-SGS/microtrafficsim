@@ -1,7 +1,5 @@
 package microtrafficsim.core.vis;
 
-import com.jogamp.newt.event.KeyListener;
-import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.vis.context.RenderContext;
 
 import java.util.Collection;
@@ -10,11 +8,11 @@ import java.util.Collection;
 public abstract class AbstractVisualization implements Visualization {
 
     private RenderContext context;
-    private Visualizer visualizer;
+    private Visualizer    visualizer;
 
 
     public AbstractVisualization(RenderContext context, Visualizer visualizer) {
-        this.context = context;
+        this.context    = context;
         this.visualizer = visualizer;
 
         context.setRenderer(visualizer);

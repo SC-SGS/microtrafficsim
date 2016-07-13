@@ -14,63 +14,61 @@ import java.util.stream.Collectors;
 
 public class FeatureSegmentLayer extends SegmentLayer {
 
-	private Mesh mesh;
-	private FeatureStyle style;
-	private VertexArrayObject vao;
-	
-	public FeatureSegmentLayer(String name, int index, LayerSource source, Mesh mesh, FeatureStyle style) {
-		super(name, index, source);
+    private Mesh              mesh;
+    private FeatureStyle      style;
+    private VertexArrayObject vao;
 
-		this.mesh = mesh;
-		this.style = style;
-		this.vao = null;
-	}
-	
+    public FeatureSegmentLayer(String name, int index, LayerSource source, Mesh mesh, FeatureStyle style) {
+        super(name, index, source);
 
-	@Override
-	public void initialize(RenderContext context) {
-		style.initialize(context);
-		mesh.initialize(context);
-		mesh.load(context);
-		vao = mesh.createVAO(context, style.getShaderProgram());
-	}
-
-	@Override
-	public void dispose(RenderContext context) {
-		vao.dispose(context.getDrawable().getGL().getGL2ES3());
-		mesh.dispose(context);
-		style.dispose(context);
-	}
-	
-	@Override
-	public void display(RenderContext context) {
-		style.bind(context);
-		mesh.display(context, vao);
-		style.unbind(context);
-	}
-
-	@Override
-	public List<SegmentLayerBucket> getBuckets() {
-		return mesh.getBuckets().stream()
-				.map(FeatureBucket::new)
-				.collect(Collectors.toCollection(ArrayList::new));
-	}
+        this.mesh  = mesh;
+        this.style = style;
+        this.vao   = null;
+    }
 
 
-	private class FeatureBucket extends SegmentLayerBucket {
+    @Override
+    public void initialize(RenderContext context) {
+        style.initialize(context);
+        mesh.initialize(context);
+        mesh.load(context);
+        vao = mesh.createVAO(context, style.getShaderProgram());
+    }
 
-		private MeshBucket mesh;
+    @Override
+    public void dispose(RenderContext context) {
+        vao.dispose(context.getDrawable().getGL().getGL2ES3());
+        mesh.dispose(context);
+        style.dispose(context);
+    }
 
-		public FeatureBucket(MeshBucket mesh) {
-			super(FeatureSegmentLayer.this, mesh.getZIndex());
-			this.mesh = mesh;
-		}
+    @Override
+    public void display(RenderContext context) {
+        style.bind(context);
+        mesh.display(context, vao);
+        style.unbind(context);
+    }
 
-		@Override
-		public void display(RenderContext context) {
-			style.bind(context);
-			mesh.display(context, vao);
-			style.unbind(context);
-		}
-	}
+    @Override
+    public List<SegmentLayerBucket> getBuckets() {
+        return mesh.getBuckets().stream().map(FeatureBucket::new).collect(Collectors.toCollection(ArrayList::new));
+    }
+
+
+    private class FeatureBucket extends SegmentLayerBucket {
+
+        private MeshBucket mesh;
+
+        public FeatureBucket(MeshBucket mesh) {
+            super(FeatureSegmentLayer.this, mesh.getZIndex());
+            this.mesh = mesh;
+        }
+
+        @Override
+        public void display(RenderContext context) {
+            style.bind(context);
+            mesh.display(context, vao);
+            style.unbind(context);
+        }
+    }
 }

@@ -4,5 +4,5 @@ import com.jogamp.newt.event.KeyEvent;
 
 
 public interface KeyCommand {
-	void event(KeyEvent e);
+    void event(KeyEvent e);
 }

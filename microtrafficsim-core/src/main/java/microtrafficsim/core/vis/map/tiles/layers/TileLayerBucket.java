@@ -5,10 +5,10 @@ import microtrafficsim.core.vis.context.RenderContext;
 
 public abstract class TileLayerBucket {
     public final TileLayer layer;
-    public final float zIndex;
+    public final float     zIndex;
 
     public TileLayerBucket(TileLayer layer, float zIndex) {
-        this.layer = layer;
+        this.layer  = layer;
         this.zIndex = zIndex;
     }
 

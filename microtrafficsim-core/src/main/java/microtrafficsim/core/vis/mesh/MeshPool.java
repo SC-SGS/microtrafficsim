@@ -6,43 +6,44 @@ import java.util.HashMap;
 
 
 public class MeshPool<K> {
-	private HashMap<K, ManagedMesh> pool;
+    private HashMap<K, ManagedMesh> pool;
 
-	private final LifeTimeObserver<Mesh> lto = m -> removeMesh((ManagedMesh) m);
+    private final LifeTimeObserver<Mesh> lto = m -> removeMesh((ManagedMesh) m);
 
-	public MeshPool() {
-		this.pool = new HashMap<>();
-	}
 
-	public synchronized ManagedMesh get(K key) {
-		return pool.get(key);
-	}
+    public MeshPool() {
+        this.pool = new HashMap<>();
+    }
 
-	public synchronized ManagedMesh put(K key, ManagedMesh mesh) {
-		mesh.addLifeTimeObserver(lto);
+    public synchronized ManagedMesh get(K key) {
+        return pool.get(key);
+    }
 
-		ManagedMesh old = pool.put(key, mesh);
-		if (old != null)
-			old.removeLifeTimeObserver(lto);
+    public synchronized ManagedMesh put(K key, ManagedMesh mesh) {
+        mesh.addLifeTimeObserver(lto);
 
-		return old;
-	}
+        ManagedMesh old = pool.put(key, mesh);
+        if (old != null)
+            old.removeLifeTimeObserver(lto);
 
-	public synchronized ManagedMesh remove(K key) {
-		ManagedMesh mesh = pool.remove(key);
+        return old;
+    }
 
-		if (mesh != null)
-			mesh.removeLifeTimeObserver(lto);
+    public synchronized ManagedMesh remove(K key) {
+        ManagedMesh mesh = pool.remove(key);
 
-		return mesh;
-	}
+        if (mesh != null)
+            mesh.removeLifeTimeObserver(lto);
+
+        return mesh;
+    }
 
     public synchronized boolean removeMesh(ManagedMesh mesh) {
         mesh.removeLifeTimeObserver(lto);
         return pool.values().remove(mesh);
     }
 
-	public synchronized boolean contains(K key) {
-		return pool.containsKey(key);
-	}
+    public synchronized boolean contains(K key) {
+        return pool.containsKey(key);
+    }
 }
