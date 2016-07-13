@@ -2,6 +2,7 @@ package microtrafficsim.core.shortestpath;
 
 import java.util.Queue;
 
+
 /**
  * <p>
  * This interface allows using a shortest path algorithm without knowing the
@@ -22,12 +23,10 @@ import java.util.Queue;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public interface ShortestPathAlgorithm {
-	
-	/**
-	 * 
-	 * 
-	 * @return A sequence of edges, starting from the start node to
-	 *         the end node.
-	 */
-	public Queue<? extends ShortestPathEdge> findShortestPath(ShortestPathNode start, ShortestPathNode end);
+
+    /**
+     * @return A sequence of edges, starting from the start node to
+     * the end node.
+     */
+    Queue<? extends ShortestPathEdge> findShortestPath(ShortestPathNode start, ShortestPathNode end);
 }

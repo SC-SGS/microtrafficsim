@@ -1,8 +1,9 @@
 package microtrafficsim.core.shortestpath.impl;
 
-import microtrafficsim.core.shortestpath.astar.AbstractAStarAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
+import microtrafficsim.core.shortestpath.astar.AbstractAStarAlgorithm;
+
 
 /**
  * This class extends the abstract A* algorithm for defining the edge weights
@@ -12,13 +13,13 @@ import microtrafficsim.core.shortestpath.ShortestPathNode;
  */
 public class ShortestWayDijkstra extends AbstractAStarAlgorithm {
 
-	@Override
-	protected <T extends ShortestPathEdge> float getEdgeWeight(T edge) {
-		return edge.getLength();
-	}
+    @Override
+    protected <T extends ShortestPathEdge> float getEdgeWeight(T edge) {
+        return edge.getLength();
+    }
 
-	@Override
-	protected <T extends ShortestPathNode> float estimate(T destination, T routeDestination) {
-		return 0;
-	}
+    @Override
+    protected <T extends ShortestPathNode> float estimate(T destination, T routeDestination) {
+        return 0;
+    }
 }
