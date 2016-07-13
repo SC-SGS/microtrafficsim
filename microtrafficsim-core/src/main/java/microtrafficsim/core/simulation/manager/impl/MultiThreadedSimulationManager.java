@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
+
 /**
  * @author Dominic Parga Cacheiro
  */
@@ -25,7 +26,7 @@ public class MultiThreadedSimulationManager implements SimulationManager {
     public MultiThreadedSimulationManager(SimulationConfig config) {
 
         this.config = config;
-        pool = Executors.newFixedThreadPool(config.multiThreading.nThreads);
+        pool        = Executors.newFixedThreadPool(config.multiThreading.nThreads);
     }
 
     @Override
@@ -36,7 +37,7 @@ public class MultiThreadedSimulationManager implements SimulationManager {
             v.dash();
             v.brake();
             v.dawdle();
-        } , iteratorSpawned);
+        }, iteratorSpawned);
     }
 
     @Override
@@ -61,7 +62,7 @@ public class MultiThreadedSimulationManager implements SimulationManager {
         for (int c = 0; c < config.multiThreading.nThreads; c++)
             tasks.add(Executors.callable(() -> {
                 int nodesPerThread = config.multiThreading.nodesPerThread;
-                Node[] nodes = new Node[nodesPerThread];
+                Node[] nodes       = new Node[nodesPerThread];
                 int nodeCount;
                 do {
                     nodeCount = 0;
@@ -78,9 +79,7 @@ public class MultiThreadedSimulationManager implements SimulationManager {
         // waiting for finishing the threads
         try {
             pool.invokeAll(tasks);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        } catch (InterruptedException e) { e.printStackTrace(); }
     }
 
     private void doVehicleTask(Consumer<AbstractVehicle> task, Iterator<AbstractVehicle> iter) {
@@ -89,7 +88,7 @@ public class MultiThreadedSimulationManager implements SimulationManager {
         while (iter.hasNext()) {
             // fill current thread's vehicle list
             ArrayList<AbstractVehicle> list = new ArrayList<>(config.multiThreading.vehiclesPerRunnable);
-            int c = 0;
+            int                        c    = 0;
             while (c++ < config.multiThreading.vehiclesPerRunnable && iter.hasNext()) {
                 list.add(iter.next());
             }
@@ -100,8 +99,6 @@ public class MultiThreadedSimulationManager implements SimulationManager {
         // waiting for finishing the threads
         try {
             pool.invokeAll(tasks);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        } catch (InterruptedException e) { e.printStackTrace(); }
     }
 }

@@ -16,35 +16,19 @@ import microtrafficsim.utils.fileio.FileManager;
 
 import java.util.*;
 
+
 /**
  * @author Dominic Parga Cacheiro
  */
 public class MeasuringScenario implements Simulation {
 
-    public enum MeasuredType {
-
-        ANGER_PER_TIMESTEP("anger_per_timestep.csv"),
-        TOTAL_ANGER_WHEN_DESPAWNING("total_anger_when_despawning.csv"),
-        SPAWNED_COUNT_PER_TIMESTEP("spawned_count_per_timestep.csv"),
-        AGE_WHEN_DESPAWNING("age_when_despawning.csv"),
-        LINEAR_DISTANCE_PER_DESPAWN_AGE("linear_distance_per_despawn_age.csv");
-
-        private final String filename;
-
-        private MeasuredType(String filename) {
-            this.filename = filename;
-        }
-    }
-
     private SimulationConfig config;
-    private Simulation simulation;
-    private Timer timer;
-    private boolean paused;
-
-    private DataCollector dataCollector;
-    private FileManager fileManager;
+    private Simulation       simulation;
+    private Timer            timer;
+    private boolean          paused;
+    private DataCollector    dataCollector;
+    private FileManager      fileManager;
     private HashMap<MeasuredType, Boolean> enabledMeasurements;
-
     /**
      * Default constructor.
      *
@@ -57,18 +41,18 @@ public class MeasuringScenario implements Simulation {
     /**
      * Default constructor.
      *
-     * @param simulation This simulation should be measured.
+     * @param simulation         This simulation should be measured.
      * @param PATH_TO_DATA_FILES Path to the folder where the measured data should be saved
      */
     public MeasuringScenario(SimulationConfig config, Simulation simulation, final String PATH_TO_DATA_FILES) {
 
-        this.config = config;
+        this.config     = config;
         this.simulation = simulation;
-        paused = true;
-        timer = new Timer();
+        paused          = true;
+        timer           = new Timer();
 
         dataCollector = new ConcurrentHashDataCollector();
-        fileManager = new FileManager(PATH_TO_DATA_FILES);
+        fileManager   = new FileManager(PATH_TO_DATA_FILES);
 
         enabledMeasurements = new HashMap<>();
         enableAllMeasurements();
@@ -78,27 +62,37 @@ public class MeasuringScenario implements Simulation {
         // TODO config.seed.addObserver(...)
     }
 
-  @Override
-  public SimulationConfig getConfig() {
-    return config;
-  }
+    /**
+     * TODO
+     */
+    public static void printUsage() {
+        System.out.println("MeasuringScenario - parameters");
+        System.out.println("");
+        System.out.println("Parameters:");
+        System.out.println(
+                "  -o <folder>               The path to the folder where measured data is saved. Default: data");
+        System.out.println("");
+    }
 
-  /*
-      |======================|
-      | writing data to file |
-      |======================|
-      */
+    @Override
+    public SimulationConfig getConfig() {
+        return config;
+    }
+
+    /*
+    |======================|
+    | writing data to file |
+    |======================|
+    */
     public synchronized void writeDataToFile() {
-
         System.out.println("");
         System.out.println("WRITING FILES STARTED");
 
         // writing
-        Iterator<Object> data = dataCollector.iterator();
-        String filename = "";
-        Object obj = null;
-        if (data.hasNext())
-            obj = data.next(); // has to be instance of Tag
+        Iterator<Object> data     = dataCollector.iterator();
+        String           filename = "";
+        Object           obj      = null;
+        if (data.hasNext()) obj   = data.next();    // has to be instance of Tag
         while (data.hasNext()) {
             // set filename
             while (obj instanceof Tag) {
@@ -114,10 +108,9 @@ public class MeasuringScenario implements Simulation {
             // write data
             System.out.println("Writing " + filename + " started.");
             StringBuilder builder = new StringBuilder();
-            boolean first = true;
+            boolean       first   = true;
             while (obj instanceof Data) {
-                if (!first)
-                    builder.append(";");
+                if (!first) builder.append(";");
 
                 builder.append(obj.toString());
                 if (data.hasNext())
@@ -140,19 +133,16 @@ public class MeasuringScenario implements Simulation {
     |=====================================|
     */
     @Override
-    public final void willRunOneStep() {
-
-    }
+    public final void willRunOneStep() {}
 
     @Override
     public final void didRunOneStep() {
 
         // init a few variables to save execution time using the hasmap and for better overview
         ArrayList<? extends AbstractVehicle> spawnedVehicles = null;
-        boolean angerPerTimestep = enabledMeasurements.get(MeasuredType.ANGER_PER_TIMESTEP);
+        boolean angerPerTimestep                             = enabledMeasurements.get(MeasuredType.ANGER_PER_TIMESTEP);
         boolean spawnedCountPerTimestep = enabledMeasurements.get(MeasuredType.SPAWNED_COUNT_PER_TIMESTEP);
-        if (angerPerTimestep || spawnedCountPerTimestep)
-            spawnedVehicles = getSpawnedVehicles();
+        if (angerPerTimestep || spawnedCountPerTimestep) spawnedVehicles = getSpawnedVehicles();
 
         if (angerPerTimestep) {
             dataCollector.put(MeasuredType.ANGER_PER_TIMESTEP.filename, spawnedVehicles.size());
@@ -178,23 +168,12 @@ public class MeasuringScenario implements Simulation {
                 dataCollector.put(MeasuredType.AGE_WHEN_DESPAWNING.filename, vehicle.getAge());
 
             if (enabledMeasurements.get(MeasuredType.LINEAR_DISTANCE_PER_DESPAWN_AGE)) {
-                double xD = HaversineDistanceCalculator.getDistance(
-                        vehicle.getRoute().getStart().getCoordinate(),
-                        vehicle.getRoute().getEnd().getCoordinate()) / vehicle.getAge();
+                double xD = HaversineDistanceCalculator.getDistance(vehicle.getRoute().getStart().getCoordinate(),
+                                                                    vehicle.getRoute().getEnd().getCoordinate())
+                            / vehicle.getAge();
                 dataCollector.put(MeasuredType.LINEAR_DISTANCE_PER_DESPAWN_AGE.filename, xD);
             }
         }
-    }
-
-    /**
-     * TODO
-     */
-    public static void printUsage() {
-        System.out.println("MeasuringScenario - parameters");
-        System.out.println("");
-        System.out.println("Parameters:");
-        System.out.println("  -o <folder>               The path to the folder where measured data is saved. Default: data");
-        System.out.println("");
     }
 
     /*
@@ -246,8 +225,7 @@ public class MeasuringScenario implements Simulation {
 
     @Override
     public final void runOneStep() {
-        if (isPrepared() && paused)
-            doRunOneStep();
+        if (isPrepared() && paused) doRunOneStep();
     }
 
     @Override
@@ -325,5 +303,20 @@ public class MeasuringScenario implements Simulation {
     @Override
     public final boolean addVehicle(AbstractVehicle vehicle) {
         return simulation.addVehicle(vehicle);
+    }
+
+    public enum MeasuredType {
+
+        ANGER_PER_TIMESTEP("anger_per_timestep.csv"),
+        TOTAL_ANGER_WHEN_DESPAWNING("total_anger_when_despawning.csv"),
+        SPAWNED_COUNT_PER_TIMESTEP("spawned_count_per_timestep.csv"),
+        AGE_WHEN_DESPAWNING("age_when_despawning.csv"),
+        LINEAR_DISTANCE_PER_DESPAWN_AGE("linear_distance_per_despawn_age.csv");
+
+        private final String filename;
+
+        private MeasuredType(String filename) {
+            this.filename = filename;
+        }
     }
 }

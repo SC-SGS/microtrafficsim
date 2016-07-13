@@ -10,18 +10,19 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
+
 /**
  * @author Dominic Parga Cacheiro
  */
 public class SingleThreadedVehicleManager implements VehicleManager {
 
     private Supplier<IVisualizationVehicle> vehicleFactory;
-    private Set<AbstractVehicle> spawnedVehicles, notSpawnedVehicles, vehicles;
+    private Set<AbstractVehicle>            spawnedVehicles, notSpawnedVehicles, vehicles;
 
     public SingleThreadedVehicleManager(Supplier<IVisualizationVehicle> vehicleFactory) {
-        spawnedVehicles = ConcurrentHashMap.newKeySet();
-        notSpawnedVehicles = ConcurrentHashMap.newKeySet();
-        vehicles = ConcurrentHashMap.newKeySet();
+        spawnedVehicles     = ConcurrentHashMap.newKeySet();
+        notSpawnedVehicles  = ConcurrentHashMap.newKeySet();
+        vehicles            = ConcurrentHashMap.newKeySet();
         this.vehicleFactory = vehicleFactory;
     }
 
@@ -102,11 +103,10 @@ public class SingleThreadedVehicleManager implements VehicleManager {
 
     @Override
     public void stateChanged(AbstractVehicle vehicle) {
-
         if (vehicle.getState() == VehicleState.DESPAWNED) {
             removeVehicle(vehicle, false);
             removeVehicle(vehicle, true);
-        } else if(vehicle.getState() == VehicleState.SPAWNED) {
+        } else if (vehicle.getState() == VehicleState.SPAWNED) {
             removeVehicle(vehicle, false);
             addVehicle(vehicle, true);
         }
