@@ -1,27 +1,26 @@
 package microtrafficsim.osm.features.info;
 
+import microtrafficsim.core.map.features.info.MaxspeedInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import microtrafficsim.core.map.features.info.MaxspeedInfo;
-
 
 /**
  * Provides functionality for extracting a {@code MaxspeedInfo} object out of
  * OpenStreetMap tags.
- * 
+ *
  * @author Maximilian Luz
  */
 public class MaxspeedInfoParser {
-	private static Logger logger = LoggerFactory.getLogger(MaxspeedInfoParser.class);
-	
-	private static Pattern valuetype = Pattern.compile("^([0-9]+(?:\\.(?:[0-9])*)?)(?:\\s*(km/h|kmh|kph|mph|knots))?$");
-	private static Pattern zonetype = Pattern.compile("^(.*):(.*)$");
+    private static Logger logger = LoggerFactory.getLogger(MaxspeedInfoParser.class);
+
+    private static Pattern valuetype = Pattern.compile("^([0-9]+(?:\\.(?:[0-9])*)?)(?:\\s*(km/h|kmh|kph|mph|knots))?$");
+    private static Pattern zonetype  = Pattern.compile("^(.*):(.*)$");
 
     private static Map<String, Map<String, Float>> zoneinfo;
 
@@ -50,9 +49,9 @@ public class MaxspeedInfoParser {
         dk.put("motorway", 130.f);
 
         HashMap<String, Float> de = new HashMap<>(4);
-        de.put("living_street",   7.f);
-        de.put("urban",          50.f);
-        de.put("rural",         100.f);
+        de.put("living_street", 7.f);
+        de.put("urban",        50.f);
+        de.put("rural",       100.f);
         de.put("motorway", MaxspeedInfo.NONE);
 
         HashMap<String, Float> fi = new HashMap<>(4);
@@ -114,9 +113,9 @@ public class MaxspeedInfoParser {
         se.put("motorway", 110.f);
 
         HashMap<String, Float> gb = new HashMap<>(3);
-        gb.put("nsl_single",  96.5606f);
-        gb.put("nsl_dual",   112.654f);
-        gb.put("motorway",   112.654f);
+        gb.put("nsl_single", 96.5606f);
+        gb.put("nsl_dual",  112.6540f);
+        gb.put("motorway",  112.6540f);
 
         HashMap<String, Float> ua = new HashMap<>(4);
         ua.put("urban",     60.f);
@@ -143,115 +142,111 @@ public class MaxspeedInfoParser {
         zoneinfo.put("gb", gb);
         zoneinfo.put("ua", ua);
     }
-	
-	
-	/**
-	 * Create a {@code MaxspeedInfo} object for a street out of the given
-	 * OpenStreetMap tags.
-	 * 
-	 * @param tags	the OpenStreetMap tags as Map.
-	 * @return the parsed {@code MaxspeedInfo}.
-	 */
-	public static MaxspeedInfo parse(Map<String, String> tags) {
-		float both = parseTagValue(tags.get("maxspeed"));
-		float forward = parseTagValue(tags.get("maxspeed:forward"));
-		float backward = parseTagValue(tags.get("maxspeed:backward"));
-		
-		if (forward == MaxspeedInfo.UNGIVEN)
-			forward = both;
-		
-		if (backward == MaxspeedInfo.UNGIVEN)
-			backward = both;
-		
-		return new MaxspeedInfo(forward, backward);
-	}
-	
-	/**
-	 * Parse a maxspeed-value from the given {@code String}.
-	 * 
-	 * @param value	the {@code String} to parse.
-	 * @return the maxspeed-value as float.
-	 */
-	private static float parseTagValue(String value) {
-		if (value != null) {
-			switch (value) {
-			case "walk":	return MaxspeedInfo.WALKING;
-			case "signals":	return MaxspeedInfo.SIGNALS;
-			case "none":	return MaxspeedInfo.NONE;
-			
-			default:
-				Matcher m;
-				
-				if ((m = valuetype.matcher(value)).matches()) {
-					return speedFromStringValue(m.group(1), m.group(2));
-				} else if ((m = zonetype.matcher(value)).matches()) {
-					return speedFromZoneInfo(m.group(1), m.group(2));
-				} else {
-					logger.debug("could not parse maxspeed-value '"
-							+ value + "', falling back to default value");
-				}
-			}
-		}
-			
-		return MaxspeedInfo.UNGIVEN;
-	}
-	
-	/**
-	 * Parse a speed from the given value and unit Strings.
-	 * 
-	 * @param value	the speed value.
-	 * @param unit	the speed unit. If {@code unit} is empty or {@code null}
-	 * 				the unit is assumed to be km/h. Supported units are km/h
-	 * 				(kmh, kph), knots and mph.
-	 * @return the parsed speed in km/h
-	 */
-	private static float speedFromStringValue(String value, String unit) {
-		float unitFactor = 1.0f;
-		
-		if (unit != null) {
-			switch (unit) {
-			case "mph":
-				unitFactor = 1.609f;
-				break;
-				
-			case "knots":
-				unitFactor = 1.852f;
-				break;
-				
-			case "":		// empty: assume km/h
-			case "km/h":
-			case "kmh":
-			case "kph":
-				unitFactor = 1.0f;
-				
-			default:
-				throw new IllegalArgumentException("unknown unit '" + unit + "' for speed value");
-			}
-		}
-		
-		return Float.parseFloat(value) * unitFactor;
-	}
+
+
+    /**
+     * Create a {@code MaxspeedInfo} object for a street out of the given
+     * OpenStreetMap tags.
+     *
+     * @param tags the OpenStreetMap tags as Map.
+     * @return the parsed {@code MaxspeedInfo}.
+     */
+    public static MaxspeedInfo parse(Map<String, String> tags) {
+        float both     = parseTagValue(tags.get("maxspeed"));
+        float forward  = parseTagValue(tags.get("maxspeed:forward"));
+        float backward = parseTagValue(tags.get("maxspeed:backward"));
+
+        if (forward == MaxspeedInfo.UNGIVEN)  forward  = both;
+        if (backward == MaxspeedInfo.UNGIVEN) backward = both;
+
+        return new MaxspeedInfo(forward, backward);
+    }
+
+    /**
+     * Parse a maxspeed-value from the given {@code String}.
+     *
+     * @param value the {@code String} to parse.
+     * @return the maxspeed-value as float.
+     */
+    private static float parseTagValue(String value) {
+        if (value != null) {
+            switch (value) {
+            case "walk": return MaxspeedInfo.WALKING;
+            case "signals": return MaxspeedInfo.SIGNALS;
+            case "none": return MaxspeedInfo.NONE;
+
+            default:
+                Matcher m;
+
+                if ((m = valuetype.matcher(value)).matches())
+                    return speedFromStringValue(m.group(1), m.group(2));
+                else if ((m = zonetype.matcher(value)).matches())
+                    return speedFromZoneInfo(m.group(1), m.group(2));
+                else
+                    logger.debug("could not parse maxspeed-value '" + value + "', falling back to default value");
+            }
+        }
+
+        return MaxspeedInfo.UNGIVEN;
+    }
+
+    /**
+     * Parse a speed from the given value and unit Strings.
+     *
+     * @param value the speed value.
+     * @param unit  the speed unit. If {@code unit} is empty or {@code null}
+     *              the unit is assumed to be km/h. Supported units are km/h
+     *              (kmh, kph), knots and mph.
+     * @return the parsed speed in km/h
+     */
+    private static float speedFromStringValue(String value, String unit) {
+        float unitFactor = 1.0f;
+
+        if (unit != null) {
+            switch (unit) {
+            case "mph":
+                unitFactor = 1.609f;
+                break;
+
+            case "knots":
+                unitFactor = 1.852f;
+                break;
+
+            case "":    // assume km/h
+            case "km/h":
+            case "kmh":
+            case "kph":
+                unitFactor = 1.0f;
+                break;
+
+            default:
+                throw new IllegalArgumentException("unknown unit '" + unit + "' for speed value");
+            }
+        }
+
+        return Float.parseFloat(value) * unitFactor;
+    }
 
     /**
      * Parse a speed from the given zone info.
      *
-     * @param country   the country code of the zone.
-     * @param zone      the zone code of the zone.
-     * @return  the speed associated with the given zone info, or
-     *          {@code MaxspeedInfo.UNGIVEN} if the zone is unknown.
+     * @param country the country code of the zone.
+     * @param zone    the zone code of the zone.
+     * @return the speed associated with the given zone info, or
+     * {@code MaxspeedInfo.UNGIVEN} if the zone is unknown.
      */
     private static float speedFromZoneInfo(String country, String zone) {
         Map<String, Float> local = zoneinfo.get(country.toLowerCase());
         if (local == null) {
-            logger.debug("could not parse maxspeed-value, country-code '"
-                    + country + "' unknown, falling back to default value");
+            logger.debug("could not parse maxspeed-value, country-code '" + country
+                         + "' unknown, falling back to default value");
             return MaxspeedInfo.UNGIVEN;
         }
 
         Float speed = local.get(zone);
-        if (speed == null){
-            logger.debug("could not parse maxspeed-value, zone-info '"
-                    + country + ":" + zone + "' unknown, falling back to default value");
+        if (speed == null) {
+            logger.debug("could not parse maxspeed-value, zone-info '" + country + ":" + zone
+                         + "' unknown, falling back to default value");
             return MaxspeedInfo.UNGIVEN;
         }
 

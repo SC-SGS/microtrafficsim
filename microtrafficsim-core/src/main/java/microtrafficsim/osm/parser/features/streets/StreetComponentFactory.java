@@ -21,72 +21,70 @@ import java.util.Set;
 
 
 /**
-* A {@code ComponentFactory} for {@code StreetComponent}s.
-*
-* @author Maximilian Luz
-*/
+ * A {@code ComponentFactory} for {@code StreetComponent}s.
+ *
+ * @author Maximilian Luz
+ */
 public class StreetComponentFactory implements ComponentFactory<StreetComponent, Way> {
-	private static Logger logger = LoggerFactory.getLogger(StreetComponentFactory.class);
+    private static Logger logger = LoggerFactory.getLogger(StreetComponentFactory.class);
 
-	/**
-	 * Creates a component from the specified source-element and its set of
-	 * matching {@code FeatureDefinition}s.
-	 *
-	 * <p>
-	 * Note: a StreetComponent can only be created for an entity of type WayEntity.
-	 * </p>
-	 *
-	 * @param entity	the entity to which the created {@code Component}
-	 * 					belongs.
-	 * @param source	the source-element from which the {@code Component}
-	 * 					should be created.
-	 * @param features	the set of {@code FeatureDefinition}s for the
-	 * 					source-element.
-	 * @return a Component created from the specified source-element and its
-	 * {@code FeatureDefinition}s.
-	 */
-	@Override
-	public StreetComponent create(Entity entity, Way source, Set<FeatureDefinition> features) {
-		OnewayInfo oneway = OnewayInfoParser.parse(source.tags);
-		LaneInfo lanes = LaneInfoParser.parse(source.tags);
-		MaxspeedInfo maxspeed = MaxspeedInfoParser.parse(source.tags);
-		StreetType streettype = StreetTypeParser.parse(source.tags);
-		boolean roundabout = parseRoundabout(source.tags);
-		float layer = parseLayer(source.tags);
+    /**
+     * Creates a component from the specified source-element and its set of
+     * matching {@code FeatureDefinition}s.
+     * <p>
+     * Note: a StreetComponent can only be created for an entity of type WayEntity.
+     * </p>
+     *
+     * @param entity   the entity to which the created {@code Component}
+     *                 belongs.
+     * @param source   the source-element from which the {@code Component}
+     *                 should be created.
+     * @param features the set of {@code FeatureDefinition}s for the
+     *                 source-element.
+     * @return a Component created from the specified source-element and its
+     * {@code FeatureDefinition}s.
+     */
+    @Override
+    public StreetComponent create(Entity entity, Way source, Set<FeatureDefinition> features) {
+        OnewayInfo   oneway     = OnewayInfoParser.parse(source.tags);
+        LaneInfo     lanes      = LaneInfoParser.parse(source.tags);
+        MaxspeedInfo maxspeed   = MaxspeedInfoParser.parse(source.tags);
+        StreetType   streettype = StreetTypeParser.parse(source.tags);
+        boolean      roundabout = parseRoundabout(source.tags);
+        float        layer      = parseLayer(source.tags);
 
-		return new StreetComponent((WayEntity) entity, streettype, lanes, maxspeed, oneway, roundabout, layer);
-	}
+        return new StreetComponent((WayEntity) entity, streettype, lanes, maxspeed, oneway, roundabout, layer);
+    }
 
-	private static boolean parseRoundabout(Map<String, String> tags) {
-		return "roundabout".equals(tags.get("junction"));
-	}
 
-	private static float parseLayer(Map<String, String> tags) {
-		Float layer = null;
-		if (tags.get("layer") != null) {
-			try {
-				layer = Float.parseFloat(tags.get("layer"));
-			} catch (NumberFormatException e) {
-				logger.warn("on 'layer' tag: '" + tags.get("layer") + "' is not a valid number!");
-			}
-		}
+    private static boolean parseRoundabout(Map<String, String> tags) {
+        return "roundabout".equals(tags.get("junction"));
+    }
 
-		if (layer == null) {
-			if (tags.get("bridge") != null
-					&& !(tags.get("bridge").equals("0")
-					|| !tags.get("bridge").equals("false")
-					|| !tags.get("bridge").equals("no"))) {
-				layer = 1.f;
-			} else if (tags.get("tunnel") != null
-					&& !(tags.get("tunnel").equals("0")
-					|| !tags.get("tunnel").equals("false")
-					|| !tags.get("tunnel").equals("no"))) {
-				layer = -1.f;
-			} else {
-				layer = 0.f;
-			}
-		}
+    private static float parseLayer(Map<String, String> tags) {
+        Float layer = null;
+        if (tags.get("layer") != null) {
+            try {
+                layer = Float.parseFloat(tags.get("layer"));
+            } catch (NumberFormatException e) {
+                logger.warn("on 'layer' tag: '" + tags.get("layer") + "' is not a valid number!");
+            }
+        }
 
-		return layer;
-	}
+        if (layer == null) {
+            if (tags.get("bridge") != null
+                && !(tags.get("bridge").equals("0") || !tags.get("bridge").equals("false")
+                     || !tags.get("bridge").equals("no"))) {
+                layer = 1.f;
+            } else if (tags.get("tunnel") != null
+                       && !(tags.get("tunnel").equals("0") || !tags.get("tunnel").equals("false")
+                            || !tags.get("tunnel").equals("no"))) {
+                layer = -1.f;
+            } else {
+                layer = 0.f;
+            }
+        }
+
+        return layer;
+    }
 }

@@ -5,13 +5,13 @@ import microtrafficsim.core.map.features.info.ReverseEquals;
 
 /**
  * Interface to indicate that a {@code Component} can be reversed.
- * 
+ *
  * @author Maximilian Luz
  */
 public interface Reversible extends ReverseEquals {
-	
-	/**
-	 * Reverses this component.
-	 */
-	void reverse();
+
+    /**
+     * Reverses this component.
+     */
+    void reverse();
 }
