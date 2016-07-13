@@ -4,19 +4,17 @@ import microtrafficsim.core.map.Bounds;
 
 
 public interface LayerSource {
-	
-	interface LayerSourceChangeListener {
-		void sourceChanged(LayerSource src);
-	}
+    Class<? extends LayerSource> getType();
 
+    boolean isAvailable();
 
-	Class<? extends LayerSource> getType();
+    Bounds getBounds();
 
-	boolean isAvailable();
+    boolean addLayerSourceChangeListener(LayerSourceChangeListener listener);
+    boolean removeLayerSourceChangeListener(LayerSourceChangeListener listener);
+    boolean hasLayerSourceChangeListener(LayerSourceChangeListener listener);
 
-	Bounds getBounds();
-
-	boolean addLayerSourceChangeListener(LayerSourceChangeListener listener);
-	boolean removeLayerSourceChangeListener(LayerSourceChangeListener listener);
-	boolean hasLayerSourceChangeListener(LayerSourceChangeListener listener);
+    interface LayerSourceChangeListener {
+        void sourceChanged(LayerSource src);
+    }
 }

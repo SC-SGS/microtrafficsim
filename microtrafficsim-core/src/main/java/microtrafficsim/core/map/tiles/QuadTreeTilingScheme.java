@@ -11,28 +11,25 @@ import microtrafficsim.utils.hashing.FNVHashBuilder;
 public class QuadTreeTilingScheme implements TilingScheme {
 
     private Projection projection;
-    private int minlevel;
-    private int maxlevel;
+    private int        minlevel;
+    private int        maxlevel;
 
     public QuadTreeTilingScheme(Projection projection, int minlevel, int maxlevel) {
         this.projection = projection;
-        this.minlevel = minlevel;
-        this.maxlevel = maxlevel;
+        this.minlevel   = minlevel;
+        this.maxlevel   = maxlevel;
     }
-
 
     @Override
     public TileId getTile(Vec2d xy, double zoom) {
         Rect2d max = projection.getProjectedMaximumBounds();
 
-        int level = clamp((int) Math.ceil(zoom), minlevel, maxlevel);
+        int level = MathUtils.clamp((int) Math.ceil(zoom), minlevel, maxlevel);
         int tiles = 1 << level;
 
-        return new TileId(
-                (int) (((xy.x - max.xmin) / (max.xmax - max.xmin)) * tiles),
-                (int) ((1.0 - (xy.y - max.ymin) / (max.ymax - max.ymin)) * tiles),
-                level
-        );
+        return new TileId((int) (((xy.x - max.xmin) / (max.xmax - max.xmin)) * tiles),
+                          (int) ((1.0 - (xy.y - max.ymin) / (max.ymax - max.ymin)) * tiles),
+                          level);
     }
 
     @Override
@@ -46,12 +43,11 @@ public class QuadTreeTilingScheme implements TilingScheme {
         return null;
     }
 
-
     @Override
     public TileRect getTiles(TileRect b, double zoom) {
         int level = MathUtils.clamp((int) Math.ceil(zoom), minlevel, maxlevel);
 
-        if (level > b.zoom) {           // child tiles
+        if (level > b.zoom) {    // child tiles
             int diff = level - b.zoom;
             return new TileRect(
                     b.xmin << diff,
@@ -71,10 +67,10 @@ public class QuadTreeTilingScheme implements TilingScheme {
             int ymax = (int) ((b.ymax / (double) ctiles) * ptiles);
 
             return new TileRect(
-                    clamp(xmin, 0, ptiles - 1),
-                    clamp(ymin, 0, ptiles - 1),
-                    clamp(xmax, 0, ptiles - 1),
-                    clamp(ymax, 0, ptiles - 1),
+                    MathUtils.clamp(xmin, 0, ptiles - 1),
+                    MathUtils.clamp(ymin, 0, ptiles - 1),
+                    MathUtils.clamp(xmax, 0, ptiles - 1),
+                    MathUtils.clamp(ymax, 0, ptiles - 1),
                     level
             );
 
@@ -85,23 +81,18 @@ public class QuadTreeTilingScheme implements TilingScheme {
 
     @Override
     public TileRect getTiles(int tx, int ty, int tz, double zoom) {
-        int level = clamp((int) Math.ceil(zoom), minlevel, maxlevel);
+        int level = MathUtils.clamp((int) Math.ceil(zoom), minlevel, maxlevel);
 
-        if (level > tz) {               // child tiles
+        if (level > tz) {    // child tiles
             int diff = level - tz;
             return new TileRect(
-                    tx << diff,
-                    ty << diff,
-                    (tx << diff) + (1 << diff) - 1,
-                    (ty << diff) + (1 << diff) - 1,
-                    level
-            );
+                    tx << diff, ty << diff, (tx << diff) + (1 << diff) - 1, (ty << diff) + (1 << diff) - 1, level);
 
-        } else if (level < tz) {        // parent tile
+        } else if (level < tz) {    // parent tile
             int ptiles = 1 << level;
             int ctiles = 1 << tz;
-            int x = clamp((int) ((tx / (double) ctiles) * ptiles), 0, ptiles - 1);
-            int y = clamp((int) ((ty / (double) ctiles) * ptiles), 0, ptiles - 1);
+            int x      = MathUtils.clamp((int) ((tx / (double) ctiles) * ptiles), 0, ptiles - 1);
+            int y      = MathUtils.clamp((int) ((ty / (double) ctiles) * ptiles), 0, ptiles - 1);
             return new TileRect(x, y, x, y, level);
 
         } else {
@@ -114,23 +105,22 @@ public class QuadTreeTilingScheme implements TilingScheme {
         if (b == null) return null;
         Rect2d max = projection.getProjectedMaximumBounds();
 
-        int level = clamp((int) Math.ceil(zoom), minlevel, maxlevel);
+        int level = MathUtils.clamp((int) Math.ceil(zoom), minlevel, maxlevel);
         int tiles = 1 << level;
 
         int xmin = (int) (((b.xmin - max.xmin) / (max.xmax - max.xmin)) * tiles);
-        int ymin = (int) ((1.0 - (b.ymax- max.ymin) / (max.ymax - max.ymin)) * tiles);
+        int ymin = (int) ((1.0 - (b.ymax - max.ymin) / (max.ymax - max.ymin)) * tiles);
         int xmax = (int) (((b.xmax - max.xmin) / (max.xmax - max.xmin)) * tiles);
-        int ymax = (int) ((1.0 - (b.ymin- max.ymin) / (max.ymax - max.ymin)) * tiles);
+        int ymax = (int) ((1.0 - (b.ymin - max.ymin) / (max.ymax - max.ymin)) * tiles);
 
         return new TileRect(
-                clamp(xmin, 0, tiles - 1),
-                clamp(ymin, 0, tiles - 1),
-                clamp(xmax, 0, tiles - 1),
-                clamp(ymax, 0, tiles - 1),
+                MathUtils.clamp(xmin, 0, tiles - 1),
+                MathUtils.clamp(ymin, 0, tiles - 1),
+                MathUtils.clamp(xmax, 0, tiles - 1),
+                MathUtils.clamp(ymax, 0, tiles - 1),
                 level
         );
     }
-
 
     public TileRect getLeafTiles(TileId tile) {
         return getLeafTiles(tile.x, tile.y, tile.z);
@@ -160,22 +150,19 @@ public class QuadTreeTilingScheme implements TilingScheme {
         );
     }
 
-
-    @Override       // top-left tile vertex
+    @Override    // top-left tile vertex
     public Vec2d getPosition(int x, int y, int z) {
-        Rect2d max = projection.getProjectedMaximumBounds();
-        int tiles = 1 << z;
+        Rect2d max   = projection.getProjectedMaximumBounds();
+        int    tiles = 1 << z;
 
-        return new Vec2d(
-                max.xmin + (x / (double) tiles) * (max.xmax - max.xmin),
-                max.ymin + (1 - y / (double) tiles) * (max.ymax - max.ymin)
-        );
+        return new Vec2d(max.xmin + (x / (double) tiles) * (max.xmax - max.xmin),
+                         max.ymin + (1 - y / (double) tiles) * (max.ymax - max.ymin));
     }
 
     @Override
     public Rect2d getBounds(int x, int y, int z) {
-        Rect2d max = projection.getProjectedMaximumBounds();
-        int tiles = 1 << z;
+        Rect2d max   = projection.getProjectedMaximumBounds();
+        int    tiles = 1 << z;
 
         return new Rect2d(
                 max.xmin + (x / (double) tiles) * (max.xmax - max.xmin),
@@ -188,7 +175,7 @@ public class QuadTreeTilingScheme implements TilingScheme {
     @Override
     public Rect2d getBounds(TileRect tiles) {
         Rect2d max = projection.getProjectedMaximumBounds();
-        int n = 1 << tiles.zoom;
+        int    n   = 1 << tiles.zoom;
 
         return new Rect2d(
                 max.xmin + (tiles.xmin / (double) n) * (max.xmax - max.xmin),
@@ -198,7 +185,6 @@ public class QuadTreeTilingScheme implements TilingScheme {
         );
     }
 
-
     public int getMaximumZoomLevel() {
         return maxlevel;
     }
@@ -207,41 +193,26 @@ public class QuadTreeTilingScheme implements TilingScheme {
         return minlevel;
     }
 
-
     public Vec2i getTileSize() {
         Rect2d max = projection.getProjectedMaximumBounds();
-        return new Vec2i(
-                (int) (max.xmax - max.xmin),
-                (int) (max.ymax - max.ymin)
-        );
+        return new Vec2i((int) (max.xmax - max.xmin), (int) (max.ymax - max.ymin));
     }
-
 
     @Override
     public Projection getProjection() {
         return projection;
     }
 
-
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof QuadTreeTilingScheme))
-            return false;
+        if (!(obj instanceof QuadTreeTilingScheme)) return false;
 
         QuadTreeTilingScheme other = (QuadTreeTilingScheme) obj;
-
         return this.projection.equals(other.getProjection());
     }
 
     @Override
     public int hashCode() {
-        return new FNVHashBuilder()
-                .add(projection)
-                .getHash();
-    }
-
-
-    private static int clamp(int value, int min, int max) {
-        return value < min ? min : (value > max ? max : value);
+        return new FNVHashBuilder().add(projection).getHash();
     }
 }

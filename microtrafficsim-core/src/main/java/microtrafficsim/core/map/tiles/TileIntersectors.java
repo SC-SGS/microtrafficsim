@@ -15,10 +15,7 @@ public class TileIntersectors {
 
     public static boolean intersect(Point point, Rect2d tile, Projection projection) {
         Vec2d c = projection.project(point.coordinate);
-
-        return c.x >= tile.xmin && c.x <= tile.xmax
-                && c.y >= tile.ymin && c.y <= tile.ymax;
-
+        return c.x >= tile.xmin && c.x <= tile.xmax && c.y >= tile.ymin && c.y <= tile.ymax;
     }
 
     public static boolean intersect(MultiLine line, Rect2d tile, Projection projection) {
@@ -28,10 +25,8 @@ public class TileIntersectors {
             Vec2d b = projection.project(line.coordinates[i]);
 
             // if completely out of bounds, continue
-            if ((a.x < tile.xmin && b.x < tile.xmin) || (a.x > tile.xmax && b.x > tile.xmax))
-                continue;
-            if ((a.y < tile.ymin && b.y < tile.ymin) || (a.y > tile.ymax && b.y > tile.ymax))
-                continue;
+            if ((a.x < tile.xmin && b.x < tile.xmin) || (a.x > tile.xmax && b.x > tile.xmax)) continue;
+            if ((a.y < tile.ymin && b.y < tile.ymin) || (a.y > tile.ymax && b.y > tile.ymax)) continue;
 
             // clamp to tile
             double cxa = clamp(a.x, tile.xmin, tile.xmax);
@@ -46,8 +41,7 @@ public class TileIntersectors {
             double syb = (cyb - a.y) / (b.y - a.y);
 
             // check if line-segments intersect
-            if (sxb >= sxa && syb >= sya)
-                return true;
+            if (sxb >= sxa && syb >= sya) return true;
 
             a = b;
         }

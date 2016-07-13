@@ -9,8 +9,8 @@ import java.util.Set;
 
 
 public class TileRect {
-    public int xmin, ymin, xmax, ymax;
-    public int zoom;
+    public int          xmin, ymin, xmax, ymax;
+    public int          zoom;
     private Set<TileId> allTiles;
     private Set<TileId> all;
 
@@ -33,7 +33,7 @@ public class TileRect {
     public TileRect(TileId tile) {
         this.xmin = this.xmax = tile.x;
         this.ymin = this.ymax = tile.y;
-        this.zoom = tile.z;
+        this.zoom             = tile.z;
     }
 
     public TileRect(TileRect other) {
@@ -42,52 +42,6 @@ public class TileRect {
         this.xmax = other.xmax;
         this.ymax = other.ymax;
         this.zoom = other.zoom;
-    }
-
-    public TileId min() {
-        return new TileId(xmin, ymin, zoom);
-    }
-
-    public TileId max() {
-        return new TileId(xmax, ymax, zoom);
-    }
-
-
-    public boolean contains(TileId tile) {
-        return zoom == tile.z
-                && xmin <= tile.x && xmax >= tile.x
-                && ymin <= tile.y && ymax >= tile.y;
-    }
-
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof TileRect))
-            return false;
-
-        TileRect other = (TileRect) obj;
-
-        return this.xmin == other.xmin
-                && this.ymin == other.ymin
-                && this.xmax == other.xmax
-                && this.ymax == other.ymax
-                && this.zoom == other.zoom;
-    }
-
-    @Override
-    public int hashCode() {
-        return new FNVHashBuilder()
-                .add(xmin)
-                .add(ymin)
-                .add(xmax)
-                .add(ymax)
-                .add(zoom)
-                .getHash();
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass() + " {" + xmin + ", " + ymin + ", " + xmax + ", " + ymax +  ", " + zoom  + "}";
     }
 
     public static Set<TileId> subtract(TileRect a, TileRect b) {
@@ -100,8 +54,8 @@ public class TileRect {
         int ymax = MathUtils.clamp(b.ymax, a.ymin - 1, a.ymax);
 
         // pre-compute size of the result
-        int size = ((xmin - a.xmin) + (a.xmax - xmax)) * (a.ymax - a.ymin)  // full left & rigth (x) segments
-                + ((ymin - a.ymin) + (a.ymax - ymax)) * (xmax - xmin);      // partial top & bottom (y) segments
+        int size = ((xmin - a.xmin) + (a.xmax - xmax)) * (a.ymax - a.ymin)    // full left & rigth (x) segments
+                   + ((ymin - a.ymin) + (a.ymax - ymax)) * (xmax - xmin);     // partial top & bottom (y) segments
 
         Set<TileId> result = new HashSet<>(size);
 
@@ -129,13 +83,43 @@ public class TileRect {
     public static TileRect intersect(TileRect a, TileRect b) {
         if (a.zoom != b.zoom) return null;
 
-        return new TileRect(
-                Math.max(a.xmin, b.xmin),
-                Math.max(a.ymin, b.ymin),
-                Math.min(a.xmax, b.xmax),
-                Math.min(a.ymax, b.ymax),
-                a.zoom
-        );
+        return new TileRect(Math.max(a.xmin, b.xmin),
+                            Math.max(a.ymin, b.ymin),
+                            Math.min(a.xmax, b.xmax),
+                            Math.min(a.ymax, b.ymax),
+                            a.zoom);
+    }
+
+    public TileId min() {
+        return new TileId(xmin, ymin, zoom);
+    }
+
+    public TileId max() {
+        return new TileId(xmax, ymax, zoom);
+    }
+
+    public boolean contains(TileId tile) {
+        return zoom == tile.z && xmin <= tile.x && xmax >= tile.x && ymin <= tile.y && ymax >= tile.y;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof TileRect)) return false;
+
+        TileRect other = (TileRect) obj;
+
+        return this.xmin == other.xmin && this.ymin == other.ymin && this.xmax == other.xmax && this.ymax == other.ymax
+                && this.zoom == other.zoom;
+    }
+
+    @Override
+    public int hashCode() {
+        return new FNVHashBuilder().add(xmin).add(ymin).add(xmax).add(ymax).add(zoom).getHash();
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass() + " {" + xmin + ", " + ymin + ", " + xmax + ", " + ymax + ", " + zoom + "}";
     }
 
     public Set<TileId> getAll() {

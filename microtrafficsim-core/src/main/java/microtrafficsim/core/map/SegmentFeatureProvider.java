@@ -6,25 +6,24 @@ import java.util.Set;
 
 public interface SegmentFeatureProvider {
 
-	interface FeatureChangeListener {
-		void featuresChanged();
-		void featureChanged(String name);
-	}
+    Bounds getBounds();
 
+    Class<? extends FeaturePrimitive> getFeatureType(String name);
 
-	Bounds getBounds();
+    <T extends FeaturePrimitive> Feature<T> require(String name) throws InterruptedException;
+    void release(Feature<?> feature);
+    void releaseAll();
 
-	Class<? extends FeaturePrimitive> getFeatureType(String name);
+    Set<String> getAvailableFeatures();
+    Map<String, Feature<?>> getFeatures() throws InterruptedException;
+    boolean hasFeature(String name);
 
-	<T extends FeaturePrimitive> Feature<T> require(String name) throws InterruptedException;
-	void release(Feature<?> feature);
-	void releaseAll();
+    boolean addFeatureChangeListener(FeatureChangeListener listener);
+    boolean removeFeatureChangeListener(FeatureChangeListener listener);
+    boolean hasFeatureChangeListener(FeatureChangeListener listener);
 
-	Set<String> getAvailableFeatures();
-	Map<String, Feature<?>> getFeatures() throws InterruptedException;
-	boolean hasFeature(String name);
-
-	boolean addFeatureChangeListener(FeatureChangeListener listener);
-	boolean removeFeatureChangeListener(FeatureChangeListener listener);
-	boolean hasFeatureChangeListener(FeatureChangeListener listener);
+    interface FeatureChangeListener {
+        void featuresChanged();
+        void featureChanged(String name);
+    }
 }

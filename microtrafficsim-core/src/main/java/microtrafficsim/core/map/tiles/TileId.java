@@ -1,7 +1,7 @@
 package microtrafficsim.core.map.tiles;
 
-
 import microtrafficsim.utils.hashing.FNVHashBuilder;
+
 
 public class TileId {
     public final int x;
@@ -23,14 +23,10 @@ public class TileId {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof TileId))
-            return false;
+        if (!(obj instanceof TileId)) return false;
 
         TileId other = (TileId) obj;
-
-        return this.x == other.x
-                && this.y == other.y
-                && this.z == other.z;
+        return this.x == other.x && this.y == other.y && this.z == other.z;
     }
 
     @Override

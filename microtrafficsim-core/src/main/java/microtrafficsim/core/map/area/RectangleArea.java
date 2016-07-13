@@ -19,10 +19,10 @@ public class RectangleArea implements ISimplePolygon {
     /**
      * Creates a rectangular axis-aligned area using the specified axis bounds.
      *
-     * @param minlat    the minimum latitude
-     * @param minlon    the minimum longitude
-     * @param maxlat    the maximum latitude
-     * @param maxlon    the maximum longitude
+     * @param minlat the minimum latitude
+     * @param minlon the minimum longitude
+     * @param maxlat the maximum latitude
+     * @param maxlon the maximum longitude
      */
     public RectangleArea(double minlat, double minlon, double maxlat, double maxlon) {
         this.minlat = minlat;

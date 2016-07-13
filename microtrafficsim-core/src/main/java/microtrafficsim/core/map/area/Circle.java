@@ -15,8 +15,8 @@ import microtrafficsim.math.HaversineDistanceCalculator;
  */
 public class Circle implements Area {
 
-    private Coordinate center;
-    private double radius;
+    private Coordinate         center;
+    private double             radius;
     private DistanceCalculator distcalc;
 
     /**
@@ -24,8 +24,8 @@ public class Circle implements Area {
      * This call is equivalent to {@link Circle#Circle(Coordinate, Coordinate, DistanceCalculator)
      * Circle(center, onBorder, HaversineDistanceCalculator::getDistance)}
      *
-     * @param center    the center of the new area.
-     * @param onBorder  a coordinate laying on the border of the area, specifying the distance to the center.
+     * @param center   the center of the new area.
+     * @param onBorder a coordinate laying on the border of the area, specifying the distance to the center.
      */
     public Circle(Coordinate center, Coordinate onBorder) {
         this(center, onBorder, HaversineDistanceCalculator::getDistance);
@@ -36,9 +36,9 @@ public class Circle implements Area {
      * This call is equivalent to {@link Circle#Circle(Coordinate, double, DistanceCalculator)
      * Circle(center, distcalc.getDistance(center, onBorder), distcalc)}
      *
-     * @param center    the center of the new area.
-     * @param onBorder  a coordinate laying on the border of the area, specifying the distance to the center.
-     * @param distcalc  the method used for distance calculation.
+     * @param center   the center of the new area.
+     * @param onBorder a coordinate laying on the border of the area, specifying the distance to the center.
+     * @param distcalc the method used for distance calculation.
      */
     public Circle(Coordinate center, Coordinate onBorder, DistanceCalculator distcalc) {
         this(center, distcalc.getDistance(center, onBorder), distcalc);
@@ -49,8 +49,8 @@ public class Circle implements Area {
      * This call is equivalent to {@link Circle#Circle(Coordinate, double, DistanceCalculator)
      * Circle(center, radius, HaversineDistanceCalculator::getDistance)}
      *
-     * @param center    the center of the new area.
-     * @param radius    the radius of the new area.
+     * @param center the center of the new area.
+     * @param radius the radius of the new area.
      */
     public Circle(Coordinate center, double radius) {
         this(center, radius, HaversineDistanceCalculator::getDistance);
@@ -59,13 +59,13 @@ public class Circle implements Area {
     /**
      * Creates a new circular area with the specified center, radius and DistanceCalculator.
      *
-     * @param center    the center of the new area.
-     * @param radius    the radius of the new area.
-     * @param distcalc  the method used for distance calculation.
+     * @param center   the center of the new area.
+     * @param radius   the radius of the new area.
+     * @param distcalc the method used for distance calculation.
      */
     public Circle(Coordinate center, double radius, DistanceCalculator distcalc) {
-        this.center = center;
-        this.radius = radius;
+        this.center   = center;
+        this.radius   = radius;
         this.distcalc = distcalc;
     }
 

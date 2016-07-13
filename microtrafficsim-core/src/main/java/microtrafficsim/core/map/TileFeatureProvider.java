@@ -9,14 +9,6 @@ import java.util.Set;
 
 
 public interface TileFeatureProvider {
-
-    interface FeatureChangeListener {
-        void featuresChanged();
-        void featuresChanged(TileId tile);
-        void featureChanged(String name);
-        void featureChanged(String name, TileId tile);
-    }
-
     TilingScheme getTilingScheme();
 
     Bounds getBounds();
@@ -38,4 +30,11 @@ public interface TileFeatureProvider {
     boolean addFeatureChangeListener(FeatureChangeListener listener);
     boolean removeFeatureChangeListener(FeatureChangeListener listener);
     boolean hasFeatureChangeListener(FeatureChangeListener listener);
+
+    interface FeatureChangeListener {
+        void featuresChanged();
+        void featuresChanged(TileId tile);
+        void featureChanged(String name);
+        void featureChanged(String name, TileId tile);
+    }
 }

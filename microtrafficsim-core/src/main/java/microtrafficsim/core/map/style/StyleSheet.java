@@ -6,6 +6,7 @@ import microtrafficsim.core.vis.opengl.utils.Color;
 
 import java.util.Collection;
 
+
 // TODO: comments
 
 /**
@@ -14,6 +15,14 @@ import java.util.Collection;
  * @author Maximilian Luz
  */
 public interface StyleSheet {
+
+    Color getBackgroundColor();
+    Color getTileBackgroundColor();
+
+    ParserConfig getParserConfiguration();
+
+    Collection<MapFeatureDefinition<?>> getFeatureDefinitions();
+    Collection<TileLayerDefinition>     getLayers();
 
     /**
      * Parser configuration for style.
@@ -27,12 +36,4 @@ public interface StyleSheet {
             this.generatorIndexOfStreetGraph = generatorIndexOfStreetGraph;
         }
     }
-
-
-    Color getBackgroundColor();
-    Color getTileBackgroundColor();
-
-    ParserConfig getParserConfiguration();
-    Collection<MapFeatureDefinition<?>> getFeatureDefinitions();
-    Collection<TileLayerDefinition> getLayers();
 }

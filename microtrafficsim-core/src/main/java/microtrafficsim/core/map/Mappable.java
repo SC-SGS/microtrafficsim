@@ -1,6 +1,6 @@
 package microtrafficsim.core.map;
 
-public interface Mappable {
 
-	Coordinate getCoordinate();
+public interface Mappable {
+    Coordinate getCoordinate();
 }

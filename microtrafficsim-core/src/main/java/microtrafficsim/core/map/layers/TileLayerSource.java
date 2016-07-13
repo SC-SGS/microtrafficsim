@@ -7,13 +7,6 @@ import microtrafficsim.math.Rect2d;
 
 
 public interface TileLayerSource {
-
-    interface LayerSourceChangeListener {
-        void sourceChanged(TileLayerSource source);
-        void sourceChanged(TileLayerSource source, TileId tile);
-    }
-
-
     Class<? extends TileLayerSource> getType();
 
     boolean isAvailable();
@@ -26,4 +19,9 @@ public interface TileLayerSource {
     boolean addLayerSourceChangeListener(LayerSourceChangeListener listener);
     boolean removeLayerSourceChangeListener(LayerSourceChangeListener listener);
     boolean hasLayerSourceChangeListener(LayerSourceChangeListener listener);
+
+    interface LayerSourceChangeListener {
+        void sourceChanged(TileLayerSource source);
+        void sourceChanged(TileLayerSource source, TileId tile);
+    }
 }

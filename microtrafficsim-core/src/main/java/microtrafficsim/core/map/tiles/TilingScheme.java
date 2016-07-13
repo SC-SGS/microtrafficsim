@@ -19,6 +19,7 @@ public interface TilingScheme {
     TileRect getTiles(int tx, int ty, int tz, double zoom);
 
     Vec2d getPosition(int x, int y, int z);
+
     Rect2d getBounds(int x, int y, int z);
     Rect2d getBounds(TileRect tiles);
 

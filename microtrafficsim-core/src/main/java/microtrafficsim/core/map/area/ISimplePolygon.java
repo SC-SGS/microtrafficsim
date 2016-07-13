@@ -12,6 +12,7 @@ public interface ISimplePolygon extends Area {
 
     /**
      * Return the (ordered) list of coordinates that define this area.
+     *
      * @return the array of coordinate defining this area.
      */
     Coordinate[] getCoordinates();

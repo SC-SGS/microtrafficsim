@@ -16,13 +16,13 @@ public class CutArea implements Area {
     /**
      * Default constructor.
      *
-     * @param in The {@link CutArea} contains all {@link Coordinate}s in this given area called "in" except for
-     *           all coordinates in the given area called "out".
+     * @param in  The {@link CutArea} contains all {@link Coordinate}s in this given area called "in" except for
+     *            all coordinates in the given area called "out".
      * @param out The {@link CutArea} contains all {@link Coordinate}s in the given area called "in" except for
-     *           all coordinates in this given area called "out".
+     *            all coordinates in this given area called "out".
      */
     public CutArea(Area in, Area out) {
-        this.in = in;
+        this.in  = in;
         this.out = out;
     }
 
