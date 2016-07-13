@@ -4,7 +4,6 @@ import microtrafficsim.core.vis.opengl.utils.Color;
 
 
 public interface IVisualizationVehicle {
-
     VehicleEntity getEntity();
     void setEntity(VehicleEntity entity);
 
