@@ -48,7 +48,7 @@ public class Polygons {
 
         ArrayList<Integer> indices = new ArrayList<>();
 
-        for (int m = 0, v = nv - 1; nv > 2;) {
+        for (int v = nv - 1; nv > 2;) {
             if (0 >= (count--)) return null;
 
             int u          = v;
@@ -68,8 +68,6 @@ public class Polygons {
                 indices.add(a);
                 indices.add(b);
                 indices.add(c);
-
-                m++;
 
                 for (s = v, t = v + 1; t < nv; s++, t++)
                     ccw[s] = ccw[t];

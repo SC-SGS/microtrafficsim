@@ -7,7 +7,7 @@ import javax.swing.JMenuBar;
  * @author Dominic Parga Cacheiro
  */
 public class MTSMenuBar extends JMenuBar {
-    final MTSMenuMap menuMap;
+    final MTSMenuMap   menuMap;
     final MTSMenuLogic menuLogic;
 
     public MTSMenuBar() {

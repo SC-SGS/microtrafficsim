@@ -7,7 +7,6 @@ import microtrafficsim.math.Vec2d;
 
 
 public interface Projection {
-
     Bounds getMaximumBounds();
     Rect2d getProjectedMaximumBounds();
 

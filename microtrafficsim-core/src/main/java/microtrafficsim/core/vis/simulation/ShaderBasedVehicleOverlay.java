@@ -185,13 +185,13 @@ public class ShaderBasedVehicleOverlay implements Overlay {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         // NOTE: assumes z-axis top-down orthographic projection
-        uVehicleScale.set((float) Math.pow(2, VEHICLE_SCALE_NORM * ((OrthographicView) view).getScale()));
+        uVehicleScale.set((float) Math.pow(2, VEHICLE_SCALE_NORM * view.getScale()));
 
         // disable depth test
         context.DepthTest.disable(gl);
 
         // calculate bounding rectangle, assumes top-down (z-axis) orthographic view
-        double invscale = 1.f / ((OrthographicView) view).getScale();
+        double invscale = 1.f / view.getScale();
         Vec3d  viewpos  = view.getPosition();
         Vec2i  viewport = view.getSize();
 

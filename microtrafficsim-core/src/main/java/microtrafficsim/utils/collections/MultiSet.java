@@ -3,6 +3,7 @@ package microtrafficsim.utils.collections;
 import java.util.Collection;
 import java.util.Iterator;
 
+
 /**
  * Interface for MultiSets used to store elements in a Set-like data-structure,
  * where every entry is associated with a count (the number of occurrences of

@@ -10,7 +10,6 @@ import static org.junit.Assert.assertEquals;
 /**
  * Test for {@link HaversineDistanceCalculator#getDistance(Coordinate, Coordinate)}.
  * <p>
- * <p>
  * Uses randomly chosen coordinates validated against pythons 'haversine' package.
  * </p>
  *

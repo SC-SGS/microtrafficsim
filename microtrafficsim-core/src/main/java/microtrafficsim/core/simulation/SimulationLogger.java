@@ -28,7 +28,7 @@ public class SimulationLogger {
     public void info(String[] lines) {
         StringBuilder builder = new StringBuilder();
         for (String line : lines)
-            builder.append(line + "\n");
+            builder.append(line).append("\n");
         logger.info(builder.toString());
     }
 
@@ -39,7 +39,7 @@ public class SimulationLogger {
     public void debug(String[] lines) {
         StringBuilder builder = new StringBuilder();
         for (String line : lines)
-            builder.append(line + "\n");
+            builder.append(line).append("\n");
         logger.debug(builder.toString());
     }
 
@@ -73,9 +73,9 @@ public class SimulationLogger {
                     builder.append(i);
                 } else {
                     if (i < 10)
-                        builder.append("00" + i);
+                        builder.append("00").append(i);
                     else if (i < 100)
-                        builder.append("0" + i);
+                        builder.append("0").append(i);
                     else
                         builder.append(i);
                 }

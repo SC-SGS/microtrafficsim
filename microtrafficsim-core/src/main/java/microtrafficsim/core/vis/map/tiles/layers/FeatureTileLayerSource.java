@@ -13,7 +13,6 @@ import java.util.ArrayList;
 
 
 public class FeatureTileLayerSource implements TileLayerSource {
-
     private String              feature;
     private Style               style;
     private TileFeatureProvider provider;

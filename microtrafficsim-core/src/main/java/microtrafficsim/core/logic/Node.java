@@ -28,13 +28,16 @@ public class Node implements ShortestPathNode {
     private Random           random;
     private Coordinate       coordinate;
     private HashMap<Lane, ArrayList<Lane>> restrictions;
+
     // crossing logic
     private HashSet<AbstractVehicle>    assessedVehicles;
     private HashSet<AbstractVehicle>    maxPrioVehicles;
     private Comparator<AbstractVehicle> crossingLogic;
     private boolean                     anyChangeSinceUpdate;
+
     // edges
     private HashMap<DirectedEdge, Byte> leavingEdges;    // edge, index(for
+
     // crossing logic)
     private HashMap<DirectedEdge, Byte> incomingEdges;    // edge, index(for
                                                           // crossing logic)

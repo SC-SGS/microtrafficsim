@@ -39,7 +39,7 @@ public class Main {
     }
 
 
-    public static void initSimulationConfig(SimulationConfig config) {
+    private static void initSimulationConfig(SimulationConfig config) {
         config.metersPerCell           = 7.5f;
         config.longIDGenerator         = new ConcurrentLongIDGenerator();
         config.seed                    = 1455374755807L;

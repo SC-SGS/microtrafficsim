@@ -20,9 +20,8 @@ class MTSMenuMap extends JMenu {
 
     public void addActions(GUIController guiController) {
         itemLoadMap.addActionListener(e -> guiController.transiate(GUIEvent.LOAD_MAP));
-        guiController.addKeyCommand(
-                KeyEvent.EVENT_KEY_RELEASED,
-                KeyEvent.VK_M,
-                e -> guiController.transiate(GUIEvent.LOAD_MAP));
+        guiController.addKeyCommand(KeyEvent.EVENT_KEY_RELEASED,
+                                    KeyEvent.VK_M,
+                                    e -> guiController.transiate(GUIEvent.LOAD_MAP));
     }
 }

@@ -109,8 +109,8 @@ public class OrthoInputController implements MouseListener, KeyController {
     @Override
     public KeyCommand removeKeyCommand(short event, short vk) {
         switch (event) {
-        case KeyEvent.EVENT_KEY_PRESSED:  return cmdPressed.remove(Short.valueOf(vk));
-        case KeyEvent.EVENT_KEY_RELEASED: return cmdReleased.remove(Short.valueOf(vk));
+        case KeyEvent.EVENT_KEY_PRESSED:  return cmdPressed.remove(vk);
+        case KeyEvent.EVENT_KEY_RELEASED: return cmdReleased.remove(vk);
         default:                          return null;
         }
     }

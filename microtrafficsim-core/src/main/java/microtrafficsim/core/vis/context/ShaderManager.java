@@ -10,6 +10,7 @@ import microtrafficsim.core.vis.opengl.shader.Shader;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
 
+
 public class ShaderManager {
 
     private HashMap<String, ManagedShader>        shaders;

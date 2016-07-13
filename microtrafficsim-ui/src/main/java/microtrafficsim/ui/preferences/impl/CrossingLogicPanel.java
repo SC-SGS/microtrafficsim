@@ -126,7 +126,7 @@ public class CrossingLogicPanel extends PreferencesPanel {
     public void setSettings(SimulationConfig config) {
         cbEdgePriority.setSelected(config.crossingLogic.edgePriorityEnabled);
 
-        String selectedItem = "";
+        String selectedItem;
         if (config.crossingLogic.priorityToTheRightEnabled)
             selectedItem = combos[config.crossingLogic.drivingOnTheRight ? 1 : 0];
         else

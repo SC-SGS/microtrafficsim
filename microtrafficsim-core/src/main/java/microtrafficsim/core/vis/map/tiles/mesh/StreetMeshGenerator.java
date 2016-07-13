@@ -297,7 +297,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         public final Coordinate coordinate;
         public final float      layer;
 
-        public Vertex(Coordinate coordinate, float layer) {
+        Vertex(Coordinate coordinate, float layer) {
             this.coordinate = coordinate;
             this.layer      = layer;
         }

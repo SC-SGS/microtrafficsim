@@ -2,8 +2,8 @@ package microtrafficsim.utils.concurrency;
 
 import java.util.concurrent.*;
 
-// TODO: infer documentation from ThreadPoolExecutor
 
+// TODO: infer documentation from ThreadPoolExecutor
 
 public class InterruptSafeThreadPoolExecutor extends ThreadPoolExecutor {
 
@@ -31,11 +31,11 @@ public class InterruptSafeThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     protected <V> RunnableFuture<V> newTaskFor(Callable<V> task) {
-        return new InterruptSafeFutureTask<V>(task);
+        return new InterruptSafeFutureTask<>(task);
     }
 
     @Override
     protected <V> RunnableFuture<V> newTaskFor(Runnable task, V result) {
-        return new InterruptSafeFutureTask<V>(Executors.callable(task, result));
+        return new InterruptSafeFutureTask<>(Executors.callable(task, result));
     }
 }

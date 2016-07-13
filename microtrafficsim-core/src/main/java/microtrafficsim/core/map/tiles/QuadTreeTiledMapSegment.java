@@ -324,8 +324,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
 
         public void addAll(int x, int y, T[] data) {
             List<T> list = this.data.get(x).get(y);
-            for (T t : data)
-                list.add(t);
+            Collections.addAll(list, data);
         }
 
         @SuppressWarnings("unchecked")

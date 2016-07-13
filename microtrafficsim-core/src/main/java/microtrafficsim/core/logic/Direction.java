@@ -5,5 +5,5 @@ public enum Direction {
     LEFT,
     STRAIGHT,
     RIGHT,
-    COLLINEAR;
+    COLLINEAR
 }

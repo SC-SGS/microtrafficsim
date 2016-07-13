@@ -18,13 +18,11 @@ public abstract class TileLayer {
         this.transform = transform;
     }
 
-
     public abstract void initialize(RenderContext context);
     public abstract void dispose(RenderContext context);
     public abstract void display(RenderContext context);
 
     public abstract List<? extends TileLayerBucket> getBuckets();
-
 
     public TileId getTile() {
         return tile;

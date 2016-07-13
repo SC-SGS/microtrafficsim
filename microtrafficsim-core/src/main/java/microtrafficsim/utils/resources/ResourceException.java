@@ -4,7 +4,6 @@ import java.io.IOException;
 
 
 public class ResourceException extends IOException {
-
     private static final long serialVersionUID = 2537380971878927752L;
 
 

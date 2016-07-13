@@ -52,8 +52,8 @@ public class Example {
 
 
     static SegmentBasedVisualization createVisualization(SegmentLayerProvider provider, Simulation sim) {
-        SegmentBasedVisualization vis
-                = new SegmentBasedVisualization(WINDOW_WIDTH, WINDOW_HEIGHT, provider, NUM_SEGMENT_WORKERS);
+        SegmentBasedVisualization vis = new SegmentBasedVisualization(WINDOW_WIDTH, WINDOW_HEIGHT,
+                                                                      provider, NUM_SEGMENT_WORKERS);
 
 
         vis.getKeyController().addKeyCommand(

@@ -48,7 +48,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * <p>
      * <p>
      * This is equivalent to
-     * {@link StreetGraphGenerator#StreetGraphGenerator(SimulationConfig)
+     * {@link StreetGraphGenerator#StreetGraphGenerator(SimulationConfig, DistanceCalculator)
      * StreetGraphGenerator(config, HaversineDistanceCalculator::getDistance) }
      * </p>
      */

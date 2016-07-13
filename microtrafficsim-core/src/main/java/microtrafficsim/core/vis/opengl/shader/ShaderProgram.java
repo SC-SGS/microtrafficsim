@@ -329,11 +329,11 @@ public class ShaderProgram {
 
 
     protected static class UniformBinding {
-        public final int location;
-        public final Uniform<?> var;
-        public boolean          dirty;
+        protected final int location;
+        protected final Uniform<?> var;
+        protected boolean          dirty;
 
-        public UniformBinding(int location, Uniform<?> var) {
+        protected UniformBinding(int location, Uniform<?> var) {
             this.location = location;
             this.var      = var;
             this.dirty    = false;

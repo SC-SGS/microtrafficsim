@@ -1,7 +1,7 @@
 package microtrafficsim.core.vis.map.segments;
 
-
 import microtrafficsim.core.map.layers.LayerSource;
+
 
 public class Layer {
 

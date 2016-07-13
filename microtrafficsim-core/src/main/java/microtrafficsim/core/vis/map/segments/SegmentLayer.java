@@ -7,7 +7,6 @@ import java.util.List;
 
 
 public abstract class SegmentLayer extends Layer {
-
     public SegmentLayer(String name, int index, LayerSource source) {
         super(name, index, source);
     }

@@ -68,7 +68,7 @@ public class ConcurrentHashDataCollector implements DataCollector<Object> {
             public boolean hasNext() {
 
                 if (!finished) {
-                    boolean hasNext = false;
+                    boolean hasNext;
                     if (bundle == null)
                         hasNext = tags.hasNext();
                     else

@@ -217,14 +217,14 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
                                      GL3.GL_ONE_MINUS_SRC_ALPHA);
 
         // set point size and point sprite origin
-        float ptsize = (float) Math.pow(2, ((OrthographicView) view).getScale() * VEHICLE_SCALE_NORM) * VEHICLE_SIZE;
+        float ptsize = (float) Math.pow(2, view.getScale() * VEHICLE_SCALE_NORM) * VEHICLE_SIZE;
         if (ptsize < 1.f) ptsize = 1.f;
 
         context.Points.setPointSpriteCoordOrigin(gl, GL3.GL_LOWER_LEFT);
         context.Points.setPointSize(gl, ptsize);
 
         // calculate bounding rectangle, assumes top-down (z-axis) orthographic view
-        double invscale = 1.f / ((OrthographicView) view).getScale();
+        double invscale = 1.f / view.getScale();
         Vec3d  viewpos  = view.getPosition();
         Vec2i  viewport = view.getSize();
 

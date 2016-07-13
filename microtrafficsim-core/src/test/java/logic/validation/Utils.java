@@ -9,6 +9,8 @@ import microtrafficsim.core.vis.map.segments.FeatureSegmentLayerSource;
 import microtrafficsim.core.vis.opengl.shader.ShaderCompileError;
 import microtrafficsim.core.vis.opengl.shader.ShaderLinkError;
 import microtrafficsim.core.vis.opengl.utils.FramebufferUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -19,8 +21,9 @@ import java.util.Set;
 
 
 public class Utils {
+    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
-    public static void setFeatureProvider(Set<LayerDefinition> layers, SegmentFeatureProvider provider) {
+    static void setFeatureProvider(Set<LayerDefinition> layers, SegmentFeatureProvider provider) {
         for (LayerDefinition def : layers) {
             LayerSource src = def.getSource();
 
@@ -29,7 +32,7 @@ public class Utils {
         }
     }
 
-    public static void asyncScreenshot(RenderContext context) {
+    static void asyncScreenshot(RenderContext context) {
         new Thread(() -> {
             JFileChooser chooser = new JFileChooser();
             chooser.setFileFilter(new FileFilter() {
@@ -48,15 +51,13 @@ public class Utils {
                     String s = f.getName();
                     int    i = s.lastIndexOf('.');
 
-                    if (i > 0 && i < s.length() - 1)
-                        extension = s.substring(i + 1).toLowerCase();
+                    if (i > 0 && i < s.length() - 1) extension = s.substring(i + 1).toLowerCase();
 
-                    if (extension == null)
-                        return false;
+                    if (extension == null) return false;
 
                     switch (extension) {
-                    case "png": return true;
-                    default:    return false;
+                        case "png": return true;
+                        default:    return false;
                     }
                 }
             });
@@ -65,18 +66,32 @@ public class Utils {
 
             if (action == JFileChooser.APPROVE_OPTION) {
                 File file = chooser.getSelectedFile();
-                if (file.exists()) file.delete();
+                if (file.exists()) {
+                    if (!file.delete()) {
+                        logger.error("could not delete file" + file.getName());
+                        return;
+                    }
+                }
 
                 try {
-                    file.createNewFile();
-                } catch (IOException e) { return; }
+                    if (!file.createNewFile()) {
+                        logger.error("could not create file" + file.getName());
+                        return;
+                    }
+                } catch (IOException e) {
+                    logger.error("could not create file" + file.getName());
+                    return;
+                }
 
                 context.addTask(c -> {
                     try {
                         FramebufferUtils.writeFramebuffer(c.getDrawable(), "png", file);
                     } catch (IOException e) {
                         /* ignore if we can't write to the file and clean up */
-                        if (file.exists()) file.delete();
+                        if (file.exists()) {
+                            if (!file.delete())
+                                logger.error("could not delete file" + file.getName());
+                        }
                     }
                     return null;
                 });
