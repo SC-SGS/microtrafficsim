@@ -1,11 +1,14 @@
+#!/usr/bin/env python
 """
-OpenStreetMap XML file downloader                  (not tested with python3 yet)
+OpenStreetMap XML file downloader.
 
 Requires: urllib2, docopt
+Not testet with python 3 yet.
 
 Note: The download-size is limited, for larger areas refer to
 'http://download.geofabrik.de/'
 """
+__author__ = "Maximilian Luz"
 
 from docopt import docopt
 import urllib2
@@ -42,7 +45,7 @@ def osm_get_region_xml(api_url, bb_left, bb_bottom, bb_right, bb_top, filename):
     # open file
     f = open(filename, 'wb')
 
-    print "downloading '{0}' to '{1}'".format(url, filename)
+    print("downloading '{0}' to '{1}'".format(url, filename))
 
     error = False
     try:
@@ -59,20 +62,20 @@ def osm_get_region_xml(api_url, bb_left, bb_bottom, bb_right, bb_top, filename):
     except urllib2.URLError as e:
         error = True
         if e.code == '400':
-            print "HTTP Error 400: 'Any of the node/way/relation limits are" \
-                + "crossed'"
+            print("HTTP Error 400: 'Any of the node/way/relation limits are "
+                  + "crossed'")
         elif e.code == '':
-            print "HTTP Error 509: 'You have downloaded too much data. " \
-                "Please try again later'"
+            print("HTTP Error 509: 'You have downloaded too much data. "
+                  + "Please try again later'")
         else:
-            print "HTTP Error {0}".format(e.code)
+            print("HTTP Error {0}".format(e.code))
 
     # close file, cleanup on error
     f.close()
     if error:
         os.remove(filename)
     else:
-        print "download finished successfully!"
+        print("download finished successfully!")
 
 
 if __name__ == '__main__':
