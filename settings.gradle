@@ -7,6 +7,3 @@ include 'examples:parser'
 include 'examples:simulation'
 include 'examples:mapviewer_tilebased'
 include 'examples:mapviewer_segmentbased'
-
-include 'experimental:transparency'
-include 'experimental:lines'
