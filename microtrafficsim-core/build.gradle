@@ -14,7 +14,13 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-
-// set jar and distribution name
-jar.baseName = 'microtrafficsim-core'
-distributions.main.baseName = 'microtrafficsim-core'
+distributions {
+	main {
+		baseName = 'microtrafficsim-core'
+		contents {
+			from { '../LICENSE' }
+			from { '../README.md' }
+			from jar
+		}
+	}
+}

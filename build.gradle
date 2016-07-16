@@ -8,8 +8,6 @@ configure(javaProjects()) {
     apply plugin: 'maven'
     apply plugin: 'eclipse'
 
-	group = 'com.github.sgs-us'
-
     repositories {
         mavenCentral()
     }
