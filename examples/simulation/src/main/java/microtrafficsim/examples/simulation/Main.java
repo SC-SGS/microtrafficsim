@@ -301,6 +301,7 @@ public class Main {
      * (such as the {@code RestrictionRelationFactory}). The in this example
      * provided components and initializers are enough for most use-cases.
      *
+     * @param simconfig the simulation configuration to use for the stree-graph.
      * @return the created parser
      */
     private static OSMParser createParser(SimulationConfig simconfig) {
