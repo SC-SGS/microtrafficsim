@@ -60,21 +60,7 @@ public class RoundaboutScenario extends ValidationScenario {
     }
 
     public static void main(String[] args) throws Exception {
-        File file;
-
-        if (args.length == 1) {
-            switch (args[0]) {
-            case "-h":
-            case "--help":
-                Main.printUsage();
-                return;
-
-            default:
-                file = new File(args[0]);
-            }
-        } else {
-            file = new PackagedResource(Main.class, OSM_FILENAME).asTemporaryFile();
-        }
+        File file = new PackagedResource(Main.class, OSM_FILENAME).asTemporaryFile();
 
         SimulationConfig config = new SimulationConfig();
         setupConfig(config);
