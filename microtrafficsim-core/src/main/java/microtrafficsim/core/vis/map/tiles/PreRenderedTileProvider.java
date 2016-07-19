@@ -524,7 +524,7 @@ public class PreRenderedTileProvider implements TileProvider {
                                              GL3.GL_ONE_MINUS_SRC_ALPHA);
 
                 context.DepthTest.enable(gl);
-                context.DepthTest.setFunction(gl, GL3.GL_GEQUAL);
+                context.DepthTest.setFunction(gl, GL3.GL_GEQUAL, true);
 
                 uProjection.set(Mat4f.identity());
                 uViewScale.set((float) Math.pow(2.0, id.z));

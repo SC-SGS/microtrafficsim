@@ -35,7 +35,11 @@ public class DepthTest {
 
 
     public void setFunction(GL gl, int depthfunc) {
-        if (this.function != depthfunc) return;
+        setFunction(gl, depthfunc, false);
+    }
+
+    public void setFunction(GL gl, int depthfunc, boolean force) {
+        if (!force && this.function != depthfunc) return;
 
         gl.glDepthFunc(depthfunc);
         this.function = depthfunc;

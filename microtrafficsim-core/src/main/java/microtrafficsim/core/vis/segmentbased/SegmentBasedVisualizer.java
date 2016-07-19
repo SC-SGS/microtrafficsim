@@ -183,7 +183,7 @@ public class SegmentBasedVisualizer implements Visualizer {
         context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA);
 
         context.DepthTest.enable(gl);
-        context.DepthTest.setFunction(gl, GL3.GL_LEQUAL);
+        context.DepthTest.setFunction(gl, GL3.GL_LEQUAL, true);
 
         gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 

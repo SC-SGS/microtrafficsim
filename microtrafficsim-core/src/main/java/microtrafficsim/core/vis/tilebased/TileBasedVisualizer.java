@@ -316,7 +316,7 @@ public class TileBasedVisualizer implements Visualizer {
         uViewport.set(width, height, 1.f / width, 1.f / height);
 
         context.DepthTest.enable(gl);
-        context.DepthTest.setFunction(gl, GL3.GL_ALWAYS);
+        context.DepthTest.setFunction(gl, GL3.GL_ALWAYS, true);
 
         // draw map to framebuffer
         uView.set(Mat4f.identity());
@@ -351,7 +351,7 @@ public class TileBasedVisualizer implements Visualizer {
         fboCopyShader.unbind(gl);
         empty.unbind(gl);
 
-        context.DepthTest.setFunction(gl, GL3.GL_GEQUAL);
+        context.DepthTest.setFunction(gl, GL3.GL_GEQUAL, true);
 
         // draw overlays
         uView.set(view.getViewMatrix());
