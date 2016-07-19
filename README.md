@@ -31,15 +31,10 @@ can't be changed without changing code. It can be executed using
 ```
 
 #### Map-Viewer Example
-Map-Viewer examples can be executed using
+The map-viewer example can be executed using
 ```shell
-./gradlew :examples:mapviewer_tilebased:run -Dexec.args="<path to OSM-XML file>"
+./gradlew :examples:mapviewer:run -Dexec.args="<path to OSM-XML file>"
 ```
-for the tile-based version and
-```shell
-./gradlew :examples:mapviewer_segmentbased:run -Dexec.args="<path to OSM-XML file>"
-```
-for the segment based version.
 
 
 ## Supported traffic attributes
