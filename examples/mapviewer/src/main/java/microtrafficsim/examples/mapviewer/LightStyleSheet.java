@@ -1,4 +1,4 @@
-package microtrafficsim.examples.mapviewer.tilebased;
+package microtrafficsim.examples.mapviewer;
 
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;

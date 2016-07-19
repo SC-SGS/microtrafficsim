@@ -1,4 +1,4 @@
-package microtrafficsim.examples.mapviewer.tilebased;
+package microtrafficsim.examples.mapviewer;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.map.layers.TileLayerDefinition;
@@ -36,6 +36,13 @@ import java.io.IOException;
 import java.util.Collection;
 
 
+/**
+ * Map viewer example (tile-based).
+ * <p>
+ * The map to be displayed can be specified via the command-line options.
+ *
+ * @author Maximilian Luz
+ */
 public class MapViewer {
 
     /* -- window parameters -------------------------------------------------------------------- */
