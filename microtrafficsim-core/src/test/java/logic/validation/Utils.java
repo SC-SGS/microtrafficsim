@@ -1,11 +1,7 @@
 package logic.validation;
 
-import microtrafficsim.core.map.SegmentFeatureProvider;
-import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
-import microtrafficsim.core.vis.map.segments.FeatureSegmentLayerSource;
 import microtrafficsim.core.vis.opengl.shader.ShaderCompileError;
 import microtrafficsim.core.vis.opengl.shader.ShaderLinkError;
 import microtrafficsim.core.vis.opengl.utils.FramebufferUtils;
@@ -17,20 +13,10 @@ import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Set;
 
 
-public class Utils {
+class Utils {
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
-
-    static void setFeatureProvider(Set<LayerDefinition> layers, SegmentFeatureProvider provider) {
-        for (LayerDefinition def : layers) {
-            LayerSource src = def.getSource();
-
-            if (src instanceof FeatureSegmentLayerSource)
-                ((FeatureSegmentLayerSource) src).setFeatureProvider(provider);
-        }
-    }
 
     static void asyncScreenshot(RenderContext context) {
         new Thread(() -> {
@@ -99,7 +85,7 @@ public class Utils {
         }).start();
     }
 
-    public static class DebugExceptionHandler implements UncaughtExceptionHandler {
+    static class DebugExceptionHandler implements UncaughtExceptionHandler {
 
         @Override
         public void uncaughtException(RenderContext context, Throwable exception) {

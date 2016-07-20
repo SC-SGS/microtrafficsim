@@ -2,8 +2,8 @@ package logic.validation;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.map.layers.TileLayerDefinition;
-import microtrafficsim.core.map.layers.TileLayerSource;
+import microtrafficsim.core.map.layers.LayerDefinition;
+import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
@@ -205,7 +205,7 @@ public class Main {
      * @param layers the layer definitions for the provider
      * @return the created layer provider
      */
-    private static TileLayerProvider createLayerProvider(Collection<TileLayerDefinition> layers) {
+    private static TileLayerProvider createLayerProvider(Collection<LayerDefinition> layers) {
         /* create the layer provider */
         LayeredTileMap provider = new LayeredTileMap(TILING_SCHEME);
 
@@ -226,7 +226,7 @@ public class Main {
         initSimulationConfig(scencfg);
 
         /* set up layer and tile provider */
-        Collection<TileLayerDefinition> layers = STYLE.getLayers();
+        Collection<LayerDefinition> layers = STYLE.getLayers();
         TileLayerProvider layerProvider        = createLayerProvider(layers);
         PreRenderedTileProvider provider       = new PreRenderedTileProvider(layerProvider);
 
@@ -239,8 +239,8 @@ public class Main {
                 .generate(result.segment, TILING_SCHEME, TILE_GRID_LEVEL);
 
         /* update the feature sources, so that they will use the created provider */
-        for (TileLayerDefinition def : layers) {
-            TileLayerSource src = def.getSource();
+        for (LayerDefinition def : layers) {
+            LayerSource src = def.getSource();
 
             if (src instanceof FeatureTileLayerSource)
                 ((FeatureTileLayerSource) src).setFeatureProvider(tiled);

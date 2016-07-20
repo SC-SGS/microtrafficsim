@@ -1,8 +1,8 @@
 package microtrafficsim.ui.vis;
 
 import com.jogamp.newt.event.KeyEvent;
-import microtrafficsim.core.map.layers.TileLayerDefinition;
-import microtrafficsim.core.map.layers.TileLayerSource;
+import microtrafficsim.core.map.layers.LayerDefinition;
+import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
@@ -105,7 +105,7 @@ public class TileBasedMapViewer implements MapViewer {
     private VisualizationPanel              vpanel;
     private TileBasedVisualization          visualization;
     private OSMParser                       parser;
-    private Collection<TileLayerDefinition> layers;
+    private Collection<LayerDefinition> layers;
 
     @Override
     public VisualizationPanel getVisualizationPanel() {
@@ -258,7 +258,7 @@ public class TileBasedMapViewer implements MapViewer {
     }
 
     @Override
-    public TileLayerProvider createLayerProvider(Collection<TileLayerDefinition> layers) {
+    public TileLayerProvider createLayerProvider(Collection<LayerDefinition> layers) {
         /* create the layer provider */
         LayeredTileMap provider = new LayeredTileMap(TILING_SCHEME);
 
@@ -278,8 +278,8 @@ public class TileBasedMapViewer implements MapViewer {
                 = new QuadTreeTiledMapSegment.Generator().generate(result.segment, TILING_SCHEME, TILE_GRID_LEVEL);
 
         /* update the feature sources, so that they will use the created provider */
-        for (TileLayerDefinition def : layers) {
-            TileLayerSource src = def.getSource();
+        for (LayerDefinition def : layers) {
+            LayerSource src = def.getSource();
 
             if (src instanceof FeatureTileLayerSource) ((FeatureTileLayerSource) src).setFeatureProvider(tiled);
         }

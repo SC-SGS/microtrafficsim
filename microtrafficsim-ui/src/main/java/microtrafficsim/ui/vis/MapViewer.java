@@ -1,6 +1,6 @@
 package microtrafficsim.ui.vis;
 
-import microtrafficsim.core.map.layers.TileLayerDefinition;
+import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.Overlay;
@@ -97,7 +97,7 @@ public interface MapViewer {
     /**
      * Creates a {@code TileLayerProvider} from the given layer definitions.
      * The {@code TileLayerProvider} is used to provide map-layers and their
-     * style to the visualization. {@code TileLayerDefinition}s describe such
+     * style to the visualization. {@code LayerDefinition}s describe such
      * a layer in dependence of a source object. {@code TileLayerGenerator}s
      * are used to generate a renderable {@code TileLayer} from a specified
      * source.
@@ -105,7 +105,7 @@ public interface MapViewer {
      * @param layers the layer definitions for the provider
      * @return the created layer provider
      */
-    TileLayerProvider createLayerProvider(Collection<TileLayerDefinition> layers);
+    TileLayerProvider createLayerProvider(Collection<LayerDefinition> layers);
 
     void changeMap(OSMParser.Result result) throws InterruptedException;
 

@@ -1,6 +1,6 @@
 package microtrafficsim.core.map.style;
 
-import microtrafficsim.core.map.layers.TileLayerDefinition;
+import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.MapFeatureDefinition;
 import microtrafficsim.core.vis.opengl.utils.Color;
 
@@ -22,7 +22,7 @@ public interface StyleSheet {
     ParserConfig getParserConfiguration();
 
     Collection<MapFeatureDefinition<?>> getFeatureDefinitions();
-    Collection<TileLayerDefinition>     getLayers();
+    Collection<LayerDefinition>     getLayers();
 
     /**
      * Parser configuration for style.

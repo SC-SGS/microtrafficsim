@@ -1,8 +1,8 @@
 package microtrafficsim.core.vis.map.tiles.layers;
 
 import microtrafficsim.core.map.Bounds;
-import microtrafficsim.core.map.layers.TileLayerDefinition;
-import microtrafficsim.core.map.layers.TileLayerSource;
+import microtrafficsim.core.map.layers.LayerDefinition;
+import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
@@ -21,9 +21,9 @@ public class LayeredTileMap implements TileLayerProvider {
     private Rect2d bounds;
 
     private HashMap<String, Layer> layers;
-    private HashMap<Class<? extends TileLayerSource>, TileLayerGenerator> generators;
+    private HashMap<Class<? extends LayerSource>, TileLayerGenerator> generators;
 
-    private TileLayerSource.LayerSourceChangeListener sourceListener;
+    private LayerSource.LayerSourceChangeListener sourceListener;
     private Layer.LayerStateChangeListener            layerListener;
     private List<LayerChangeListener>                 listeners;
 
@@ -65,7 +65,7 @@ public class LayeredTileMap implements TileLayerProvider {
     }
 
 
-    public TileLayerDefinition addLayer(TileLayerDefinition def) {
+    public LayerDefinition addLayer(LayerDefinition def) {
         Layer layer = new Layer(def.getName(), def.getIndex(), def.getMinimumZoomLevel(), def.getMaximumZoomLevel(),
                                 def.getSource());
         Layer old = layers.put(layer.getName(), layer);
@@ -85,11 +85,11 @@ public class LayeredTileMap implements TileLayerProvider {
         if (old == null)
             return null;
         else
-            return new TileLayerDefinition(old.getName(), old.getIndex(), old.getMinimumZoomLevel(),
+            return new LayerDefinition(old.getName(), old.getIndex(), old.getMinimumZoomLevel(),
                                            old.getMaximumZoomLevel(), old.getSource());
     }
 
-    public TileLayerDefinition removeLayer(String name) {
+    public LayerDefinition removeLayer(String name) {
         Layer layer = layers.remove(name);
 
         if (layer != null) {
@@ -103,7 +103,7 @@ public class LayeredTileMap implements TileLayerProvider {
                     l.layerChanged(name);
             }
 
-            return new TileLayerDefinition(layer.getName(), layer.getIndex(), layer.getMinimumZoomLevel(),
+            return new LayerDefinition(layer.getName(), layer.getIndex(), layer.getMinimumZoomLevel(),
                                            layer.getMaximumZoomLevel(), layer.getSource());
         } else {
             return null;
@@ -111,11 +111,11 @@ public class LayeredTileMap implements TileLayerProvider {
     }
 
 
-    public TileLayerGenerator putGenerator(Class<? extends TileLayerSource> source, TileLayerGenerator generator) {
+    public TileLayerGenerator putGenerator(Class<? extends LayerSource> source, TileLayerGenerator generator) {
         return generators.put(source, generator);
     }
 
-    public TileLayerGenerator removeGenerator(Class<? extends TileLayerSource> source) {
+    public TileLayerGenerator removeGenerator(Class<? extends LayerSource> source) {
         return generators.remove(source);
     }
 
@@ -203,10 +203,10 @@ public class LayeredTileMap implements TileLayerProvider {
     }
 
 
-    private class LayerSourceChangeListenerImpl implements TileLayerSource.LayerSourceChangeListener {
+    private class LayerSourceChangeListenerImpl implements LayerSource.LayerSourceChangeListener {
 
         @Override
-        public void sourceChanged(TileLayerSource source) {
+        public void sourceChanged(LayerSource source) {
             updateBounds();
 
             HashSet<String> changed = layers.values()
@@ -219,7 +219,7 @@ public class LayeredTileMap implements TileLayerProvider {
         }
 
         @Override
-        public void sourceChanged(TileLayerSource source, TileId tile) {
+        public void sourceChanged(LayerSource source, TileId tile) {
             updateBounds();
 
             HashSet<String> changed = layers.values()

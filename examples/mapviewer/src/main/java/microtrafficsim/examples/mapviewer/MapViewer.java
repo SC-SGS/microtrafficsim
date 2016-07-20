@@ -1,8 +1,8 @@
 package microtrafficsim.examples.mapviewer;
 
 import com.jogamp.newt.event.KeyEvent;
-import microtrafficsim.core.map.layers.TileLayerDefinition;
-import microtrafficsim.core.map.layers.TileLayerSource;
+import microtrafficsim.core.map.layers.LayerDefinition;
+import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
@@ -116,7 +116,7 @@ public class MapViewer {
      */
     private static void show(File file) throws UnsupportedFeatureException {
         /* set up layer and tile provider */
-        Collection<TileLayerDefinition> layers        = STYLE.getLayers();
+        Collection<LayerDefinition> layers        = STYLE.getLayers();
         TileLayerProvider               layerProvider = createLayerProvider(layers);
         PreRenderedTileProvider         provider      = new PreRenderedTileProvider(layerProvider);
 
@@ -250,7 +250,7 @@ public class MapViewer {
     /**
      * Creates a {@code TileLayerProvider} from the given layer definitions.
      * The {@code TileLayerProvider} is used to provide map-layers and their
-     * style to the visualization. {@code TileLayerDefinition}s describe such
+     * style to the visualization. {@code LayerDefinition}s describe such
      * a layer in dependence of a source object. {@code TileLayerGenerator}s
      * are used to generate a renderable {@code TileLayer} from a specified
      * source.
@@ -258,7 +258,7 @@ public class MapViewer {
      * @param layers the layer definitions for the provider
      * @return the created layer provider
      */
-    private static TileLayerProvider createLayerProvider(Collection<TileLayerDefinition> layers) {
+    private static TileLayerProvider createLayerProvider(Collection<LayerDefinition> layers) {
         /* create the layer provider */
         LayeredTileMap provider = new LayeredTileMap(TILING_SCHEME);
 
@@ -285,7 +285,7 @@ public class MapViewer {
      *               and which's view should be reset
      */
     private static void
-    asyncParse(OSMParser parser, File file, Collection<TileLayerDefinition> layers, Visualizer vis) {
+    asyncParse(OSMParser parser, File file, Collection<LayerDefinition> layers, Visualizer vis) {
         new Thread(() -> {
             try {
                 /* parse file and create tiled provider */
@@ -294,8 +294,8 @@ public class MapViewer {
                         .generate(result.segment, TILING_SCHEME, TILE_GRID_LEVEL);
 
                 /* update the feature sources, so that they will use the created provider */
-                for (TileLayerDefinition def : layers) {
-                    TileLayerSource src = def.getSource();
+                for (LayerDefinition def : layers) {
+                    LayerSource src = def.getSource();
 
                     if (src instanceof FeatureTileLayerSource) ((FeatureTileLayerSource) src).setFeatureProvider(tiled);
                 }

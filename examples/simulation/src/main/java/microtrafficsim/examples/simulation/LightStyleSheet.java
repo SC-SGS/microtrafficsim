@@ -2,7 +2,7 @@ package microtrafficsim.examples.simulation;
 
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
-import microtrafficsim.core.map.layers.TileLayerDefinition;
+import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.parser.MapFeatureDefinition;
 import microtrafficsim.core.parser.MapFeatureGenerator;
@@ -27,7 +27,7 @@ class LightStyleSheet implements StyleSheet {
     private ParserConfig                       parserConfig;
     private Color                              colorBackground;
     private ArrayList<MapFeatureDefinition<?>> features;
-    private ArrayList<TileLayerDefinition>     layers;
+    private ArrayList<LayerDefinition>     layers;
 
     {
         // parser configuration
@@ -194,7 +194,7 @@ class LightStyleSheet implements StyleSheet {
     }
 
     @Override
-    public Collection<TileLayerDefinition> getLayers() {
+    public Collection<LayerDefinition> getLayers() {
         return layers;
     }
 
@@ -228,8 +228,8 @@ class LightStyleSheet implements StyleSheet {
         return style;
     }
 
-    private TileLayerDefinition genLayer(String name, int index, int min, int max, String feature, Style style) {
-        return new TileLayerDefinition(name, index, min, max, new FeatureTileLayerSource(feature, style));
+    private LayerDefinition genLayer(String name, int index, int min, int max, String feature, Style style) {
+        return new LayerDefinition(name, index, min, max, new FeatureTileLayerSource(feature, style));
     }
 
 

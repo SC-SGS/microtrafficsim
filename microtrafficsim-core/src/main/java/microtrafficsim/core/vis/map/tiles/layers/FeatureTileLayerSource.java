@@ -3,7 +3,7 @@ package microtrafficsim.core.vis.map.tiles.layers;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.FeaturePrimitive;
 import microtrafficsim.core.map.TileFeatureProvider;
-import microtrafficsim.core.map.layers.TileLayerSource;
+import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.mesh.style.Style;
@@ -12,7 +12,7 @@ import microtrafficsim.math.Rect2d;
 import java.util.ArrayList;
 
 
-public class FeatureTileLayerSource implements TileLayerSource {
+public class FeatureTileLayerSource implements LayerSource {
     private String              feature;
     private Style               style;
     private TileFeatureProvider provider;
@@ -72,7 +72,7 @@ public class FeatureTileLayerSource implements TileLayerSource {
 
 
     @Override
-    public Class<? extends TileLayerSource> getType() {
+    public Class<? extends LayerSource> getType() {
         return FeatureTileLayerSource.class;
     }
 
