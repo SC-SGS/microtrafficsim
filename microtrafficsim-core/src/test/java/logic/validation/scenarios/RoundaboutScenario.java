@@ -74,26 +74,26 @@ public class RoundaboutScenario extends ValidationScenario {
         if (vehicleState == VehicleState.DESPAWNED && getVehiclesCount() == 0) {
             switch (nextScenarioState) {
             case TOP_RIGHT:
-                createAndAddCar(topRight, right, 0, NextScenarioState.TOP_RIGHT.color);
-                createAndAddCar(topLeft, left, 13 + updateGraphDelay, NextScenarioState.TOP_RIGHT.color);
+                createAndAddCar(topRight, right, 0,                     Color.fromRGB(0xCC4C1A));
+                createAndAddCar(topLeft,  left,  13 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
                 nextScenarioState = NextScenarioState.TOP_LEFT;
                 break;
 
             case TOP_LEFT:
-                createAndAddCar(topLeft, topRight, 5 + updateGraphDelay, NextScenarioState.TOP_LEFT.color);
-                createAndAddCar(bottom, left, 0, NextScenarioState.TOP_LEFT.color);
+                createAndAddCar(topLeft, topRight, 5 + updateGraphDelay, Color.fromRGB(0xCC4C1A));
+                createAndAddCar(bottom,  left,     0,                    Color.fromRGB(0x3EAAAB));
                 nextScenarioState = NextScenarioState.BOTTOM;
                 break;
 
             case BOTTOM:
-                createAndAddCar(bottom, left, 0, NextScenarioState.BOTTOM.color);
-                createAndAddCar(right, topRight, 5 + updateGraphDelay, NextScenarioState.BOTTOM.color);
+                createAndAddCar(bottom, left,     0,                    Color.fromRGB(0xCC4C1A));
+                createAndAddCar(right,  topRight, 5 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
                 nextScenarioState = NextScenarioState.RIGHT;
                 break;
 
             case RIGHT:    // maybe useless, because checked crossroad is same as in TOP_RIGHT
-                createAndAddCar(right, bottom, 0, NextScenarioState.RIGHT.color);
-                createAndAddCar(topLeft, left, 7 + updateGraphDelay, NextScenarioState.RIGHT.color);
+                createAndAddCar(right,   bottom, 0,                    Color.fromRGB(0xCC4C1A));
+                createAndAddCar(topLeft, left,   7 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
                 nextScenarioState = NextScenarioState.TOP_RIGHT;
             }
         }
@@ -149,16 +149,5 @@ public class RoundaboutScenario extends ValidationScenario {
         justInitialized = false;
     }
 
-    private enum NextScenarioState {
-        TOP_RIGHT(Color.fromRGB(0x0000ff)),
-        TOP_LEFT(Color.fromRGB(0x0000ff)),
-        BOTTOM(Color.fromRGB(0x0000ff)),
-        RIGHT(Color.fromRGB(0x0000ff));
-
-        private final Color color;
-
-        NextScenarioState(Color color) {
-            this.color = color;
-        }
-    }
+    private enum NextScenarioState { TOP_RIGHT, TOP_LEFT, BOTTOM, RIGHT }
 }

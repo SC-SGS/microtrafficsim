@@ -7,6 +7,7 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -77,21 +78,21 @@ public class TCrossroadScenario extends ValidationScenario {
         if (vehicleState == VehicleState.DESPAWNED && getVehiclesCount() == 0) {
             switch (nextScenarioState) {
             case PRIORITY_TO_THE_RIGHT:
-                createAndAddCar(topRight, topLeft, 0);
-                createAndAddCar(bottom, topLeft, 1 + updateGraphDelay);
+                createAndAddCar(topRight, topLeft, 0,                    Color.fromRGB(0xCC4C1A));
+                createAndAddCar(bottom,   topLeft, 1 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
                 nextScenarioState = NextScenarioState.NO_INTERCEPTION;
                 break;
 
             case NO_INTERCEPTION:
-                createAndAddCar(topRight, topLeft, 0);
-                createAndAddCar(bottom, topRight, 1 + updateGraphDelay);
+                createAndAddCar(topRight, topLeft,  0,                    Color.fromRGB(0xCC4C1A));
+                createAndAddCar(bottom,   topRight, 1 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
                 nextScenarioState = NextScenarioState.DEADLOCK;
                 break;
 
             case DEADLOCK:
-                createAndAddCar(topRight, topLeft, 0);
-                createAndAddCar(topLeft, topRight, 1 + updateGraphDelay);
-                createAndAddCar(bottom, topLeft, 1 + updateGraphDelay);
+                createAndAddCar(topRight, topLeft,  0,                    Color.fromRGB(0xCC4C1A));
+                createAndAddCar(topLeft,  topRight, 1 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
+                createAndAddCar(bottom,   topLeft,  1 + updateGraphDelay, Color.fromRGB(0x88B03F));
                 nextScenarioState = NextScenarioState.PRIORITY_TO_THE_RIGHT;
             }
         }

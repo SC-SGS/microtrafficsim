@@ -79,35 +79,35 @@ public class PlusCrossroadScenario extends ValidationScenario {
             if (getVehiclesCount() == 0) {
                 switch (nextScenarioState) {
                 case PRIORITY_TO_THE_RIGHT:
-                    createAndAddCar(topRight, bottomRight, 0, NextScenarioState.PRIORITY_TO_THE_RIGHT.color);
-                    createAndAddCar(topLeft, bottomRight, 2 + updateGraphDelay, NextScenarioState.PRIORITY_TO_THE_RIGHT.color);
+                    createAndAddCar(topRight, bottomRight, 0,                    Color.fromRGB(0xCC4C1A));
+                    createAndAddCar(topLeft,  bottomRight, 2 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
                     nextScenarioState = NextScenarioState.NO_INTERSECTION;
                     break;
 
                 case NO_INTERSECTION:
-                    createAndAddCar(topRight, bottomLeft, 0, NextScenarioState.NO_INTERSECTION.color);
-                    createAndAddCar(bottomLeft, topRight, 1 + updateGraphDelay, NextScenarioState.NO_INTERSECTION.color);
+                    createAndAddCar(topRight,   bottomLeft, 0,                    Color.fromRGB(0xCC4C1A));
+                    createAndAddCar(bottomLeft, topRight,   1 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
                     nextScenarioState = NextScenarioState.LEFT_TURNER_MUST_WAIT;
                     break;
 
                 case LEFT_TURNER_MUST_WAIT:
-                    createAndAddCar(topLeft, bottomRight, 5 + updateGraphDelay, NextScenarioState.LEFT_TURNER_MUST_WAIT.color);
-                    createAndAddCar(bottomRight, bottomLeft, 0, NextScenarioState.LEFT_TURNER_MUST_WAIT.color);
+                    createAndAddCar(topLeft,     bottomRight, 5 + updateGraphDelay, Color.fromRGB(0xCC4C1A));
+                    createAndAddCar(bottomRight, bottomLeft,  0,                    Color.fromRGB(0x3EAAAB));
                     nextScenarioState = NextScenarioState.ALL_LEFT;
                     break;
 
                 case ALL_LEFT:
-                    createAndAddCar(bottomLeft, topLeft, 4 + updateGraphDelay, NextScenarioState.ALL_LEFT.color);
-                    createAndAddCar(bottomRight, bottomLeft, 0, NextScenarioState.ALL_LEFT.color);
-                    createAndAddCar(topRight, bottomRight, 3 + updateGraphDelay, NextScenarioState.ALL_LEFT.color);
-                    createAndAddCar(topLeft, topRight, 5 + updateGraphDelay, NextScenarioState.ALL_LEFT.color);
+                    createAndAddCar(bottomLeft,  topLeft,     4 + updateGraphDelay, Color.fromRGB(0xCC4C1A));
+                    createAndAddCar(bottomRight, bottomLeft,  0,                    Color.fromRGB(0x3EAAAB));
+                    createAndAddCar(topRight,    bottomRight, 3 + updateGraphDelay, Color.fromRGB(0x88B03F));
+                    createAndAddCar(topLeft,     topRight,    5 + updateGraphDelay, Color.fromRGB(0xFFB600));
                     nextScenarioState = NextScenarioState.GO_WITHOUT_PRIORITY;
                     break;
 
                 case GO_WITHOUT_PRIORITY:
-                    createAndAddBlockingCar(mid, bottomLeft, NextScenarioState.GO_WITHOUT_PRIORITY.color);
-                    createAndAddCar(topRight, bottomLeft, 0, NextScenarioState.GO_WITHOUT_PRIORITY.color);
-                    createAndAddCar(bottomRight, topLeft, 0, NextScenarioState.GO_WITHOUT_PRIORITY.color);
+                    createAndAddBlockingCar(mid, bottomLeft,    Color.fromRGB(0xCC4C1A));
+                    createAndAddCar(topRight,    bottomLeft, 0, Color.fromRGB(0x3EAAAB));
+                    createAndAddCar(bottomRight, topLeft,    0, Color.fromRGB(0x88B03F));
                     nextScenarioState = NextScenarioState.PRIORITY_TO_THE_RIGHT;
                     break;
                 }
@@ -144,16 +144,10 @@ public class PlusCrossroadScenario extends ValidationScenario {
     }
 
     private enum NextScenarioState {
-        PRIORITY_TO_THE_RIGHT(Color.fromRGB(0x00ffff)),
-        NO_INTERSECTION(Color.fromRGB(0xff0000)),
-        LEFT_TURNER_MUST_WAIT(Color.fromRGB(0x00ff00)),
-        ALL_LEFT(Color.fromRGB(0x0000ff)),
-        GO_WITHOUT_PRIORITY(Color.fromRGB(0xff00ff));
-
-        private final Color color;
-
-        NextScenarioState(Color color) {
-            this.color = color;
-        }
+        PRIORITY_TO_THE_RIGHT,
+        NO_INTERSECTION,
+        LEFT_TURNER_MUST_WAIT,
+        ALL_LEFT,
+        GO_WITHOUT_PRIORITY;
     }
 }

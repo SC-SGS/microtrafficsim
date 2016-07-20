@@ -8,6 +8,7 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -80,8 +81,8 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
         if (vehicleState == VehicleState.DESPAWNED && getVehiclesCount() == 0) {
             switch (nextScenarioState) {
             case PRIORITY_TO_THE_MOTORWAY:
-                createAndAddCar(bottomMotorway, topMotorway, 0);
-                createAndAddCar(bottomRight, topMotorway, 2 + updateGraphDelay);
+                createAndAddCar(bottomMotorway, topMotorway, 0,                    Color.fromRGB(0xCC4C1A));
+                createAndAddCar(bottomRight,    topMotorway, 2 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
             }
         }
     }
