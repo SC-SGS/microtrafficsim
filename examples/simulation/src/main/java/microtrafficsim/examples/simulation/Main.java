@@ -44,6 +44,11 @@ import java.util.Collection;
 import java.util.function.Predicate;
 
 
+/**
+ * Simulation example. The map to be simulated/displayed can be specified via the command-line options.
+ *
+ * @author Dominic Parga Cacheiro, Maximilian Luz
+ */
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 

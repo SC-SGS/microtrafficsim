@@ -37,9 +37,7 @@ import java.util.Collection;
 
 
 /**
- * Map viewer example (tile-based).
- * <p>
- * The map to be displayed can be specified via the command-line options.
+ * Map viewer example. The map to be displayed can be specified via the command-line options.
  *
  * @author Maximilian Luz
  */

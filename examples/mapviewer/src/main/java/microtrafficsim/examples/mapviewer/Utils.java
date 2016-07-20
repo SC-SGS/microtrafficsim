@@ -15,9 +15,19 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 
-public class Utils {
+/**
+ * Utility class for the Examples.
+ *
+ * @author Maximilian Luz
+ */
+class Utils {
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
+    /**
+     * Create a screenshot of the context, asycnronously.
+     *
+     * @param context the context of which the screenshot should be created.
+     */
     static void asyncScreenshot(RenderContext context) {
         new Thread(() -> {
             JFileChooser chooser = new JFileChooser();
@@ -85,7 +95,11 @@ public class Utils {
         }).start();
     }
 
-    public static class DebugExceptionHandler implements UncaughtExceptionHandler {
+
+    /**
+     * The debug-exception-handler used to handle all uncaught exceptions on the render-context
+     */
+    static class DebugExceptionHandler implements UncaughtExceptionHandler {
 
         @Override
         public void uncaughtException(RenderContext context, Throwable exception) {

@@ -20,6 +20,11 @@ import java.util.Collection;
 import java.util.function.Predicate;
 
 
+/**
+ * A light style sheet used for the visualization.
+ *
+ * @author Maximilian Luz
+ */
 class LightStyleSheet implements StyleSheet {
 
     private static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
@@ -205,6 +210,11 @@ class LightStyleSheet implements StyleSheet {
                 name, parserConfig.generatorIndexOfStreetGraph + 1, generator, n -> false, predicate);
     }
 
+    /**
+     * create the shader used for street-rendering.
+     *
+     * @return the created shader.
+     */
     private ShaderProgramSource getStreetShader() {
         Resource vert = new PackagedResource(LightStyleSheet.class, "/shaders/features/streets/streets.vs");
         Resource frag = new PackagedResource(LightStyleSheet.class, "/shaders/features/streets/streets.fs");
@@ -218,6 +228,15 @@ class LightStyleSheet implements StyleSheet {
         return prog;
     }
 
+    /**
+     * Generate a line-style based on the given properties.
+     *
+     * @param shader    the shader to be used.
+     * @param color     the color to be used.
+     * @param linewidth the line-width of the line.
+     * @param scalenorm the scale-normal.
+     * @return the created style.
+     */
     private Style genStyle(ShaderProgramSource shader, Color color, float linewidth, float scalenorm) {
         Style style = new Style(shader);
         style.setUniformSupplier("u_color", color::toVec4f);
@@ -228,15 +247,33 @@ class LightStyleSheet implements StyleSheet {
         return style;
     }
 
+    /**
+     * Generate a layer-definition based on the given properties.
+     *
+     * @param name    the name of the definition.
+     * @param index   the index of the layer.
+     * @param min     the minimum zoom level at which the layer should be activated.
+     * @param max     the maximum zoom level at which the layer should be activated.
+     * @param feature the feature name of the feature displayed in this layer.
+     * @param style   the style used for displaying this layer.
+     * @return the generated layer.
+     */
     private LayerDefinition genLayer(String name, int index, int min, int max, String feature, Style style) {
         return new LayerDefinition(name, index, min, max, new FeatureTileLayerSource(feature, style));
     }
 
 
+    /**
+     * A predicate usable to select minor streets.
+     */
     private static class MinorStreetBasePredicate implements Predicate<Way> {
 
         private final String type;
 
+        /**
+         * Create a new predicate based on the given type-name.
+         * @param type the name of the street-type to select.
+         */
         MinorStreetBasePredicate(String type) {
             this.type = type;
         }
@@ -248,10 +285,17 @@ class LightStyleSheet implements StyleSheet {
         }
     }
 
+    /**
+     * A predicate usable to select major streets (i.e. streets and their associated link-type).
+     */
     private static class MajorStreetBasePredicate implements Predicate<Way> {
         private final String type;
         private final String link;
 
+        /**
+         * Create a new predicate based on the given type-name.
+         * @param type the name of the street-type to select.
+         */
         MajorStreetBasePredicate(String type) {
             this.type = type;
             this.link = type + "_link";

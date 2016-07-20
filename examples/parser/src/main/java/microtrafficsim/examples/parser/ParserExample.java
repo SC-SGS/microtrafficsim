@@ -22,6 +22,7 @@ import java.util.function.Predicate;
 
 /**
  * An example showing the usage of the OpenStreetMap parser-framework.
+ * The map to be parsed can be specified via the command-line options.
  *
  * @author Maximilian Luz
  */

@@ -13,6 +13,8 @@ import java.util.function.Supplier;
 
 
 /**
+ * The scenario used in this example, based on the {@link EndOfTheWorldScenario}.
+ *
  * @author Dominic Parga Cacheiro
  */
 public class Scenario extends EndOfTheWorldScenario {
