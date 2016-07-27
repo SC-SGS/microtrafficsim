@@ -35,10 +35,10 @@ class LightStyleSheet implements StyleSheet {
     private ArrayList<LayerDefinition>     layers;
 
     {
-        // parser configuration
+        /* parser configuration */
         parserConfig = new ParserConfig(256, 512);
 
-        // color definitions
+        /* color definitions */
         colorBackground = Color.fromRGB(0xFFFFFF);
 
         Color[] colors = {
@@ -55,7 +55,7 @@ class LightStyleSheet implements StyleSheet {
         };
 
 
-        // feature predicates
+        /* feature predicates */
         Predicate<Way> prMotorway     = new MajorStreetBasePredicate("motorway");
         Predicate<Way> prTrunk        = new MajorStreetBasePredicate("trunk");
         Predicate<Way> prPrimary      = new MajorStreetBasePredicate("primary");
@@ -67,7 +67,7 @@ class LightStyleSheet implements StyleSheet {
         Predicate<Way> prLivingStreet = new MinorStreetBasePredicate("living_street");
         Predicate<Way> prTrack        = new MinorStreetBasePredicate("track");
 
-        // define and add the features
+        /* define and add the features */
         MapFeatureGenerator<Street> generator = new StreetFeatureGenerator();
 
         features = new ArrayList<>();
@@ -82,7 +82,7 @@ class LightStyleSheet implements StyleSheet {
         features.add(genStreetFeatureDef("streets:living_street", generator, prLivingStreet));
         features.add(genStreetFeatureDef("streets:track", generator, prTrack));
 
-        // styles
+        /* styles */
         ShaderProgramSource streets = getStreetShader();
 
         Style sMotorwayOutline       = genStyle(streets, colors[0], 60.f, SCALE_MAXLEVEL);
@@ -129,7 +129,7 @@ class LightStyleSheet implements StyleSheet {
         Style sLivingStreetOutlineXL = genStyle(streets, colors[8], 60.f, SCALE_MAXLEVEL);
         Style sTrackOutlineXL        = genStyle(streets, colors[9], 50.f, SCALE_MAXLEVEL);
 
-        // layers
+        /* layers */
         int index = 0;
         layers    = new ArrayList<>();
         layers.add(genLayer("streets:track:outline",            index++, 17, 19, "streets:track",         sTrackOutline));
@@ -204,6 +204,14 @@ class LightStyleSheet implements StyleSheet {
     }
 
 
+    /**
+     * Generates a basic street-feature definition.
+     *
+     * @param name      the name of the feature.
+     * @param generator the generator for the feature.
+     * @param predicate the predicate to select the Ways contained in this feature.
+     * @return the created MapFeatureDefinition.
+     */
     private MapFeatureDefinition<Street> genStreetFeatureDef(String name, MapFeatureGenerator<Street> generator,
                                                              Predicate<Way> predicate) {
         return new MapFeatureDefinition<>(
@@ -211,7 +219,7 @@ class LightStyleSheet implements StyleSheet {
     }
 
     /**
-     * create the shader used for street-rendering.
+     * Create the shader-sources used for street-rendering.
      *
      * @return the created shader.
      */
@@ -229,7 +237,7 @@ class LightStyleSheet implements StyleSheet {
     }
 
     /**
-     * Generate a line-style based on the given properties.
+     * Generate a street-style based on the given properties.
      *
      * @param shader    the shader to be used.
      * @param color     the color to be used.

@@ -263,11 +263,16 @@ class LightStyleSheet implements StyleSheet {
 
 
     /**
-     * A predicate that can be used to identify a minor street based on its type name.
+     * A predicate usable to select minor streets.
      */
     private static class MinorStreetBasePredicate implements Predicate<Way> {
+
         private final String type;
 
+        /**
+         * Create a new predicate based on the given type-name.
+         * @param type the name of the street-type to select.
+         */
         MinorStreetBasePredicate(String type) {
             this.type = type;
         }
@@ -280,12 +285,16 @@ class LightStyleSheet implements StyleSheet {
     }
 
     /**
-     * A predicate that can be used to identify a major street (including link-type) based on its type name.
+     * A predicate usable to select major streets (i.e. streets and their associated link-type).
      */
     private static class MajorStreetBasePredicate implements Predicate<Way> {
         private final String type;
         private final String link;
 
+        /**
+         * Create a new predicate based on the given type-name.
+         * @param type the name of the street-type to select.
+         */
         MajorStreetBasePredicate(String type) {
             this.type = type;
             this.link = type + "_link";
