@@ -17,11 +17,11 @@ run {
 }
 
 
-mainClassName = 'microtrafficsim.examples.mapviewer.tilebased.MapViewer'
+mainClassName = 'microtrafficsim.examples.mapviewer.MapViewer'
 
 
 // set jar and distribution name
-jar.baseName = 'microtrafficsim-examples-mapviewer-tilebased'
-distributions.main.baseName = 'microtrafficsim-examples-mapviewer-tilebased'
+jar.baseName = 'microtrafficsim-examples-mapviewer'
+distributions.main.baseName = 'microtrafficsim-examples-mapviewer'
 
 applicationDefaultJvmArgs = ["-Xmx3g"]
