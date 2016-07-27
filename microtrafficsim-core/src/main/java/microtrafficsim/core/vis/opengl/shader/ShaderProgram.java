@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-import static microtrafficsim.build.BuildSetup.DEBUG_VISUALIZATION;
+import static microtrafficsim.build.BuildSetup.DEBUG_CORE_VIS;
 
 
 public class ShaderProgram {
@@ -212,7 +212,7 @@ public class ShaderProgram {
 
             if (attrib == null) {
                 attrib = new VertexAttribute(type, index);
-            } else if (DEBUG_VISUALIZATION) {
+            } else if (DEBUG_CORE_VIS) {
                 if (!type.equals(attrib.type)) {
                     logger.error("On ShaderProgram '" + this.name + "', Vertex-Attribute '" + name + "':"
                                  + "\n\tType specified by bindings differs from type specified in shader:"

@@ -40,7 +40,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static microtrafficsim.build.BuildSetup.DEBUG_VISUALIZATION;
+import static microtrafficsim.build.BuildSetup.DEBUG_CORE_VIS;
 
 
 public class TileBasedVisualizer implements Visualizer {
@@ -165,7 +165,7 @@ public class TileBasedVisualizer implements Visualizer {
 
     @Override
     public void init(RenderContext context) {
-        if (DEBUG_VISUALIZATION) {
+        if (DEBUG_CORE_VIS) {
             DebugUtils.setDebugGL(context.getDrawable());
             context.getDrawable().getGL().setSwapInterval(0);
         }

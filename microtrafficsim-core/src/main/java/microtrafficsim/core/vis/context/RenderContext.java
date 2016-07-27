@@ -16,7 +16,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
-import static microtrafficsim.build.BuildSetup.DEBUG_VISUALIZATION;
+import static microtrafficsim.build.BuildSetup.DEBUG_CORE_VIS;
 
 
 public class RenderContext implements GLEventListener {
@@ -225,10 +225,8 @@ public class RenderContext implements GLEventListener {
                  * we are already handling an exception.
                  */
 
-                if (DEBUG_VISUALIZATION) {
-                    System.err.println("RenderEventController -- Ignoring Exception from ExceptionHandler:");
-                    t.printStackTrace();
-                }
+                if (DEBUG_CORE_VIS)
+                    logger.debug("Ignoring Exception from ExceptionHandler:", t);
             }
             return true;
         }

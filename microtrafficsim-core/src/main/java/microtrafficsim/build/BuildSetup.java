@@ -2,5 +2,5 @@ package microtrafficsim.build;
 
 
 public class BuildSetup {
-    public static final boolean DEBUG_VISUALIZATION = true;
+    public static final boolean DEBUG_CORE_VIS = true;
 }
