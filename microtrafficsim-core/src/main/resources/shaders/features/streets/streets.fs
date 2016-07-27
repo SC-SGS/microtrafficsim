@@ -1,3 +1,7 @@
+/*
+ * Fragment-shader for anti-aliased thick line rendering with various joins and caps.
+ */
+
 #version 150
 
 uniform float u_lineblur = 5.0;

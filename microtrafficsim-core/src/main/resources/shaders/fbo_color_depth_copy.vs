@@ -1,3 +1,7 @@
+/*
+ * Simple shader to copy a color and depth texture to a frame-buffer.
+ */
+
 #version 150
 
 out vec2 v_texcoord;

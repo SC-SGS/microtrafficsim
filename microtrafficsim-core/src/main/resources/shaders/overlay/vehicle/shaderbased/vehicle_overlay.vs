@@ -1,3 +1,7 @@
+/*
+ * Vertex-shader for the geometry-shader-based vehicle overlay.
+ */
+
 #version 150
 
 in vec2 a_position2;

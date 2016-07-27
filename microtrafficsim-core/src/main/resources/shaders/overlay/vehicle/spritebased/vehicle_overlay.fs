@@ -1,3 +1,7 @@
+/*
+ * Fragment-shader for the sprite-based vehicle overlay.
+ */
+
 #version 150
 
 #define EPSILON 0.00001

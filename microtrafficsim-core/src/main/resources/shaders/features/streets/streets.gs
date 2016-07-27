@@ -1,3 +1,7 @@
+/*
+ * Geometry-shader for anti-aliased thick line rendering with various joins and caps.
+ */
+
 #version 150
 
 /* -- cap and join types ------------------------------------------------------------------------ */

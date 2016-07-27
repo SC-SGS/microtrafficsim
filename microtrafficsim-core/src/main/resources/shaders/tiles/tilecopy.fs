@@ -1,3 +1,7 @@
+/*
+ * A simple shader to copy/project tiles form a texture to the screen.
+ */
+
 #version 150
 
 in vec2 v_texcoord;

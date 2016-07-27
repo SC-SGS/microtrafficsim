@@ -1,3 +1,8 @@
+/*
+ * Basic vertex shader, transforms the input vertex according to
+ * projection- and view-matrix. Forwards a constant color as vertex color.
+ */
+
 #version 150
 
 in vec3 a_position;

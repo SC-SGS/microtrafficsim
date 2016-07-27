@@ -1,8 +1,8 @@
-#version 150
-
 /*
- * NOTE: assumes a top-down (z-axis) view projection.
+ * Geometry-shader for the geometry-shader-based vehicle overlay.
  */
+
+#version 150
 
 layout(points) in;
 layout(triangle_strip, max_vertices = 3) out;

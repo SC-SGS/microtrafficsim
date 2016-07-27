@@ -1,3 +1,7 @@
+/*
+ * Basic fragment shader, outputting the vertex color.
+ */
+
 #version 150
 
 in vec4 vertex_color;

@@ -1,3 +1,7 @@
+/*
+ * Vertex-shader for the sprite-based vehicle overlay.
+ */
+
 #version 150
 
 in highp vec3 a_position;

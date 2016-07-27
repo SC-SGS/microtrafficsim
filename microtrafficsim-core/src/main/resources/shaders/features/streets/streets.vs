@@ -1,3 +1,7 @@
+/*
+ * Vertex-shader for anti-aliased thick line rendering with various joins and caps.
+ */
+
 #version 150
 
 in highp vec3 a_position;
