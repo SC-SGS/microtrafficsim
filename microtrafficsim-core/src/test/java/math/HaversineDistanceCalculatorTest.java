@@ -83,26 +83,78 @@ public class HaversineDistanceCalculatorTest {
     }
 
 
+    /**
+     * Asserts that the distance between the given coordinates is exactly the same as the given distance.
+     *
+     * @param a        the first Coordinate.
+     * @param b        the second Coordinate.
+     * @param distance the expected distance.
+     */
     private void testExact(Coordinate a, Coordinate b, double distance) {
         test(a, b, distance, 0);
     }
 
+    /**
+     * Asserts that the distance between the given coordinates is approximately the same as the given distance, with
+     * the difference of expected and real value beeing smaller than {@link #TEST_ERROR_TINY} times the expected
+     * distance.
+     *
+     * @param a        the first Coordinate.
+     * @param b        the second Coordinate.
+     * @param distance the expected distance.
+     */
     private void testTiny(Coordinate a, Coordinate b, double distance) {
         test(a, b, distance, TEST_ERROR_TINY);
     }
 
+    /**
+     * Asserts that the distance between the given coordinates is approximately the same as the given distance, with
+     * the difference of expected and real value beeing smaller than {@link #TEST_ERROR_SMALL} times the expected
+     * distance.
+     *
+     * @param a        the first Coordinate.
+     * @param b        the second Coordinate.
+     * @param distance the expected distance.
+     */
     private void testSmall(Coordinate a, Coordinate b, double distance) {
         test(a, b, distance, TEST_ERROR_SMALL);
     }
 
+    /**
+     * Asserts that the distance between the given coordinates is approximately the same as the given distance, with
+     * the difference of expected and real value beeing smaller than {@link #TEST_ERROR_MEDIUM} times the expected
+     * distance.
+     *
+     * @param a        the first Coordinate.
+     * @param b        the second Coordinate.
+     * @param distance the expected distance.
+     */
     private void testMedium(Coordinate a, Coordinate b, double distance) {
         test(a, b, distance, TEST_ERROR_MEDIUM);
     }
 
+    /**
+     * Asserts that the distance between the given coordinates is approximately the same as the given distance, with
+     * the difference of expected and real value beeing smaller than {@link #TEST_ERROR_LARGE} times the expected
+     * distance.
+     *
+     * @param a        the first Coordinate.
+     * @param b        the second Coordinate.
+     * @param distance the expected distance.
+     */
     private void testLarge(Coordinate a, Coordinate b, double distance) {
         test(a, b, distance, TEST_ERROR_LARGE);
     }
 
+    /**
+     * Asserts that the distance between the given coordinates is approximately the same as the given distance,
+     * with the difference of expected and real value beeing smaller than {@code error} times the expected distance.
+     *
+     * @param a        the first Coordinate.
+     * @param b        the second Coordinate.
+     * @param distance the expected distance.
+     * @param error    the error-factor..
+     */
     private void test(Coordinate a, Coordinate b, double distance, double error) {
         assertEquals(HaversineDistanceCalculator.getDistance(a, b), distance, distance * error);
     }

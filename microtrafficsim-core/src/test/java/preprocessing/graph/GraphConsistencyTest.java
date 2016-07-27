@@ -40,7 +40,6 @@ import static org.junit.Assert.*;
 /**
  * Tests for the StreetGraph unification process.
  * <p>
- * <p>
  * As it is almost impossible to consider Connectors when detecting matches
  * between different DataSets, some of the tests
  * (stage2WayNetworkCompletenessTest, stage2WayNetworkConsistencyTest) below
@@ -48,18 +47,14 @@ import static org.junit.Assert.*;
  * different Connectors. (If there are different Connectors on doubled ways,
  * these cannot be merged, thus creating a non-unique mapping of the DataSet
  * before unification to the the DataSet after unification).
- * </p>
  * <p>
  * These tests should not fail if the {@code SG_WAY_MATCHER}-Predicate is sane
  * (i.e. does exclude areas, ...). If the test-file contains doubled geometry
  * that can not (validly) be merged (or differentiated), the the test-file is
  * considered erroneous, otherwise this may be a bug (either in the tests or the
  * parser).
- * </p>
- * <p>
  * <p>
  * The mapping tests should probably be rewritten, a few things could be made easier.
- * </p>
  *
  * @author Maximilian Luz
  */
@@ -76,6 +71,7 @@ public class GraphConsistencyTest {
 
     private static final int GENIDX_BEFORE      = 256;
     private static final int GENIDX_STREETGRAPH = 512;
+
     /**
      * Comparator to order {@code WaySliceMappings} by their {@code from.start} index
      */
@@ -86,13 +82,19 @@ public class GraphConsistencyTest {
         else
             return 0;
     };
+
     /**
      * Predicate to select the Ways which should be part of the StreetGraph.
      */
     private static final Predicate<Way> SG_WAY_MATCHER = w
             -> w.visible && w.tags.get("highway") != null && !w.tags.get("highway").equals("elevator")
                        && ((w.tags.get("area") == null || !w.tags.get("area").equals("yes")));
+
+    /**
+     * The extracted test-data.
+     */
     private static TestData testdata = null;
+
 
     /**
      * Load, parse and initialize the test data.
@@ -1062,11 +1064,9 @@ public class GraphConsistencyTest {
      * are actually present, if a way has been merged in the unification process.
      * This test assures that we do not add non-existing parts to the way-network.
      * <p>
-     * <p>
      * Note: We cannot test for uniqueness here, since the OpenStreetMap data-set
      * may contain double-geometry (this should not be the case, however the
      * data-set is user-data, so we cannot make any guarantees).
-     * </p>
      */
     @Test
     public void stage2WayNetworkConsistencyTest() {
