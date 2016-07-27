@@ -20,6 +20,11 @@ import java.util.Collection;
 import java.util.function.Predicate;
 
 
+/**
+ * A light style-sheet for the MapViewer.
+ *
+ * @author Maximilian Luz
+ */
 class LightStyleSheet implements StyleSheet {
 
     private static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
@@ -30,10 +35,10 @@ class LightStyleSheet implements StyleSheet {
     private ArrayList<LayerDefinition>     layers;
 
     {
-        // parser configuration
+        /* parser configuration */
         parserConfig = new ParserConfig(256, 512);
 
-        // color definitions
+        /* color definitions */
         colorBackground = Color.fromRGB(0xFFFFFF);
 
         Color inlineColor = Color.fromRGB(0xFDFDFD);
@@ -51,7 +56,7 @@ class LightStyleSheet implements StyleSheet {
         };
 
 
-        // feature predicates
+        /* feature predicates */
         Predicate<Way> prMotorway     = new MajorStreetBasePredicate("motorway");
         Predicate<Way> prTrunk        = new MajorStreetBasePredicate("trunk");
         Predicate<Way> prPrimary      = new MajorStreetBasePredicate("primary");
@@ -62,7 +67,7 @@ class LightStyleSheet implements StyleSheet {
         Predicate<Way> prRoad         = new MinorStreetBasePredicate("road");
         Predicate<Way> prLivingStreet = new MinorStreetBasePredicate("living_street");
 
-        // define and add the features
+        /* define and add the features */
         MapFeatureGenerator<Street> generator = new StreetFeatureGenerator();
 
         features = new ArrayList<>();
@@ -76,7 +81,7 @@ class LightStyleSheet implements StyleSheet {
         features.add(genStreetFeatureDef("streets:road",          generator, prRoad));
         features.add(genStreetFeatureDef("streets:living_street", generator, prLivingStreet));
 
-        // styles
+        /* styles */
         ShaderProgramSource streets = getStreetShader();
 
         Style sMotorwayOutline       = genStyle(streets, colors[0], 60.f, SCALE_MAXLEVEL);
@@ -119,7 +124,7 @@ class LightStyleSheet implements StyleSheet {
         Style sRoadOutlineXL         = genStyle(streets, colors[7], 75.f, SCALE_MAXLEVEL);
         Style sLivingStreetOutlineXL = genStyle(streets, colors[8], 60.f, SCALE_MAXLEVEL);
 
-        // layers
+        /* layers */
         int index = 0;
         layers    = new ArrayList<>();
         layers.add(genLayer("streets:living_street:outline",    index++, 16, 19, "streets:living_street", sLivingStreetOutline));
@@ -190,12 +195,25 @@ class LightStyleSheet implements StyleSheet {
     }
 
 
+    /**
+     * Generates a basic street-feature definition.
+     *
+     * @param name      the name of the feature.
+     * @param generator the generator for the feature.
+     * @param predicate the predicate to select the Ways contained in this feature.
+     * @return the created MapFeatureDefinition.
+     */
     private MapFeatureDefinition<Street> genStreetFeatureDef(String name, MapFeatureGenerator<Street> generator,
                                                              Predicate<Way> predicate) {
         return new MapFeatureDefinition<>(name, parserConfig.generatorIndexOfStreetGraph + 1, generator,
                                           n -> false, predicate);
     }
 
+    /**
+     * Return the source of the shader used for street-rendering.
+     *
+     * @return the created shader-sources.
+     */
     private ShaderProgramSource getStreetShader() {
         Resource vert = new PackagedResource(LightStyleSheet.class, "/shaders/features/streets/streets.vs");
         Resource frag = new PackagedResource(LightStyleSheet.class, "/shaders/features/streets/streets.fs");
@@ -209,6 +227,15 @@ class LightStyleSheet implements StyleSheet {
         return prog;
     }
 
+    /**
+     * Generate a style for streets based on the specific properties.
+     *
+     * @param shader    the shader to be used in the generated style.
+     * @param color     the color to be used in generated style.
+     * @param linewidth the line-width of the generated style.
+     * @param scalenorm the scale-normal of the generated style.
+     * @return the generated style.
+     */
     private Style genStyle(ShaderProgramSource shader, Color color, float linewidth, float scalenorm) {
         Style style = new Style(shader);
         style.setUniformSupplier("u_color", color::toVec4f);
@@ -219,11 +246,25 @@ class LightStyleSheet implements StyleSheet {
         return style;
     }
 
+    /**
+     * Generate a LayerDefinition for features, based on the specific properties.
+     *
+     * @param name    the name of the generated layer.
+     * @param index   the index of the  generated layer.
+     * @param min     the minimum zoom-level at which the generated layer is visible.
+     * @param max     the maximum zoom-level at which the generated layer is visible.
+     * @param feature the feature-name of the feature on which the layer is based on.
+     * @param style   the style to be used for rendering.
+     * @return the generated LayerDefinition.
+     */
     private LayerDefinition genLayer(String name, int index, int min, int max, String feature, Style style) {
         return new LayerDefinition(name, index, min, max, new FeatureTileLayerSource(feature, style));
     }
 
 
+    /**
+     * A predicate that can be used to identify a minor street based on its type name.
+     */
     private static class MinorStreetBasePredicate implements Predicate<Way> {
         private final String type;
 
@@ -238,6 +279,9 @@ class LightStyleSheet implements StyleSheet {
         }
     }
 
+    /**
+     * A predicate that can be used to identify a major street (including link-type) based on its type name.
+     */
     private static class MajorStreetBasePredicate implements Predicate<Way> {
         private final String type;
         private final String link;

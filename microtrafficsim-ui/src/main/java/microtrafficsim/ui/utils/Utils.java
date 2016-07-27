@@ -15,9 +15,19 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 
+/**
+ * Utility class for the MapViewer.
+ *
+ * @author Maximilian Luz
+ */
 public class Utils {
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);
 
+    /**
+     * Create a screenshot of the context, asycnronously.
+     *
+     * @param context the context of which the screenshot should be created.
+     */
     public static void asyncScreenshot(RenderContext context) {
         new Thread(() -> {
             JFileChooser chooser = new JFileChooser();
@@ -85,6 +95,9 @@ public class Utils {
         }).start();
     }
 
+    /**
+     * The debug-exception-handler used to handle all uncaught exceptions on the render-context
+     */
     public static class DebugExceptionHandler implements UncaughtExceptionHandler {
 
         @Override
