@@ -19,6 +19,9 @@ public class DataSet {
     public HashMap<Long, WayEntity>  ways;
     public RelationCollection relations;
 
+    /**
+     * Constructs a new, empty {@code DataSet}.
+     */
     public DataSet() {
         this.bounds    = null;
         this.nodes     = new HashMap<>();

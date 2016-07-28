@@ -39,6 +39,15 @@ public class MultiPassParserBaseEventHandler implements ParserBaseEventHandler {
     private int pass;
 
 
+    /**
+     * Constructs a new {@code MultiPassParserBaseEventHandler} based on the given properties.
+     *
+     * @param datastore       the {@code DataSet} to be used as storage.
+     * @param matcher         the {@code FeatureMatcher} to select the features that should be parsed.
+     * @param nodeFactory     the factory creating the new node-entities.
+     * @param wayFactory      the factory creating the new way-entities.
+     * @param relationFactory the factory creating the new relations
+     */
     public MultiPassParserBaseEventHandler(DataSet datastore, FeatureMatcher matcher,
                                            EntityFactory<NodeEntity, Node>   nodeFactory,
                                            EntityFactory<WayEntity, Way> wayFactory, RelationFactory relationFactory) {

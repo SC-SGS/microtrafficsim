@@ -13,21 +13,37 @@ import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
+import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.processing.osm.sanitizer.SanitizerWayComponent;
 
 import java.util.*;
 
 
+/**
+ * Feature generator for street-based {@link microtrafficsim.core.parser.MapFeatureDefinition}s.
+ */
 public class StreetFeatureGenerator implements MapFeatureGenerator<Street> {
 
     private DistanceCalculator distcalc;
     private Map<String, Feature<Street>> generated;
 
 
+    /**
+     * Constructs a new {@code StreetFeatureGenerator} using the {@link HaversineDistanceCalculator} for
+     * distance-calculation.
+     * <p>
+     * This call is equivalent to {@link StreetFeatureGenerator#StreetFeatureGenerator(DistanceCalculator)
+     * StreetFeatureGenerator(HaversineDistanceCalculator::getDistance()}
+     */
     public StreetFeatureGenerator() {
         this(HaversineDistanceCalculator::getDistance);
     }
 
+    /**
+     * Constructs a new {@code StreetFueatureGenerator} using the specified distance-calculator.
+     *
+     * @param distcalc the distance-calculator to be used.
+     */
     public StreetFeatureGenerator(DistanceCalculator distcalc) {
         this.distcalc  = distcalc;
         this.generated = new HashMap<>();

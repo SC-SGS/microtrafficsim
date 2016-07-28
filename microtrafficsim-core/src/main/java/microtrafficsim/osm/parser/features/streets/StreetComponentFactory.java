@@ -33,7 +33,6 @@ public class StreetComponentFactory implements ComponentFactory<StreetComponent,
      * matching {@code FeatureDefinition}s.
      * <p>
      * Note: a StreetComponent can only be created for an entity of type WayEntity.
-     * </p>
      *
      * @param entity   the entity to which the created {@code Component}
      *                 belongs.
@@ -57,6 +56,13 @@ public class StreetComponentFactory implements ComponentFactory<StreetComponent,
     }
 
 
+    /**
+     * Parse the roundabout information from the given map of tags.
+     *
+     * @param tags the tags which should be parsed for the roundabout information.
+     * @return {@code true} if {@code tags} indicate that a the street with which the tags are associated is a
+     * roundabout.
+     */
     private static boolean parseRoundabout(Map<String, String> tags) {
         return "roundabout".equals(tags.get("junction"));
     }

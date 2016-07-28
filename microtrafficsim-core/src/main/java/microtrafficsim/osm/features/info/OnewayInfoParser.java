@@ -14,6 +14,7 @@ import java.util.Map;
  * @author Maximilian Luz
  */
 public class OnewayInfoParser {
+    private OnewayInfoParser() {}
     private static Logger logger = LoggerFactory.getLogger(OnewayInfoParser.class);
 
     /**

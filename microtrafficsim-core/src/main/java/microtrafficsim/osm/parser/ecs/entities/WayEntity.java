@@ -23,6 +23,13 @@ public class WayEntity extends Entity {
     public long[] nodes;
     public Set<FeatureDefinition> features;
 
+    /**
+     * Creates a new {@code WayEntity} with the given properties.
+     *
+     * @param id       the id of the way which should be represented by this entity.
+     * @param nodes    the ids of the nodes contained in this way, in order.
+     * @param features the set of features to which this way belongs.
+     */
     public WayEntity(long id, long[] nodes, Set<FeatureDefinition> features) {
         this.id    = id;
         this.nodes = nodes;

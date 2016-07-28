@@ -1,5 +1,6 @@
 package microtrafficsim.osm.features.info;
 
+import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.features.info.StreetType;
 
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.Map;
  * @author Maximilian Luz
  */
 public class StreetTypeParser {
+    private StreetTypeParser() {}
 
     /**
      * Create a {@code LaneInfo} object for a street out of the given

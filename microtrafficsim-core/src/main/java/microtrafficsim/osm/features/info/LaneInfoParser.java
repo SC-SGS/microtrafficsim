@@ -14,10 +14,8 @@ import java.util.Map;
  * @author Maximilian Luz
  */
 public class LaneInfoParser {
-    private static Logger logger = LoggerFactory.getLogger(LaneInfoParser.class);
-
     private LaneInfoParser() {}
-
+    private static Logger logger = LoggerFactory.getLogger(LaneInfoParser.class);
 
     /**
      * Create a {@code LaneInfo} object for a street out of the given
@@ -34,6 +32,12 @@ public class LaneInfoParser {
         return new LaneInfo(lanes, forward, backward);
     }
 
+    /**
+     * Parses the given lane tag-value.
+     *
+     * @param value the lane-value-string to be parsed.
+     * @return the number of lanes, or {@link LaneInfo#UNGIVEN} if the string is {@code null}.
+     */
     private static int parseTagValue(String value) {
         int lanes = LaneInfo.UNGIVEN;
 

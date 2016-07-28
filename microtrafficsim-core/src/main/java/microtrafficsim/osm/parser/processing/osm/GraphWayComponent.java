@@ -32,6 +32,11 @@ public class GraphWayComponent extends Component implements Mergeable<GraphWayCo
     public boolean            cyclicStartToEnd;
     public boolean            cyclicEndToStart;
 
+    /**
+     * Create a new {@code GraphWayComponent} for the given way-entity.
+     *
+     * @param entity the way-entity for which the component should be created.
+     */
     public GraphWayComponent(WayEntity entity) {
         super(entity);
         this.uturn       = new HashSet<>();
@@ -41,6 +46,19 @@ public class GraphWayComponent extends Component implements Mergeable<GraphWayCo
         cyclicEndToStart = false;
     }
 
+    /**
+     * Create a new {@code GraphWayComponent} based on the specified properties for
+     * the given way-entity.
+     *
+     * @param entity           the entity for which this component should be created.
+     * @param uturn            the set of u-turn connectors.
+     * @param from             the set of connectors leaving this way.
+     * @param to               the set of connectors going to this way.
+     * @param cyclicStartToEnd set to {@code true}, if this way is cyclic and a connector
+     *                         from start to end should exists.
+     * @param cyclicStartToEnd set to {@code true}, if this way is cyclic and a connector
+     *                         from end to start should exists.
+     */
     public GraphWayComponent(WayEntity entity, HashSet<Connector> uturn, HashSet<Connector> from, HashSet<Connector> to,
                              boolean cyclicStartToEnd, boolean cyclicEndToStart) {
         super(entity);
@@ -303,6 +321,12 @@ public class GraphWayComponent extends Component implements Mergeable<GraphWayCo
                 && checkConnectorEquality(other);
     }
 
+    /**
+     * Checks if the connectors on this component are (semantically) equal to the connectors on {@code other}.
+     *
+     * @param other the {@code GraphWayComponent} to compare against.
+     * @return {@code true} iff the {@link Connector}s are equal on this component and {@code other}.
+     */
     private boolean checkConnectorEquality(GraphWayComponent other) {
         // check other connectors by size first
         if (this.uturn.size() != other.uturn.size()) return false;

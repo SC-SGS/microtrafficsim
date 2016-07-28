@@ -15,6 +15,11 @@ import microtrafficsim.utils.collections.HashMultiSet;
 public class GraphNodeComponent extends Component {
     public HashMultiSet<WayEntity> ways;
 
+    /**
+     * Constructs a new {@code GraphNodeComponent} for the given entity.
+     *
+     * @param entity the entity to construct this component for.
+     */
     public GraphNodeComponent(Entity entity) {
         super(entity);
 

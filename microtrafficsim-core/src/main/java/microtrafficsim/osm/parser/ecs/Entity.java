@@ -14,7 +14,6 @@ public class Entity implements Cloneable {
 
     protected HashMap<Class<? extends Component>, Component> components;
 
-
     /**
      * Constructs a new Entity without any {@code Component}s.
      */

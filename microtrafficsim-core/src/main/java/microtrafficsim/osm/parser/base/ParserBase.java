@@ -22,6 +22,11 @@ public class ParserBase {
 
     private ParserBaseEventHandler handler;
 
+    /**
+     * Constructs a new {@code ParserBase} using the specified handler.
+     *
+     * @param handler the handler to be used for handling the parser-events.
+     */
     public ParserBase(ParserBaseEventHandler handler) {
         this.handler = handler;
     }

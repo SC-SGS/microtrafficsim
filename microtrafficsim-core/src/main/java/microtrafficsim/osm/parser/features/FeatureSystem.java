@@ -22,6 +22,9 @@ public class FeatureSystem implements FeatureMatcher {
     private HashMap<String, FeatureDefinition> features;
 
 
+    /**
+     * Creates a new, empty {@code FeatureSystem}.
+     */
     public FeatureSystem() {
         this.features = new HashMap<>();
     }

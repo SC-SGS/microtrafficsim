@@ -43,7 +43,6 @@ public class OSMDataSetSanitizer implements Processor {
      * OSMDataSetSanitizer#OSMDataSetSanitizer(OSMSanitizerValues)
      * OSMDataSetSanitizer(new DefaultOSMSanitizerValues())
      * }
-     * </p>
      */
     public OSMDataSetSanitizer() {
         this(new DefaultOSMSanitizerValues());
@@ -143,10 +142,10 @@ public class OSMDataSetSanitizer implements Processor {
         sanitizeMaxspeedInfo(streetcomp.maxspeed, streetcomp.oneway, sancomp.highway);
         sanitizeLaneInfo(streetcomp.lanes, streetcomp.oneway, sancomp.highway);
 
-        // XXX TEMPORARY
-        if (streetcomp.lanes.forward > 0) streetcomp.lanes.forward = 1;
-
+        /* XXX TEMPORARY UNTIL MULTI-LANE SUPPORT */
+        if (streetcomp.lanes.forward > 0)  streetcomp.lanes.forward = 1;
         if (streetcomp.lanes.backward > 0) streetcomp.lanes.backward = 1;
+        /* END TEMPORARY */
 
         streetcomp.lanes.sum = streetcomp.lanes.forward + streetcomp.lanes.backward;
     }

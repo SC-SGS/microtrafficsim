@@ -17,6 +17,13 @@ public class Connector {
     public final WayEntity from;
     public final WayEntity to;
 
+    /**
+     * Constructs a new connector leading from the way {@code from} via the node {@code via} to the way {@code to}.
+     *
+     * @param via  the node via which the connector leads.
+     * @param from the way from which the connector exits.
+     * @param to   the way to which the connector leads.
+     */
     public Connector(NodeEntity via, WayEntity from, WayEntity to) {
         this.via  = via;
         this.from = from;

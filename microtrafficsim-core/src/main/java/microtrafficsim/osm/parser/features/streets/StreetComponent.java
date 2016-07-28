@@ -28,6 +28,17 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
     public float        layer;
 
 
+    /**
+     * Creates a new {@code StreetComponent} based on the given properties.
+     *
+     * @param entity     the entity for which this component should be created.
+     * @param streettype the type of the street.
+     * @param lanes      the lane information of the street.
+     * @param maxspeed   the maximum-speed information of the street.
+     * @param oneway     the one-way information of the street.
+     * @param roundabout set to {@code true} if the street is a roundabout.
+     * @param layer      the (vertical) layer on which this street resides.
+     */
     public StreetComponent(WayEntity entity, StreetType streettype, LaneInfo lanes, MaxspeedInfo maxspeed,
                            OnewayInfo oneway, boolean roundabout, float layer) {
         super(entity);
@@ -48,7 +59,6 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
      * Clones this component and all contained objects.
      * <p>
      * Note: a StreetComponent can only be cloned for a WayEntity
-     * </p>
      *
      * @param e the {@code Entity} the new {@code Component} belongs to.
      * @return a clone of this {@code Component}.

@@ -33,13 +33,12 @@ public class FeatureDefinition {
      * relation to other features), this may depend on the data-{@code
      * Processor} used.
      * <p>
-     * This call is the same as
+     * This call is equivalent to
      * {@link
      * FeatureDefinition#FeatureDefinition(String, int, FeatureGenerator,
      * Predicate, Predicate, Set, Set)
      * FeatureDefinition(name, genindex, generator, nodeMatcher, wayMatcher, null, null)
      * }
-     * </p>
      *
      * @param name        the (unique) name of the {@code Feature}.
      * @param genindex    the generator-index of the {@code Feature}.
