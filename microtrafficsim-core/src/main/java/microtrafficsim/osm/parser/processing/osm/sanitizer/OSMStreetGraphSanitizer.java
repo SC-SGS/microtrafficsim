@@ -33,6 +33,13 @@ public class OSMStreetGraphSanitizer implements Processor {
     private int             idxStreetGraph;
     private LongIDGenerator idgen;
 
+    /**
+     * Constructs a new sanitizer for the given properties.
+     *
+     * @param genindexStreetGraph the generator-index of the street-graph, used to identify the features belonging to
+     *                            the street-graph.
+     * @param idgen               the id-generator used to generate new ids for the ways of the street-graph.
+     */
     public OSMStreetGraphSanitizer(int genindexStreetGraph, LongIDGenerator idgen) {
         this.idxStreetGraph = genindexStreetGraph;
         this.idgen          = idgen;
