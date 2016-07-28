@@ -8,6 +8,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 
+/**
+ * A resource backed by a {@link File}.
+ *
+ * @author Maximilian Luz
+ */
 public class FileResource extends Resource {
 
     private final File file;
@@ -34,6 +39,11 @@ public class FileResource extends Resource {
         }
     }
 
+    /**
+     * Return the file on which this resource is based.
+     *
+     * @return the file on which this resource is based.
+     */
     public File getFile() {
         return file;
     }

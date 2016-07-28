@@ -4,10 +4,23 @@ import java.io.*;
 import java.util.ArrayList;
 
 
+/**
+ * Utilities for Java Streams.
+ *
+ * @author Maximilian Luz
+ */
 public class Streams {
     private Streams() {}
 
 
+    /**
+     * Copies the contents of the specified stream line-wise to an array, including newline-characters and returns the
+     * array.
+     *
+     * @param in the stream from which to read the lines.
+     * @return the stream separated to lines, including newline-characters.
+     * @throws IOException if an error ocurres while reading from the stream.
+     */
     public static String[] toStringArrayEOL(InputStream in) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
