@@ -4,7 +4,7 @@ import microtrafficsim.core.map.Coordinate;
 
 
 /**
- * Functional interface for distance calculation of two Coordinates.
+ * Functional interface to calculate the distance between two Coordinates.
  * Coordinate dates depend on the implementation.
  *
  * @author Maximilian Luz

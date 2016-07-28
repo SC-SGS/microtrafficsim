@@ -13,7 +13,7 @@ public class Vec4f {
 
 
     /**
-     * Constructs a new vector and initializes the {@code x}-, {@code y}- and {@@code z}-components to zero, the
+     * Constructs a new vector and initializes the {@code x}-, {@code y}- and {@code z}-components to zero, the
      * {@code w}-component to one.
      */
     public Vec4f() {
@@ -274,11 +274,11 @@ public class Vec4f {
     }
 
     /**
-     * Calculates and returns the dot-product of the {@code x]-, {@code y}- and {@code z}-components of this vector
+     * Calculates and returns the dot-product of the {@code x}-, {@code y}- and {@code z}-components of this vector
      * with the specified one. This calculation fully ignores the {@code w}-component.
      *
      * @param v the vector to calculate the dot product with.
-     * @return the dot product of the {@code x]-, {@code y}- and {@code z}-components of this vector and {@code v}.
+     * @return the dot product of the {@code x}-, {@code y}- and {@code z}-components of this vector and {@code v}.
      */
     public float dot3(Vec4f v) {
         return this.x * v.x + this.y * v.y + this.z * v.z;
@@ -300,6 +300,7 @@ public class Vec4f {
      * Normalizes the given vector by its {@code x}-, {@code y}- and {@code z}-components. The {@code w}-component of
      * the returned (normalized) vector is set to one.
      *
+     * @param v the vector to normalize.
      * @return a new vector containing the normalized {@code x}-, {@code y}- and {@code z}-components and one as the
      * {@code w}-component.
      */
@@ -403,7 +404,7 @@ public class Vec4f {
      *
      * @param a the first vector.
      * @param b the second vector.
-     * @return the dot product of the {@code x]-, {@code y}- and {@code z}-components of both vectors.
+     * @return the dot product of the {@code x}-, {@code y}- and {@code z}-components of both vectors.
      */
     public static float dot3(Vec4f a, Vec4f b) {
         return a.x * b.x + a.y * b.y + a.z * b.z;
