@@ -3,28 +3,62 @@ package microtrafficsim.math;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 
+/**
+ * A vector containing three {@code int}s.
+ *
+ * @author Maximilian Luz
+ */
 public class Vec3i {
     public int x, y, z;
 
 
+    /**
+     * Constructs a new vector and initializes the {@code x}-, {@code y}- and {@@code z}-components to zero.
+     */
     public Vec3i() {
         this(0, 0, 0);
     }
 
+    /**
+     * Constructs a new vector with the given values.
+     *
+     * @param x the {@code x}-component
+     * @param y the {@code y}-component
+     * @param z the {@code z}-component
+     */
     public Vec3i(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
+    /**
+     * Constructs a new vector with the given values.
+     *
+     * @param xy the {@code x}- and {@code y}-components.
+     * @param z the {@code z}-components.
+     */
     public Vec3i(Vec2i xy, int z) {
         this(xy.x, xy.y, z);
     }
 
+    /**
+     * Constructs a new vector by copying the specified one.
+     *
+     * @param xyz the vector from which the values should be copied.
+     */
     public Vec3i(Vec3i xyz) {
         this(xyz.x, xyz.y, xyz.z);
     }
 
+    /**
+     * Sets the components of this vector.
+     *
+     * @param x the {@code x}-component
+     * @param y the {@code y}-component
+     * @param z the {@code z}-component
+     * @return this vector.
+     */
     public Vec3i set(int x, int y, int z) {
         this.x = x;
         this.y = y;
@@ -32,6 +66,13 @@ public class Vec3i {
         return this;
     }
 
+    /**
+     * Sets the components of this vector.
+     *
+     * @param xy the {@code x}-, {@code y}- and {@code z}-component.
+     * @param z the {@code z}-component.
+     * @return this vector.
+     */
     public Vec3i set(Vec2i xy, int z) {
         this.x = xy.x;
         this.y = xy.y;
@@ -39,6 +80,12 @@ public class Vec3i {
         return this;
     }
 
+    /**
+     * Sets the components of this vector by copying the specified one.
+     *
+     * @param xyz the vector from which the values should be copied.
+     * @return this vector.
+     */
     public Vec3i set(Vec3i xyz) {
         this.x = xyz.x;
         this.y = xyz.y;
@@ -47,25 +94,50 @@ public class Vec3i {
     }
 
 
-    public float len() {
-        return (float) Math.sqrt(x * x + y * y + z * z);
+    /**
+     * Calculates and returns the lenght of this vector.
+     *
+     * @return the length of this vector.
+     */
+    public double len() {
+        return Math.sqrt(x * x + y * y + z * z);
     }
 
 
-    public Vec3i add(Vec3i vec) {
-        this.x += vec.x;
-        this.y += vec.y;
-        this.z += vec.z;
+    /**
+     * Adds the given vector to this vector and stores the result in this vector.
+     * {@code w}-component.
+     *
+     * @param v the vector to add.
+     * @return this vector.
+     */
+    public Vec3i add(Vec3i v) {
+        this.x += v.x;
+        this.y += v.y;
+        this.z += v.z;
         return this;
     }
 
-    public Vec3i sub(Vec3i vec) {
-        this.x -= vec.x;
-        this.y -= vec.y;
-        this.z -= vec.z;
+    /**
+     * Subtracts the given vector from this vector and stores the result in this vector.
+     * {@code w}-component.
+     *
+     * @param v the vector to subtract.
+     * @return this vector.
+     */
+    public Vec3i sub(Vec3i v) {
+        this.x -= v.x;
+        this.y -= v.y;
+        this.z -= v.z;
         return this;
     }
 
+    /**
+     * Multiplies this vector with the specified scalar value and stores the result in this vector.
+     *
+     * @param scalar the scalar value to multiply this vector with.
+     * @return this vector.
+     */
     public Vec3i mul(int scalar) {
         this.x *= scalar;
         this.y *= scalar;
@@ -73,10 +145,22 @@ public class Vec3i {
         return this;
     }
 
+    /**
+     * Calculates and returns the dot-product of this vector with the specified one.
+     *
+     * @param v the vector to calculate the dot-product with.
+     * @return the dot-product of this vector and {@code v}.
+     */
     public int dot(Vec3i v) {
         return this.x * v.x + this.y * v.y + this.z * v.z;
     }
 
+    /**
+     * Calculates and returns the cross-product of this vector with the specified one.
+     *
+     * @param v the vector to calculate the cross-product with.
+     * @return the cross-product of this vector and {@code v} (i.e {@code this cross v}).
+     */
     public Vec3i cross(Vec3i v) {
         int x = this.y * v.z - v.y * this.z;
         int y = this.z * v.x - v.z * this.x;
@@ -90,22 +174,57 @@ public class Vec3i {
     }
 
 
+    /**
+     * Adds the given vectors and returns the result as new vector.
+     *
+     * @param a the first vector.
+     * @param b the second vector.
+     * @return the result of this addition, i.e. {@code a + b} as new vector.
+     */
     public static Vec3i add(Vec3i a, Vec3i b) {
         return new Vec3i(a.x + b.x, a.y + b.y, a.z + b.z);
     }
 
+    /**
+     * Subtracts the given vectors and returns the result as new vector.
+     *
+     * @param a the vector to subtract from-
+     * @param b the vector to subtract.
+     * @return the result of this subtraction, i.e. {@code a - b} as new vector.
+     */
     public static Vec3i sub(Vec3i a, Vec3i b) {
         return new Vec3i(a.x - b.x, a.y - b.y, a.z - b.z);
     }
 
+    /**
+     * Multiplies the given vector and scalar value and stores the result in this vector.
+     *
+     * @param v      the vector to multiply with.
+     * @param scalar the scalar value to multiply with.
+     * @return the result of this multiplication, i.e. {@code v * scalar} as new vector.
+     */
     public static Vec3i mul(Vec3i v, int scalar) {
         return new Vec3i(v.x * scalar, v.y * scalar, v.z * scalar);
     }
 
+    /**
+     * Calculates and returns the dot-product of both specified vectors.
+     *
+     * @param a the first vector.
+     * @param b the second vector.
+     * @return the dot-product of {@code a} and {@code b} (i.e. {@code a dot b}).
+     */
     public static float dot(Vec4f a, Vec3i b) {
         return a.x * b.x + a.y * b.y + a.z * b.z;
     }
 
+    /**
+     * Calculates and returns the cross-product of the two specified vectors.
+     *
+     * @param a the first vector.
+     * @param b the second vector.
+     * @return the cross-product both vectors, i.e {@code a cross b}.
+     */
     public static Vec3i cross(Vec3i a, Vec3i b) {
         return new Vec3i(a.y * b.z - b.y * a.z, a.z * b.x - b.z * a.x, a.x * b.y - b.x * a.y);
     }
