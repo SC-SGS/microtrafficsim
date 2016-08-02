@@ -1,6 +1,6 @@
 package microtrafficsim.osm.parser.ecs.components.traits;
 
-import microtrafficsim.core.map.features.info.ReverseEquals;
+import microtrafficsim.osm.parser.features.streets.ReverseEquals;
 
 
 /**

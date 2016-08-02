@@ -1,17 +1,17 @@
 package preprocessing.graph;
 
-import microtrafficsim.core.map.features.info.OnewayInfo;
+import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
-import microtrafficsim.osm.parser.processing.osm.Connector;
-import microtrafficsim.osm.parser.processing.osm.GraphNodeComponent;
-import microtrafficsim.osm.parser.processing.osm.GraphWayComponent;
-import microtrafficsim.osm.parser.processing.osm.Ways;
-import microtrafficsim.osm.parser.processing.osm.Ways.WayLayout;
+import microtrafficsim.core.parser.processing.Connector;
+import microtrafficsim.core.parser.processing.GraphNodeComponent;
+import microtrafficsim.core.parser.processing.GraphWayComponent;
+import microtrafficsim.core.parser.processing.Ways;
+import microtrafficsim.core.parser.processing.Ways.WayLayout;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelation;
 import microtrafficsim.osm.primitives.Primitive;
 import microtrafficsim.osm.primitives.Way;
@@ -65,7 +65,7 @@ public class GraphConsistencyTest {
      */
 
     /**
-     * If not null, this file is used instead of the default 'map.osm'.
+     * If not null, this file is used instead of the default 'map.processing'.
      */
     private static final File OPTIONAL_TEST_FILE = null;
 
@@ -108,7 +108,7 @@ public class GraphConsistencyTest {
 
         //noinspection ConstantConditions
         if (OPTIONAL_TEST_FILE == null)
-            osmxml = new PackagedResource(GraphConsistencyTest.class, "map.osm").asTemporaryFile();
+            osmxml = new PackagedResource(GraphConsistencyTest.class, "/preprocessing/graph/map.osm").asTemporaryFile();
         else
             osmxml = OPTIONAL_TEST_FILE;
 

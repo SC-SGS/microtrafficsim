@@ -1,7 +1,7 @@
 package microtrafficsim.core.map.style;
 
 import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.parser.MapFeatureDefinition;
+import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.vis.opengl.utils.Color;
 
 import java.util.Collection;

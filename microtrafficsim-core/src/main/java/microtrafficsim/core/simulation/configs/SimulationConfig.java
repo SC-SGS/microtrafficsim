@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.configs;
 
-import microtrafficsim.core.map.features.info.StreetType;
+import microtrafficsim.osm.parser.features.streets.info.StreetType;
 import microtrafficsim.core.simulation.SimulationLogger;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.id.LongIDGenerator;

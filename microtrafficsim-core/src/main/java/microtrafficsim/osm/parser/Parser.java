@@ -6,7 +6,6 @@ import microtrafficsim.osm.parser.base.ParserBase;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntityManager;
 import microtrafficsim.osm.parser.ecs.entities.WayEntityManager;
 import microtrafficsim.osm.parser.features.FeatureSystem;
-import microtrafficsim.osm.parser.processing.Processor;
 import microtrafficsim.osm.parser.relations.RelationBase;
 import microtrafficsim.osm.parser.relations.RelationManager;
 import org.slf4j.Logger;

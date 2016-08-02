@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  */
 public class MotorwaySlipRoadScenario extends ValidationScenario {
 
-    private static final String OSM_FILENAME   = "motorway_slip-road.osm";
+    private static final String OSM_FILENAME   = "motorway_slip-road.processing";
     private Node                bottomMotorway = null;
     private Node                interception   = null;
     private Node                topMotorway    = null;

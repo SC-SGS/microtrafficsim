@@ -4,12 +4,15 @@ import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.parser.*;
+import microtrafficsim.core.parser.features.*;
+import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
+import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
+import microtrafficsim.core.parser.features.streets.StreetFeatureGenerator;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
-import microtrafficsim.osm.parser.features.streets.StreetFeatureGenerator;
-import microtrafficsim.osm.parser.processing.osm.sanitizer.SanitizerWayComponent;
-import microtrafficsim.osm.parser.processing.osm.sanitizer.SanitizerWayComponentFactory;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 import microtrafficsim.osm.primitives.Node;
 import microtrafficsim.osm.primitives.Way;
@@ -27,7 +30,7 @@ import java.util.function.Predicate;
  * @author Maximilian Luz
  */
 public class ParserExample {
-    private static final String DEFAULT_OSM_XML = "map.osm";
+    private static final String DEFAULT_OSM_XML = "map.processing";
 
 
     public static void main(String[] args) throws XMLStreamException, IOException {
@@ -63,7 +66,7 @@ public class ParserExample {
         System.out.println("MicroTrafficSim - OSM Parser Example.");
         System.out.println("");
         System.out.println("Usage:");
-        System.out.println("  parser                Run this example with the default map-file (map.osm)");
+        System.out.println("  parser                Run this example with the default map-file (map.processing)");
         System.out.println("  parser <file>         Run this example with the specified map-file");
         System.out.println("  parser --help | -h    Show this help message.");
         System.out.println("");
@@ -115,7 +118,7 @@ public class ParserExample {
 
         // create the feature generators
         MapFeatureGenerator<Street> streetsGenerator = new StreetFeatureGenerator();
-        StreetGraphGenerator        sgGenerator      = new StreetGraphGenerator(new SimulationConfig());
+        StreetGraphGenerator sgGenerator      = new StreetGraphGenerator(new SimulationConfig());
 
         // define the features
         MapFeatureDefinition<Street> streets= new MapFeatureDefinition<>(

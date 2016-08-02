@@ -3,8 +3,8 @@ package microtrafficsim.osm.parser.ecs.components.traits;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
-import microtrafficsim.osm.parser.processing.osm.Ways.MergePoint;
-import microtrafficsim.osm.parser.processing.osm.Ways.WayLayout;
+import microtrafficsim.core.parser.processing.Ways.MergePoint;
+import microtrafficsim.core.parser.processing.Ways.WayLayout;
 
 
 /**

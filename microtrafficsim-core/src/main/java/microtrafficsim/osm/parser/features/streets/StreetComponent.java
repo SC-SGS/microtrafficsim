@@ -1,6 +1,5 @@
 package microtrafficsim.osm.parser.features.streets;
 
-import microtrafficsim.core.map.features.info.*;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.Entity;
@@ -8,8 +7,9 @@ import microtrafficsim.osm.parser.ecs.components.traits.Mergeable;
 import microtrafficsim.osm.parser.ecs.components.traits.Reversible;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
-import microtrafficsim.osm.parser.processing.osm.Ways.MergePoint;
-import microtrafficsim.osm.parser.processing.osm.Ways.WayLayout;
+import microtrafficsim.core.parser.processing.Ways.MergePoint;
+import microtrafficsim.core.parser.processing.Ways.WayLayout;
+import microtrafficsim.osm.parser.features.streets.info.*;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 
@@ -20,10 +20,10 @@ import microtrafficsim.utils.hashing.FNVHashBuilder;
  */
 public class StreetComponent extends Component implements Mergeable<StreetComponent>, ReverseEquals, Reversible {
 
-    public StreetType   streettype;
-    public LaneInfo     lanes;
+    public StreetType streettype;
+    public LaneInfo lanes;
     public MaxspeedInfo maxspeed;
-    public OnewayInfo   oneway;
+    public OnewayInfo oneway;
     public boolean      roundabout;
     public float        layer;
 

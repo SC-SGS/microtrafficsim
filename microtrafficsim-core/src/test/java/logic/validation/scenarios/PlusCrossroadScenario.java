@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  */
 public class PlusCrossroadScenario extends ValidationScenario {
 
-    private static final String OSM_FILENAME = "plus_crossroad.osm";
+    private static final String OSM_FILENAME = "plus_crossroad.processing";
     private Node                mid = null, bottomLeft = null, bottomRight = null, topLeft = null, topRight = null;
     private NextScenarioState   nextScenarioState;
 

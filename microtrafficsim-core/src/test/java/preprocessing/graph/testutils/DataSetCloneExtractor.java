@@ -8,7 +8,7 @@ import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
-import microtrafficsim.osm.parser.processing.osm.sanitizer.SanitizerWayComponent;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelation;
 
 import java.util.HashSet;

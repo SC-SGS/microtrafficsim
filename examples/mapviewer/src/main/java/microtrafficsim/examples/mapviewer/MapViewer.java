@@ -22,8 +22,8 @@ import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
-import microtrafficsim.osm.parser.processing.osm.sanitizer.SanitizerWayComponent;
-import microtrafficsim.osm.parser.processing.osm.sanitizer.SanitizerWayComponentFactory;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 
 import javax.swing.*;
@@ -327,7 +327,7 @@ public class MapViewer {
                 file = new File(args[0]);
             }
         } else {
-            file = new File("map.osm");
+            file = new File("map.processing");
         }
 
         try {

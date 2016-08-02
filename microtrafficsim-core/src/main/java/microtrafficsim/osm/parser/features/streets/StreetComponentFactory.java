@@ -1,13 +1,9 @@
 package microtrafficsim.osm.parser.features.streets;
 
-import microtrafficsim.core.map.features.info.LaneInfo;
-import microtrafficsim.core.map.features.info.MaxspeedInfo;
-import microtrafficsim.core.map.features.info.OnewayInfo;
-import microtrafficsim.core.map.features.info.StreetType;
-import microtrafficsim.osm.features.info.LaneInfoParser;
-import microtrafficsim.osm.features.info.MaxspeedInfoParser;
-import microtrafficsim.osm.features.info.OnewayInfoParser;
-import microtrafficsim.osm.features.info.StreetTypeParser;
+import microtrafficsim.osm.parser.features.streets.info.LaneInfo;
+import microtrafficsim.osm.parser.features.streets.info.MaxspeedInfo;
+import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
+import microtrafficsim.osm.parser.features.streets.info.StreetType;
 import microtrafficsim.osm.parser.ecs.ComponentFactory;
 import microtrafficsim.osm.parser.ecs.Entity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
@@ -45,10 +41,10 @@ public class StreetComponentFactory implements ComponentFactory<StreetComponent,
      */
     @Override
     public StreetComponent create(Entity entity, Way source, Set<FeatureDefinition> features) {
-        OnewayInfo   oneway     = OnewayInfoParser.parse(source.tags);
-        LaneInfo     lanes      = LaneInfoParser.parse(source.tags);
-        MaxspeedInfo maxspeed   = MaxspeedInfoParser.parse(source.tags);
-        StreetType   streettype = StreetTypeParser.parse(source.tags);
+        OnewayInfo   oneway     = OnewayInfo.parse(source.tags);
+        LaneInfo     lanes      = LaneInfo.parse(source.tags);
+        MaxspeedInfo maxspeed   = MaxspeedInfo.parse(source.tags);
+        StreetType   streettype = StreetType.parse(source.tags);
         boolean      roundabout = parseRoundabout(source.tags);
         float        layer      = parseLayer(source.tags);
 

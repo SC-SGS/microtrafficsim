@@ -28,7 +28,7 @@ import java.util.function.Supplier;
  */
 public class RoundaboutScenario extends ValidationScenario {
 
-    private static final String OSM_FILENAME = "roundabout.osm";
+    private static final String OSM_FILENAME = "roundabout.processing";
     private Node                topRight, topLeft, left, bottom, right;
     // left is no start point!
     private NextScenarioState nextScenarioState;
@@ -127,7 +127,7 @@ public class RoundaboutScenario extends ValidationScenario {
         //      System.out.println("Node(" + n.ID + ").coord = " + n.getCoordinate());
         //    }
 
-        // node IDs in osm-file, sorted by lat ascending:
+        // node IDs in processing-file, sorted by lat ascending:
         // 243.679.734 bottom
         // 242.539.693 right
         //  27.281.851
