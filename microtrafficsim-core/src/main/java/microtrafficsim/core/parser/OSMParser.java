@@ -24,6 +24,12 @@ import java.util.Map;
 import java.util.stream.Collector;
 
 
+/**
+ * Wrapper for the OSM parser. Sets up basic processing and generation for
+ * {@link MapFeatureDefinition}s and a {@code StreetGraphFeatureDefinition}.
+ *
+ * @author Maximilian Luz
+ */
 public class OSMParser {
 
     private Parser           parser;
@@ -35,9 +41,15 @@ public class OSMParser {
         this.extractor = extractor;
     }
 
+    /**
+     * Creates a {@code OSMParser} based on the given configuration.
+     *
+     * @param config the configuration from which the parser should be created.
+     * @return the created parser.
+     */
     public static OSMParser create(Config config) {
         // create parser
-        OSMProcessor processor = new OSMProcessor(config.genindexBefore, config.genindexStreetGraph);
+        OSMProcessor processor = new OSMProcessor(config.genindexUnify, config.genindexStreetGraph);
         Parser       parser    = new Parser(processor);
 
         // add features
@@ -65,6 +77,14 @@ public class OSMParser {
         return new OSMParser(parser, new Config(config), extractor);
     }
 
+    /**
+     * Execute this parser and return the parsed result.
+     *
+     * @param file the file to parse.
+     * @return the result parsed from the given file.
+     * @throws XMLStreamException for mal-formed XML documents.
+     * @throws IOException if the file cannot be read.
+     */
     public Result parse(File file) throws XMLStreamException, IOException {
         parser.parse(file);
 
@@ -84,8 +104,11 @@ public class OSMParser {
         return new Result(new MapSegment(extractor.bounds, featureset), streetgraph);
     }
 
+    /**
+     * Configuration for the {@code OSMParser}.
+     */
     public static class Config {
-        private int genindexBefore;
+        private int genindexUnify;
         private int genindexStreetGraph;
 
         private StreetGraphFeatureDefinition streetgraph;
@@ -95,6 +118,9 @@ public class OSMParser {
         private Map<Class<? extends Component>, ComponentFactory<? extends Component, Way>> wayInitializers;
         private Map<String, RelationFactory> relationInitializers;
 
+        /**
+         * Constructs a new (empty) configuration.
+         */
         public Config() {
             this.streetgraph          = null;
             this.features             = new HashMap<>();
@@ -103,8 +129,13 @@ public class OSMParser {
             this.relationInitializers = new HashMap<>();
         }
 
+        /**
+         * Copy-constructs a new configuration based on the given one.
+         *
+         * @param other the configuration from which this configuration should be copied.
+         */
         public Config(Config other) {
-            this.genindexBefore       = other.genindexBefore;
+            this.genindexUnify        = other.genindexUnify;
             this.genindexStreetGraph  = other.genindexStreetGraph;
             this.streetgraph          = other.streetgraph;
             this.features             = new HashMap<>(other.features);
@@ -113,39 +144,101 @@ public class OSMParser {
             this.relationInitializers = new HashMap<>(other.relationInitializers);
         }
 
-
-        public Config setGeneratorIndexBefore(int genindexBefore) {
-            this.genindexBefore = genindexBefore;
+        /**
+         * Sets the generator index used to determine the features that need to be generated before the
+         * unification step of the streets. Features with generator index less or equal to the unification
+         * index are generated before the street unification step, features with a generator index higher
+         * than the unification index after this step. The unification index must always be lower than the
+         * street-graph generator index.
+         *
+         * @param genindexUnify the index determining which features to generate before the unification
+         *                      step and which after.
+         * @return this configuration.
+         * @see Config#setGeneratorIndexStreetGraph(int)
+         */
+        public Config setGeneratorIndexUnification(int genindexUnify) {
+            this.genindexUnify = genindexUnify;
             return this;
         }
 
+        /**
+         * Sets the generator index used to determine the features that need to be generated before the
+         * street graph is generated. Features with generator index less or equal to the street-graph
+         * index are generated before the street-graph, features with a generator index higher than the
+         * street-graph index after this step. The street-graph index must always be higher than the
+         * unification index.
+         *
+         * @param genindexStreetGraph the index determining which features to generate before the
+         *                            street-graph and which after.
+         * @return this configuration.
+         * @see Config#setGeneratorIndexUnification(int)
+         */
         public Config setGeneratorIndexStreetGraph(int genindexStreetGraph) {
             this.genindexStreetGraph = genindexStreetGraph;
             return this;
         }
 
 
+        /**
+         * Associate the given feature definition with its feature name. An existing binding will be
+         * overwritten.
+         *
+         * @param feature the feature definition to set the binding for.
+         * @return this configuration.
+         */
         public Config putMapFeatureDefinition(MapFeatureDefinition<?> feature) {
             features.put(feature.getName(), feature);
             return this;
         }
 
+        /**
+         * Sets the feature definition for the street graph. An existing definition will be overwritten.
+         *
+         * @param sg the feature definition to set for the street graph.
+         * @return this configuration.
+         */
         public Config setStreetGraphFeatureDefinition(StreetGraphFeatureDefinition sg) {
             this.streetgraph = sg;
             return this;
         }
 
-
+        /**
+         * Associate the given component factory with the given type. This tells the parser to initialize
+         * node-components of the given type by using the specified factory. May overwrite a previous binding.
+         *
+         * @param type    the type to set the initializer for.
+         * @param factory the initializer creating components of the given type.
+         * @param <T>     the type of the component.
+         * @return this configuration.
+         */
         public <T extends Component> Config putNodeInitializer(Class<T> type, ComponentFactory<T, Node> factory) {
             nodeInitializers.put(type, factory);
             return this;
         }
 
+        /**
+         * Associate the given component factory with the given type. This tells the parser to initialize
+         * way-components of the given type by using the specified factory. May overwrite a previous binding.
+         *
+         * @param type    the type to set the initializer for.
+         * @param factory the initializer creating components of the given type.
+         * @param <T>     the type of the component.
+         * @return this configuration.
+         */
         public <T extends Component> Config putWayInitializer(Class<T> type, ComponentFactory<T, Way> factory) {
             wayInitializers.put(type, factory);
             return this;
         }
 
+        /**
+         * Associates the given relation factory with the given relation name (i.e. type). This tells the parser
+         * to use the specified factory to initialize/create relations for the given typename. May overwrite a
+         * previous binding.
+         *
+         * @param name    the typename of the relation.
+         * @param factory the factory that should be used to create relationfs of the specified type/name.
+         * @return this configuration.
+         */
         public Config putRelationInitializer(String name, RelationFactory factory) {
             relationInitializers.put(name, factory);
             return this;
@@ -153,23 +246,51 @@ public class OSMParser {
 
         // TODO: extends functionality
 
+        /**
+         * Create a parser based on this configuration.
+         *
+         * @return the created parser.
+         * @see OSMParser#create(Config)
+         */
         public OSMParser createParser() {
             return OSMParser.create(this);
         }
     }
 
+    /**
+     * Result type for the {@code OSMParser}. Stores the parsed map-segment and street-graph.
+     */
     public static class Result {
+        /**
+         * The parsed map-segment.
+         */
         public final MapSegment segment;
+
+        /**
+         * The parsed street-graph.
+         */
         public final StreetGraph streetgraph;
 
+        /**
+         * Constructs a new {@code Result} based on the given parameters.
+         *
+         * @param segment     the parsed map-segment.
+         * @param streetgraph the parsed street-graph.
+         */
         private Result(MapSegment segment, StreetGraph streetgraph) {
             this.segment     = segment;
             this.streetgraph = streetgraph;
         }
     }
 
+    /**
+     * {@code FeatureGenerator} used to extract the {@code Bounds} during parsing.
+     */
     private static class DataSetExtractor implements FeatureGenerator {
 
+        /**
+         * The extracted bound.
+         */
         public Bounds bounds;
 
         @Override

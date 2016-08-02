@@ -203,7 +203,7 @@ public class TileBasedMapViewer implements MapViewer {
 
         /* create a configuration, add factories for parsed components */
         OSMParser.Config osmconfig = new OSMParser.Config()
-                                             .setGeneratorIndexBefore(styleconfig.generatorIndexOfUnification)
+                                             .setGeneratorIndexUnification(styleconfig.generatorIndexOfUnification)
                                              .setGeneratorIndexStreetGraph(styleconfig.generatorIndexOfStreetGraph);
 
         if (simconfig != null) {

@@ -21,6 +21,8 @@ import java.util.*;
 
 /**
  * Feature generator for street-based {@link microtrafficsim.core.parser.MapFeatureDefinition}s.
+ *
+ * @author Maximilian Luz
  */
 public class StreetFeatureGenerator implements MapFeatureGenerator<Street> {
 

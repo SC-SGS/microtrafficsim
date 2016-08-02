@@ -135,7 +135,7 @@ public class ParserExample {
         );
 
         return new OSMParser.Config()
-                .setGeneratorIndexBefore(genindexBefore)
+                .setGeneratorIndexUnification(genindexBefore)
                 .setGeneratorIndexStreetGraph(genindexStreetGraph)
                 .setStreetGraphFeatureDefinition(sg)
                 .putMapFeatureDefinition(streets)

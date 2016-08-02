@@ -46,11 +46,9 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * {@link HaversineDistanceCalculator#getDistance(Coordinate, Coordinate)
      * HaversineDistanceCalculator } as {@code DistanceCalculator}.
      * <p>
-     * <p>
      * This is equivalent to
      * {@link StreetGraphGenerator#StreetGraphGenerator(SimulationConfig, DistanceCalculator)
      * StreetGraphGenerator(config, HaversineDistanceCalculator::getDistance) }
-     * </p>
      */
     public StreetGraphGenerator(SimulationConfig config) {
         // TODO: use vincenty-formular here for better accuracy?

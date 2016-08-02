@@ -28,9 +28,7 @@ public class StreetGraphNodeComponent extends Component {
     /**
      * Clones this component and all contained objects.
      * <p>
-     * <p>
      * Note: only returns a shallow copy!
-     * </p>
      *
      * @param e the {@code Entity} the new {@code Component} belongs to.
      * @return a clone of this {@code Component}.

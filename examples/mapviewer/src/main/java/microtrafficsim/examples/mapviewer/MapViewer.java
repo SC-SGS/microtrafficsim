@@ -232,7 +232,7 @@ public class MapViewer {
         /* create a configuration, add factories for parsed components */
         OSMParser.Config config
                 = new OSMParser.Config()
-                          .setGeneratorIndexBefore(styleconfig.generatorIndexOfUnification)
+                          .setGeneratorIndexUnification(styleconfig.generatorIndexOfUnification)
                           .setGeneratorIndexStreetGraph(styleconfig.generatorIndexOfStreetGraph)
                           .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
                           .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
