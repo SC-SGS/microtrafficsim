@@ -11,8 +11,15 @@ import microtrafficsim.core.map.Coordinate;
 public class HaversineDistanceCalculator {
     private HaversineDistanceCalculator() {}
 
-    public static final double EARTH_MEAN_RADIUS   = 6371000f;                    // in meter
-    public static final double EARTH_MEAN_DIAMETER = EARTH_MEAN_RADIUS * 2.0f;    // in meter
+    /**
+     * The mean earth radius in meter.
+     */
+    public static final double EARTH_MEAN_RADIUS   = 6371000f;
+
+    /**
+     * THe mean earth diameter in meter.
+     */
+    public static final double EARTH_MEAN_DIAMETER = EARTH_MEAN_RADIUS * 2.0f;
 
 
     /**
@@ -33,7 +40,7 @@ public class HaversineDistanceCalculator {
         double slat = Math.sin(deltalat / 2);
         double slon = Math.sin(deltalon / 2);
 
-        return EARTH_MEAN_DIAMETER
-                * Math.asin(Math.sqrt(slat * slat + Math.cos(alatr) * Math.cos(blatr) * slon * slon));
+        return Math.asin(Math.sqrt(slat * slat + Math.cos(alatr) * Math.cos(blatr) * slon * slon))
+                * EARTH_MEAN_DIAMETER;
     }
 }

@@ -105,7 +105,6 @@ public class Ways {
      * given {@code WayEntities} and {@code NodeEntity}. If no valid {@code
      * MergePoint} can be created (no valid merge-operation can be performed), this
      * method returns {@code null}.
-     * <p>
      * <dl>
      * <dt><strong>Warning:</strong></dt>
      * <dd>
@@ -193,14 +192,14 @@ public class Ways {
      * modified to contain the merged {@code WayEntity} and thus be both input and
      * result of this operation. The other one is removed from the given {@code
      * DataSet} and should be considered invalid.
-     * <p>
      * <dl>
      * <dt><strong>Components</strong></dt>
      * <dd>
      * The ID and Components of the merged {@code WayEntity} will be either the
      * ID/Components of {@code joint.a} or {@code joint.b}.
      * </dd>
-     * <p>
+     * </dl>
+     * <dl>
      * <dt><strong>Warning:</strong></dt>
      * <dd>
      * This operation is performed in place, both {@code WayEntities} {@code a}
@@ -298,7 +297,6 @@ public class Ways {
     /**
      * Split the given {@code WayEntity} at the nodes specified by the indices.
      * Does neither add the splits nor remove the original from the {@code dataset}.
-     * <p>
      * <dl>
      * <dt><strong>Components:</strong></dt>
      * <dd>
@@ -306,7 +304,8 @@ public class Ways {
      * for the created splits, except the {@code GraphWayComponent} which is
      * updated separately.
      * </dd>
-     * <p>
+     * </dl>
+     * <dl>
      * <dt><strong>Warning:</strong></dt>
      * <dd>
      * The size of {@code splitpoints} must be greater than one.
@@ -368,7 +367,6 @@ public class Ways {
 
     /**
      * Reverses the given {@code WayEntity} by inverting the order of Nodes.
-     * <p>
      * <dl>
      * <dt><strong>Components:</strong></dt>
      * <dd>

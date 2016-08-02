@@ -56,7 +56,7 @@ public class GraphWayComponent extends Component implements Mergeable<GraphWayCo
      * @param to               the set of connectors going to this way.
      * @param cyclicStartToEnd set to {@code true}, if this way is cyclic and a connector
      *                         from start to end should exists.
-     * @param cyclicStartToEnd set to {@code true}, if this way is cyclic and a connector
+     * @param cyclicEndToStart set to {@code true}, if this way is cyclic and a connector
      *                         from end to start should exists.
      */
     public GraphWayComponent(WayEntity entity, HashSet<Connector> uturn, HashSet<Connector> from, HashSet<Connector> to,

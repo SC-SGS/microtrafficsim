@@ -13,7 +13,7 @@ public class Vec3i {
 
 
     /**
-     * Constructs a new vector and initializes the {@code x}-, {@code y}- and {@@code z}-components to zero.
+     * Constructs a new vector and initializes the {@code x}-, {@code y}- and {@code z}-components to zero.
      */
     public Vec3i() {
         this(0, 0, 0);
@@ -95,7 +95,7 @@ public class Vec3i {
 
 
     /**
-     * Calculates and returns the lenght of this vector.
+     * Calculates and returns the length of this vector.
      *
      * @return the length of this vector.
      */
@@ -106,7 +106,6 @@ public class Vec3i {
 
     /**
      * Adds the given vector to this vector and stores the result in this vector.
-     * {@code w}-component.
      *
      * @param v the vector to add.
      * @return this vector.
@@ -120,7 +119,6 @@ public class Vec3i {
 
     /**
      * Subtracts the given vector from this vector and stores the result in this vector.
-     * {@code w}-component.
      *
      * @param v the vector to subtract.
      * @return this vector.

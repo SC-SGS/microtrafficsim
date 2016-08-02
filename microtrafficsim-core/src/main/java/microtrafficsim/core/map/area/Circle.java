@@ -6,10 +6,10 @@ import microtrafficsim.math.HaversineDistanceCalculator;
 
 
 /**
- * Circular area, defined radius and method of distance-calculation. The distance calculator
+ * Circular area, defined by radius and method of distance-calculation. The distance calculator
  * can be specified to define the shape of the circular area, by default the
  * {@link HaversineDistanceCalculator} is used, creating a circle in relation to real-world distance.
- * Note: the shape in the projected (i.e. visualized) form may vary, depending on the projection.
+ * Note: The shape in the projected (i.e. visualized) form may vary, depending on the projection.
  *
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
