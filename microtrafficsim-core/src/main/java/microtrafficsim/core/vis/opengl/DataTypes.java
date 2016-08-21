@@ -3,6 +3,11 @@ package microtrafficsim.core.vis.opengl;
 import com.jogamp.opengl.GL2;
 
 
+/**
+ * OpenGL data-types.
+ *
+ * @author Maximilian Luz
+ */
 public class DataTypes {
     private DataTypes() {}
 

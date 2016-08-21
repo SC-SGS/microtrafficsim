@@ -30,6 +30,11 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 
+/**
+ * Overlay to display simulated vehicles using sprites.
+ *
+ * @author Maximilian Luz
+ */
 public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
     private static final Color DEFAULT_FG_COLOR = Color.fromRGBA(0xCC4C1AF0);
@@ -67,10 +72,20 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
     private boolean enabled;
 
 
+    /**
+     * Creates a new overlay using the provided {@code Projection}.
+     *
+     * @param projection the {@code Projection} used for the visualization.
+     */
     public SpriteBasedVehicleOverlay(Projection projection) {
         this(projection, DEFAULT_FG_COLOR);
     }
 
+    /**
+     *
+     * @param projection          the projection used in the visualization.
+     * @param defaultVehicleColor the default color used for the vehicles.
+     */
     public SpriteBasedVehicleOverlay(Projection projection, Color defaultVehicleColor) {
         this.simulation = null;
         this.projection = projection;
@@ -90,6 +105,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
     }
 
 
+    @Override
     public void setView(OrthographicView view) {
         this.view = view;
     }
@@ -107,7 +123,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
                 .loadFromResource(SHADER_FRAG)
                 .compile(gl);
 
-        prog = ShaderProgram.create(gl, context, "spritebased.vehicle_overlay")
+        prog = ShaderProgram.create(context, "spritebased.vehicle_overlay")
                 .attach(gl, vs, fs)
                 .link(gl)
                 .detach(gl, vs, fs);
@@ -316,10 +332,18 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         return enabled;
     }
 
+
+    /**
+     * Returns the simulation displayed in with this overlay.
+     *
+     * @return the simulation displayed in this overlay.
+     */
     public Simulation getSimulation() {
         return simulation;
     }
 
+
+    @Override
     public void setSimulation(Simulation simulation) {
         this.simulation = simulation;
     }

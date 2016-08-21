@@ -31,7 +31,6 @@ public class TextureData2D {
      * stored in the {@code ARGB} format, this corresponds to OpenGL's
      * {@code GL_BGRA} format (since Java is big-endian).
      * <p>
-     * <p>
      * The pixel-data order equals the order required by OpenGL: "The first
      * element corresponds to the lower left corner of the texture image.
      * Subsequent elements progress left-to-right through the remaining texels

@@ -37,7 +37,7 @@ public class FeatureStyle {
         if (program == null) {
             GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
 
-            program = ManagedShaderProgram.create(gl, context, psrc.getName());
+            program = ManagedShaderProgram.create(context, psrc.getName());
 
             ArrayList<ManagedShader> shaders = new ArrayList<>();
 

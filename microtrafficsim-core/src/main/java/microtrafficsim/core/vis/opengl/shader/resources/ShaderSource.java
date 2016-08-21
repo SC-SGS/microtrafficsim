@@ -4,10 +4,22 @@ import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.resources.Resource;
 
 
+/**
+ * Shader source, generic resource with OpenGL type-id of the shader.
+ *
+ * @author Maximilian Luz
+ */
 public class ShaderSource {
     public final int type;
     public final Resource resource;
 
+
+    /**
+     * Construct a new {@code ShaderSource} from the given type and resource.
+     *
+     * @param type     the type of the shader.
+     * @param resource the source-code of the shader as resource.
+     */
     public ShaderSource(int type, Resource resource) {
         this.type     = type;
         this.resource = resource;

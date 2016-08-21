@@ -1,6 +1,5 @@
 package microtrafficsim.core.vis.tilebased;
 
-
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.map.tiles.TilingScheme;
@@ -24,6 +23,13 @@ import microtrafficsim.utils.resources.Resource;
 import java.nio.FloatBuffer;
 
 
+// TODO: adapt for floating-point issues - project to NDC using double-precision before sending the vertices to the GPU
+
+/**
+ * Overlay displaying the tile-grid implied by a tiling-scheme.
+ *
+ * @author Maximilian Luz
+ */
 public class TileGridOverlay implements Overlay {
     private static final Resource VERTEX_SHADER   = new PackagedResource(TileGridOverlay.class, "/shaders/basic.vs");
     private static final Resource FRAGMENT_SHADER = new PackagedResource(TileGridOverlay.class, "/shaders/basic.fs");
@@ -40,6 +46,11 @@ public class TileGridOverlay implements Overlay {
     private VertexArrayObject vao;
 
 
+    /**
+     * Constructs a new {@code TileGridOverlay} for the given {@code TilingScheme}.
+     *
+     * @param scheme the {@¢ode TilingScheme} for which this overlay should be created.
+     */
     public TileGridOverlay(TilingScheme scheme) {
         this.enabled = true;
         this.scheme  = scheme;
@@ -64,7 +75,7 @@ public class TileGridOverlay implements Overlay {
                 .loadFromResource(FRAGMENT_SHADER)
                 .compile(gl);
 
-        shader = ShaderProgram.create(gl, context, "basic")
+        shader = ShaderProgram.create(context, "basic")
                 .attach(gl, vs, fs)
                 .link(gl)
                 .detach(gl);

@@ -5,12 +5,23 @@ import microtrafficsim.core.vis.context.RenderContext;
 import java.util.Collection;
 
 
+/**
+ * Abstract implementation of the {@code Visualization}, providing the basic features.
+ *
+ * @author Maximilian Luz
+ */
 public abstract class AbstractVisualization implements Visualization {
 
     private RenderContext context;
     private Visualizer    visualizer;
 
 
+    /**
+     * Constructs a new {@code AbstractVisualization} for the given context and visualizer.
+     *
+     * @param context    the {@code RenderContext} on which this visualization is going to be displayed.
+     * @param visualizer the visualizer providing the actual render-code.
+     */
     public AbstractVisualization(RenderContext context, Visualizer visualizer) {
         this.context    = context;
         this.visualizer = visualizer;

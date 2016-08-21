@@ -4,15 +4,32 @@ import com.jogamp.opengl.GL4;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 
+/**
+ * OpenGL data-type wrapper.
+ *
+ * @author Maximilian Luz
+ */
 public class DataType {
     public final int typeId;
     public final int size;
 
+    /**
+     * Constructs a new {@code DataType} instance for the given type-id and size.
+     *
+     * @param typeId the OpenGL id of the type.
+     * @param size   the size of the type, with greater than 1 indicating an array.
+     */
     public DataType(int typeId, int size) {
         this.typeId = typeId;
         this.size   = size;
     }
 
+    /**
+     * Returns the type-id as string.
+     *
+     * @param id the type-id for which the string should be returned.
+     * @return the name of the type associated with the given id.
+     */
     public static String typeIdToString(int id) {
         switch (id) {
         case GL4.GL_FLOAT:                                     return "GL_FLOAT";
@@ -134,6 +151,11 @@ public class DataType {
         }
     }
 
+    /**
+     * Tests if this is a single-precision floating-point type (includes vectors and matrices).
+     *
+     * @return {@code true} if this is a single-precision floating-point type.
+     */
     public boolean isSinglePrecisionFloat() {
         switch (typeId) {
         case GL4.GL_FLOAT:        return true;
@@ -154,6 +176,11 @@ public class DataType {
         }
     }
 
+    /**
+     * Tests if this is a double-precision floating-point type (includes vectors and matrices).
+     *
+     * @return {@code true} if this is a double-precision floating-point type.
+     */
     public boolean isDoublePrecisionFloat() {
         switch (typeId) {
         case GL4.GL_DOUBLE:        return true;
@@ -174,6 +201,11 @@ public class DataType {
         }
     }
 
+    /**
+     * Tests if this is a signed integer type (includes vectors).
+     *
+     * @return {@code true} if this is a signed integer type.
+     */
     public boolean isSignedInteger() {
         switch (typeId) {
         case GL4.GL_INT:      return true;
@@ -185,6 +217,11 @@ public class DataType {
         }
     }
 
+    /**
+     * Tests if this is a unsigned integer type (includes vectors).
+     *
+     * @return {@code true} if this is a unsigned integer type.
+     */
     public boolean isUnsignedInteger() {
         switch (typeId) {
         case GL4.GL_UNSIGNED_INT:      return true;
@@ -196,6 +233,11 @@ public class DataType {
         }
     }
 
+    /**
+     * Tests if this is a boolean type (includes vectors).
+     *
+     * @return {@code true} if this is a unsigned integer type.
+     */
     public boolean isBoolean() {
         switch (typeId) {
         case GL4.GL_BOOL:      return true;
@@ -207,6 +249,11 @@ public class DataType {
         }
     }
 
+    /**
+     * Tests if this is a floating-point sampler type.
+     *
+     * @return {@code true} if this is a floating-point sampler type.
+     */
     public boolean isFloatSampler() {
         switch (typeId) {
         case GL4.GL_SAMPLER_1D:                   return true;
@@ -230,6 +277,11 @@ public class DataType {
         }
     }
 
+    /**
+     * Tests if this is a signed integer sampler type.
+     *
+     * @return {@code true} if this is a signed integer sampler type.
+     */
     public boolean isSignedIntegerSampler() {
         switch (typeId) {
         case GL4.GL_INT_SAMPLER_1D:                   return true;
@@ -247,6 +299,11 @@ public class DataType {
         }
     }
 
+    /**
+     * Tests if this is a unsigned integer sampler type.
+     *
+     * @return {@code true} if this is a unsigned integer sampler type.
+     */
     public boolean isUnsignedIntegerSampler() {
         switch (typeId) {
         case GL4.GL_UNSIGNED_INT_SAMPLER_1D:                   return true;
@@ -264,6 +321,11 @@ public class DataType {
         }
     }
 
+    /**
+     * Tests if this is a (single-precision) floating-point image type.
+     *
+     * @return {@code true} if this is a (single-precision) floating-point image type.
+     */
     public boolean isFloatImage() {
         switch (typeId) {
         case GL4.GL_IMAGE_1D:                   return true;
@@ -281,6 +343,11 @@ public class DataType {
         }
     }
 
+    /**
+     * Tests if this is a signed integer image type.
+     *
+     * @return {@code true} if this is a signed integer image type.
+     */
     public boolean isSignedIntegerImage() {
         switch (typeId) {
         case GL4.GL_INT_IMAGE_1D:                   return true;
@@ -298,6 +365,11 @@ public class DataType {
         }
     }
 
+    /**
+     * Tests if this is a unsigned integer image type.
+     *
+     * @return {@code true} if this is a unsigned integer image type.
+     */
     public boolean isUnsignedIntegerImage() {
         switch (typeId) {
         case GL4.GL_UNSIGNED_INT_IMAGE_1D:                   return true;
@@ -333,6 +405,11 @@ public class DataType {
         return this.getClass() + " {" + getTypeString() + "}";
     }
 
+    /**
+     * Return a {@code String} describing this type.
+     *
+     * @return the description of this type, consisting of type-name and size/length.
+     */
     public String getTypeString() {
         return typeIdToString(typeId) + "[" + size + "]";
     }

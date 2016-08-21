@@ -3,6 +3,11 @@ package microtrafficsim.core.vis.view;
 import microtrafficsim.math.*;
 
 
+/**
+ * Z-axis orthographic view.
+ *
+ * @author Maximilian Luz
+ */
 public class OrthographicView implements View {
 
     private int width;
@@ -22,6 +27,16 @@ public class OrthographicView implements View {
     private Mat4f viewprojection;
 
 
+    /**
+     * Constructs a new orthographic view with the given parameters.
+     *
+     * @param width   the width (in pixels) of the viewport.
+     * @param height  the height (in pixels) of the viewport.
+     * @param zNear   the z-axis value of the near-plane.
+     * @param zFar    the z-axis value of the far-plane.
+     * @param zoomMin the minimum zoom limit.
+     * @param zoomMax the maximum zoom limit.
+     */
     public OrthographicView(int width, int height, float zNear, float zFar, double zoomMin, double zoomMax) {
         this.width  = width;
         this.height = height;
@@ -74,12 +89,23 @@ public class OrthographicView implements View {
         updateView();
     }
 
+    /**
+     * Set the 3D-position using the given 2D vector. The z-axis component will not be modified.
+     *
+     * @param position the new position.
+     */
     public void setPosition(Vec2d position) {
         this.position.x = position.x;
         this.position.y = position.y;
         updateView();
     }
 
+    /**
+     * Set the 3D-position using the given 2D vector. The z-axis component will not be modified.
+     *
+     * @param x the x-axis value of the new position.
+     * @param y the y-axis value of the new position.
+     */
     public void setPosition(double x, double y) {
         this.position.x = x;
         this.position.y = y;
@@ -94,10 +120,20 @@ public class OrthographicView implements View {
         updateView();
     }
 
+    /**
+     * Returns the current zoom-level.
+     *
+     * @return the current zoom-level.
+     */
     public double getZoomLevel() {
         return this.zoom;
     }
 
+    /**
+     * Set the zoom-level. This will be capped by the minimum- and maximum-limit.
+     *
+     * @param zoom the new zoom-level.
+     */
     public void setZoomLevel(double zoom) {
         this.zoom = zoom;
 
@@ -109,14 +145,29 @@ public class OrthographicView implements View {
         updateProjection();
     }
 
+    /**
+     * Return the scale-factor described by the zoom-level as {@code scale = pow(2, zoom)}.
+     *
+     * @return the scale of this view.
+     */
     public double getScale() {
         return Math.pow(2.0, zoom);
     }
 
+    /**
+     * Set the scale of this view, this also implicitly sets the zoom-level.
+     *
+     * @param scale the new scale of this view.
+     */
     public void setScale(double scale) {
         setZoomLevel(Math.log(scale) / Math.log(2));
     }
 
+    /**
+     * Returns the viewport-bounds translated to world-coordinates.
+     *
+     * @return the viewport-bounds expressed in world-coordinates.
+     */
     public Rect2d getViewportBounds() {
         double scale = getScale();
 
@@ -143,6 +194,9 @@ public class OrthographicView implements View {
     }
 
 
+    /**
+     * Updates the projection and view-projection matrices.
+     */
     private void updateProjection() {
         /*
          * Note: no need to zero-check the size here, JOGL crashes before the reshape
@@ -159,6 +213,9 @@ public class OrthographicView implements View {
         viewprojection.set(projection).mul(view);
     }
 
+    /**
+     * Updates the view and view-projection matrices.
+     */
     private void updateView() {
         view.makeLookInDirection(new Vec3f(position), new Vec3f(0, 0, -1), new Vec3f(0, 1, 0));
         viewprojection.set(projection).mul(view);

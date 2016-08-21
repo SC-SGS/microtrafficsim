@@ -43,6 +43,11 @@ import java.util.regex.Pattern;
 import static microtrafficsim.build.BuildSetup.DEBUG_CORE_VIS;
 
 
+/**
+ * Tile-based visualizer.
+ *
+ * @author Maximilian Luz
+ */
 public class TileBasedVisualizer implements Visualizer {
 
     private static final int DEFAULT_FPS   = 60;
@@ -76,6 +81,14 @@ public class TileBasedVisualizer implements Visualizer {
     private Color bgcolor = Color.fromRGBA(0x000000FF);
 
 
+    /**
+     * Constructs a new tile-based visualizer with the given parameters.
+     *
+     * @param context  the {@code RenderContext} on which this visualizer is going to be executed.
+     * @param view     the {@code OrthographicView} to be used.
+     * @param provider the {@code TileProvider} providing the tiles to be displayed.
+     * @param worker   the {@code ExecutorSerivce} handling the asynchronous tile-loading.
+     */
     public TileBasedVisualizer(RenderContext    context,
                                OrthographicView view,
                                TileProvider     provider,
@@ -90,6 +103,9 @@ public class TileBasedVisualizer implements Visualizer {
         initShaderBindings();
     }
 
+    /**
+     * Initializes the default shader uniform and vertex-attribute bindings.
+     */
     private void initShaderBindings() {
         UniformManager         uniforms   = context.getUniformManager();
         VertexAttributeManager attributes = context.getVertexAttribManager();
@@ -129,6 +145,12 @@ public class TileBasedVisualizer implements Visualizer {
         return new VisualizerConfig(profile, caps, DEFAULT_FPS);
     }
 
+    /**
+     * Checks the current system for the required OpenGL feature-set.
+     *
+     * @param profile the profile to be used for the OpenGL context.
+     * @return the list of missing features (empty if all required features are present).
+     */
     private ArrayList<String> checkGLFeatureSet(GLProfile profile) {
         ArrayList<String> missing = new ArrayList<>();
 
@@ -203,6 +225,11 @@ public class TileBasedVisualizer implements Visualizer {
             overlay.dispose(context);
     }
 
+    /**
+     * Initializes the frame-buffer used to store the rendered map.
+     *
+     * @param context the context on which this visualizer operates.
+     */
     private void initFrameBuffer(RenderContext context) {
         GLAutoDrawable drawable = context.getDrawable();
 
@@ -225,7 +252,7 @@ public class TileBasedVisualizer implements Visualizer {
                 .loadFromResource(FBO_COLOR_DEPTH_COPY_FS)
                 .compile(gl);
 
-        fboCopyShader = ShaderProgram.create(gl, context, "fbo_color_depth_copy")
+        fboCopyShader = ShaderProgram.create(context, "fbo_color_depth_copy")
                 .attach(gl, vs, fs)
                 .link(gl)
                 .detach(gl, vs, fs);
@@ -270,6 +297,11 @@ public class TileBasedVisualizer implements Visualizer {
                                        + ")");
     }
 
+    /**
+     * Resizes the frame-buffer used to store the rendered map.
+     *
+     * @param context the context on which this visualizer operates.
+     */
     private void resizeFrameBuffer(RenderContext context, int width, int height) {
         if (backbuffer == null) return;
         GL3 gl = context.getDrawable().getGL().getGL3();
@@ -284,6 +316,11 @@ public class TileBasedVisualizer implements Visualizer {
         gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
     }
 
+    /**
+     * Disposes the frame-buffer used to store the rendered map.
+     *
+     * @param context the context on which this visualizer operates.
+     */
     private void disposeFrameBuffer(RenderContext context) {
         if (backbuffer == null) return;
 
@@ -312,8 +349,6 @@ public class TileBasedVisualizer implements Visualizer {
         GL3 gl     = context.getDrawable().getGL().getGL3();
         int width  = context.getDrawable().getSurfaceWidth();
         int height = context.getDrawable().getSurfaceHeight();
-
-        uViewport.set(width, height, 1.f / width, 1.f / height);
 
         context.DepthTest.enable(gl);
         context.DepthTest.setFunction(gl, GL3.GL_ALWAYS, true);
@@ -424,12 +459,20 @@ public class TileBasedVisualizer implements Visualizer {
     }
 
 
+    /**
+     * Applies the given style-sheet to this visualizer.
+     *
+     * @param style the style-sheet to apply.
+     */
     public void apply(StyleSheet style) {
         bgcolor = style.getBackgroundColor();
         provider.apply(style);
     }
 
 
+    /**
+     * The implementation of the {@code TileChangeListener}.
+     */
     private class TileChangeListenerImpl implements TileProvider.TileChangeListener {
         @Override
         public void tilesChanged() {

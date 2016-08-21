@@ -122,7 +122,7 @@ public class PreRenderedTileProvider implements TileProvider {
                 .loadFromResource(TILE_COPY_SHADER_FS)
                 .compile(gl);
 
-        tilecopy = ShaderProgram.create(gl, context, "tilecopy")
+        tilecopy = ShaderProgram.create(context, "tilecopy")
                 .attach(gl, vs, fs).link(gl)
                 .detach(gl, vs, fs);
 
