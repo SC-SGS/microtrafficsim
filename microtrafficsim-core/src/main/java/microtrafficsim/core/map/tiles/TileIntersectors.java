@@ -9,15 +9,36 @@ import microtrafficsim.math.Vec2d;
 import static microtrafficsim.math.MathUtils.clamp;
 
 
+/**
+ * Tile intersection tests for various geometry.
+ *
+ * @author Maximilian Luz
+ */
 public class TileIntersectors {
     private TileIntersectors() {}
 
 
+    /**
+     * Tests the given point projected using the given projection for intersection against the given tile.
+     *
+     * @param point      the point to test for intersection.
+     * @param tile       the tile to test the point against.
+     * @param projection the projection used to project the given point.
+     * @return {@code true} if the projected point intersects with the given tile.
+     */
     public static boolean intersect(Point point, Rect2d tile, Projection projection) {
         Vec2d c = projection.project(point.coordinate);
         return c.x >= tile.xmin && c.x <= tile.xmax && c.y >= tile.ymin && c.y <= tile.ymax;
     }
 
+    /**
+     * Tests the given line projected using the given projection for intersection against the given tile.
+     *
+     * @param line       the line to test for intersection.
+     * @param tile       the tile to test the line against.
+     * @param projection the projection used to project the given line.
+     * @return {@code true} if the projected line intersects with the given tile.
+     */
     public static boolean intersect(MultiLine line, Rect2d tile, Projection projection) {
 
         Vec2d a = projection.project(line.coordinates[0]);

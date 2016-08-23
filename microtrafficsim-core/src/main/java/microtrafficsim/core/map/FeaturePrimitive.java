@@ -9,6 +9,11 @@ package microtrafficsim.core.map;
 public class FeaturePrimitive {
     public long id;
 
+    /**
+     * Constructs a new {@code FuturePrimitive} with the given id.
+     *
+     * @param id the id of the created {@code FuturePrimitive}.
+     */
     public FeaturePrimitive(long id) {
         this.id = id;
     }

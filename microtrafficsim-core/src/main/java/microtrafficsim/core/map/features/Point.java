@@ -12,6 +12,12 @@ import microtrafficsim.core.map.FeaturePrimitive;
 public class Point extends FeaturePrimitive {
     public Coordinate coordinate;
 
+    /**
+     * Constructs a new {@code Point}.
+     *
+     * @param id         the (unique) id of the point.
+     * @param coordinate the coordinate describing this point.
+     */
     public Point(long id, Coordinate coordinate) {
         super(id);
         this.coordinate = coordinate;

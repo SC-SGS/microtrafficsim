@@ -8,12 +8,24 @@ import microtrafficsim.math.Vec2i;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 
+/**
+ * Tiling-scheme using a quad-tree structure for tiling.
+ *
+ * @author Maximilian Luz
+ */
 public class QuadTreeTilingScheme implements TilingScheme {
 
     private Projection projection;
     private int        minlevel;
     private int        maxlevel;
 
+    /**
+     * Constructs a new {@code QuadTreeTilingScheme} using the given projection.
+     *
+     * @param projection the projection to be used for/with this tiling-scheme.
+     * @param minlevel   the minimum zoom-level of the tiling scheme.
+     * @param maxlevel   the maximum zoom-level of the tiling scheme.
+     */
     public QuadTreeTilingScheme(Projection projection, int minlevel, int maxlevel) {
         this.projection = projection;
         this.minlevel   = minlevel;
@@ -122,10 +134,25 @@ public class QuadTreeTilingScheme implements TilingScheme {
         );
     }
 
+
+    /**
+     * Returns the leaf-tiles for the given tile.
+     *
+     * @param tile the tile to return the leaf tiles for.
+     * @return the leaf-tiles of the given tile as rectangle.
+     */
     public TileRect getLeafTiles(TileId tile) {
         return getLeafTiles(tile.x, tile.y, tile.z);
     }
 
+    /**
+     * Returns the leaf-tiles for the given tile.
+     *
+     * @param x the x-id of the tile.
+     * @param y the y-id of the tile.
+     * @param z the z-id of the tile.
+     * @return the leaf-tiles of the given tile as rectangle.
+     */
     public TileRect getLeafTiles(int x, int y, int z) {
         int diff = maxlevel - z;
 
@@ -138,6 +165,12 @@ public class QuadTreeTilingScheme implements TilingScheme {
         );
     }
 
+    /**
+     * Returns the leaf-tiles for the given tile-bounds.
+     *
+     * @param bounds the bounds for which the leaf-tiles should be returned.
+     * @return the leaf-tiles of the given tile as rectangle.
+     */
     public TileRect getLeafTiles(TileRect bounds) {
         int diff = maxlevel - bounds.zoom;
 
@@ -150,7 +183,15 @@ public class QuadTreeTilingScheme implements TilingScheme {
         );
     }
 
-    @Override    // top-left tile vertex
+    /**
+     * Returns the position of the top-left tile vertex.
+     *
+     * @param x the x-id of the tile.
+     * @param y the y-id of the tile.
+     * @param z the z-id of the tile.
+     * @return the position of the top-left vertex of the specified tile.
+     */
+    @Override
     public Vec2d getPosition(int x, int y, int z) {
         Rect2d max   = projection.getProjectedMaximumBounds();
         int    tiles = 1 << z;
@@ -185,14 +226,25 @@ public class QuadTreeTilingScheme implements TilingScheme {
         );
     }
 
+    /**
+     * Returns the maximum zoom level of this tiling-scheme.
+     *
+     * @return the maximum zoom level of this tiling-scheme.
+     */
     public int getMaximumZoomLevel() {
         return maxlevel;
     }
 
+    /**
+     * Returns the minimum zoom level of this tiling-scheme.
+     *
+     * @return the minimum zoom level of this tiling-scheme.
+     */
     public int getMinimumZoomLevel() {
         return minlevel;
     }
 
+    @Override
     public Vec2i getTileSize() {
         Rect2d max = projection.getProjectedMaximumBounds();
         return new Vec2i((int) (max.xmax - max.xmin), (int) (max.ymax - max.ymin));
