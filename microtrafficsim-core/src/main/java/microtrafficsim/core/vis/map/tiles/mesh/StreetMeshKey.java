@@ -8,6 +8,11 @@ import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 
+/**
+ * Key for {@code StreetMesh}es.
+ *
+ * @author Maximilian Luz
+ */
 public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     private final RenderContext context;
     private final TileRect tiles;
@@ -19,6 +24,19 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     private final boolean adjacency;
     private final boolean forceJoins;
 
+    /**
+     * Creates a new {@code StreetMeshKey}.
+     *
+     * @param context    the context on which the mesh is being displayed.
+     * @param tiles      the tile-rectangle this mesh covers.
+     * @param target     the target this mesh is projected to.
+     * @param provider   the provider which provided this mesh.
+     * @param feature    the feature from which this mesh was created.
+     * @param scheme     the tiling-scheme used for the mesh.
+     * @param revision   the revision of this mesh.
+     * @param adjacency  {@code true} if the mesh is generated as adjacency-mesh.
+     * @param forceJoins {@code true} if joins should be created whenever possible.
+     */
     public StreetMeshKey(RenderContext       context,
                          TileRect            tiles,
                          Rect2d              target,

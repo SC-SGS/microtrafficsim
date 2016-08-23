@@ -6,15 +6,22 @@ import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 
 
+/**
+ * Plate-carree projection.
+ *
+ * @author Maximilian Luz
+ */
 public class PlateCarreeProjection implements Projection {
 
     public static final Bounds MAXIMUM_BOUNDS           = new Bounds(-90, -180, 90, 180);
     public static final Rect2d PROJECTED_MAXIMUM_BOUNDS = new Rect2d(-180, -90, 180, 90);
 
+    @Override
     public Bounds getMaximumBounds() {
         return new Bounds(MAXIMUM_BOUNDS);
     }
 
+    @Override
     public Rect2d getProjectedMaximumBounds() {
         return new Rect2d(PROJECTED_MAXIMUM_BOUNDS);
     }

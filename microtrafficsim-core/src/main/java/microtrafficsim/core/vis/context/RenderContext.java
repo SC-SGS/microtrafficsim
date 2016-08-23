@@ -19,9 +19,17 @@ import java.util.concurrent.Future;
 import static microtrafficsim.build.BuildSetup.DEBUG_CORE_VIS;
 
 
+/**
+ * Context representing the state of an OpenGL context.
+ *
+ * @author Maximilian Luz
+ */
 public class RenderContext implements GLEventListener {
     private static final Logger logger = LoggerFactory.getLogger(RenderContext.class);
 
+    /**
+     * Execution budget per frame in nanoseconds for render-tasks.
+     */
     private static final long RTASK_EXECUTION_BUDGED_NS = 33_000_000;
 
 
@@ -59,6 +67,9 @@ public class RenderContext implements GLEventListener {
     }
 
 
+    /**
+     * Constructs a new {@code RenderContext}. This does not create an actual OpenGL context.
+     */
     public RenderContext() {
         this.tasks = new ConcurrentLinkedQueue<>();
 
@@ -72,31 +83,72 @@ public class RenderContext implements GLEventListener {
         this.attributes = new VertexAttributeManager();
     }
 
+    /**
+     * Returns the renderer called by this context.
+     *
+     * @return the renderer called by this context.
+     */
     public Renderer getRenderer() {
         return renderer;
     }
 
+    /**
+     * Sets the renderer that is going to be called by this context.
+     *
+     * @param renderer the new renderer that is going to be called by this context.
+     */
     public void setRenderer(Renderer renderer) {
         this.renderer = renderer;
     }
 
+    /**
+     * Returns the {@code ShaderManager} of this context.
+     *
+     * @return the {@code ShaderManager} of this context.
+     */
     public ShaderManager getShaderManager() {
         return shaders;
     }
 
+    /**
+     * Returns the {@code UniformManager} of this context.
+     *
+     * @return the {@code UniformManager} of this context.
+     */
     public UniformManager getUniformManager() {
         return uniforms;
     }
 
+    /**
+     * Returns the {@code VertexAttributeManager} of this context.
+     *
+     * @return the {@code VertexAttributeManager} of this context.
+     */
     public VertexAttributeManager getVertexAttribManager() {
         return attributes;
     }
 
 
+    /**
+     * Returns the task-queue used to perform synchronized tasks on the OpenGL context.
+     *
+     * @return the task-queue used to perform synchronized tasks on the OpenGL context.
+     */
     public Queue<? extends Future<?>> getTaskQueue() {
         return tasks;
     }
 
+    /**
+     * Adds the given task to the task-queue of this context. The task-queue is used to
+     * perform synchronized tasks on the OpenGL context.
+     *
+     * @param task  the task to be executed.
+     * @param delay set to {@code true} to delay the task if the OpenGL context is current. If set to {@code false} and
+     *              the OpenGL context is current, the task is going to be executed directly without waiting for the
+     *              next frame.
+     * @param <V>   the return-type of the submitted task.
+     * @return the {@code Future} corresponding to the submitted task.
+     */
     public <V> Future<V> addTask(RenderTask<V> task, boolean delay) {
         FutureRenderTask<V> future = new FutureRenderTask<>(task);
 
@@ -110,33 +162,74 @@ public class RenderContext implements GLEventListener {
         return future;
     }
 
+    /**
+     * Adds the given task to the task-queue of this context. The task-queue is used to
+     * perform synchronized tasks on the OpenGL context.
+     * <p>
+     * This call is equal to {@link RenderContext#addTask(RenderTask, boolean) addTask(task, false)}
+     * </p>
+     *
+     * @param task the task to be executed.
+     * @param <V>  the return-type of the submitted task.
+     * @return the {@code Future} corresponding to the submitted task.
+     */
     public <V> Future<V> addTask(RenderTask<V> task) {
         return addTask(task, false);
     }
 
+    /**
+     * Checks if there are any tasks to be executed on this context.
+     *
+     * @return {@code true} if there are any tasks that should be executed on this context.
+     */
     public boolean hasTasks() {
         return tasks.isEmpty();
     }
 
 
+    /**
+     * Return the animator used for this context.
+     *
+     * @return the {@code GLAnimatorControl} used for this context.
+     */
     public GLAnimatorControl getAnimator() {
         return animator;
     }
 
+    /**
+     * Set the animator used for this context.
+     *
+     * @param animator the new animator used for this context.
+     */
     public void setAnimator(GLAnimatorControl animator) {
         this.animator = animator;
     }
 
 
+    /**
+     * Returns the {@code UncaughtExceptionHandler} used for this context.
+     *
+     * @return the {@code UncaughtExceptionHandler} used for this context.
+     */
     public UncaughtExceptionHandler getUncaughtExceptionHandler() {
         return exhdlr;
     }
 
+    /**
+     * Sets the {@code UncaughtExceptionHandler} used for this context.
+     *
+     * @param handler the {@code UncaughtExceptionHandler} to be used for this context.
+     */
     public void setUncaughtExceptionHandler(UncaughtExceptionHandler handler) {
         this.exhdlr = handler;
     }
 
 
+    /**
+     * Returns the drawable that is active on this context.
+     *
+     * @return the drawable active on this context or {@code null} if no drawable is active.
+     */
     public GLAutoDrawable getDrawable() {
         return drawable;
     }
@@ -213,6 +306,12 @@ public class RenderContext implements GLEventListener {
     }
 
 
+    /**
+     * Handle the previously uncaught exception.
+     *
+     * @param exception the uncaught exception.
+     * @return {@code true} if the exception has been handled by this function.
+     */
     private boolean handleException(Throwable exception) {
         if (animator != null) animator.stop();
 

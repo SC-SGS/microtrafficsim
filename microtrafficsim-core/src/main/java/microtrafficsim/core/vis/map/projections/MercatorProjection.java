@@ -7,7 +7,11 @@ import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 
-// probably not the standard mercator-projection
+/**
+ * (Web-)Mercator projection.
+ *
+ * @author Maximilian Luz
+ */
 public class MercatorProjection implements Projection {
 
     private double scale;
@@ -21,10 +25,12 @@ public class MercatorProjection implements Projection {
     }
 
 
+    @Override
     public Bounds getMaximumBounds() {
         return unproject(getProjectedMaximumBounds());
     }
 
+    @Override
     public Rect2d getProjectedMaximumBounds() {
         return new Rect2d(-scale, -scale, scale, scale);
     }

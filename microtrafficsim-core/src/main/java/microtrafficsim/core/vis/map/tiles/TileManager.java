@@ -17,6 +17,11 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
+/**
+ * Manager maintaining and rendering visible tiles.
+ *
+ * @author Maximilian Luz
+ */
 public strictfp class TileManager {
     private static final Comparator<Tile> CMP_TILE = new TileComparator();
 
@@ -27,13 +32,19 @@ public strictfp class TileManager {
 
     private HashMap<TileId, Tile>         visible;
     private HashMap<TileId, Future<Tile>> loading;
-    private ArrayList<Future<Tile>> cancelling;    // cleanup cancelled tiles out-of-cycle, to avoid deadlock
-    private ArrayList<Tile>         prebuilt;
+    private ArrayList<Future<Tile>>       cancelling;    // cleanup cancelled tiles out-of-cycle, to avoid deadlock
+    private ArrayList<Tile>               prebuilt;
 
     private ConcurrentLinkedQueue<TileId> changed;
     private AtomicBoolean                 reload;
 
 
+    /**
+     * Constructs a new {@code TileManager} with the given tile-provider and executor-service.
+     *
+     * @param provider the provider providing the tiles to be displayed.
+     * @param worker   the {@code ExecutorService} responsible for asynchronous tile loading.
+     */
     public TileManager(TileProvider provider, ExecutorService worker) {
         this.provider = provider;
         this.worker   = worker;
@@ -51,6 +62,17 @@ public strictfp class TileManager {
         this.provider.addTileChangeListener(new TileChangeListenerImpl());
     }
 
+    /**
+     * Return the result from the given task, ignoring {@code CancellationException}s. If the task throws a
+     * {@code CancellationException}, {@code null} is returned. This call will block if necessary.
+     *
+     * @param task the future to get the result from.
+     * @param <V> the return-type of the task.
+     * @return the result of the task or {@code null} if a {@code CancellationException} has been thrown by the task.
+     * @throws ExecutionException   if {@code task.get()} throws an {@code ExecutionException}.
+     * @throws InterruptedException it {@code task.get()} throws an {@code InterruptedException}.
+     * @see Future#get()
+     */
     private static <V> V getFromTaskIgnoringCancellation(Future<V> task)
             throws ExecutionException, InterruptedException {
         try {
@@ -60,6 +82,14 @@ public strictfp class TileManager {
         return null;
     }
 
+    /**
+     * Checks if {@code set} contains all tiles in the intersection of {@code rect} and {@code view}.
+     *
+     * @param set  the set to test for inclusion.
+     * @param rect the first rectangle to test against.
+     * @param view the second rectangle to test against.
+     * @return {@code true} if the set contains all tiles in the intersection of {@code rect} and {@code view}.
+     */
     private static boolean containsAllInView(Set<TileId> set, TileRect rect, TileRect view) {
         for (int x = Math.max(rect.xmin, view.xmin); x <= Math.min(rect.xmax, view.xmax); x++)
             for (int y = Math.max(rect.ymin, view.ymin); y <= Math.min(rect.ymax, view.ymax); y++)
@@ -68,18 +98,38 @@ public strictfp class TileManager {
         return true;
     }
 
+    /**
+     * Returns the (un-projected) bounds of the tiles this manager is capable of displaying.
+     *
+     * @return the (un-projected) bounds of the tiles this manager is capable of displaying.
+     */
     public Bounds getBounds() {
         return provider.getBounds();
     }
 
+    /**
+     * Returns the (projected) bounds of the tiles this manager is capable of displaying.
+     *
+     * @return the (projected) bounds of the tiles this manager is capable of displaying.
+     */
     public Rect2d getProjectedBounds() {
         return provider.getProjectedBounds();
     }
 
+    /**
+     * Initialize this manager.
+     *
+     * @param context the context on which this manager should be initialized.
+     */
     public void initialize(RenderContext context) {
         provider.initialize(context);
     }
 
+    /**
+     * Dispose this manager.
+     *
+     * @param context the context on which this manager has been initialized.
+     */
     public void dispose(RenderContext context) {
         // cancel tiles which are currently beeing loaded
         for (Future<Tile> future : loading.values()) {
@@ -101,6 +151,14 @@ public strictfp class TileManager {
         context.addTask(new TileCleanupTask(cancelling));
     }
 
+    /**
+     * Updates the visible tiles using for the given {@code OrthographicView}.
+     *
+     * @param context  the context on which the tiles are going to be displayed.
+     * @param observer the view for which the tiles should be updated.
+     * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
+     * @throws InterruptedException if the update-operation has been interrupted.
+     */
     public void update(RenderContext context, OrthographicView observer)
             throws ExecutionException, InterruptedException {
 
@@ -133,6 +191,15 @@ public strictfp class TileManager {
         this.tiles = view;
     }
 
+    /**
+     * Reloads updated and newly in-view tiles.
+     *
+     * @param context the context on which the tiles are going to be displayed.
+     * @param common  the view-rectangle indicating visible tiles.
+     * @return {@code true} if the internal list of visible tiles has changed.
+     * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
+     * @throws InterruptedException if the reload-operation has been interrupted.
+     */
     private boolean mgmtReload(RenderContext context, TileRect common) throws ExecutionException, InterruptedException {
 
         if (common == null) return false;
@@ -181,6 +248,15 @@ public strictfp class TileManager {
         return change;
     }
 
+    /**
+     * Asynchronously (re-)loads the specified tile.
+     *
+     * @param context the context on which the tiles are going to be displayed.
+     * @param id      the id of the tile that should be (re-)loaded.
+     * @return {@code true} if the internal list of visible tiles has changed.
+     * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
+     * @throws InterruptedException if the operation has been interrupted.
+     */
     private boolean mgmtAsyncReload(RenderContext context, TileId id) throws ExecutionException, InterruptedException {
 
         Future<Tile> prev = loading.put(id, worker.submit(new Loader(context, provider, id)));
@@ -201,6 +277,14 @@ public strictfp class TileManager {
         return true;
     }
 
+    /**
+     * Transitions all loading tiles that have finished loading to the list of visible tiles.
+     *
+     * @param context the context on which the tiles are going to be displayed.
+     * @return {@code true} if the internal list of visible tiles has changed.
+     * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
+     * @throws InterruptedException if the operation has been interrupted.
+     */
     private boolean mgmtMoveLoaded(RenderContext context) throws ExecutionException, InterruptedException {
 
         boolean         changed = false;
@@ -224,6 +308,14 @@ public strictfp class TileManager {
         return changed;
     }
 
+    /**
+     * Remove all out-of-view invisible tiles that are currently loaded.
+     *
+     * @param context the context on which the tiles are going to be displayed.
+     * @return {@code true} if the internal list of visible tiles has changed.
+     * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
+     * @throws InterruptedException if the operation has been interrupted.
+     */
     private boolean mgmtRemoveInvisible(RenderContext context, TilingScheme scheme, TileRect common)
             throws ExecutionException, InterruptedException {
 
@@ -266,6 +358,13 @@ public strictfp class TileManager {
         return changed;
     }
 
+    /**
+     * Remove all occluded tiles that are currently loaded.
+     *
+     * @param context the context on which the tiles are going to be displayed.
+     * @param scheme  the {@code TilingScheme} that is used for the tiles.
+     * @param common  the rectangle describing the viewport, i.e. the visible tiles.
+     */
     private void mgmtRemoveOccluded(RenderContext context, TilingScheme scheme, TileRect common) {
         Set<TileId> remove  = new HashSet<>();
         Set<TileId> visible = this.visible.keySet();
@@ -282,11 +381,21 @@ public strictfp class TileManager {
         visible.removeAll(remove);
     }
 
+    /**
+     * Rebuilds the pre-built visible tile-bucket-list.
+     */
     private void mgmtRebuild() {
         prebuilt.clear();
         visible.values().stream().filter(x -> x != null).sorted(CMP_TILE).forEach(prebuilt::add);
     }
 
+    /**
+     * Clean-up cancelled loading tiles.
+     *
+     * @param context the context on which the tiles are going to be displayed.
+     * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
+     * @throws InterruptedException if the operation has been interrupted.
+     */
     private void mgmtCleanupCancelled(RenderContext context) throws ExecutionException, InterruptedException {
         Iterator<Future<Tile>> it = cancelling.iterator();
 
@@ -301,6 +410,12 @@ public strictfp class TileManager {
         }
     }
 
+    /**
+     * Renders the visible tiles.
+     *
+     * @param context the context on which the tiles are going to be displayed.
+     * @param view    the view with which the tiles are going to be displayed.
+     */
     public void display(RenderContext context, OrthographicView view) {
         GL2ES2 gl         = context.getDrawable().getGL().getGL2ES2();
         Rect2d viewbounds = view.getViewportBounds();
@@ -331,12 +446,22 @@ public strictfp class TileManager {
         context.ShaderState.unbind(gl);
     }
 
-    private strictfp static class Loader implements Callable<Tile> {
+    /**
+     * Loader-task for asynchronous tile loading.
+     */
+    private static class Loader implements Callable<Tile> {
 
         private RenderContext context;
         private TileProvider  provider;
         private TileId        id;
 
+        /**
+         * Constructs a new loader-task.
+         *
+         * @param context  the context on which the tile is going to be displayed.
+         * @param provider the provider providing the tile.
+         * @param id       the id of the tile.
+         */
         private Loader(RenderContext context, TileProvider provider, TileId id) {
             this.context  = context;
             this.provider = provider;
@@ -355,6 +480,9 @@ public strictfp class TileManager {
         }
     }
 
+    /**
+     * Comparator to compare tiles by the z-component of their id.
+     */
     private static class TileComparator implements Comparator<Tile> {
 
         @Override
@@ -366,6 +494,9 @@ public strictfp class TileManager {
         }
     }
 
+    /**
+     * Change-listener implementation to handle changing tiles.
+     */
     private class TileChangeListenerImpl implements TileProvider.TileChangeListener {
 
         @Override
@@ -379,6 +510,9 @@ public strictfp class TileManager {
         }
     }
 
+    /**
+     * Task to clean-up tiles.
+     */
     private class TileCleanupTask implements RenderTask<Void> {
         private final ArrayList<Future<Tile>> cancelling;
 

@@ -13,6 +13,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 
+/**
+ * Layered and tiled map.
+ *
+ * @author Maximilian Luz
+ */
 public class LayeredTileMap implements TileLayerProvider {
 
     private TilingScheme scheme;
@@ -28,6 +33,11 @@ public class LayeredTileMap implements TileLayerProvider {
     private List<LayerChangeListener>                 listeners;
 
 
+    /**
+     * Constructs a new {@code LayeredTileMap}.
+     *
+     * @param scheme the tiling-scheme to use for this map.
+     */
     public LayeredTileMap(TilingScheme scheme) {
         this.scheme     = scheme;
         this.projection = scheme.getProjection();
@@ -65,6 +75,12 @@ public class LayeredTileMap implements TileLayerProvider {
     }
 
 
+    /**
+     * Adds the given {@code LayerDefinition} and associates it with the given name.
+     *
+     * @param def the layer-definition to add.
+     * @return the layer-definition previously associated with the name of the provided definition.
+     */
     public LayerDefinition addLayer(LayerDefinition def) {
         Layer layer = new Layer(def.getName(), def.getIndex(), def.getMinimumZoomLevel(), def.getMaximumZoomLevel(),
                                 def.getSource());
@@ -89,6 +105,12 @@ public class LayeredTileMap implements TileLayerProvider {
                                            old.getMaximumZoomLevel(), old.getSource());
     }
 
+    /**
+     * Remove the {@code LayerDefinition} associated with the given name.
+     *
+     * @param name the name for which the {@code LayerDefinition} should be removed.
+     * @return the removed {@code LayerDefinition} or {@code null} if no definition has been removed.
+     */
     public LayerDefinition removeLayer(String name) {
         Layer layer = layers.remove(name);
 
@@ -111,10 +133,23 @@ public class LayeredTileMap implements TileLayerProvider {
     }
 
 
+    /**
+     * Associate the given generator with the given source-type.
+     *
+     * @param source    the source-type to associate the generator with.
+     * @param generator the generator to be associated with the given source.
+     * @return the generator previously associated with the given source-type.
+     */
     public TileLayerGenerator putGenerator(Class<? extends LayerSource> source, TileLayerGenerator generator) {
         return generators.put(source, generator);
     }
 
+    /**
+     * Remove the generator associated with the given source-type.
+     *
+     * @param source the source-type for which the generator should be removed.
+     * @return the generator that has been removed or {@code null} if no generator has been removed.
+     */
     public TileLayerGenerator removeGenerator(Class<? extends LayerSource> source) {
         return generators.remove(source);
     }
@@ -182,6 +217,9 @@ public class LayeredTileMap implements TileLayerProvider {
     }
 
 
+    /**
+     * Update the boudns of this map.
+     */
     private void updateBounds() {
         Rect2d max = null;
 
@@ -203,6 +241,9 @@ public class LayeredTileMap implements TileLayerProvider {
     }
 
 
+    /**
+     * Implementation of the change listener for {@code LayerSource}es.
+     */
     private class LayerSourceChangeListenerImpl implements LayerSource.LayerSourceChangeListener {
 
         @Override
@@ -232,6 +273,10 @@ public class LayeredTileMap implements TileLayerProvider {
         }
     }
 
+
+    /**
+     * Implementation of the state-change listener for {@code Layer}s.
+     */
     private class LayerStateChangeListenerImpl implements Layer.LayerStateChangeListener {
         @Override
         public void layerStateChanged(String name) {

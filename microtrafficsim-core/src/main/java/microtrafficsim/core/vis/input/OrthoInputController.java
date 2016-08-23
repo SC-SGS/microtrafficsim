@@ -9,6 +9,11 @@ import microtrafficsim.math.Vec3d;
 import java.util.HashMap;
 
 
+/**
+ * Input controller for an orthographic view.
+ *
+ * @author Maximilian Luz
+ */
 public class OrthoInputController implements MouseListener, KeyController {
 
     private OrthographicView view;
@@ -19,6 +24,12 @@ public class OrthoInputController implements MouseListener, KeyController {
     private HashMap<Short, KeyCommand> cmdReleased;
 
 
+    /**
+     * Constructs a new {@code OrthoInputController}.
+     *
+     * @param view           the view this controller should control.
+     * @param zoomMultiplier the multiplier used for zoom-input.
+     */
     public OrthoInputController(OrthographicView view, double zoomMultiplier) {
         this.view        = view;
         this.zoomFactor  = zoomMultiplier;
@@ -26,10 +37,20 @@ public class OrthoInputController implements MouseListener, KeyController {
         this.cmdReleased = new HashMap<>();
     }
 
+    /**
+     * Returns the current zoom-factor.
+     *
+     * @return the current zoom-factor.
+     */
     public double getZoomFactor() {
         return zoomFactor;
     }
 
+    /**
+     * Sets the current zoom-factor.
+     *
+     * @param zoomFactor the new zoom-factor.
+     */
     public void setZoomFactor(double zoomFactor) {
         this.zoomFactor = zoomFactor;
     }

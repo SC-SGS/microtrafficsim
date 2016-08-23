@@ -38,6 +38,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 
+/**
+ * Provider for pre-rendered (gpu-cached) tiles.
+ *
+ * @author Maximilian Luz
+ */
 public class PreRenderedTileProvider implements TileProvider {
 
     // TODO: reload only layer on layer-change, instead of full tile
@@ -71,11 +76,22 @@ public class PreRenderedTileProvider implements TileProvider {
     private TileBufferPool pool;
     private TileQuad       quad;
 
+    /**
+     * Constructs a new {@code PreRenderedTileProvider} for the given layer-provider.
+     *
+     * @param provider the provider to be used as layer-source.
+     */
     public PreRenderedTileProvider(TileLayerProvider provider) {
         this(provider,
              getDefaultTileBufferPoolSizeFrom(new Vec2i(2560, 1440), provider.getTilingScheme().getTileSize(), 0));
     }
 
+    /**
+     * Constructs a new {@code PreRenderedTileProvider} for the given layer-provider and target cache size.
+     *
+     * @param provider             the provider to be used as layer-source.
+     * @param targetBufferPoolSize the desired cache size (in tiles) for the gpu-cached tiles.
+     */
     public PreRenderedTileProvider(TileLayerProvider provider, int targetBufferPoolSize) {
         this.provider     = provider;
         this.tileListener = new HashSet<>();
@@ -83,6 +99,14 @@ public class PreRenderedTileProvider implements TileProvider {
         this.pool = new TileBufferPool(provider.getTilingScheme().getTileSize(), targetBufferPoolSize);
     }
 
+    /**
+     * Calculates a reasonable default cache size for the given display size and tile size.
+     *
+     * @param display    the display size in pixels.
+     * @param tile       the tile size in pixels.
+     * @param additional the number of additional tiles that should be cached.
+     * @return the calculated default cache size.
+     */
     private static int getDefaultTileBufferPoolSizeFrom(Vec2i display, Vec2i tile, int additional) {
         // maximum number of tiles present on the screen + additional
         return 4 * (display.x / tile.x + 1) * (display.y / tile.y + 1) + additional;
@@ -256,12 +280,25 @@ public class PreRenderedTileProvider implements TileProvider {
         return tileListener.contains(listener);
     }
 
+
+    /**
+     * Render-target for pre-rendered tiles. Frame-buffer with color- and depth attachment.
+     */
     private static class TileBuffer {
         int fbo   = -1;
         int color = -1;
         int depth = -1;
+
         private TileBuffer() {}
 
+        /**
+         * Creates a new {@code TileBuffer}.
+         *
+         * @param context the context on which the tiles are going to be displayed.
+         * @param width   the width of a tile.
+         * @param height  the height of a tile.
+         * @return the created {@code TileBuffer}.
+         */
         static TileBuffer create(RenderContext context, int width, int height) {
             TileBuffer buffer = new TileBuffer();
 
@@ -309,6 +346,11 @@ public class PreRenderedTileProvider implements TileProvider {
             return buffer;
         }
 
+        /**
+         * Disposes this {@code TileBuffer}.
+         *
+         * @param context the context on which the tiles are displayed.
+         */
         void dispose(RenderContext context) {
             if (fbo == -1) return;
 
@@ -331,6 +373,9 @@ public class PreRenderedTileProvider implements TileProvider {
         }
     }
 
+    /**
+     * Pool to store (unused) {@code TileBuffer}s.
+     */
     private static class TileBufferPool {
         final int   width;
         final int   height;
@@ -339,12 +384,24 @@ public class PreRenderedTileProvider implements TileProvider {
 
         private LinkedList<TileBuffer> unused = new LinkedList<>();
 
+        /**
+         * Constructs a new, empty {@code TileBufferPool}.
+         *
+         * @param size           the size of the tiles.
+         * @param targetPoolSize the desired pool (cache) size.
+         */
         TileBufferPool(Vec2i size, int targetPoolSize) {
             this.width          = size.x;
             this.height         = size.y;
             this.targetPoolSize = targetPoolSize;
         }
 
+        /**
+         * Provides a {@code TileBuffer} usable to render tiles to.
+         *
+         * @param context the context on which the tiles will be rendered.
+         * @return a {@code TileBuffer} usable to render tiles to.
+         */
         TileBuffer require(RenderContext context) {
             TileBuffer buffer;
 
@@ -359,6 +416,12 @@ public class PreRenderedTileProvider implements TileProvider {
             return buffer;
         }
 
+        /**
+         * Release the given {@code TileBuffer}.
+         *
+         * @param context the context on which the tiles are rendered.
+         * @param buffer  the buffer to release.
+         */
         void release(RenderContext context, TileBuffer buffer) {
             if (actualPoolSize < targetPoolSize && unused != null) {
                 unused.push(buffer);
@@ -368,6 +431,11 @@ public class PreRenderedTileProvider implements TileProvider {
             }
         }
 
+        /**
+         * Dispose all {@code TileBuffer}s stored in this pool.
+         *
+         * @param context the context on which the tiles are rendered.
+         */
         void dispose(RenderContext context) {
             for (TileBuffer buffer : unused)
                 buffer.dispose(context);
@@ -376,6 +444,9 @@ public class PreRenderedTileProvider implements TileProvider {
         }
     }
 
+    /**
+     * Quad-geometry used to draw tiles.
+     */
     private static class TileQuad {
 
         float[] vertices = {-1.0f, -1.0f, 0.f, 0.f, 0.f, 1.0f, -1.0f, 0.f, 1.f, 0.f,
@@ -387,6 +458,11 @@ public class PreRenderedTileProvider implements TileProvider {
         private BufferStorage          vbo;
 
 
+        /**
+         * Initializes this {@code TileQuad}.
+         *
+         * @param gl the {@code GL3}-Object of the OpenGL context.
+         */
         void initialize(GL3 gl) {
             vao         = VertexArrayObject.create(gl);
             vbo         = BufferStorage.create(gl, GL3.GL_ARRAY_BUFFER);
@@ -410,11 +486,21 @@ public class PreRenderedTileProvider implements TileProvider {
             vbo.unbind(gl);
         }
 
+        /**
+         * Disposes this {@code TileQuad}.
+         *
+         * @param gl the {@code GL3}-Object of the OpenGL context.
+         */
         void dispose(GL3 gl) {
             vao.dispose(gl);
             vbo.dispose(gl);
         }
 
+        /**
+         * Renders this {@code TileQuad}:
+         *
+         * @param gl the {@code GL3}-Object of the OpenGL context.
+         */
         void draw(GL3 gl) {
             vao.bind(gl);
             gl.glDrawArrays(GL3.GL_TRIANGLE_STRIP, 0, 4);
@@ -422,6 +508,9 @@ public class PreRenderedTileProvider implements TileProvider {
         }
     }
 
+    /**
+     * Comparator to compare {@code TileLayerBucket}s by their z-index.
+     */
     private static class BucketComparator implements Comparator<TileLayerBucket> {
 
         @Override
@@ -440,6 +529,9 @@ public class PreRenderedTileProvider implements TileProvider {
         }
     }
 
+    /**
+     * Pre-rendered tiles.
+     */
     private class PreRenderedTile implements Tile {
 
         private TileId                     id;
@@ -448,6 +540,12 @@ public class PreRenderedTileProvider implements TileProvider {
         private Mat4f      transform;
         private TileBuffer buffer;
 
+        /**
+         * Constructs a new {@code PreRenderedTile}.
+         *
+         * @param id      the id of the tile.
+         * @param buckets the buckets of this tile.
+         */
         PreRenderedTile(TileId id, ArrayList<TileLayerBucket> buckets) {
             this.id        = id;
             this.buckets   = buckets;
@@ -487,6 +585,12 @@ public class PreRenderedTileProvider implements TileProvider {
             this.transform = m;
         }
 
+        /**
+         * Initializes this tile.
+         *
+         * @param context the context on which the tile will be displayed.
+         * @throws CancellationException if the initialization-process has been interrupted.
+         */
         public void initialize(RenderContext context) throws CancellationException {
             GL3 gl = context.getDrawable().getGL().getGL3();
 
@@ -554,6 +658,11 @@ public class PreRenderedTileProvider implements TileProvider {
             }
         }
 
+        /**
+         * Disposes this tile.
+         *
+         * @param context the context on which the tiles are being displayed.
+         */
         public void dispose(RenderContext context) {
             pool.release(context, buffer);
             buffer = null;
@@ -571,11 +680,20 @@ public class PreRenderedTileProvider implements TileProvider {
         }
     }
 
+    /**
+     * Cleanup-task for tiles being initialized.
+     */
     private class TileCleanupTask implements RenderTask<Void> {
 
         private final Future<Void> task;
         private final Tile tile;
 
+        /**
+         * Constructs a new {@code TileCleanupTask}:
+         *
+         * @param task the task initializing the given tile.
+         * @param tile the tile to be cleaned up.
+         */
         TileCleanupTask(Future<Void> task, Tile tile) {
             this.task = task;
             this.tile = tile;
@@ -595,6 +713,9 @@ public class PreRenderedTileProvider implements TileProvider {
         }
     }
 
+    /**
+     * Implementation of the layer provider's {@code LayerChangeListener}.
+     */
     private class LayerChangeListenerImpl implements TileLayerProvider.LayerChangeListener {
 
         @Override

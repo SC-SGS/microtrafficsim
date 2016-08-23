@@ -11,6 +11,13 @@ import java.util.List;
 import java.util.Set;
 
 
+/**
+ * Reference counted {@code Mesh} wrapper. Newly created references to an instance of the
+ * {@code ManagedShader} must call {@link ManagedMesh#require()} to make sure the
+ * reference count is updated correctly.
+ *
+ * @author Maximilian Luz
+ */
 public class ManagedMesh implements Mesh {
 
     private Mesh                            mesh;
@@ -18,6 +25,11 @@ public class ManagedMesh implements Mesh {
     private HashSet<LifeTimeObserver<Mesh>> ltObservers;
 
 
+    /**
+     * Constructs a new {@code ManagedMesh} based on the given mesh.
+     *
+     * @param mesh the {@code Mesh} to wrap in this resource-counted wrapper.
+     */
     public ManagedMesh(Mesh mesh) {
         this.mesh        = mesh;
         this.refcount    = 1;
@@ -25,6 +37,11 @@ public class ManagedMesh implements Mesh {
     }
 
 
+    /**
+     * Returns the reference count of this mesh.
+     *
+     * @return the reference count of this mesh.
+     */
     public int getReferenceCount() {
         return refcount;
     }
@@ -35,6 +52,12 @@ public class ManagedMesh implements Mesh {
     }
 
 
+    /**
+     * Increments the reference count of this {@code ManagedMesh}. This method must be called
+     * for newly created and used references to make sure the reference count is updated correctly.
+     *
+     * @return this {@code ManagedShader}.
+     */
     public synchronized ManagedMesh require() {
         if (refcount > 0) {
             refcount++;
@@ -43,6 +66,7 @@ public class ManagedMesh implements Mesh {
             return null;
         }
     }
+
 
     @Override
     public boolean initialize(RenderContext context) {
@@ -74,6 +98,12 @@ public class ManagedMesh implements Mesh {
         mesh.display(context, vao);
     }
 
+    /**
+     * Safely disposes this {@code ManagedMesh}. The wrapped OpenGL mesh will only be destroyed
+     * once no more (non-disposed) references exist.
+     *
+     * @param context the {@code RenderContext} on which the mesh has been created.
+     */
     @Override
     public synchronized boolean dispose(RenderContext context) {
         if (refcount == 1) {
@@ -88,6 +118,13 @@ public class ManagedMesh implements Mesh {
         }
     }
 
+    /**
+     * Safely disposes this {@code ManagedMesh}. The wrapped OpenGL mesh will only be destroyed if
+     * either no more (non-disposed) references exist or the {@code force} flag has been set.
+     *
+     * @param context the {@code RenderContext} on which the mesh has been created.
+     * @param force   if {@code true}, forces the disposal of the wrapped OpenGL shader.
+     */
     public synchronized boolean dispose(RenderContext context, boolean force) {
         if (force) {
             boolean status = mesh.dispose(context);
@@ -113,13 +150,13 @@ public class ManagedMesh implements Mesh {
 
 
     @Override
-    public void addLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
-        ltObservers.add(lto);
+    public boolean addLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
+        return ltObservers.add(lto);
     }
 
     @Override
-    public void removeLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
-        ltObservers.remove(lto);
+    public boolean removeLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
+        return ltObservers.remove(lto);
     }
 
     @Override

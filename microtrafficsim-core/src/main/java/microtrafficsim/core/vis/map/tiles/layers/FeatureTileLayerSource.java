@@ -12,6 +12,11 @@ import microtrafficsim.math.Rect2d;
 import java.util.ArrayList;
 
 
+/**
+ * Source for a feature tile layer.
+ *
+ * @author Maximilian Luz
+ */
 public class FeatureTileLayerSource implements LayerSource {
     private String              feature;
     private Style               style;
@@ -22,10 +27,28 @@ public class FeatureTileLayerSource implements LayerSource {
     private TileFeatureProvider.FeatureChangeListener featureListener;
 
 
+    /**
+     * Constructs a new {@code FeatureTileLayerSource} for the given feature with the given style.
+     * This call is equal to
+     * {@link
+     *  FeatureTileLayerSource#FeatureTileLayerSource(String, Style, TileFeatureProvider)
+     *  FeatureTileLayerSource(feature, style, null)
+     * }
+     *
+     * @param feature the feature for which the source should be created.
+     * @param style   the style which should be used for this source.
+     */
     public FeatureTileLayerSource(String feature, Style style) {
         this(feature, style, null);
     }
 
+    /**
+     * Constructs a new {@code FeatureTileLayerSource} for the given feature, style and provider.
+     *
+     * @param feature  the feature for which the source should be created.
+     * @param style    the style which should be used for this source.
+     * @param provider the provider providing the feature.
+     */
     public FeatureTileLayerSource(String feature, Style style, TileFeatureProvider provider) {
         this.feature  = feature;
         this.style    = style;
@@ -38,10 +61,20 @@ public class FeatureTileLayerSource implements LayerSource {
         if (provider != null) provider.addFeatureChangeListener(featureListener);
     }
 
+    /**
+     * Returns the feature-provider of this source.
+     *
+     * @return the feature-provider of this source.
+     */
     public TileFeatureProvider getFeatureProvider() {
         return provider;
     }
 
+    /**
+     * Sets the feature-provider of this source.
+     *
+     * @param provider the new feature-provider of this source.
+     */
     public void setFeatureProvider(TileFeatureProvider provider) {
         if (this.provider != null) this.provider.removeFeatureChangeListener(featureListener);
 
@@ -54,18 +87,38 @@ public class FeatureTileLayerSource implements LayerSource {
             listener.sourceChanged(this);
     }
 
+    /**
+     * Returns the feature-name of this source.
+     *
+     * @return the feature-name of this source.
+     */
     public String getFeatureName() {
         return feature;
     }
 
+    /**
+     * Returns the type of feature provided by this source.
+     *
+     * @return the type of feature provided by this source.
+     */
     public Class<? extends FeaturePrimitive> getFeatureType() {
         return provider != null ? provider.getFeatureType(feature) : null;
     }
 
+    /**
+     * Returns the style used for this source.
+     *
+     * @return the style used for this source.
+     */
     public Style getStyle() {
         return style;
     }
 
+    /**
+     * Returns the revision of this source.
+     *
+     * @return the revision of this source.
+     */
     public long getRevision() {
         return revision;
     }
@@ -121,6 +174,9 @@ public class FeatureTileLayerSource implements LayerSource {
     }
 
 
+    /**
+     * Implementation of the feature-change-listener.
+     */
     private class FeatureChangeListenerImpl implements TileFeatureProvider.FeatureChangeListener {
 
         @Override

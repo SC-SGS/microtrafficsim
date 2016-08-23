@@ -25,6 +25,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 
+/**
+ * {@code FeatureMeshGenerator} for streets.
+ *
+ * @author Maximilian Luz
+ */
 public class StreetMeshGenerator implements FeatureMeshGenerator {
 
     @Override
@@ -117,6 +122,16 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         return mesh;
     }
 
+    /**
+     * Generate the adjacency-mesh for the provided feature.
+     *
+     * @param context           the context for which the mesh should be created.
+     * @param feature           the feature from which the mesh should be created.
+     * @param joinsWhenPossible set to {@code true} if joins should be created whenever possible
+     * @param vertices          the generated list of vertices.
+     * @param indices           the generated list of indices.
+     * @throws InterruptedException if the generation-process has been interrupted.
+     */
     private void generateAdjacencyMesh(RenderContext context, TileFeature<? extends Street> feature,
                                        boolean joinsWhenPossible, ArrayList<Vertex> vertices,
                                        ArrayList<ArrayList<Integer>> indices) throws InterruptedException {
@@ -237,6 +252,15 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         indices.addAll(buckets.values());
     }
 
+    /**
+     * Generate the standard mesh for the provided feature.
+     *
+     * @param context  the context for which the mesh should be created.
+     * @param feature  the feature from which the mesh should be created.
+     * @param vertices the generated list of vertices.
+     * @param indices  the generated list of indices.
+     * @throws InterruptedException if the generation-process has been interrupted.
+     */
     private void generateStandardMesh( RenderContext context, TileFeature<? extends Street> feature,
             ArrayList<Vertex> vertices, ArrayList<ArrayList<Integer>> indices) throws InterruptedException {
         int restartIndex = context.PrimitiveRestart.getIndex();
@@ -277,6 +301,15 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
     }
 
 
+    /**
+     * Project the given {@code Coordinate} from the given rectangle to the given rectangle using the given projection.
+     *
+     * @param projection the projection to use.
+     * @param from       the source rectangle.
+     * @param to         the target rectangle.
+     * @param c          the coordinate to project.
+     * @return the projected coordinate as vector.
+     */
     private static Vec2d project(Projection projection, Rect2d from, Rect2d to, Coordinate c) {
         Vec2d p = projection.project(c);
         p.x     = ((p.x - from.xmin) / (from.xmax - from.xmin)) * (to.xmax - to.xmin) + to.xmin;
@@ -284,19 +317,40 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         return p;
     }
 
+    /**
+     * Get the adjacency property of the given style.
+     *
+     * @param style the style to get the property for.
+     * @return the boolean value of the adjacency property.
+     */
     private static boolean getPropAdjacency(Style style) {
         return style.getProperty("adjacency_primitives", false);
     }
 
+    /**
+     * Get the join property of the given style.
+     *
+     * @param style the style to get the property for.
+     * @return the boolean value of the join-property.
+     */
     private static boolean getPropJoinsWhenPossible(Style style) {
         return style.getProperty("use_joins_when_possible", false);
     }
 
 
+    /**
+     * Vertex described by coordinate and z-layer.
+     */
     private static class Vertex {
         public final Coordinate coordinate;
         public final float      layer;
 
+        /**
+         * Constructs a new {@code Vertex} with the given coordinate and layer.
+         *
+         * @param coordinate the coordinate of this vertex.
+         * @param layer      the z-layer of this vertex.
+         */
         Vertex(Coordinate coordinate, float layer) {
             this.coordinate = coordinate;
             this.layer      = layer;

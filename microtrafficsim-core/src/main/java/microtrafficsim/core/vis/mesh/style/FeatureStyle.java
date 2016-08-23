@@ -14,6 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * Style for map features.
+ *
+ * @author Maximilian Luz
+ */
 public class FeatureStyle {
 
     private Style style;
@@ -21,6 +26,11 @@ public class FeatureStyle {
     private ManagedShaderProgram         program;
     private List<UniformValueBinding<?>> uniforms;
 
+    /**
+     * Creates a new {@code FeatureStyle} based on the given style.
+     *
+     * @param style the style this {@code FeatureStyle} is based on.
+     */
     public FeatureStyle(Style style) {
         this.style    = style;
         this.program  = null;
@@ -28,6 +38,11 @@ public class FeatureStyle {
     }
 
 
+    /**
+     * Initializes this style.
+     *
+     * @param context the context to initialize this style on.
+     */
     public void initialize(RenderContext context) {
         ShaderManager       manager = context.getShaderManager();
         ShaderProgramSource psrc    = style.getShader();
@@ -74,6 +89,11 @@ public class FeatureStyle {
         uniforms = UniformValueBinding.create(style, program.getActiveUniforms());
     }
 
+    /**
+     * Disposes this style.
+     *
+     * @param context the context on which the style has been initialized.
+     */
     public void dispose(RenderContext context) {
         GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
 
@@ -83,6 +103,11 @@ public class FeatureStyle {
         uniforms = null;
     }
 
+    /**
+     * Binds this style.
+     *
+     * @param context the context on which the style has been initialized.
+     */
     public void bind(RenderContext context) {
         GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
 
@@ -90,12 +115,22 @@ public class FeatureStyle {
         uniforms.forEach(UniformValueBinding::update);
     }
 
+    /**
+     * Unbinds this style.
+     *
+     * @param context the context on which the style has been initialized.
+     */
     public void unbind(RenderContext context) {
         GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
         program.unbind(gl);
     }
 
 
+    /**
+     * Returns the shader-program used in this style.
+     *
+     * @return the shader-program used in this style.
+     */
     public ShaderProgram getShaderProgram() {
         return program;
     }
