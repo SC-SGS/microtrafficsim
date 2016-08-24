@@ -59,7 +59,7 @@ public class OSMProcessor implements Processor {
      * are the generator-indices described in the classes JavaDoc-comment.
      * <p>
      * This call is similar to {@link
-     * OSMProcessor#OSMProcessor(int, int, LongIDGenerator)
+     * OSMProcessor#OSMProcessor(int, int, OSMDataSetSanitizer.BoundaryMgmt, LongIDGenerator)
      * OSMProcessor(idxBefore, idxStreetGraph, new BasicLongIDGenerator())
      * }
      * </p>
@@ -67,9 +67,10 @@ public class OSMProcessor implements Processor {
      * @param idxBefore      the maximum generator-index of features
      *                       generated before the unification process.
      * @param idxStreetGraph the generator-index of the street-graph.
+     * @param bounds         the method used to handle map-boundaries.
      */
-    public OSMProcessor(int idxBefore, int idxStreetGraph) {
-        this(idxBefore, idxStreetGraph, new BasicLongIDGenerator());
+    public OSMProcessor(int idxBefore, int idxStreetGraph, OSMDataSetSanitizer.BoundaryMgmt bounds) {
+        this(idxBefore, idxStreetGraph, bounds, new BasicLongIDGenerator());
     }
 
     /**
@@ -88,8 +89,9 @@ public class OSMProcessor implements Processor {
      * @param idxStreetGraph the generator-index of the street-graph.
      * @param wayIdGenerator the ID-generator used for new way-IDs.
      */
-    public OSMProcessor(int idxBefore, int idxStreetGraph, LongIDGenerator wayIdGenerator) {
-        this(idxBefore, idxStreetGraph, wayIdGenerator, new OSMDataSetSanitizer(),
+    public OSMProcessor(int idxBefore, int idxStreetGraph, OSMDataSetSanitizer.BoundaryMgmt bounds,
+                        LongIDGenerator wayIdGenerator) {
+        this(idxBefore, idxStreetGraph, wayIdGenerator, new OSMDataSetSanitizer(bounds),
              new OSMStreetGraphSanitizer(idxStreetGraph, wayIdGenerator));
     }
 

@@ -31,7 +31,10 @@ import java.util.Collection;
 public class OSMDataSetSanitizer implements Processor {
     private static Logger logger = LoggerFactory.getLogger(OSMDataSetSanitizer.class);
 
+    public enum BoundaryMgmt { NONE, RE_CALCULATE, CLIP }
+
     private OSMSanitizerValues values;
+    private BoundaryMgmt       bounds;
 
 
     /**
@@ -40,12 +43,12 @@ public class OSMDataSetSanitizer implements Processor {
      * <p>
      * This does the same as calling
      * {@link
-     * OSMDataSetSanitizer#OSMDataSetSanitizer(OSMSanitizerValues)
+     * OSMDataSetSanitizer#OSMDataSetSanitizer(BoundaryMgmt, OSMSanitizerValues)
      * OSMDataSetSanitizer(new DefaultOSMSanitizerValues())
      * }
      */
-    public OSMDataSetSanitizer() {
-        this(new DefaultOSMSanitizerValues());
+    public OSMDataSetSanitizer(BoundaryMgmt bounds) {
+        this(bounds, new DefaultOSMSanitizerValues());
     }
 
     /**
@@ -55,7 +58,8 @@ public class OSMDataSetSanitizer implements Processor {
      * @param values the {@code OSMSanitizerValues} specifying the values to be
      *               used in the sanitizing-process (e.g. default-value).
      */
-    public OSMDataSetSanitizer(OSMSanitizerValues values) {
+    public OSMDataSetSanitizer(BoundaryMgmt bounds, OSMSanitizerValues values) {
+        this.bounds = bounds;
         this.values = values;
     }
 
@@ -64,6 +68,7 @@ public class OSMDataSetSanitizer implements Processor {
     public void execute(Parser parser, DataSet dataset) {
         logger.info("executing sanitizer");
 
+        handleBounds(dataset);
         sanitizeWays(dataset);
         sanitizeRestrictionRelations(dataset);
 
@@ -78,6 +83,48 @@ public class OSMDataSetSanitizer implements Processor {
         for (Class<? extends RelationBase> type : dataset.relations.getRelationTypes()) {
             logger.debug("\t" + type.getSimpleName() + ": " + dataset.relations.getAll(type).size());
         }
+    }
+
+
+    /**
+     * Manages geometry on the boundaries, depending on the specified method.
+     *
+     * @param dataset the {@code DataSet} on which this method is going to be executed.
+     */
+    private void handleBounds(DataSet dataset) {
+        switch (bounds) {
+            case RE_CALCULATE:
+                recalculateBounds(dataset);
+                break;
+
+            case CLIP:
+                clipBounds(dataset);
+                break;
+
+            default:
+            case NONE:
+                break;
+        }
+    }
+
+    /**
+     * Re-calculates the bounds.
+     *
+     * @param dataset the {@code DataSet} on which this method is going to be executed.
+     */
+    private void recalculateBounds(DataSet dataset) {
+        System.err.println("NOT IMPLEMENTED YET: re-calculate bounds");
+        // TODO
+    }
+
+    /**
+     * Clips the bounds.
+     *
+     * @param dataset the {@code DataSet} on which this method is going to be executed.
+     */
+    private void clipBounds(DataSet dataset) {
+        System.err.println("NOT IMPLEMENTED YET: clip bounds");
+        // TODO
     }
 
 

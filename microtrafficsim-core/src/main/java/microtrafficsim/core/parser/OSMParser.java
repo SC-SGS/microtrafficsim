@@ -6,6 +6,7 @@ import microtrafficsim.core.map.Feature;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
+import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
 import microtrafficsim.osm.parser.Parser;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
@@ -51,7 +52,7 @@ public class OSMParser {
      */
     public static OSMParser create(Config config) {
         // create parser
-        OSMProcessor processor = new OSMProcessor(config.genindexUnify, config.genindexStreetGraph);
+        OSMProcessor processor = new OSMProcessor(config.genindexUnify, config.genindexStreetGraph, config.bounds);
         Parser       parser    = new Parser(processor);
 
         // add features
@@ -110,20 +111,22 @@ public class OSMParser {
      * Configuration for the {@code OSMParser}.
      */
     public static class Config {
-        private int genindexUnify;
-        private int genindexStreetGraph;
+        private int                              genindexUnify;
+        private int                              genindexStreetGraph;
+        private OSMDataSetSanitizer.BoundaryMgmt bounds;
 
-        private StreetGraphFeatureDefinition streetgraph;
+        private StreetGraphFeatureDefinition         streetgraph;
         private Map<String, MapFeatureDefinition<?>> features;
 
         private Map<Class<? extends Component>, ComponentFactory<? extends Component, Node>> nodeInitializers;
-        private Map<Class<? extends Component>, ComponentFactory<? extends Component, Way>> wayInitializers;
-        private Map<String, RelationFactory> relationInitializers;
+        private Map<Class<? extends Component>, ComponentFactory<? extends Component, Way>>  wayInitializers;
+        private Map<String, RelationFactory>                                                 relationInitializers;
 
         /**
          * Constructs a new (empty) configuration.
          */
         public Config() {
+            this.bounds               = OSMDataSetSanitizer.BoundaryMgmt.NONE;
             this.streetgraph          = null;
             this.features             = new HashMap<>();
             this.nodeInitializers     = new HashMap<>();
@@ -139,6 +142,7 @@ public class OSMParser {
         public Config(Config other) {
             this.genindexUnify        = other.genindexUnify;
             this.genindexStreetGraph  = other.genindexStreetGraph;
+            this.bounds               = other.bounds;
             this.streetgraph          = other.streetgraph;
             this.features             = new HashMap<>(other.features);
             this.nodeInitializers     = new HashMap<>(other.nodeInitializers);
@@ -177,6 +181,17 @@ public class OSMParser {
          */
         public Config setGeneratorIndexStreetGraph(int genindexStreetGraph) {
             this.genindexStreetGraph = genindexStreetGraph;
+            return this;
+        }
+
+        /**
+         * Sets the boundary-management method used to handle boundaries.
+         *
+         * @param bounds the boundary management method.
+         * @return this configuration.
+         */
+        public Config setBoundaryManagementMethod(OSMDataSetSanitizer.BoundaryMgmt bounds) {
+            this.bounds = bounds;
             return this;
         }
 
