@@ -87,6 +87,7 @@ public class OSMProcessor implements Processor {
      * @param idxBefore      the maximum generator-index of features
      *                       generated before the unification process.
      * @param idxStreetGraph the generator-index of the street-graph.
+     * @param bounds         the method used to handle map-boundaries.
      * @param wayIdGenerator the ID-generator used for new way-IDs.
      */
     public OSMProcessor(int idxBefore, int idxStreetGraph, OSMDataSetSanitizer.BoundaryMgmt bounds,

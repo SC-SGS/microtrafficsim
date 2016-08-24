@@ -49,7 +49,7 @@ public class TileGridOverlay implements Overlay {
     /**
      * Constructs a new {@code TileGridOverlay} for the given {@code TilingScheme}.
      *
-     * @param scheme the {@¢ode TilingScheme} for which this overlay should be created.
+     * @param scheme the {@code TilingScheme} for which this overlay should be created.
      */
     public TileGridOverlay(TilingScheme scheme) {
         this.enabled = true;

@@ -30,7 +30,7 @@ public interface View {
      * Set the viewport size.
      *
      * @param x the new viewport width.
-     * @param x the new viewport height.
+     * @param y the new viewport height.
      */
     void resize(int x, int y);
 

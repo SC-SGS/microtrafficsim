@@ -44,8 +44,10 @@ public class OSMDataSetSanitizer implements Processor {
      * This does the same as calling
      * {@link
      * OSMDataSetSanitizer#OSMDataSetSanitizer(BoundaryMgmt, OSMSanitizerValues)
-     * OSMDataSetSanitizer(new DefaultOSMSanitizerValues())
+     * OSMDataSetSanitizer(bounds, new DefaultOSMSanitizerValues())
      * }
+     *
+     * @param bounds the method used for boundary management.
      */
     public OSMDataSetSanitizer(BoundaryMgmt bounds) {
         this(bounds, new DefaultOSMSanitizerValues());
@@ -55,6 +57,7 @@ public class OSMDataSetSanitizer implements Processor {
      * Creates a new {@code OSMDataSetSanitizer} using the given {@code
      * OSMSanitizerValues}.
      *
+     * @param bounds the method used for boundary management.
      * @param values the {@code OSMSanitizerValues} specifying the values to be
      *               used in the sanitizing-process (e.g. default-value).
      */

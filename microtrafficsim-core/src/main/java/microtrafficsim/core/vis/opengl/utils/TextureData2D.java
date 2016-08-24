@@ -62,7 +62,7 @@ public class TextureData2D {
      * @param in the {@code InputStream} from which the Texture Data should be
      *           loaded.
      * @return the loaded Texture Data.
-     * @throws IOException
+     * @throws IOException if any file-related exception occurs.
      */
     public static TextureData2D load(InputStream in) throws IOException {
         BufferedImage image = ImageIO.read(in);

@@ -71,7 +71,7 @@ public class MeshPool<K> {
      * Removes (a single instance of) the given mesh.
      *
      * @param mesh the mesh to remove.
-     * @return {@¢ode true} if the underlying map changed.
+     * @return {@code true} if the underlying map changed.
      */
     public synchronized boolean removeMesh(ManagedMesh mesh) {
         mesh.removeLifeTimeObserver(lto);

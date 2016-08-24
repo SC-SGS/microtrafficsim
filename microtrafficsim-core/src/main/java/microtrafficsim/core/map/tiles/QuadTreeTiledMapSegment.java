@@ -208,7 +208,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
 
         /**
          * Constructs a new, default-initialized {@code Generator}. This call is equivalent to
-         * {@link Generator#Generator(boolean) Generator(true)}
+         * {@link #Generator(boolean) Generator(true)}
          */
         public Generator() {
             this(true);

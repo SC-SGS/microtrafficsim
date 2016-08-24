@@ -23,28 +23,28 @@ public interface Overlay {
     /**
      * Initialize this overlay.
      *
-     * @param context the {@¢ode RenderContext} with which this overlay will be displayed.
+     * @param context the {@code RenderContext} with which this overlay will be displayed.
      */
     void init(RenderContext context);
 
     /**
      * Dispose this overlay.
      *
-     * @param context the {@¢ode RenderContext} with which this overlay is being displayed.
+     * @param context the {@code RenderContext} with which this overlay is being displayed.
      */
     void dispose(RenderContext context);
 
     /**
      * Resize this overlay.
      *
-     * @param context the {@¢ode RenderContext} with which this overlay is being displayed.
+     * @param context the {@code RenderContext} with which this overlay is being displayed.
      */
     void resize(RenderContext context);
 
     /**
      * Display this overlay:
      *
-     * @param context the {@¢ode RenderContext} with which this overlay is being displayed.
+     * @param context the {@code RenderContext} with which this overlay is being displayed.
      * @param map     the render-buffer in which the displayed map is being stored.
      */
     void display(RenderContext context, MapBuffer map);

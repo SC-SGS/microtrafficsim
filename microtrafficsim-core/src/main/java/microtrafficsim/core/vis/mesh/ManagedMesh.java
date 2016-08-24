@@ -103,6 +103,7 @@ public class ManagedMesh implements Mesh {
      * once no more (non-disposed) references exist.
      *
      * @param context the {@code RenderContext} on which the mesh has been created.
+     * @return {@code true} if the mesh has truly been disposed.
      */
     @Override
     public synchronized boolean dispose(RenderContext context) {
@@ -124,6 +125,7 @@ public class ManagedMesh implements Mesh {
      *
      * @param context the {@code RenderContext} on which the mesh has been created.
      * @param force   if {@code true}, forces the disposal of the wrapped OpenGL shader.
+     * @return {@code true} if the mesh has truly been disposed.
      */
     public synchronized boolean dispose(RenderContext context, boolean force) {
         if (force) {
