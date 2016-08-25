@@ -1,5 +1,6 @@
 package microtrafficsim.core.parser.processing.sanitizer;
 
+import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.features.streets.info.LaneInfo;
 import microtrafficsim.osm.parser.features.streets.info.MaxspeedInfo;
 import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
@@ -46,6 +47,7 @@ public class OSMDataSetSanitizer implements Processor {
      * OSMDataSetSanitizer#OSMDataSetSanitizer(BoundaryMgmt, OSMSanitizerValues)
      * OSMDataSetSanitizer(bounds, new DefaultOSMSanitizerValues())
      * }
+     * </p>
      *
      * @param bounds the method used for boundary management.
      */
@@ -101,7 +103,7 @@ public class OSMDataSetSanitizer implements Processor {
                 break;
 
             case CLIP:
-                clipBounds(dataset);
+                clipToBounds(dataset);
                 break;
 
             default:
@@ -111,23 +113,34 @@ public class OSMDataSetSanitizer implements Processor {
     }
 
     /**
-     * Re-calculates the bounds.
+     * Re-calculates the bounds based on the data-set.
      *
      * @param dataset the {@code DataSet} on which this method is going to be executed.
      */
     private void recalculateBounds(DataSet dataset) {
-        System.err.println("NOT IMPLEMENTED YET: re-calculate bounds");
-        // TODO
+        for (NodeEntity n : dataset.nodes.values()) {
+            if (n.lat < dataset.bounds.minlat)
+                dataset.bounds.minlat = n.lat;
+            else if (n.lat > dataset.bounds.maxlat)
+                dataset.bounds.maxlat = n.lat;
+
+            if (n.lon < dataset.bounds.minlon)
+                dataset.bounds.minlon = n.lon;
+            else if (n.lon > dataset.bounds.maxlon)
+                dataset.bounds.maxlon = n.lon;
+        }
     }
 
     /**
-     * Clips the bounds.
+     * Clips the data-set to the bounds.
      *
      * @param dataset the {@code DataSet} on which this method is going to be executed.
      */
-    private void clipBounds(DataSet dataset) {
-        System.err.println("NOT IMPLEMENTED YET: clip bounds");
-        // TODO
+    private void clipToBounds(DataSet dataset) {
+        System.err.println("NOT IMPLEMENTED YET: " + getClass().getCanonicalName() + ".clipToBounds(DataSet)");
+        // PROBLEMS:
+        //  - id-generation for ways     --> problems with anything referencing ways (relations)
+        //  - splitting/removing of ways --> problems with anything referencing ways (relations)
     }
 
 
