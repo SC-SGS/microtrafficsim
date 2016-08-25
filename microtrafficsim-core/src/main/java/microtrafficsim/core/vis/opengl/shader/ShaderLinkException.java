@@ -2,11 +2,11 @@ package microtrafficsim.core.vis.opengl.shader;
 
 
 /**
- * Error indicating that a failure occurred during the link-operation of a {@code ShaderProgram}.
+ * Exception indicating that a failure occurred during the link-operation of a {@code ShaderProgram}.
  *
  * @author Maximilian Luz
  */
-public class ShaderLinkError extends Error {
+public class ShaderLinkException extends Exception {
     private static final long serialVersionUID = -7727205142213678052L;
 
     private String name;
@@ -14,12 +14,12 @@ public class ShaderLinkError extends Error {
 
 
     /**
-     * Constructs a new {@code ShaderLinkError} with the given program name and error-log.
+     * Constructs a new {@code ShaderLinkException} with the given program name and error-log.
      *
      * @param name the name of the {@code ShaderProgram} that failed to link.
      * @param log  the error-log describing the failure.
      */
-    public ShaderLinkError(String name, String log) {
+    public ShaderLinkException(String name, String log) {
         super("Error linking shader-program '" + name + "'");
         this.name = name;
         this.log  = log;

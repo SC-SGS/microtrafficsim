@@ -3,10 +3,7 @@ package microtrafficsim.core.vis.mesh.style;
 import com.jogamp.opengl.GL2ES2;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.context.ShaderManager;
-import microtrafficsim.core.vis.opengl.shader.ManagedShader;
-import microtrafficsim.core.vis.opengl.shader.ManagedShaderProgram;
-import microtrafficsim.core.vis.opengl.shader.Shader;
-import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
+import microtrafficsim.core.vis.opengl.shader.*;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 
@@ -42,8 +39,9 @@ public class FeatureStyle {
      * Initializes this style.
      *
      * @param context the context to initialize this style on.
+     * @throws ShaderLinkException if the shader-program of this style fails to link.
      */
-    public void initialize(RenderContext context) {
+    public void initialize(RenderContext context) throws ShaderLinkException {
         ShaderManager       manager = context.getShaderManager();
         ShaderProgramSource psrc    = style.getShader();
 

@@ -120,8 +120,9 @@ public strictfp class TileManager {
      * Initialize this manager.
      *
      * @param context the context on which this manager should be initialized.
+     * @throws Exception if any exception occurs during initialization.
      */
-    public void initialize(RenderContext context) {
+    public void initialize(RenderContext context) throws Exception {
         provider.initialize(context);
     }
 
@@ -129,8 +130,9 @@ public strictfp class TileManager {
      * Dispose this manager.
      *
      * @param context the context on which this manager has been initialized.
+     * @throws Exception if any exception occurs during disposal.
      */
-    public void dispose(RenderContext context) {
+    public void dispose(RenderContext context) throws Exception {
         // cancel tiles which are currently beeing loaded
         for (Future<Tile> future : loading.values()) {
             future.cancel(true);
@@ -138,7 +140,9 @@ public strictfp class TileManager {
         }
 
         // dispose layers that have already been loaded
-        visible.values().stream().filter(t -> t != null).forEach(t -> provider.release(context, t));
+        for (Tile t : visible.values())
+            if (t != null)
+                provider.release(context, t);
 
         loading.clear();
         visible.clear();
@@ -158,9 +162,9 @@ public strictfp class TileManager {
      * @param observer the view for which the tiles should be updated.
      * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
      * @throws InterruptedException if the update-operation has been interrupted.
+     * @throws Exception            if any other exception occurs.
      */
-    public void update(RenderContext context, OrthographicView observer)
-            throws ExecutionException, InterruptedException {
+    public void update(RenderContext context, OrthographicView observer) throws Exception {
 
         TilingScheme scheme = provider.getTilingScheme();
 
@@ -199,8 +203,9 @@ public strictfp class TileManager {
      * @return {@code true} if the internal list of visible tiles has changed.
      * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
      * @throws InterruptedException if the reload-operation has been interrupted.
+     * @throws Exception            if any other exception occurs.
      */
-    private boolean mgmtReload(RenderContext context, TileRect common) throws ExecutionException, InterruptedException {
+    private boolean mgmtReload(RenderContext context, TileRect common) throws Exception {
 
         if (common == null) return false;
         boolean change = false;
@@ -256,8 +261,9 @@ public strictfp class TileManager {
      * @return {@code true} if the internal list of visible tiles has changed.
      * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
      * @throws InterruptedException if the operation has been interrupted.
+     * @throws Exception            if any other exception occurs.
      */
-    private boolean mgmtAsyncReload(RenderContext context, TileId id) throws ExecutionException, InterruptedException {
+    private boolean mgmtAsyncReload(RenderContext context, TileId id) throws Exception {
 
         Future<Tile> prev = loading.put(id, worker.submit(new Loader(context, provider, id)));
         if (prev == null) return false;
@@ -284,8 +290,9 @@ public strictfp class TileManager {
      * @return {@code true} if the internal list of visible tiles has changed.
      * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
      * @throws InterruptedException if the operation has been interrupted.
+     * @throws Exception            if any other exception occurs.
      */
-    private boolean mgmtMoveLoaded(RenderContext context) throws ExecutionException, InterruptedException {
+    private boolean mgmtMoveLoaded(RenderContext context) throws Exception {
 
         boolean         changed = false;
         HashSet<TileId> remove  = new HashSet<>();
@@ -315,10 +322,9 @@ public strictfp class TileManager {
      * @return {@code true} if the internal list of visible tiles has changed.
      * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
      * @throws InterruptedException if the operation has been interrupted.
+     * @throws Exception            if any other exception occurs.
      */
-    private boolean mgmtRemoveInvisible(RenderContext context, TilingScheme scheme, TileRect common)
-            throws ExecutionException, InterruptedException {
-
+    private boolean mgmtRemoveInvisible(RenderContext context, TilingScheme scheme, TileRect common) throws Exception {
         boolean         changed = false;
         HashSet<TileId> remove  = new HashSet<>();
 
@@ -364,8 +370,9 @@ public strictfp class TileManager {
      * @param context the context on which the tiles are going to be displayed.
      * @param scheme  the {@code TilingScheme} that is used for the tiles.
      * @param common  the rectangle describing the viewport, i.e. the visible tiles.
+     * @throws Exception if an exception occures during the tile-release operation.
      */
-    private void mgmtRemoveOccluded(RenderContext context, TilingScheme scheme, TileRect common) {
+    private void mgmtRemoveOccluded(RenderContext context, TilingScheme scheme, TileRect common) throws Exception {
         Set<TileId> remove  = new HashSet<>();
         Set<TileId> visible = this.visible.keySet();
 
@@ -395,8 +402,9 @@ public strictfp class TileManager {
      * @param context the context on which the tiles are going to be displayed.
      * @throws ExecutionException   if an {@code ExecutionException} was thrown by the loading-task of a tile.
      * @throws InterruptedException if the operation has been interrupted.
+     * @throws Exception            if any other exception occurs.
      */
-    private void mgmtCleanupCancelled(RenderContext context) throws ExecutionException, InterruptedException {
+    private void mgmtCleanupCancelled(RenderContext context) throws Exception {
         Iterator<Future<Tile>> it = cancelling.iterator();
 
         while (it.hasNext()) {
@@ -469,7 +477,7 @@ public strictfp class TileManager {
         }
 
         @Override
-        public Tile call() throws CancellationException, ExecutionException {
+        public Tile call() throws Exception {
             Tile tile;
             try {
                 tile = provider.require(context, id);

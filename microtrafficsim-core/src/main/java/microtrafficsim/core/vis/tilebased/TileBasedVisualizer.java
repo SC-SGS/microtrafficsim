@@ -17,6 +17,7 @@ import microtrafficsim.core.vis.map.tiles.TileManager;
 import microtrafficsim.core.vis.map.tiles.TileProvider;
 import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.core.vis.opengl.shader.Shader;
+import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
@@ -186,7 +187,7 @@ public class TileBasedVisualizer implements Visualizer {
 
 
     @Override
-    public void init(RenderContext context) {
+    public void init(RenderContext context) throws Exception {
         if (DEBUG_CORE_VIS) {
             DebugUtils.setDebugGL(context.getDrawable());
             context.getDrawable().getGL().setSwapInterval(0);
@@ -215,7 +216,7 @@ public class TileBasedVisualizer implements Visualizer {
     }
 
     @Override
-    public void dispose(RenderContext context) {
+    public void dispose(RenderContext context) throws Exception {
         // dispose the framebuffer
         disposeFrameBuffer(context);
 
@@ -230,7 +231,7 @@ public class TileBasedVisualizer implements Visualizer {
      *
      * @param context the context on which this visualizer operates.
      */
-    private void initFrameBuffer(RenderContext context) {
+    private void initFrameBuffer(RenderContext context) throws Exception {
         GLAutoDrawable drawable = context.getDrawable();
 
         GL3       gl     = drawable.getGL().getGL3();
@@ -347,8 +348,6 @@ public class TileBasedVisualizer implements Visualizer {
     @Override
     public void display(RenderContext context) throws Exception {
         GL3 gl     = context.getDrawable().getGL().getGL3();
-        int width  = context.getDrawable().getSurfaceWidth();
-        int height = context.getDrawable().getSurfaceHeight();
 
         context.DepthTest.enable(gl);
         context.DepthTest.setFunction(gl, GL3.GL_ALWAYS, true);
@@ -397,7 +396,7 @@ public class TileBasedVisualizer implements Visualizer {
     }
 
     @Override
-    public void reshape(RenderContext context, int x, int y, int width, int height) {
+    public void reshape(RenderContext context, int x, int y, int width, int height) throws Exception {
         view.resize(width, height);
         resizeFrameBuffer(context, width, height);
 

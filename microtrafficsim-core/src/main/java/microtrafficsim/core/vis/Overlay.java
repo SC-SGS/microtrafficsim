@@ -24,40 +24,44 @@ public interface Overlay {
      * Initialize this overlay.
      *
      * @param context the {@code RenderContext} with which this overlay will be displayed.
+     * @throws Exception if any exception occurs during initializing.
      */
-    void init(RenderContext context);
+    void init(RenderContext context) throws Exception;
 
     /**
      * Dispose this overlay.
      *
      * @param context the {@code RenderContext} with which this overlay is being displayed.
+     * @throws Exception if any exception occurs during disposing.
      */
-    void dispose(RenderContext context);
+    void dispose(RenderContext context) throws Exception;
 
     /**
      * Resize this overlay.
      *
      * @param context the {@code RenderContext} with which this overlay is being displayed.
+     * @throws Exception if any exception occurs during resizing.
      */
-    void resize(RenderContext context);
+    void resize(RenderContext context) throws Exception;
 
     /**
      * Display this overlay:
      *
      * @param context the {@code RenderContext} with which this overlay is being displayed.
      * @param map     the render-buffer in which the displayed map is being stored.
+     * @throws Exception if any exception occurs during the display-operation.
      */
-    void display(RenderContext context, MapBuffer map);
+    void display(RenderContext context, MapBuffer map) throws Exception;
 
     /**
      * Enable this overlay. Disabled overlays should not be displayed and receive user events.
      */
-    void    enable();
+    void enable();
 
     /**
      * Disable this overlay. Disabled overlays should not be displayed and receive user events.
      */
-    void    disable();
+    void disable();
 
     /**
      * Checks if this overlay is enabled.

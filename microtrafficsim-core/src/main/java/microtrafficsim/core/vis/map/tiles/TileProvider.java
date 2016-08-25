@@ -69,15 +69,17 @@ public interface TileProvider {
      * Initializes this provider.
      *
      * @param context the context on which this provider should be initialized.
+     * @throws Exception if any exception occurs during initialization
      */
-    void initialize(RenderContext context);
+    void initialize(RenderContext context) throws Exception;
 
     /**
      * Disposes this provider.
      *
      * @param context the context on which this provider has been initialized.
+     * @throws Exception if any exception occurs during disposal.
      */
-    void dispose(RenderContext context);
+    void dispose(RenderContext context) throws Exception;
 
     /**
      * Prepares and returns the required tile.
@@ -87,16 +89,18 @@ public interface TileProvider {
      * @return the provided tile.
      * @throws InterruptedException if the loading thread has been interrupted.
      * @throws ExecutionException   if any exception occurs during the load-operation.
+     * @throws Exception            if any exception occurs outside the load-operation.
      */
-    Tile require(RenderContext context, TileId tile) throws InterruptedException, ExecutionException;
+    Tile require(RenderContext context, TileId tile) throws Exception;
 
     /**
      * Releases the provided tile.
      *
      * @param context the context on which the tile has been loaded.
      * @param tile    the that should be released.
+     * @throws Exception if any exception occurs during the release-operation.
      */
-    void release(RenderContext context, Tile tile);
+    void release(RenderContext context, Tile tile) throws Exception;
 
     /**
      * Callback-function to set up OpenGL state before rendering tiles provided by this provider.

@@ -34,15 +34,17 @@ public abstract class TileLayer {
      * Initializes this tile-layer.
      *
      * @param context the context on which this layer should be displayed.
+     * @throws Exception if any exception occurs during initialization.
      */
-    public abstract void initialize(RenderContext context);
+    public abstract void initialize(RenderContext context) throws Exception;
 
     /**
      * Disposes this tile-layer.
      *
      * @param context the context on which this layer has been initialized.
+     * @throws Exception if any exception occurs during disposal.
      */
-    public abstract void dispose(RenderContext context);
+    public abstract void dispose(RenderContext context) throws Exception;
 
     /**
      * Renders this tile-layer.

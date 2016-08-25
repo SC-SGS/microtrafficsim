@@ -170,10 +170,10 @@ public class ShaderProgram {
      * Links the shader program and loads all active uniform- and attribute-bindings.
      *
      * @param gl the {@code GL2ES2}-Object of the OpenGL context on which the program has been created.
-     * @throws ShaderLinkError if the shader program cannot be linked.
+     * @throws ShaderLinkException if the shader program cannot be linked.
      * @return this {@code ShaderProgram}.
      */
-    public ShaderProgram link(GL2ES2 gl) {
+    public ShaderProgram link(GL2ES2 gl) throws ShaderLinkException {
         // bind attributes
         HashMap<String, VertexAttribute> attribBindings = new HashMap<>(this.attribBindings);
         attribBindings.putAll(context.getVertexAttribManager().getDefaultAttributeBindings());
@@ -186,7 +186,7 @@ public class ShaderProgram {
         // check link status
         int[] status = {0};
         gl.glGetProgramiv(handle, GL2ES2.GL_LINK_STATUS, status, 0);
-        if (status[0] == GL2ES2.GL_FALSE) throw new ShaderLinkError(name, ShaderUtil.getProgramInfoLog(gl, handle));
+        if (status[0] == GL2ES2.GL_FALSE) throw new ShaderLinkException(name, ShaderUtil.getProgramInfoLog(gl, handle));
 
         // reload active attributes and uniforms
         reloadActiveAttributes(gl);

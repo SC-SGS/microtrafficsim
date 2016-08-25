@@ -15,6 +15,7 @@ import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.opengl.BufferStorage;
 import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.core.vis.opengl.shader.Shader;
+import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
@@ -135,7 +136,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
 
     @Override
-    public void initialize(RenderContext context) {
+    public void initialize(RenderContext context) throws ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "tilecopy.vs")
@@ -194,7 +195,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
 
     @Override
-    public Tile require(RenderContext context, TileId id) throws InterruptedException, ExecutionException {
+    public Tile require(RenderContext context, TileId id) throws Exception {
         ArrayList<TileLayerBucket> buckets = new ArrayList<>();
         PreRenderedTile            tile;
         Future<Void>               task;
@@ -231,7 +232,7 @@ public class PreRenderedTileProvider implements TileProvider {
             });
 
             // make sure we clean up on interrupts
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             HashSet<TileLayer> layers = new HashSet<>();
             for (TileLayerBucket bucket : buckets)
                 layers.add(bucket.layer);
@@ -254,7 +255,7 @@ public class PreRenderedTileProvider implements TileProvider {
     }
 
     @Override
-    public void release(RenderContext context, Tile tile) {
+    public void release(RenderContext context, Tile tile) throws Exception {
         if (tile instanceof PreRenderedTile) ((PreRenderedTile) tile).dispose(context);
     }
 
@@ -590,8 +591,9 @@ public class PreRenderedTileProvider implements TileProvider {
          *
          * @param context the context on which the tile will be displayed.
          * @throws CancellationException if the initialization-process has been interrupted.
+         * @throws Exception             if any other exception occurs.
          */
-        public void initialize(RenderContext context) throws CancellationException {
+        public void initialize(RenderContext context) throws Exception {
             GL3 gl = context.getDrawable().getGL().getGL3();
 
             // save old view parameter
@@ -662,8 +664,9 @@ public class PreRenderedTileProvider implements TileProvider {
          * Disposes this tile.
          *
          * @param context the context on which the tiles are being displayed.
+         * @throws Exception if any exception occurs during disposal.
          */
-        public void dispose(RenderContext context) {
+        public void dispose(RenderContext context) throws Exception {
             pool.release(context, buffer);
             buffer = null;
 

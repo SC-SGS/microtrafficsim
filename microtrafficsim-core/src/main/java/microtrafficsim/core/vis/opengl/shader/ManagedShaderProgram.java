@@ -118,7 +118,7 @@ public class ManagedShaderProgram extends ShaderProgram {
 
 
     @Override
-    public ManagedShaderProgram link(GL2ES2 gl) {
+    public ManagedShaderProgram link(GL2ES2 gl) throws ShaderLinkException {
         return (ManagedShaderProgram) super.link(gl);
     }
 }

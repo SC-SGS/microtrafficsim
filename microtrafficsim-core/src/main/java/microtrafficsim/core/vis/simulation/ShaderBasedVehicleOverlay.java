@@ -11,6 +11,7 @@ import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.opengl.BufferStorage;
 import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.core.vis.opengl.shader.Shader;
+import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
@@ -116,7 +117,7 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
 
 
     @Override
-    public void init(RenderContext context) {
+    public void init(RenderContext context) throws ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         // load shader
