@@ -8,7 +8,7 @@ import java.util.Arrays;
  *
  * @author Maximilian Luz
  */
-public class ShaderCompileError extends Error {
+public class ShaderCompileException extends Exception {
     private static final long serialVersionUID = -5983903247471139023L;
 
     private String name;
@@ -17,25 +17,25 @@ public class ShaderCompileError extends Error {
 
 
     /**
-     * Constructs a new {@code ShaderCompileError} with the given program name, source and error-log.
+     * Constructs a new {@code ShaderCompileException} with the given program name, source and error-log.
      *
      * @param name the name of the {@code Shader} that failed to compile.
      * @param src  the source of the {@code Shader} that failed to compile, as array of strings including new-line
      *             characters.
      * @param log  the error-log describing the failure.
      */
-    public ShaderCompileError(String name, String[] src, String log) {
+    public ShaderCompileException(String name, String[] src, String log) {
         this(name, buildSource(src), log);
     }
 
     /**
-     * Constructs a new {@code ShaderCompileError} with the given program name, source and error-log.
+     * Constructs a new {@code ShaderCompileException} with the given program name, source and error-log.
      *
      * @param name the name of the {@code Shader} that failed to compile.
      * @param src  the source of the {@code Shader} that failed to compile.
      * @param log  the error-log describing the failure.
      */
-    public ShaderCompileError(String name, String src, String log) {
+    public ShaderCompileException(String name, String src, String log) {
         super("Error compiling Shader '" + name + "'");
         this.name = name;
         this.log  = log;

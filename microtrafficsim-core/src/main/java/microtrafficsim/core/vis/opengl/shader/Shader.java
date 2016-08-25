@@ -152,9 +152,9 @@ public class Shader {
      *
      * @param gl the {@code GL2ES2}-Object of the OpenGL context.
      * @return this {@code Shader}.
-     * @throws ShaderCompileError if the compilation of this shader failed.
+     * @throws ShaderCompileException if the compilation of this shader failed.
      */
-    public Shader compile(GL2ES2 gl) {
+    public Shader compile(GL2ES2 gl) throws ShaderCompileException {
         gl.glShaderSource(handle, source.length, source, null);
         gl.glCompileShader(handle);
 
@@ -162,7 +162,7 @@ public class Shader {
         int[] status = {0};
         gl.glGetShaderiv(handle, GL2ES2.GL_COMPILE_STATUS, status, 0);
         if (status[0] == GL2ES2.GL_FALSE)
-            throw new ShaderCompileError(name, source, ShaderUtil.getShaderInfoLog(gl, handle));
+            throw new ShaderCompileException(name, source, ShaderUtil.getShaderInfoLog(gl, handle));
 
         return this;
     }

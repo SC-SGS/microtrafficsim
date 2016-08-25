@@ -15,6 +15,7 @@ import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.opengl.BufferStorage;
 import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.core.vis.opengl.shader.Shader;
+import microtrafficsim.core.vis.opengl.shader.ShaderCompileException;
 import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
@@ -136,7 +137,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
 
     @Override
-    public void initialize(RenderContext context) throws ShaderLinkException {
+    public void initialize(RenderContext context) throws ShaderCompileException, ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "tilecopy.vs")
@@ -645,7 +646,7 @@ public class PreRenderedTileProvider implements TileProvider {
                     }
                 }
 
-            } catch (CancellationException e) {
+            } catch (Exception e) {
                 dispose(context);
                 throw e;    // cancel the executing task
             } finally {

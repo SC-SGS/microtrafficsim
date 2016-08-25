@@ -112,7 +112,7 @@ public class ManagedShader extends Shader {
     }
 
     @Override
-    public ManagedShader compile(GL2ES2 gl) {
+    public ManagedShader compile(GL2ES2 gl) throws ShaderCompileException {
         return (ManagedShader) super.compile(gl);
     }
 

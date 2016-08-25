@@ -39,9 +39,10 @@ public class FeatureStyle {
      * Initializes this style.
      *
      * @param context the context to initialize this style on.
-     * @throws ShaderLinkException if the shader-program of this style fails to link.
+     * @throws ShaderCompileException if any shader of this style fails to compile.
+     * @throws ShaderLinkException    if the shader-program of this style fails to link.
      */
-    public void initialize(RenderContext context) throws ShaderLinkException {
+    public void initialize(RenderContext context) throws ShaderCompileException, ShaderLinkException {
         ShaderManager       manager = context.getShaderManager();
         ShaderProgramSource psrc    = style.getShader();
 
