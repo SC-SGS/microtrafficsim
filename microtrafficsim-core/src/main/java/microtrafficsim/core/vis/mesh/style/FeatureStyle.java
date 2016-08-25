@@ -7,6 +7,7 @@ import microtrafficsim.core.vis.opengl.shader.*;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class FeatureStyle {
      * @throws ShaderCompileException if any shader of this style fails to compile.
      * @throws ShaderLinkException    if the shader-program of this style fails to link.
      */
-    public void initialize(RenderContext context) throws ShaderCompileException, ShaderLinkException {
+    public void initialize(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
         ShaderManager       manager = context.getShaderManager();
         ShaderProgramSource psrc    = style.getShader();
 

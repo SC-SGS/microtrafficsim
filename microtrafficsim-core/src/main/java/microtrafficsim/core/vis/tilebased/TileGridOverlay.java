@@ -22,6 +22,7 @@ import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
+import java.io.IOException;
 import java.nio.FloatBuffer;
 
 
@@ -65,7 +66,7 @@ public class TileGridOverlay implements Overlay {
 
 
     @Override
-    public void init(RenderContext context) throws ShaderCompileException, ShaderLinkException {
+    public void init(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         /* load shaders */

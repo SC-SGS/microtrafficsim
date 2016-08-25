@@ -3,6 +3,8 @@ package microtrafficsim.core.vis.opengl.shader;
 import com.jogamp.opengl.GL2ES2;
 import microtrafficsim.utils.resources.Resource;
 
+import java.io.IOException;
+
 
 /**
  * Reference counted {@code Shader} wrapper. Newly created references to an instance of the
@@ -107,7 +109,7 @@ public class ManagedShader extends Shader {
     }
 
     @Override
-    public ManagedShader loadFromResource(Resource resource) {
+    public ManagedShader loadFromResource(Resource resource) throws IOException {
         return (ManagedShader) super.loadFromResource(resource);
     }
 

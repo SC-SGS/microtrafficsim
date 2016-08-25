@@ -27,6 +27,7 @@ import microtrafficsim.math.Vec3d;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.function.Supplier;
@@ -114,7 +115,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
 
     @Override
-    public void init(RenderContext context) throws ShaderCompileException, ShaderLinkException {
+    public void init(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "spritebased.vehicle_overlay.vs")

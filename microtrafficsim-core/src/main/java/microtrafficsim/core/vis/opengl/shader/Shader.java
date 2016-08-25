@@ -2,7 +2,6 @@ package microtrafficsim.core.vis.opengl.shader;
 
 import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.util.glsl.ShaderUtil;
-import microtrafficsim.core.vis.exceptions.ResourceError;
 import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
 import microtrafficsim.utils.Streams;
 import microtrafficsim.utils.resources.Resource;
@@ -129,11 +128,12 @@ public class Shader {
      *
      * @param resource the resource to load the source code from.
      * @return this {@code Shader}.
+     * @throws IOException if an exception occurs accessing the provided resource.
      */
-    public Shader loadFromResource(Resource resource) {
+    public Shader loadFromResource(Resource resource) throws IOException {
         try (InputStream in = resource.asStream()) {
             source = Streams.toStringArrayEOL(in);
-        } catch (IOException | NullPointerException e) { throw new ResourceError(resource.toString(), e); }
+        }
 
         return this;
     }

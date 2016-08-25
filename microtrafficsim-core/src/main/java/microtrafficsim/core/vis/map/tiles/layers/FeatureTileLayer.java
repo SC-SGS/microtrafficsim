@@ -10,6 +10,7 @@ import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.math.Mat4f;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,7 +46,7 @@ public class FeatureTileLayer extends TileLayer {
 
 
     @Override
-    public void initialize(RenderContext context) throws ShaderCompileException, ShaderLinkException {
+    public void initialize(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
         style.initialize(context);
         mesh.initialize(context);
         mesh.load(context);

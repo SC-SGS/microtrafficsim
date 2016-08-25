@@ -1,7 +1,5 @@
 package microtrafficsim.core.vis.opengl.utils;
 
-import microtrafficsim.core.vis.exceptions.ResourceError;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -83,13 +81,10 @@ public class TextureData2D {
      * @param clazz    the class from which the resource should be loaded.
      * @param resource the path of the resource to load.
      * @return the loaded Texture Data.
-     * @throws ResourceError if an {@code IOException} occurred while accessing the
-     *                       resource.
+     * @throws IOException if an {@code IOException} occurred while accessing the resource.
      * @see TextureData2D#load(InputStream)
      */
-    public static TextureData2D loadFromResource(Class<?> clazz, String resource) {
-        try {
-            return load(clazz.getResourceAsStream(resource));
-        } catch (IOException e) { throw new ResourceError(resource, e); }
+    public static TextureData2D loadFromResource(Class<?> clazz, String resource) throws IOException {
+        return load(clazz.getResourceAsStream(resource));
     }
 }
