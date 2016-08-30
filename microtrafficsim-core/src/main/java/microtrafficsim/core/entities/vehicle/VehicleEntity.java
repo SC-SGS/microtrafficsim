@@ -6,10 +6,10 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 public class VehicleEntity {
 
     private LogicVehicleEntity    logic;
-    private IVisualizationVehicle visualization;
+    private VisualizationVehicleEntity visualization;
     private SimulationConfig      config;
 
-    public VehicleEntity(SimulationConfig config, LogicVehicleEntity logic, IVisualizationVehicle visualization) {
+    public VehicleEntity(SimulationConfig config, LogicVehicleEntity logic, VisualizationVehicleEntity visualization) {
         this.config        = config;
         this.logic         = logic;
         this.visualization = visualization;
@@ -19,7 +19,7 @@ public class VehicleEntity {
         return logic;
     }
 
-    public IVisualizationVehicle getVisualization() {
+    public VisualizationVehicleEntity getVisualization() {
         return visualization;
     }
 

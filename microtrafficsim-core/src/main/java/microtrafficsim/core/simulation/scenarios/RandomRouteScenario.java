@@ -1,12 +1,12 @@
 package microtrafficsim.core.simulation.scenarios;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.area.RectangleArea;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.shortestpath.impl.FastestWayAStar;
-import microtrafficsim.core.shortestpath.impl.LinearDistanceAStar;
+import microtrafficsim.core.shortestpath.astar.impl.FastestWayAStar;
+import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 
 import java.util.Random;
@@ -32,7 +32,7 @@ public class RandomRouteScenario extends AbstractStartEndScenario {
      * @param vehicleFactory This creates vehicles.
      */
     public RandomRouteScenario(SimulationConfig config, StreetGraph graph,
-                               Supplier<IVisualizationVehicle> vehicleFactory) {
+                               Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
     }
 
@@ -50,7 +50,7 @@ public class RandomRouteScenario extends AbstractStartEndScenario {
     @Override
     protected Supplier<ShortestPathAlgorithm> createScoutFactory() {
         return new Supplier<ShortestPathAlgorithm>() {
-            private Random random = new Random(config.seed);
+            private Random random = config.rndGenGenerator.next();
 
             @Override
             public ShortestPathAlgorithm get() {

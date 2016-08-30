@@ -48,9 +48,11 @@ public class Lane {
         return associatedEdge + "." + index;
     }
 
-    // |=======================|
-    // | vehicle communication |
-    // |=======================|
+    /*
+    |=======================|
+    | vehicle communication |
+    |=======================|
+    */
     public synchronized int getMaxInsertionIndex() {
         if (lastVehicle == null)
             return associatedEdge.getLength() - 1;

@@ -3,7 +3,7 @@ package logic.validation.scenarios;
 import logic.validation.Main;
 import logic.validation.ValidationScenario;
 import logic.validation.cars.ValidationCar;
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.VehicleState;
@@ -45,7 +45,7 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
      * @param vehicleFactory This creates vehicles.
      */
     public MotorwaySlipRoadScenario(SimulationConfig config, StreetGraph graph,
-                                    Supplier<IVisualizationVehicle> vehicleFactory) {
+                                    Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
         nextScenarioState = NextScenarioState.PRIORITY_TO_THE_MOTORWAY;
     }

@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.scenarios;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
@@ -34,7 +34,7 @@ public abstract class EndOfTheWorldScenario extends AbstractStartEndScenario {
      * @param vehicleFactory This creates vehicles.
      */
     public EndOfTheWorldScenario(SimulationConfig config, StreetGraph graph,
-                                 Supplier<IVisualizationVehicle> vehicleFactory) {
+                                 Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
         // routing
         float latLength = Math.min(0.01f, 0.1f * (graph.maxLat - graph.minLat));

@@ -1,6 +1,6 @@
 package microtrafficsim.core.vis.simulation;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
@@ -8,7 +8,7 @@ import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.vis.opengl.utils.Color;
 
 
-public class Vehicle implements IVisualizationVehicle {
+public class Vehicle implements VisualizationVehicleEntity {
 
     private static final float MIN_TARGET_DISTANCE = 1.0f;
 

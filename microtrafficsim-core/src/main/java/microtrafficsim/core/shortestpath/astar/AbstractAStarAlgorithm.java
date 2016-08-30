@@ -53,7 +53,7 @@ public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
      *             algorithm.
      * @return Edge weight.
      */
-    protected abstract <T extends ShortestPathEdge> float getEdgeWeight(T edge);
+    protected abstract <E extends ShortestPathEdge> float getEdgeWeight(E edge);
 
     /**
      * <p>
@@ -79,15 +79,17 @@ public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
      * E.g. return 0 for Dijkstra's algorithm or the linear distance as
      * usual used approximation.
      */
-    protected abstract <T extends ShortestPathNode> float estimate(T destination, T routeDestination);
+    protected abstract <N extends ShortestPathNode> float estimate(N destination, N routeDestination);
 
-    // |============================|
-    // | (i) IShortestPathAlgorithm |
-    // |============================|
+    /*
+    |===========================|
+    | (i) ShortestPathAlgorithm |
+    |===========================|
+    */
     @Override
-    public Queue<? extends ShortestPathEdge> findShortestPath(ShortestPathNode start, ShortestPathNode end) {
+    public void findShortestPath(ShortestPathNode start, ShortestPathNode end, Stack<ShortestPathEdge> shortestPath) {
 
-        LinkedList<ShortestPathEdge> shortestPath = new LinkedList<>();
+        shortestPath.clear();
         if (start != end) {
             // INIT (the same as in the while-loop below)
             // this is needed to guarantee that each node in the queue has a
@@ -131,7 +133,7 @@ public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
                         while (curNode != start) {
                             ShortestPathEdge curEdge = predecessors.get(curNode).edge;
                             // "unchecked" cast is checked
-                            shortestPath.addFirst(curEdge);
+                            shortestPath.push(curEdge);
                             curNode = curEdge.getOrigin();
                         }
 
@@ -169,7 +171,5 @@ public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
         visitedNodes.clear();
         predecessors.clear();
         queue.clear();
-
-        return shortestPath;
     }
 }

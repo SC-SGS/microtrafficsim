@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.manager;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 
@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  */
 public interface VehicleManager extends VehicleStateListener {
 
-    Supplier<IVisualizationVehicle> getVehicleFactory();
+    Supplier<VisualizationVehicleEntity> getVehicleFactory();
     void                            unlockVehicleFactory();
 
     void addVehicle(AbstractVehicle vehicle);

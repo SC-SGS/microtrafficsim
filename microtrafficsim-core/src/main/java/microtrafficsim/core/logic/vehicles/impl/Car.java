@@ -9,12 +9,22 @@ import java.util.function.Function;
 
 
 /**
+ * <p>
+ * This class represents a simple car of default values:<br>
+ * &bull max speed = 5 (Nagel-Schreckenberg-Model; 135 km/h)<br>
+ * &bull dawdle factor = 0.2f<br>
+ * &bull dash factor = 0f<br>
+ * &bull acceleration and dawdle functions as described in the Nagel-Schreckenberg-Model, which can be changed by
+ * extending this class<br>
+ * &bull implementation of the interface {@link microtrafficsim.interesting.emotions.Hulk}. Becoming more angry and
+ * calming down is implemented by increasing/decreasing a counter of maximum equal to Integer.MAX_VALUE.
+ *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public class Car extends AbstractVehicle {
 
     // AbstractVehicle
-    public static int maxVelocity = 5;    // in km/h
+    public static int maxVelocity = 5;
 
     // Hulk
     public static int    maxAnger     = Integer.MAX_VALUE;
@@ -33,14 +43,6 @@ public class Car extends AbstractVehicle {
         super(config, stateListener, route, spawnDelay);
         anger      = 0;
         totalAnger = 0;
-    }
-
-    public static void setDashAndDawdleFactor(float dashFactor, float dawdleFactor) {
-        Car.dashFactor   = dashFactor;
-        Car.dawdleFactor = dawdleFactor;
-        try {
-            validateDashAndDawdleFactors(Car.dashFactor, Car.dawdleFactor);
-        } catch (Exception e) { e.printStackTrace(); }
     }
 
     /*
@@ -117,6 +119,14 @@ public class Car extends AbstractVehicle {
 
     public static void setDashFactor(float dashFactor) {
         Car.dashFactor = dashFactor;
+        try {
+            validateDashAndDawdleFactors(Car.dashFactor, Car.dawdleFactor);
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    public static void setDashAndDawdleFactor(float dashFactor, float dawdleFactor) {
+        Car.dashFactor   = dashFactor;
+        Car.dawdleFactor = dawdleFactor;
         try {
             validateDashAndDawdleFactors(Car.dashFactor, Car.dawdleFactor);
         } catch (Exception e) { e.printStackTrace(); }

@@ -6,6 +6,8 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 
 
 /**
+ * This class extends the default {@link Car} by being able to stand if a boolean is set to true.
+ *
  * @author Dominic Parga Cacheiro
  */
 public class BlockingCar extends Car {

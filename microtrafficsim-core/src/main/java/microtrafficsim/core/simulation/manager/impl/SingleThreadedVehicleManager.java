@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.manager.impl;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.simulation.manager.VehicleManager;
@@ -16,10 +16,10 @@ import java.util.function.Supplier;
  */
 public class SingleThreadedVehicleManager implements VehicleManager {
 
-    private Supplier<IVisualizationVehicle> vehicleFactory;
+    private Supplier<VisualizationVehicleEntity> vehicleFactory;
     private Set<AbstractVehicle>            spawnedVehicles, notSpawnedVehicles, vehicles;
 
-    public SingleThreadedVehicleManager(Supplier<IVisualizationVehicle> vehicleFactory) {
+    public SingleThreadedVehicleManager(Supplier<VisualizationVehicleEntity> vehicleFactory) {
         spawnedVehicles     = ConcurrentHashMap.newKeySet();
         notSpawnedVehicles  = ConcurrentHashMap.newKeySet();
         vehicles            = ConcurrentHashMap.newKeySet();
@@ -50,7 +50,7 @@ public class SingleThreadedVehicleManager implements VehicleManager {
     |====================|
     */
     @Override
-    public Supplier<IVisualizationVehicle> getVehicleFactory() {
+    public Supplier<VisualizationVehicleEntity> getVehicleFactory() {
         return vehicleFactory;
     }
 

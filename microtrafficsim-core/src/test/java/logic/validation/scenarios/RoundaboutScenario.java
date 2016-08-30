@@ -2,7 +2,7 @@ package logic.validation.scenarios;
 
 import logic.validation.Main;
 import logic.validation.ValidationScenario;
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.VehicleState;
@@ -41,7 +41,7 @@ public class RoundaboutScenario extends ValidationScenario {
      * @param vehicleFactory This creates vehicles.
      */
     public RoundaboutScenario(SimulationConfig config, StreetGraph graph,
-                              Supplier<IVisualizationVehicle> vehicleFactory) {
+                              Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
         nextScenarioState = NextScenarioState.TOP_RIGHT;
     }

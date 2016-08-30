@@ -1,4 +1,4 @@
-package microtrafficsim.core.shortestpath.impl;
+package microtrafficsim.core.shortestpath.astar.impl;
 
 import microtrafficsim.core.shortestpath.astar.AbstractAStarAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;

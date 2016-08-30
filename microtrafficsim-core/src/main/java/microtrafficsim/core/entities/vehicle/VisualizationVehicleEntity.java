@@ -3,7 +3,7 @@ package microtrafficsim.core.entities.vehicle;
 import microtrafficsim.core.vis.opengl.utils.Color;
 
 
-public interface IVisualizationVehicle {
+public interface VisualizationVehicleEntity {
     VehicleEntity getEntity();
     void setEntity(VehicleEntity entity);
 

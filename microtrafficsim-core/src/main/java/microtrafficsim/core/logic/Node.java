@@ -49,7 +49,7 @@ public class Node implements ShortestPathNode {
     public Node(SimulationConfig config, Coordinate coordinate) {
         this.config     = config;
         ID              = config.longIDGenerator.next();
-        random          = new Random(config.seed);
+        random          = config.rndGenGenerator.next();
         this.coordinate = coordinate;
 
         // crossing logic
@@ -80,9 +80,11 @@ public class Node implements ShortestPathNode {
         return output;
     }
 
-    // |================|
-    // | crossing logic |
-    // |================|
+    /*
+    |================|
+    | crossing logic |
+    |================|
+    */
     private Comparator<AbstractVehicle> generateCrossingLogic() {
         return (v1, v2) -> {
             // there is always a current edge and a next edge per vehicle
@@ -122,8 +124,12 @@ public class Node implements ShortestPathNode {
         };
     }
 
+    /**
+     * The node empties its crossing sets etc., but also reset its instance of {@link Random}, whereas it is not
+     * guaranteed, that it will be identical.
+     */
     void reset() {
-        random = new Random(config.seed);
+        random = config.rndGenGenerator.next();
 
         // crossing logic
         assessedVehicles     = new HashSet<>();

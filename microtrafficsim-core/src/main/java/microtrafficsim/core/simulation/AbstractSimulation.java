@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
@@ -56,7 +56,7 @@ public abstract class AbstractSimulation implements Simulation {
      * Default constructor.
      */
     public AbstractSimulation(
-            SimulationConfig config, StreetGraph graph, Supplier<IVisualizationVehicle> vehicleFactory) {
+            SimulationConfig config, StreetGraph graph, Supplier<VisualizationVehicleEntity> vehicleFactory) {
         this.config = config;
         this.graph  = graph;
         // simulation
@@ -103,13 +103,13 @@ public abstract class AbstractSimulation implements Simulation {
 
     /**
      * This method could be called to add the given vehicle to the simulation. For visualization, this method creates an
-     * instance of {@link IVisualizationVehicle} and connects it to the given vehicle using a {@link VehicleEntity}.
+     * instance of {@link VisualizationVehicleEntity} and connects it to the given vehicle using a {@link VehicleEntity}.
      *
      * @param vehicle An instance of {@link AbstractVehicle}
      */
     protected final void createAndAddVehicle(AbstractVehicle vehicle) {
 
-        IVisualizationVehicle visCar = createVisVehicle();
+        VisualizationVehicleEntity visCar = createVisVehicle();
         VehicleEntity         entity = new VehicleEntity(config, vehicle, visCar);
         vehicle.setEntity(entity);
         visCar.setEntity(entity);
@@ -118,14 +118,14 @@ public abstract class AbstractSimulation implements Simulation {
 
     /**
      * This method could be called to add the given vehicle to the simulation. For visualization, this method creates an
-     * instance of {@link IVisualizationVehicle} and connects it to the given vehicle using a {@link VehicleEntity}.
+     * instance of {@link VisualizationVehicleEntity} and connects it to the given vehicle using a {@link VehicleEntity}.
      *
      * @param vehicle An instance of {@link AbstractVehicle}
      * @param color   The color of the vehicle
      */
     protected final void createAndAddVehicle(AbstractVehicle vehicle, Color color) {
 
-        IVisualizationVehicle visCar = createVisVehicle();
+        VisualizationVehicleEntity visCar = createVisVehicle();
         visCar.setBaseColor(color);
         VehicleEntity entity = new VehicleEntity(config, vehicle, visCar);
         vehicle.setEntity(entity);
@@ -302,8 +302,8 @@ public abstract class AbstractSimulation implements Simulation {
     }
 
     @Override
-    public final IVisualizationVehicle createVisVehicle() {
-        IVisualizationVehicle v = vehicleManager.getVehicleFactory().get();
+    public final VisualizationVehicleEntity createVisVehicle() {
+        VisualizationVehicleEntity v = vehicleManager.getVehicleFactory().get();
         vehicleManager.unlockVehicleFactory();
         return v;
     }

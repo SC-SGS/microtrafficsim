@@ -101,6 +101,10 @@ public class StreetGraph {
         return vehicle.register();
     }
 
+    /**
+     * This method resets the nodes and edges of the streetgraph. The "new" streetgraph will NOT be identical to the
+     * previous one (e.g. random numbers will be different).
+     */
     public void reset() {
         nodes.forEach(Node::reset);
         edges.forEach(DirectedEdge::reset);

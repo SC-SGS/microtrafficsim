@@ -32,7 +32,6 @@ public class MultiThreadedSimulationManager implements SimulationManager {
     @Override
     public void willMoveAll(long timeDeltaMillis, Iterator<AbstractVehicle> iteratorSpawned) {
         doVehicleTask((AbstractVehicle v) -> {
-            v.updateTimeDeltaMillis(timeDeltaMillis);
             v.accelerate();
             v.dash();
             v.brake();

@@ -3,8 +3,8 @@ package logic.validation;
 import logic.validation.cars.ValidationBlockingCar;
 import logic.validation.cars.ValidationCar;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.shortestpath.impl.LinearDistanceAStar;
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
@@ -35,7 +35,7 @@ public abstract class ValidationScenario extends AbstractSimulation {
      * @param vehicleFactory This creates vehicles.
      */
     public ValidationScenario(SimulationConfig config, StreetGraph graph,
-                              Supplier<IVisualizationVehicle> vehicleFactory) {
+                              Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
         justInitialized = true;
         scout           = new LinearDistanceAStar(config.metersPerCell);
@@ -44,22 +44,28 @@ public abstract class ValidationScenario extends AbstractSimulation {
     protected abstract void updateScenarioState(VehicleState vehicleState);
 
     protected final void createAndAddCar(Node start, Node end, int delay) {
+        Route route = new Route(start, end);
+        scout.findShortestPath(start, end, route);
         createAndAddVehicle(new ValidationCar(
-                getConfig(), this, new Route(start, end, (Queue<DirectedEdge>) scout.findShortestPath(start, end)),
+                getConfig(), this, route,
                 delay));
     }
 
     protected final void createAndAddCar(Node start, Node end, int delay, Color color) {
+        Route route = new Route(start, end);
+        scout.findShortestPath(start, end, route);
         createAndAddVehicle(
                 new ValidationCar(getConfig(), this,
-                                  new Route(start, end, (Queue<DirectedEdge>) scout.findShortestPath(start, end)),
+                                  route,
                                   delay),
                 color);
     }
 
     protected final void createAndAddBlockingCar(Node start, Node end, Color color) {
+        Route route = new Route(start, end);
+        scout.findShortestPath(start, end, route);
         ValidationBlockingCar blockingCar = new ValidationBlockingCar(
-                getConfig(), this, new Route(start, end, (Queue<DirectedEdge>) scout.findShortestPath(start, end)));
+                getConfig(), this, route);
         blockingCar.setBlockMode(true);
         createAndAddVehicle(blockingCar, color);
     }

@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.scenarios;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
@@ -12,7 +12,6 @@ import microtrafficsim.core.simulation.AbstractSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.Distribution;
-import microtrafficsim.math.random.WheelOfFortune;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -59,16 +58,16 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
      * @param vehicleFactory This creates vehicles.
      */
     public AbstractStartEndScenario(
-            SimulationConfig config, StreetGraph graph, Supplier<IVisualizationVehicle> vehicleFactory) {
+            SimulationConfig config, StreetGraph graph, Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
         this.config  = config;
         scoutFactory = createScoutFactory();
         // used for creating vehicles and routes etc.
         startFields = new HashMap<>();
         endFields   = new HashMap<>();
-        startWheel  = new WheelOfFortune(config.seed);
-        endWheel    = new WheelOfFortune(config.seed);
-        random      = new Random(config.seed);
+        startWheel  = new WheelOfFortune(config.rndGenGenerator.next());
+        endWheel    = new WheelOfFortune(config.rndGenGenerator.next());
+        random      = config.rndGenGenerator.next();
         // used for printing vehicle creation process
         lastPercentage  = 0;
         percentageDelta = 5;    // > 0 !!!
@@ -151,8 +150,8 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
             Node start = bla[0];
             Node end   = bla[1];
             // create route
-            @SuppressWarnings("unchecked")
-            Route route = new Route(start, end, (Queue<DirectedEdge>) scoutFactory.get().findShortestPath(start, end));
+            Route route = new Route(start, end);
+            scoutFactory.get().findShortestPath(start, end, route);
             // create and add vehicle
             // has permission to create vehicle
             if (!route.isEmpty()) {
@@ -202,8 +201,8 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
                         end        = bla[1];
                     }
                     // create route
-                    Route route = new Route(start, end,
-                                            (Queue<DirectedEdge>) scoutFactory.get().findShortestPath(start, end));
+                    Route route = new Route(start, end);
+                    scoutFactory.get().findShortestPath(start, end, route);
                     // create and add vehicle
                     lock.lock();
                     // wait for permission
@@ -374,6 +373,94 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
                 singleThreadedVehicleCreation(listener);
 
             config.logger.infoNanoseconds("CREATING VEHICLES finished after ", System.nanoTime() - time);
+        }
+    }
+
+
+    /*
+    |=========|
+    | classes |
+    |=========|
+    */
+    /**
+     * TODO (also test)
+     *
+     * @author Dominic Parga Cacheiro
+     */
+    public static class WheelOfFortune {
+
+        private Random random;
+        private HashMap<Object, Integer> fields;
+        private ArrayList<Object> orderedObjects;
+        private int               n;
+
+        public WheelOfFortune(long seed) {
+            random         = new Random(seed);
+            fields         = new HashMap<>();
+            orderedObjects = new ArrayList<>();
+            n              = 0;
+        }
+
+        public WheelOfFortune(Random random) {
+            this.random    = random;
+            fields         = new HashMap<>();
+            orderedObjects = new ArrayList<>();
+            n              = 0;
+        }
+
+        /**
+         * TODO<br>
+         * <br>
+         * but can be called multiple times
+         *
+         * @param obj
+         * @param size
+         */
+        public void addField(Object obj, int size) {
+            if (!fields.containsKey(obj) && size > 0) {
+                fields.put(obj, size);
+                orderedObjects.add(obj);
+                n += size;
+            }
+        }
+
+        public void updateFieldSize(Object obj, int size) {
+            if (size <= 0) {
+                fields.remove(obj);
+            } else {
+                Integer oldSize = fields.put(obj, size);
+                if (oldSize != null)
+                    n += size - oldSize;
+                else
+                    n += size;
+            }
+        }
+
+        /**
+         * TODO Laufzeit könnte man auf Kosten von Speicher verbessern
+         *
+         * @param obj
+         */
+        public void remove(Object obj) {
+            fields.remove(obj);
+            orderedObjects.remove(obj);
+        }
+
+        public Object nextObject() {
+            if (n <= 0) return null;
+
+            int              i       = random.nextInt(n);
+            Iterator<Object> objects = orderedObjects.iterator();
+            Object           lastObj = null;
+            if (objects.hasNext()) {
+                do {
+                    lastObj = objects.next();
+                    i -= fields.get(lastObj);
+
+                } while (i >= 0 && objects.hasNext());
+            }
+
+            return lastObj;
         }
     }
 }

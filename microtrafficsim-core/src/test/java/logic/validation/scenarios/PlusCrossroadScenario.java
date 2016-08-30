@@ -3,7 +3,7 @@ package logic.validation.scenarios;
 import logic.validation.Main;
 import logic.validation.ValidationScenario;
 import logic.validation.cars.ValidationBlockingCar;
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
@@ -43,7 +43,7 @@ public class PlusCrossroadScenario extends ValidationScenario {
      * @param vehicleFactory This creates vehicles.
      */
     public PlusCrossroadScenario(SimulationConfig config, StreetGraph graph,
-                                 Supplier<IVisualizationVehicle> vehicleFactory) {
+                                 Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
         nextScenarioState = NextScenarioState.PRIORITY_TO_THE_RIGHT;
     }

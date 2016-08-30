@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.scenarios;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.simulation.Simulation;
@@ -296,7 +296,7 @@ public class MeasuringScenario implements Simulation {
     }
 
     @Override
-    public final IVisualizationVehicle createVisVehicle() {
+    public final VisualizationVehicleEntity createVisVehicle() {
         return simulation.createVisVehicle();
     }
 

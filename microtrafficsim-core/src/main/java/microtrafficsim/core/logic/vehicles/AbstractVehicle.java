@@ -18,18 +18,16 @@ import java.util.function.Function;
  * This class represents a vehicle for the logic based on the
  * Nagel-Schreckenberg-model. It extends this model by a dash factor and some
  * additional information.
- * </p>
  * <p>
  * Additional information: <br>
- * - angry factor: This factor represents the current mood of the vehicle. It
+ * &bull angry factor: This factor represents the current mood of the vehicle. It
  * increases by one for each time the vehicle has a velocity of 0 for more than
  * one simulation step in following. In opposition to the total angry factor,
  * this factor gets reduced exponentially and is set to 0 after a time given by
  * {@link SimulationConfig}. <br>
- * - total angry factor: this factor represents the number of simulation steps
+ * &bull total angry factor: this factor represents the number of simulation steps
  * when the vehicle has had a velocity of 0 for more than one simulation step in
  * following.
- * </p>
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
@@ -39,11 +37,11 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     public final SimulationConfig config;
     public final long             ID;
     private final int             spawnDelay;
-    private final Object         lock_priorityCounter = new Object();
-    private Random               random;
-    private VehicleEntity        entity;
-    private VehicleState         state;
-    private VehicleStateListener stateListener;
+    private final Object          lock_priorityCounter = new Object();
+    private Random                random;
+    private VehicleEntity         entity;
+    private VehicleState          state;
+    private VehicleStateListener  stateListener;
 
     // routing
     private Route route;
@@ -52,7 +50,6 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     // driving behaviour
     private int   cellPosition;
     private int   velocity;
-    private float relativeTimeDelta;
     private Function<Integer, Integer> accelerate, dawdle;
 
     // traffic
@@ -137,7 +134,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
         if (!route.isEmpty()) {
             //			output += "route.peek().lane index at node = " +
             //route.peek().getOrigin().leavingEdges.get(route.peek()) + "\n";
-            output += "route-peek max insertion index = " + route.peek().getLane(0).getMaxInsertionIndex() + "\n";
+            output += "route-peek max insertion index = " + ((DirectedEdge)route.peek()).getLane(0).getMaxInsertionIndex() + "\n";
             output += "route.peek().hashCode() = " + route.peek().hashCode() + "\n";
         }
         return output;
@@ -165,7 +162,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     }
 
     public DirectedEdge peekNextRouteSection() {
-        return route.peek();
+        return (DirectedEdge)route.peek();
     }
 
     private synchronized void addVehicleInFront(AbstractVehicle vehicle) {
@@ -181,9 +178,9 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     }
 
     /*
-    |===================|
-    | (i) ILogicVehicle |
-    |===================|
+    |========================|
+    | (i) LogicVehicleEntity |
+    |========================|
     */
     @Override
     public VehicleEntity getEntity() {
@@ -193,7 +190,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     @Override
     public void setEntity(VehicleEntity entity) {
         this.entity = entity;
-        random      = new Random(entity.getConfig().seed);
+        random      = entity.getConfig().rndGenGenerator.next();
     }
 
     @Override
@@ -282,7 +279,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
                 if (!route.getStart().permissionToCross(this)) {
                     velocity = 0;
                 } else {    // allowed to spawn
-                    if (route.peek().getLane(0).getMaxInsertionIndex() < 0) {
+                    if (((DirectedEdge)route.peek()).getLane(0).getMaxInsertionIndex() < 0) {
                         velocity = 0;
                     } else {
                         velocity = 1;
@@ -314,27 +311,6 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
         setState(VehicleState.DESPAWNED);
     }
 
-    /**
-     * @param timeDeltaMillis Time since last time step
-     *                        <p>
-     *                        IMPORTANT: has to be <= 1000ms, otherwise there would be problems calculating
-     *                        vehicle positions at the end of roads.
-     *                        <p>
-     *                        Example: timeDeltaMillis = 100s
-     *                        => index out of bounds exceptions in street array
-     *                        <p>
-     *                        Therefore before calculation starts in this method:<br>
-     *                        timeDeltaMillis := Math.min(1000, timeDeltaMillis)
-     */
-    public void updateTimeDeltaMillis(long timeDeltaMillis) {
-        if (timeDeltaMillis > 1000)
-            relativeTimeDelta = 1f;
-        else
-            relativeTimeDelta = timeDeltaMillis / 1000f;
-
-        relativeTimeDelta = 1f;
-    }
-
     public void accelerate() {
         if (velocity < getMaxVelocity()) velocity = Math.min(getMaxVelocity(), accelerate.apply(velocity));
     }
@@ -364,7 +340,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
                         if (edge.getDestination().permissionToCross(this)) {
                             // if next road has vehicles => brake for this
                             // else => brake for end of next road
-                            int maxInsertionIndex = route.peek().getLane(0).getMaxInsertionIndex();
+                            int maxInsertionIndex = ((DirectedEdge)route.peek()).getLane(0).getMaxInsertionIndex();
                             velocity              = Math.min(velocity, distance + maxInsertionIndex);
                         } else {
                             // brake for end of road
@@ -523,7 +499,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     }
 
     private void enterNextRoad() {
-        lane = route.poll().getLane(0);
+        lane = ((DirectedEdge)route.pop()).getLane(0);
         synchronized (lane.lock) {
             AbstractVehicle lastVehicle = lane.getLastVehicle();
             if (lastVehicle != null) { addVehicleInFront(lastVehicle); }

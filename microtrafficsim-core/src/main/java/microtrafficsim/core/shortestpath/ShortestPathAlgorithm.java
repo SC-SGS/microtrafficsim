@@ -1,6 +1,7 @@
 package microtrafficsim.core.shortestpath;
 
 import java.util.Queue;
+import java.util.Stack;
 
 
 /**
@@ -10,23 +11,30 @@ import java.util.Queue;
  * because they just have to implement {@link ShortestPathNode} and
  * {@link ShortestPathEdge}. Therefore you can implement this interface in many
  * algorithms and graph types.
- * </p>
  * <p>
  * You don't need a graph because dependencies about nodes and edges are saved
  * in them, not in a graph structure.
- * </p>
  * <p>
  * To serve flexibility, the used edge type extending {@link ShortestPathEdge},
  * that are part of the shortest path, is given as a generic type.
- * </p>
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public interface ShortestPathAlgorithm {
 
     /**
+     * This method is needed for some algorithms for preperations needed for faster shortest path finding. It is
+     * implemented empty per default.
+     */
+    default void preprocess() {
+
+    }
+
+    /**
      * @return A sequence of edges, starting from the start node to
      * the end node.
      */
-    Queue<? extends ShortestPathEdge> findShortestPath(ShortestPathNode start, ShortestPathNode end);
+    void findShortestPath(ShortestPathNode start,
+                          ShortestPathNode end,
+                          Stack<ShortestPathEdge> shortestPath);
 }

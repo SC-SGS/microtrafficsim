@@ -1,10 +1,10 @@
 package microtrafficsim.examples.simulation.scenarios;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.shortestpath.impl.FastestWayAStar;
-import microtrafficsim.core.shortestpath.impl.LinearDistanceAStar;
+import microtrafficsim.core.shortestpath.astar.impl.FastestWayAStar;
+import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.EndOfTheWorldScenario;
 
@@ -26,7 +26,7 @@ public class Scenario extends EndOfTheWorldScenario {
      * @param graph          The streetgraph used for this scenarios.
      * @param vehicleFactory This creates vehicles.
      */
-    public Scenario(SimulationConfig config, StreetGraph graph, Supplier<IVisualizationVehicle> vehicleFactory) {
+    public Scenario(SimulationConfig config, StreetGraph graph, Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
     }
 
@@ -34,7 +34,7 @@ public class Scenario extends EndOfTheWorldScenario {
     protected Supplier<ShortestPathAlgorithm> createScoutFactory() {
         return new Supplier<ShortestPathAlgorithm>() {
 
-            private Random random = new Random(config.seed);
+            private Random random = config.rndGenGenerator.next();
 
             @Override
             public ShortestPathAlgorithm get() {

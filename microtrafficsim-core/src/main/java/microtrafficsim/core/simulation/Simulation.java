@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -148,9 +148,9 @@ public interface Simulation extends VehicleStateListener {
     int getVehiclesCount();
 
     /**
-     * @return Instance of {@link IVisualizationVehicle}.
+     * @return Instance of {@link VisualizationVehicleEntity}.
      */
-    IVisualizationVehicle createVisVehicle();
+    VisualizationVehicleEntity createVisVehicle();
 
     /**
      * This method adds the given vehicle to the graph and if success, this

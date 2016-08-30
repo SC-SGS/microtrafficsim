@@ -2,7 +2,7 @@ package microtrafficsim.core.vis.simulation;
 
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.entities.street.StreetEntity;
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
@@ -48,7 +48,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
     private static final Resource SHADER_FRAG = new PackagedResource(
             ShaderBasedVehicleOverlay.class, "/shaders/overlay/vehicle/spritebased/vehicle_overlay.fs");
 
-    private final Supplier<IVisualizationVehicle> vehicleFactory;
+    private final Supplier<VisualizationVehicleEntity> vehicleFactory;
 
     private Simulation       simulation;
     private Projection       projection;
@@ -324,7 +324,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         this.simulation = simulation;
     }
 
-    public Supplier<IVisualizationVehicle> getVehicleFactory() {
+    public Supplier<VisualizationVehicleEntity> getVehicleFactory() {
         return vehicleFactory;
     }
 }

@@ -1,6 +1,6 @@
 package microtrafficsim.ui.gui;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.Simulation;
@@ -383,6 +383,10 @@ public class SimulationController implements GUIController {
         frame.setTitle(oldTitle);
     }
 
+    /**
+     * You can call this method to cleanup the simulation, which means resetting the streetgraph and removing all
+     * scenario data.
+     */
     private void cleanupSimulation() {
         if (streetgraph != null) streetgraph.reset();
         overlay.setSimulation(null);
@@ -526,6 +530,6 @@ public class SimulationController implements GUIController {
      */
     public interface SimulationConstructor {
         Simulation
-        instantiate(SimulationConfig config, StreetGraph streetgraph, Supplier<IVisualizationVehicle> vehicleFactory);
+        instantiate(SimulationConfig config, StreetGraph streetgraph, Supplier<VisualizationVehicleEntity> vehicleFactory);
     }
 }

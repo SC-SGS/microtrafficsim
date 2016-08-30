@@ -1,6 +1,6 @@
 package microtrafficsim.core.logic;
 
-import microtrafficsim.core.entities.street.ILogicEdge;
+import microtrafficsim.core.entities.street.LogicStreetEntity;
 import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -15,7 +15,7 @@ import microtrafficsim.utils.hashing.FNVHashBuilder;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class DirectedEdge implements ShortestPathEdge, ILogicEdge {
+public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
 
     final long        ID;
     private final int numberOfCells;

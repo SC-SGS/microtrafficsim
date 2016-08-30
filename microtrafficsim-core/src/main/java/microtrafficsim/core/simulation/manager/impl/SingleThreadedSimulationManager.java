@@ -15,7 +15,6 @@ public class SingleThreadedSimulationManager implements SimulationManager {
     @Override
     public void willMoveAll(long timeDeltaMillis, Iterator<AbstractVehicle> spawnedVehicle) {
         spawnedVehicle.forEachRemaining((AbstractVehicle vehicle) -> {
-            vehicle.updateTimeDeltaMillis(timeDeltaMillis);
             vehicle.accelerate();
             vehicle.dash();
             vehicle.brake();

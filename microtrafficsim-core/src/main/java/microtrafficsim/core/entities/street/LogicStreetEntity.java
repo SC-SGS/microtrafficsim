@@ -1,7 +1,7 @@
 package microtrafficsim.core.entities.street;
 
 
-public interface ILogicEdge {
+public interface LogicStreetEntity {
     StreetEntity getEntity();
     void setEntity(StreetEntity entity);
 }
