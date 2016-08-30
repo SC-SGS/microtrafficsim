@@ -26,5 +26,5 @@ public interface VehicleOverlay extends Overlay {
      *
      * @return the visualization-vehicle factory.
      */
-    Supplier<IVisualizationVehicle> getVehicleFactory();
+    Supplier<VisualizationVehicleEntity> getVehicleFactory();
 }
