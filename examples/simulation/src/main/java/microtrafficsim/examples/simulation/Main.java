@@ -9,6 +9,7 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
+import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
 import microtrafficsim.core.simulation.Simulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
@@ -349,6 +350,7 @@ public class Main {
 
         /* create a configuration, add factories for parsed components */
         OSMParser.Config config = new OSMParser.Config()
+                .setBoundaryManagementMethod(OSMDataSetSanitizer.BoundaryMgmt.CLIP)
                 .setGeneratorIndexUnification(styleconfig.generatorIndexOfUnification)
                 .setGeneratorIndexStreetGraph(styleconfig.generatorIndexOfStreetGraph)
                 .putWayInitializer(StreetComponent.class, new StreetComponentFactory())

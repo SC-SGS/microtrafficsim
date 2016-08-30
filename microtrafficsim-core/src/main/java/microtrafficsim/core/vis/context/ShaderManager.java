@@ -11,6 +11,11 @@ import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
 
 
+/**
+ * Manager for {@code Shader}s and {@code ShaderProgram}s.
+ *
+ * @author Maximilian Luz
+ */
 public class ShaderManager {
 
     private HashMap<String, ManagedShader>        shaders;
@@ -31,12 +36,22 @@ public class ShaderManager {
     };
 
 
+    /**
+     * Constructs a new (empty) {@code ShaderManager}.
+     */
     public ShaderManager() {
         this.shaders  = new HashMap<>();
         this.programs = new HashMap<>();
     }
 
 
+    /**
+     * Associates the given shader with the given key.
+     *
+     * @param key    the key to associate the shader with.
+     * @param shader the shader to add to this manager.
+     * @return the shader previously associated with he given key or {@code null} if no such shader exists.
+     */
     public ManagedShader putShader(String key, ManagedShader shader) {
         ManagedShader old = shaders.put(key, shader);
 
@@ -51,6 +66,12 @@ public class ShaderManager {
             return old;
     }
 
+    /**
+     * Returns the shader associated with the given key.
+     *
+     * @param key the key to return the shader for.
+     * @return the shader associated with the given key or {@code null} if no such shader exists.
+     */
     public ManagedShader getShader(String key) {
         ManagedShader s = shaders.get(key);
 
@@ -60,6 +81,12 @@ public class ShaderManager {
             return s;
     }
 
+    /**
+     * Removes the shader associated with the given key.
+     *
+     * @param key the key to remove the shader for.
+     * @return the shader previously associated with the given key or {@code null} if no such shader exists.
+     */
     public ManagedShader removeShader(String key) {
         ManagedShader s = shaders.remove(key);
 
@@ -71,12 +98,25 @@ public class ShaderManager {
             return s;
     }
 
+    /**
+     * Checks if there exits a shader associated with the given key.
+     *
+     * @param key the key for which the check should be done.
+     * @return {@code true} if there is a shader associated with the given key or {@code null} if not.
+     */
     public boolean hasShader(String key) {
         ManagedShader s = shaders.get(key);
         return s != null && s.getHandle() != -1;
     }
 
 
+    /**
+     * Associates the given shader-program with the given key.
+     *
+     * @param key     the key to associate the shader-program with.
+     * @param program the shader-program to add to this manager.
+     * @return the shader-program previously associated with he given key or {@code null} if no such program exists.
+     */
     public ManagedShaderProgram putProgram(String key, ManagedShaderProgram program) {
         ManagedShaderProgram old = programs.put(key, program);
 
@@ -91,6 +131,12 @@ public class ShaderManager {
             return old;
     }
 
+    /**
+     * Returns the shader-program associated with the given key.
+     *
+     * @param key the key to return the program for.
+     * @return the program associated with the given key or {@code null} if no such program exists.
+     */
     public ManagedShaderProgram getProgram(String key) {
         ManagedShaderProgram p = programs.get(key);
 
@@ -100,6 +146,12 @@ public class ShaderManager {
             return p;
     }
 
+    /**
+     * Removes the shader-program associated with the given key.
+     *
+     * @param key the key to remove the shader-program for.
+     * @return the program previously associated with the given key or {@code null} if no such program exists.
+     */
     public ManagedShaderProgram removeProgram(String key) {
         ManagedShaderProgram p = programs.remove(key);
 
@@ -112,12 +164,26 @@ public class ShaderManager {
             return p;
     }
 
+    /**
+     * Checks if there exits a shader-program associated with the given key.
+     *
+     * @param key the key for which the check should be done.
+     * @return {@code true} if there is a shader-program associated with the given key or {@code null} if not.
+     */
     public boolean hasProgram(String key) {
         ManagedShaderProgram p = programs.get(key);
         return p != null && p.getHandle() != -1;
     }
 
 
+    /**
+     * Disposes this manager.
+     *
+     * @param gl    the {@code GL2ES2}-Object of the OpenGL context.
+     * @param force set to {@code true} if the shaders and shader-programs should be disposed forcefully
+     * @see ManagedShader#dispose(GL2ES2, boolean)
+     * @see ManagedShaderProgram#dispose(GL2ES2, boolean)
+     */
     public void dispose(GL2ES2 gl, boolean force) {
         for (ManagedShader s : shaders.values()) {
             s.removeLifeTimeObserver(shaderLto);

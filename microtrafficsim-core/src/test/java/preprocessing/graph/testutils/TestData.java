@@ -1,7 +1,7 @@
 package preprocessing.graph.testutils;
 
-import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
+import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.osm.parser.Parser;
 import microtrafficsim.osm.parser.base.DataSet;
@@ -31,12 +31,10 @@ public class TestData {
 
     public final DataSet stage1;
     public final DataSet stage2;
-    public final StreetGraph streetgraph;
 
-    private TestData(DataSet stage1, DataSet stage2, StreetGraph streetgraph) {
+    private TestData(DataSet stage1, DataSet stage2) {
         this.stage1      = stage1;
         this.stage2      = stage2;
-        this.streetgraph = streetgraph;
     }
 
 
@@ -78,7 +76,7 @@ public class TestData {
                                                               nodematcher,
                                                               sgmatcher);
 
-        Parser parser = new Parser(new OSMProcessor(genindexBefore, genindexStreetGraph));
+        Parser parser = new Parser(new OSMProcessor(genindexBefore, genindexStreetGraph, OSMDataSetSanitizer.BoundaryMgmt.NONE));
         parser.getWayEntityManager().putInitializer(StreetComponent.class, new StreetComponentFactory());
         parser.getWayEntityManager().putInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory());
         parser.getRelationManager().putFactory("restriction", new RestrictionRelationFactory());
@@ -89,6 +87,6 @@ public class TestData {
 
         parser.parse(osmxml);
 
-        return new TestData(s1extractor.getDataSet(), s2extractor.getDataSet(), sggen.getStreetGraph());
+        return new TestData(s1extractor.getDataSet(), s2extractor.getDataSet());
     }
 }

@@ -1,5 +1,6 @@
 package microtrafficsim.core.parser.processing.sanitizer;
 
+import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.features.streets.info.LaneInfo;
 import microtrafficsim.osm.parser.features.streets.info.MaxspeedInfo;
 import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
@@ -31,7 +32,10 @@ import java.util.Collection;
 public class OSMDataSetSanitizer implements Processor {
     private static Logger logger = LoggerFactory.getLogger(OSMDataSetSanitizer.class);
 
+    public enum BoundaryMgmt { NONE, RE_CALCULATE, CLIP }
+
     private OSMSanitizerValues values;
+    private BoundaryMgmt       bounds;
 
 
     /**
@@ -40,22 +44,27 @@ public class OSMDataSetSanitizer implements Processor {
      * <p>
      * This does the same as calling
      * {@link
-     * OSMDataSetSanitizer#OSMDataSetSanitizer(OSMSanitizerValues)
-     * OSMDataSetSanitizer(new DefaultOSMSanitizerValues())
+     * OSMDataSetSanitizer#OSMDataSetSanitizer(BoundaryMgmt, OSMSanitizerValues)
+     * OSMDataSetSanitizer(bounds, new DefaultOSMSanitizerValues())
      * }
+     * </p>
+     *
+     * @param bounds the method used for boundary management.
      */
-    public OSMDataSetSanitizer() {
-        this(new DefaultOSMSanitizerValues());
+    public OSMDataSetSanitizer(BoundaryMgmt bounds) {
+        this(bounds, new DefaultOSMSanitizerValues());
     }
 
     /**
      * Creates a new {@code OSMDataSetSanitizer} using the given {@code
      * OSMSanitizerValues}.
      *
+     * @param bounds the method used for boundary management.
      * @param values the {@code OSMSanitizerValues} specifying the values to be
      *               used in the sanitizing-process (e.g. default-value).
      */
-    public OSMDataSetSanitizer(OSMSanitizerValues values) {
+    public OSMDataSetSanitizer(BoundaryMgmt bounds, OSMSanitizerValues values) {
+        this.bounds = bounds;
         this.values = values;
     }
 
@@ -64,6 +73,7 @@ public class OSMDataSetSanitizer implements Processor {
     public void execute(Parser parser, DataSet dataset) {
         logger.info("executing sanitizer");
 
+        handleBounds(dataset);
         sanitizeWays(dataset);
         sanitizeRestrictionRelations(dataset);
 
@@ -78,6 +88,59 @@ public class OSMDataSetSanitizer implements Processor {
         for (Class<? extends RelationBase> type : dataset.relations.getRelationTypes()) {
             logger.debug("\t" + type.getSimpleName() + ": " + dataset.relations.getAll(type).size());
         }
+    }
+
+
+    /**
+     * Manages geometry on the boundaries, depending on the specified method.
+     *
+     * @param dataset the {@code DataSet} on which this method is going to be executed.
+     */
+    private void handleBounds(DataSet dataset) {
+        switch (bounds) {
+            case RE_CALCULATE:
+                recalculateBounds(dataset);
+                break;
+
+            case CLIP:
+                clipToBounds(dataset);
+                break;
+
+            default:
+            case NONE:
+                break;
+        }
+    }
+
+    /**
+     * Re-calculates the bounds based on the data-set.
+     *
+     * @param dataset the {@code DataSet} on which this method is going to be executed.
+     */
+    private void recalculateBounds(DataSet dataset) {
+        for (NodeEntity n : dataset.nodes.values()) {
+            if (n.lat < dataset.bounds.minlat)
+                dataset.bounds.minlat = n.lat;
+            else if (n.lat > dataset.bounds.maxlat)
+                dataset.bounds.maxlat = n.lat;
+
+            if (n.lon < dataset.bounds.minlon)
+                dataset.bounds.minlon = n.lon;
+            else if (n.lon > dataset.bounds.maxlon)
+                dataset.bounds.maxlon = n.lon;
+        }
+    }
+
+    /**
+     * Clips the data-set to the bounds.
+     *
+     * @param dataset the {@code DataSet} on which this method is going to be executed.
+     */
+    private void clipToBounds(DataSet dataset) {
+        System.err.println("NOT IMPLEMENTED YET: " + getClass().getCanonicalName() + ".clipToBounds(DataSet)");
+        // PROBLEMS:
+        //  - id-generation for ways     --> problems with anything referencing ways (relations)
+        //  - splitting/removing of ways --> problems with anything referencing ways (relations)
     }
 
 

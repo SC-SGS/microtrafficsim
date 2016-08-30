@@ -11,6 +11,8 @@ import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.opengl.BufferStorage;
 import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.core.vis.opengl.shader.Shader;
+import microtrafficsim.core.vis.opengl.shader.ShaderCompileException;
+import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
@@ -25,14 +27,20 @@ import microtrafficsim.math.Vec3d;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.function.Supplier;
 
 
-// TODO: shader based anti-aliasing in fragment-shader
+// TODO: shader based anti-aliasing in fragment-shader?
 
-public class ShaderBasedVehicleOverlay implements Overlay {
+/**
+ * Overlay to display simulated vehicles using the geometry-shader.
+ *
+ * @author Maximilian Luz
+ */
+public class ShaderBasedVehicleOverlay implements VehicleOverlay {
 
     private static final Color DEFAULT_FG_COLOR = Color.fromRGB(0xCC4C1A);
 
@@ -69,10 +77,21 @@ public class ShaderBasedVehicleOverlay implements Overlay {
     private boolean enabled;
 
 
+    /**
+     * Creates a {@code ShaderBasedVehicleOverlay} with the given projection.
+     *
+     * @param projection the {@code Projection} used for the visualization.
+     */
     public ShaderBasedVehicleOverlay(Projection projection) {
         this(projection, DEFAULT_FG_COLOR);
     }
 
+    /**
+     * Creates a {@code ShaderBasedVehicleOverlay} with the given projection and default vehicle color.
+     *
+     * @param projection          the {@code Projection} used for the visualization.
+     * @param defaultVehicleColor the default color used for the vehicles.
+     */
     public ShaderBasedVehicleOverlay(Projection projection, Color defaultVehicleColor) {
         this.simulation = null;
         this.projection = projection;
@@ -93,13 +112,14 @@ public class ShaderBasedVehicleOverlay implements Overlay {
         this.enabled = true;
     }
 
+    @Override
     public void setView(OrthographicView view) {
         this.view = view;
     }
 
 
     @Override
-    public void init(RenderContext context) {
+    public void init(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         // load shader
@@ -115,7 +135,7 @@ public class ShaderBasedVehicleOverlay implements Overlay {
                 .loadFromResource(SHADER_FRAG)
                 .compile(gl);
 
-        prog = ShaderProgram.create(gl, context, "shaderbased.vehicle_overlay")
+        prog = ShaderProgram.create(context, "shaderbased.vehicle_overlay")
                 .attach(gl, vs, gs, fs)
                 .link(gl)
                 .detach(gl, vs, gs, fs);
@@ -264,14 +284,22 @@ public class ShaderBasedVehicleOverlay implements Overlay {
         return enabled;
     }
 
+
+    /**
+     * Returns the simulation displayed in with this overlay.
+     *
+     * @return the simulation displayed in this overlay.
+     */
     public Simulation getSimulation() {
         return simulation;
     }
 
+    @Override
     public void setSimulation(Simulation simulation) {
         this.simulation = simulation;
     }
 
+    @Override
     public Supplier<VisualizationVehicleEntity> getVehicleFactory() {
         return vehicleFactory;
     }

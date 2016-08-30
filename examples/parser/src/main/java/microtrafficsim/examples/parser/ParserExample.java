@@ -8,6 +8,7 @@ import microtrafficsim.core.parser.features.*;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
 import microtrafficsim.core.parser.features.streets.StreetFeatureGenerator;
+import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
@@ -138,6 +139,7 @@ public class ParserExample {
         );
 
         return new OSMParser.Config()
+                .setBoundaryManagementMethod(OSMDataSetSanitizer.BoundaryMgmt.RE_CALCULATE)
                 .setGeneratorIndexUnification(genindexBefore)
                 .setGeneratorIndexStreetGraph(genindexStreetGraph)
                 .setStreetGraphFeatureDefinition(sg)

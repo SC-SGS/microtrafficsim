@@ -8,6 +8,11 @@ import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.vis.opengl.utils.Color;
 
 
+/**
+ * Implementation for the visualization-component of the simulated vehicles.
+ *
+ * @author Maximilian Luz
+ */
 public class Vehicle implements VisualizationVehicleEntity {
 
     private static final float MIN_TARGET_DISTANCE = 1.0f;
@@ -18,6 +23,12 @@ public class Vehicle implements VisualizationVehicleEntity {
     private Coordinate    target;
     private Color         color;
 
+
+    /**
+     * Constructs a new Vehicle with the given color.
+     *
+     * @param color the {@code Color} of this vehicle.
+     */
     public Vehicle(Color color) {
         this.entity   = null;
         this.position = new Coordinate(0, 0);
@@ -115,14 +126,30 @@ public class Vehicle implements VisualizationVehicleEntity {
         position.lon = a.lon + (b.lon - a.lon) * pSegment;
     }
 
+
+    /**
+     * Returns the position of this vehicle as coordinate.
+     *
+     * @return the position of this vehicle.
+     */
     public Coordinate getPosition() {
         return position;
     }
 
+    /**
+     * Returns the depth-layer on which this vehicle resides.
+     *
+     * @return the layer on which this vehicle resides.
+     */
     public float getLayer() {
         return layer;
     }
 
+    /**
+     * Returns the target-position of this vehicle as coordinate.
+     *
+     * @return the target of this vehicle.
+     */
     public Coordinate getTarget() {
         return target;
     }

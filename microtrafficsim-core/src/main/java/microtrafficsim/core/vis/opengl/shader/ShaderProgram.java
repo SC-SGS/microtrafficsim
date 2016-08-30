@@ -14,19 +14,47 @@ import java.util.*;
 import static microtrafficsim.build.BuildSetup.DEBUG_CORE_VIS;
 
 
+/**
+ * Wrapper for OpenGL shader programs.
+ *
+ * @author Maximilian Luz
+ */
 public class ShaderProgram {
     protected static final Logger logger = LoggerFactory.getLogger(ShaderProgram.class);
+
     protected final RenderContext context;
+
     protected final String name;
     protected int          handle;
     protected GL2ES2       bound;
     protected boolean      dirty;
+
     protected HashMap<String, VertexAttribute> attribBindings;
-    protected ArrayList<Shader> shaders;
+    protected ArrayList<Shader>                shaders;
     protected HashMap<String, UniformBinding>  uniforms;
     protected HashMap<String, VertexAttribute> attributes;
+
     protected HashSet<LifeTimeObserver<ShaderProgram>> ltObservers;
 
+
+    /**
+     * Creates a new OpenGL shader program and wraps it as {@code ShaderProgram}.
+     *
+     * @param context the context on which the program should be created.
+     * @param name    the (unique) name of the program, used to identify it.
+     * @return the created {@code ShaderProgram}.
+     */
+    public static ShaderProgram create(RenderContext context, String name) {
+        return new ShaderProgram(context, context.getDrawable().getGL().getGL2ES2().glCreateProgram(), name);
+    }
+
+    /**
+     * Constructs a new wrapper for the given shader program.
+     *
+     * @param context the context on which the shader program has been created.
+     * @param handle  the handle of the existing OpenGL shader program.
+     * @param name    the (unique) name of the program, used to identify it.
+     */
     protected ShaderProgram(RenderContext context, int handle, String name) {
         this.context = context;
         this.handle  = handle;
@@ -44,10 +72,11 @@ public class ShaderProgram {
         this.ltObservers = new HashSet<>();
     }
 
-    public static ShaderProgram create(GL2ES2 gl, RenderContext context, String name) {
-        return new ShaderProgram(context, gl.glCreateProgram(), name);
-    }
-
+    /**
+     * Disposes the wrapped OpenGL shader program.
+     *
+     * @param gl the {@code GL2ES2}-Object of the OpenGL context on which the program has been created.
+     */
     public void dispose(GL2ES2 gl) {
         for (UniformBinding binding : uniforms.values())
             binding.var.removeOwner(this);
@@ -73,15 +102,32 @@ public class ShaderProgram {
     }
 
 
+    /**
+     * Returns the name of this program.
+     *
+     * @return the name of this {@code ShaderProgram}.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Returns the OpenGL handle of the wrapped program.
+     *
+     * @return the OpenGL handle of the wrapped program.
+     */
     public int getHandle() {
         return handle;
     }
 
 
+    /**
+     * Attaches the specified shaders to this shader program.
+     *
+     * @param gl      the {@code GL2ES2}-Object of the OpenGL context on which the program has been created.
+     * @param shaders the (compiled) shaders to attach.
+     * @return this {@code ShaderProgram}.
+     */
     public ShaderProgram attach(GL2ES2 gl, Shader... shaders) {
         for (Shader s : shaders) {
             gl.glAttachShader(handle, s.getHandle());
@@ -93,6 +139,13 @@ public class ShaderProgram {
         return this;
     }
 
+    /**
+     * Detaches the specified shaders from this shader program.
+     *
+     * @param gl      the {@code GL2ES2}-Object of the OpenGL context on which the program has been created.
+     * @param shaders the shaders to detach.
+     * @return this {@code ShaderProgram}.
+     */
     public ShaderProgram detach(GL2ES2 gl, Shader... shaders) {
         for (Shader s : shaders) {
             gl.glDetachShader(handle, s.getHandle());
@@ -103,12 +156,24 @@ public class ShaderProgram {
         return this;
     }
 
+    /**
+     * Return all attached shaders of this program.
+     *
+     * @return the shaders currently attached to this program.
+     */
     public List<Shader> getAttachedShaders() {
         return Collections.unmodifiableList(shaders);
     }
 
 
-    public ShaderProgram link(GL2ES2 gl) {
+    /**
+     * Links the shader program and loads all active uniform- and attribute-bindings.
+     *
+     * @param gl the {@code GL2ES2}-Object of the OpenGL context on which the program has been created.
+     * @throws ShaderLinkException if the shader program cannot be linked.
+     * @return this {@code ShaderProgram}.
+     */
+    public ShaderProgram link(GL2ES2 gl) throws ShaderLinkException {
         // bind attributes
         HashMap<String, VertexAttribute> attribBindings = new HashMap<>(this.attribBindings);
         attribBindings.putAll(context.getVertexAttribManager().getDefaultAttributeBindings());
@@ -121,7 +186,7 @@ public class ShaderProgram {
         // check link status
         int[] status = {0};
         gl.glGetProgramiv(handle, GL2ES2.GL_LINK_STATUS, status, 0);
-        if (status[0] == GL2ES2.GL_FALSE) throw new ShaderLinkError(name, ShaderUtil.getProgramInfoLog(gl, handle));
+        if (status[0] == GL2ES2.GL_FALSE) throw new ShaderLinkException(name, ShaderUtil.getProgramInfoLog(gl, handle));
 
         // reload active attributes and uniforms
         reloadActiveAttributes(gl);
@@ -132,59 +197,128 @@ public class ShaderProgram {
     }
 
 
+    /**
+     * Adds/sets the attribute binding for the given attribute-name to the given {@code VertexAttribute}.
+     *
+     * @param name      the name of the attribute, as used in the GLSL shader code.
+     * @param attribute the {@code VertexAttribute} to bind the name to.
+     * @return the {@code VertexAttribute} previously bound to the given name or {@code null} if none was bound.
+     */
     public VertexAttribute putAttributeBinding(String name, VertexAttribute attribute) {
         if (attributes.containsKey(name)) dirty = true;
         return attribBindings.put(name, attribute);
     }
 
+    /**
+     * Removes the attribute binding for the given attribute-name.
+     *
+     * @param name the name of the attribute, as used in the GLSL shader code.
+     * @return the {@code VertexAttribute} previously bound to the given name or {@code null} if none was bound.
+     */
     public VertexAttribute removeAttributeBinding(String name) {
         if (attributes.containsKey(name)) dirty = true;
         return attribBindings.remove(name);
     }
 
+    /**
+     * Returns the attribute binding for the given attribute-name.
+     *
+     * @param name the name of the attribute, as used in the GLSL shader code.
+     * @return the {@code VertexAttribute} bound to the given name or {@code null} if none is bound.
+     */
     public VertexAttribute getAttributeBinding(String name) {
         return attribBindings.get(name);
     }
 
+    /**
+     * Returns all (manually set) attribute bindings for this shader program.
+     *
+     * @return the attribute bindings for this shader program.
+     */
     public Map<String, VertexAttribute> getAttributeBindings() {
         return Collections.unmodifiableMap(attribBindings);
     }
 
 
+    /**
+     * Returns the active attribute associated with the given name.
+     * Attributes are active if they are used in the actual shader program.
+     *
+     * @param name the name of the attribute to return.
+     * @return the (active) {@code VertexAttribute} associated with the given name or {@code null} if no such attribute
+     * exists.
+     */
     public VertexAttribute getActiveAttribute(String name) {
         return attributes.get(name);
     }
 
+    /**
+     * Returns all active attribute bindings for this shader program.
+     * Attributes are active if they are used in the actual shader program.
+     *
+     * @return all active attributes and their names as map from name to attribute.
+     */
     public Map<String, VertexAttribute> getActiveAttributes() {
         return Collections.unmodifiableMap(attributes);
     }
 
+    /**
+     * Checks if the given name is associated with an active {@code VertexAttribute}.
+     * Attributes are active if they are used in the actual shader program.
+     *
+     * @param name the name of the attribute to check.
+     * @return {@code true} if the attribute associated with the given name is active.
+     */
     public boolean isAttributeActive(String name) {
         return attributes.containsKey(name);
     }
 
 
+    /**
+     * Returns the (active) uniform associated with the given name.
+     * Uniforms are active if they are used in the actual shader program.
+     *
+     * @param name the name of the {@code Uniform} to retrieve.
+     * @return the active {@code Uniform} variable bound by the given name or {@code null} if no such binding exists.
+     */
     public Uniform<?> getUniform(String name) {
         UniformBinding binding = uniforms.get(name);
-        return binding != null ? uniforms.get(name).var : null;
+        return binding != null ? binding.var : null;
     }
 
+    /**
+     * Returns all (active) uniform variable bindings.
+     * Uniforms are active if they are used in the actual shader program.
+     *
+     * @return all active {@code Uniform} bindings.
+     */
     public HashMap<String, Uniform<?>> getActiveUniforms() {
         HashMap<String, Uniform<?>> active = new HashMap<>();
 
-        for (UniformBinding b : uniforms.values()) {
+        for (UniformBinding b : uniforms.values())
             active.put(b.var.getName(), b.var);
-        }
 
         return active;
     }
 
+    /**
+     * Return the OpenGL/GLSL location of the uniform variable associated with the given name.
+     *
+     * @param name the name of the uniform variable to get the location for.
+     * @return the location of the uniform variable associated with the given name or {@code -1}, if no such variable
+     * exists.
+     */
     public int getUniformLocation(String name) {
         UniformBinding binding = uniforms.get(name);
-        return binding != null ? uniforms.get(name).location : -1;
+        return binding != null ? binding.location : -1;
     }
 
 
+    /**
+     * Reloads all active attributes of this shader program.
+     *
+     * @param gl the {@code GL2ES2}-Object of the OpenGL context.
+     */
     private void reloadActiveAttributes(GL2ES2 gl) {
         attributes.clear();
 
@@ -225,6 +359,11 @@ public class ShaderProgram {
         }
     }
 
+    /**
+     * Reloads all active uniform variables of this shader program.
+     *
+     * @param gl the {@code GL2ES2}-Object of the OpenGL context.
+     */
     private void reloadActiveUniforms(GL2ES2 gl) {
         HashMap<String, UniformBinding> uniforms = new HashMap<>();
 
@@ -275,6 +414,11 @@ public class ShaderProgram {
     }
 
 
+    /**
+     * Binds this shader program and, if necessary, updates all dirty uniform variables.
+     *
+     * @param gl the {@code GL2ES2}-Object of the OpenGL context.
+     */
     public void bind(GL2ES2 gl) {
         ShaderProgram current = context.ShaderState.getCurrentProgram();
         if (this == current) return;
@@ -293,17 +437,32 @@ public class ShaderProgram {
         }
     }
 
+    /**
+     * Unbinds the shader program.
+     *
+     * @param gl the {@code GL2ES2}-Object of the OpenGL context.
+     */
     public void unbind(GL2ES2 gl) {
         bound = null;
         context.ShaderState.setCurrentProgram(null);
     }
 
 
+    /**
+     * Checks if this shader program is out-of-date and should to be re-linked.
+     *
+     * @return {@code true} if this shader program is out-of-date.
+     */
     public boolean isDirty() {
         return dirty;
     }
 
 
+    /**
+     * Notifies this shader program that the value of the given {@code Uniform} has changed and needs to be updated.
+     *
+     * @param uniform the {@code Uniform} of which the value has changed.
+     */
     public void uniformValueChanged(Uniform<?> uniform) {
         UniformBinding binding = uniforms.get(uniform.getName());
 
@@ -315,24 +474,53 @@ public class ShaderProgram {
     }
 
 
-    public void addLifeTimeObserver(LifeTimeObserver<ShaderProgram> lto) {
-        ltObservers.add(lto);
+    /**
+     * Adds an observer that is being notified when the life-time of the wrapped OpenGL shader program ends, i.e.
+     * a {@link ShaderProgram#dispose(GL2ES2)} call has been made.
+     *
+     * @param lto the {@code LifeTimeObserver} to add.
+     * @return {@code true} if the underlying set of observers has changed by this call.
+     */
+    public boolean addLifeTimeObserver(LifeTimeObserver<ShaderProgram> lto) {
+        return ltObservers.add(lto);
     }
 
-    public void removeLifeTimeObserver(LifeTimeObserver<ShaderProgram> lto) {
-        ltObservers.remove(lto);
+    /**
+     * Removes the specified {@code LifeTimeObserver} from the set of observers for this shader program.
+     *
+     * @param lto the {@code LifeTimeObserver} to remove.
+     * @return {@code true} if the underlying set of observers has changed by this call.
+     */
+    public boolean removeLifeTimeObserver(LifeTimeObserver<ShaderProgram> lto) {
+        return ltObservers.remove(lto);
     }
 
+    /**
+     * Returns all {@code LifeTimeObservers} observing the life time of this shader program.
+     *
+     * @return all {@code LifeTimeObservers} observing the life time of this shader program.
+     */
     public Set<LifeTimeObserver<ShaderProgram>> getLifeTimeObservers() {
         return Collections.unmodifiableSet(ltObservers);
     }
 
 
+    /**
+     * Uniform variable binding, binding a OpenGL/GLSL location to a uniform variable and indicating the state of
+     * this binding (dirty meaning a need of the uniform to be updated).
+     */
     protected static class UniformBinding {
-        protected final int location;
+        protected final int        location;
         protected final Uniform<?> var;
         protected boolean          dirty;
 
+        /**
+         * Constructs a new {@code UniformBinding} for the given location and {@code Uniform}. {@code dirty} is set
+         * to {@code false}.
+         *
+         * @param location the OpenGL/GLSL location of the uniform variable.
+         * @param var      the {@code Uniform} to bind the location to.
+         */
         protected UniformBinding(int location, Uniform<?> var) {
             this.location = location;
             this.var      = var;

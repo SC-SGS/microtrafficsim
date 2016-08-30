@@ -6,6 +6,11 @@ import microtrafficsim.utils.collections.ArrayUtils;
 import java.util.ArrayList;
 
 
+/**
+ * Polygon utilities.
+ *
+ * @author Maximilian Luz
+ */
 public class Polygons {
     private Polygons() {}
 
@@ -28,6 +33,12 @@ public class Polygons {
         return area;
     }
 
+    /**
+     * Triangulates the given polygon.
+     *
+     * @param polygon the polygon to triangulate.
+     * @return the triangulated polygon as sequence of indices pointing to the points in the original sequence.
+     */
     public static int[] triangulate(Vec2d[] polygon) {
         if (polygon.length < 3) throw new IllegalArgumentException();
 
@@ -80,6 +91,9 @@ public class Polygons {
         return ArrayUtils.toArray(indices, new int[indices.size()]);
     }
 
+    /**
+     * Helper method for {@link Polygons#triangulate(Vec2d[])}
+     */
     private static boolean triangulateSnip(Vec2d[] polygon, int u, int v, int w, int n, int[] ccw) {
         Vec2d a = polygon[ccw[u]];
         Vec2d b = polygon[ccw[v]];

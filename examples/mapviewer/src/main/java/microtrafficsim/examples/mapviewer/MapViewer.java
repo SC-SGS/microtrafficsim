@@ -7,6 +7,7 @@ import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.Visualizer;
@@ -230,13 +231,13 @@ public class MapViewer {
         StyleSheet.ParserConfig styleconfig = STYLE.getParserConfiguration();
 
         /* create a configuration, add factories for parsed components */
-        OSMParser.Config config
-                = new OSMParser.Config()
-                          .setGeneratorIndexUnification(styleconfig.generatorIndexOfUnification)
-                          .setGeneratorIndexStreetGraph(styleconfig.generatorIndexOfStreetGraph)
-                          .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
-                          .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
-                          .putRelationInitializer("restriction", new RestrictionRelationFactory());
+        OSMParser.Config config = new OSMParser.Config()
+                .setBoundaryManagementMethod(OSMDataSetSanitizer.BoundaryMgmt.RE_CALCULATE)
+                .setGeneratorIndexUnification(styleconfig.generatorIndexOfUnification)
+                .setGeneratorIndexStreetGraph(styleconfig.generatorIndexOfStreetGraph)
+                .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
+                .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
+                .putRelationInitializer("restriction", new RestrictionRelationFactory());
 
         /* add the features defined in the style to the parser */
         STYLE.getFeatureDefinitions().forEach(config::putMapFeatureDefinition);

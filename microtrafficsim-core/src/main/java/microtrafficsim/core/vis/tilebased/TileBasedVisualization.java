@@ -21,6 +21,11 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
+/**
+ * Tile-based visualization using an {@code OrthographicView}.
+ *
+ * @author Maximilian Luz
+ */
 public class TileBasedVisualization extends AbstractVisualization {
 
     private static final int    ZOOM_LEVEL_MIN = 0;
@@ -35,18 +40,49 @@ public class TileBasedVisualization extends AbstractVisualization {
     private KeyController        keyController   = new KeyControllerImpl();
 
 
+    /**
+     * Constructs a new tile-based visualization using the given parameters.
+     *
+     * @param width          the width of the viewport.
+     * @param height         the height of the viewport.
+     * @param provider       the {@code TileProvider} providing the tiles to be displayed.
+     * @param nWorkerThreads the number of worker-threads responsible for loading the tiles.
+     */
     public TileBasedVisualization(int width, int height, TileProvider provider, int nWorkerThreads) {
         this(width, height, provider, InterruptSafeExecutors.newFixedThreadPool(nWorkerThreads));
     }
 
+    /**
+     * Constructs a new tile-based visualization using the given parameters.
+     *
+     * @param width    the width of the viewport.
+     * @param height   the height of the viewport.
+     * @param provider the {@code TileProvider} providing the tiles to be displayed.
+     * @param worker   the {@code ExecutorService} providing the worker-threads.
+     */
     public TileBasedVisualization(int width, int height, TileProvider provider, ExecutorService worker) {
         this(new OrthographicView(width, height, Z_NEAR, Z_FAR, ZOOM_LEVEL_MIN, ZOOM_LEVEL_MAX), provider, worker);
     }
 
+    /**
+     * Constructs a new tile-based visualization using the given parameters.
+     *
+     * @param view     the {@code OrthographicView} to be used for this visualization.
+     * @param provider the {@code TileProvider} providing the tiles to be displayed.
+     * @param worker   the {@code ExecutorService} providing the worker-threads.
+     */
     private TileBasedVisualization(OrthographicView view, TileProvider provider, ExecutorService worker) {
         this(new RenderContext(), view, provider, worker);
     }
 
+    /**
+     * Constructs a new tile-based visualization using the given parameters.
+     *
+     * @param context  the {@code RenderContext} on which this visualization will be displayed.
+     * @param view     the {@code OrthographicView} to be used for this visualization.
+     * @param provider the {@code TileProvider} providing the tiles to be displayed.
+     * @param worker   the {@code ExecutorService} providing the worker-threads.
+     */
     private TileBasedVisualization(RenderContext context, OrthographicView view, TileProvider provider,
                                    ExecutorService worker) {
         super(context, new TileBasedVisualizer(context, view, provider, worker));
@@ -54,6 +90,11 @@ public class TileBasedVisualization extends AbstractVisualization {
     }
 
 
+    /**
+     * Applies the given style-sheet to this visualization.
+     *
+     * @param style the style-sheet to apply.
+     */
     public void apply(StyleSheet style) {
         ((TileBasedVisualizer) getVisualizer()).apply(style);
     }
@@ -70,6 +111,10 @@ public class TileBasedVisualization extends AbstractVisualization {
     }
 
 
+    /**
+     * Basic key-listener to distribute the mouse-events to the specific overlays and finally the controller of
+     * this visualization.
+     */
     private class MouseControllerImpl implements MouseListener {
 
         @Override
@@ -106,13 +151,30 @@ public class TileBasedVisualization extends AbstractVisualization {
         public void mouseEntered(MouseEvent e) {
             resolve(e, Overlay.MouseListener::mouseEntered, controller::mouseEntered);
         }
-
+        /**
+         * Resolves the given event by distributing it to the overlays and the top-level controller. The
+         * distribution-process stops as soon as any overlay fully consumes the event (i.e. the callback of this event
+         * returns {@code true}) and thus blocks subsequent overlays from receiving this event.
+         *
+         * @param e        the event to resolve.
+         * @param call     the call to be executed for each overlay.
+         * @param toplevel the top-level receiver of the event.
+         */
         @Override
         public void mouseExited(MouseEvent e) {
             resolve(e, Overlay.MouseListener::mouseExited, controller::mouseExited);
         }
 
 
+        /**
+         * Resolves the given event by distributing it to the overlays and the top-level controller. The
+         * distribution-process stops as soon as any overlay fully consumes the event (i.e. the callback of this event
+         * returns {@code true}) and thus blocks subsequent overlays from receiving this event.
+         *
+         * @param e        the event to resolve.
+         * @param call     the call to be executed for each overlay.
+         * @param toplevel the top-level receiver of the event.
+         */
         private void resolve(MouseEvent e, BiPredicate<Overlay.MouseListener, MouseEvent> call,
                              Consumer<MouseEvent> toplevel) {
             ArrayList<Overlay.MouseListener> listeners = getAllOverlays().stream()
@@ -128,6 +190,10 @@ public class TileBasedVisualization extends AbstractVisualization {
         }
     }
 
+    /**
+     * Basic key-listener to distribute the key-events to the specific overlays and finally the controller of
+     * this visualization.
+     */
     private class KeyControllerImpl implements KeyController {
 
         @Override
@@ -151,6 +217,15 @@ public class TileBasedVisualization extends AbstractVisualization {
         }
 
 
+        /**
+         * Resolves the given event by distributing it to the overlays and the top-level controller. The
+         * distribution-process stops as soon as any overlay fully consumes the event (i.e. the callback of this event
+         * returns {@code true}) and thus blocks subsequent overlays from receiving this event.
+         *
+         * @param e        the event to resolve.
+         * @param call     the call to be executed for each overlay.
+         * @param toplevel the top-level receiver of the event.
+         */
         private void resolve(KeyEvent e, BiPredicate<Overlay.KeyListener, KeyEvent> call, Consumer<KeyEvent> toplevel) {
             ArrayList<Overlay.KeyListener> listeners = getAllOverlays().stream()
                     .map(Overlay::getKeyListeners)

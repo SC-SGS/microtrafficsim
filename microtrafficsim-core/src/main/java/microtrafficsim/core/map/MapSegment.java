@@ -3,12 +3,23 @@ package microtrafficsim.core.map;
 import java.util.*;
 
 
+/**
+ * Segment containing map-features.
+ *
+ * @author Maximilian Luz
+ */
 public class MapSegment implements SegmentFeatureProvider {
 
     private Bounds bounds;
     private Map<String, Feature<?>> featureset;
     private List<FeatureChangeListener> listeners;
 
+    /**
+     * Constructs a new {@code MapSegment} from the given feature set.
+     *
+     * @param bounds     the bounds of the provided map features.
+     * @param featureset the features contained in this map segment.
+     */
     public MapSegment(Bounds bounds, Map<String, Feature<?>> featureset) {
         this.bounds     = bounds;
         this.featureset = featureset;

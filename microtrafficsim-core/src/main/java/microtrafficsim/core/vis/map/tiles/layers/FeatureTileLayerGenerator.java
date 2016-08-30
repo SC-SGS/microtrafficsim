@@ -20,6 +20,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 
+/**
+ * Generator for feature tile layers.
+ *
+ * @author Maximilian Luz
+ */
 public class FeatureTileLayerGenerator implements TileLayerGenerator {
     private static final Logger logger = LoggerFactory.getLogger(FeatureTileLayerGenerator.class);
 
@@ -30,10 +35,22 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
     private HashMap<Class<? extends FeaturePrimitive>, FeatureMeshGenerator> generators;
 
 
+    /**
+     * Constructs a new {@code FeatureTileLayerGenerator} and default-initializes it.
+     * This call is equivalent to
+     * {@link FeatureTileLayerGenerator#FeatureTileLayerGenerator(boolean)
+     * FeatureTileLayerGenerator(true)}
+     */
     public FeatureTileLayerGenerator() {
         this(true);
     }
 
+    /**
+     * Constructs a new {@code FeatureTileLayerGenerator} and default-initializes it, if specified.
+     * Default-initialization adds default generators.
+     *
+     * @param defaultInit set to {@code true} if the generator should be default initialized.
+     */
     public FeatureTileLayerGenerator(boolean defaultInit) {
         this.pool       = new MeshPool<>();
         this.loading    = new HashSet<>();

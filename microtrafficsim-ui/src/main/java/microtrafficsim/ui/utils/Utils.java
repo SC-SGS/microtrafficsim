@@ -2,8 +2,8 @@ package microtrafficsim.ui.utils;
 
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
-import microtrafficsim.core.vis.opengl.shader.ShaderCompileError;
-import microtrafficsim.core.vis.opengl.shader.ShaderLinkError;
+import microtrafficsim.core.vis.opengl.shader.ShaderCompileException;
+import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.utils.FramebufferUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,10 +102,10 @@ public class Utils {
 
         @Override
         public void uncaughtException(RenderContext context, Throwable exception) {
-            if (exception instanceof ShaderCompileError)
-                exceptionPrintf(System.err, (ShaderCompileError) exception);
-            else if (exception instanceof ShaderLinkError)
-                exceptionPrintf(System.err, (ShaderLinkError) exception);
+            if (exception instanceof ShaderCompileException)
+                exceptionPrintf(System.err, (ShaderCompileException) exception);
+            else if (exception instanceof ShaderLinkException)
+                exceptionPrintf(System.err, (ShaderLinkException) exception);
             else
                 exception.printStackTrace();
 
@@ -113,7 +113,7 @@ public class Utils {
             Runtime.getRuntime().halt(1);
         }
 
-        private void exceptionPrintf(PrintStream out, ShaderCompileError error) {
+        private void exceptionPrintf(PrintStream out, ShaderCompileException error) {
             out.println(error.toString());
             out.println("-- LOG -------------------------------------------------------------------------");
             out.println(error.getShaderInfoLog());
@@ -123,7 +123,7 @@ public class Utils {
             error.printStackTrace(out);
         }
 
-        private void exceptionPrintf(PrintStream out, ShaderLinkError error) {
+        private void exceptionPrintf(PrintStream out, ShaderLinkException error) {
             out.println(error.toString());
             out.println("-- LOG -------------------------------------------------------------------------");
             out.println(error.getProgramInfoLog());

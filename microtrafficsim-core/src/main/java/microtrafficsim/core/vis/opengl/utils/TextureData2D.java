@@ -1,7 +1,5 @@
 package microtrafficsim.core.vis.opengl.utils;
 
-import microtrafficsim.core.vis.exceptions.ResourceError;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -30,7 +28,6 @@ public class TextureData2D {
      * Buffer containing the pixel-data. Each integer corresponds to a Pixel,
      * stored in the {@code ARGB} format, this corresponds to OpenGL's
      * {@code GL_BGRA} format (since Java is big-endian).
-     * <p>
      * <p>
      * The pixel-data order equals the order required by OpenGL: "The first
      * element corresponds to the lower left corner of the texture image.
@@ -63,7 +60,7 @@ public class TextureData2D {
      * @param in the {@code InputStream} from which the Texture Data should be
      *           loaded.
      * @return the loaded Texture Data.
-     * @throws IOException
+     * @throws IOException if any file-related exception occurs.
      */
     public static TextureData2D load(InputStream in) throws IOException {
         BufferedImage image = ImageIO.read(in);
@@ -84,13 +81,10 @@ public class TextureData2D {
      * @param clazz    the class from which the resource should be loaded.
      * @param resource the path of the resource to load.
      * @return the loaded Texture Data.
-     * @throws ResourceError if an {@code IOException} occurred while accessing the
-     *                       resource.
+     * @throws IOException if an {@code IOException} occurred while accessing the resource.
      * @see TextureData2D#load(InputStream)
      */
-    public static TextureData2D loadFromResource(Class<?> clazz, String resource) {
-        try {
-            return load(clazz.getResourceAsStream(resource));
-        } catch (IOException e) { throw new ResourceError(resource, e); }
+    public static TextureData2D loadFromResource(Class<?> clazz, String resource) throws IOException {
+        return load(clazz.getResourceAsStream(resource));
     }
 }

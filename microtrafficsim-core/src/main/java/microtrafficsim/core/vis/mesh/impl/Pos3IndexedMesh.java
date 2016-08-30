@@ -21,6 +21,12 @@ import java.util.Set;
 
 
 // TODO: generalize?
+
+/**
+ * Index-based mesh containing 3-component position vectors.
+ *
+ * @author Maximilian Luz
+ */
 public class Pos3IndexedMesh implements Mesh {
     private State state;
 
@@ -41,6 +47,14 @@ public class Pos3IndexedMesh implements Mesh {
     private HashSet<LifeTimeObserver<Mesh>> ltObservers;
 
 
+    /**
+     * Creates a new mesh with the given properties.
+     *
+     * @param usage    the OpenGL usage of the mesh.
+     * @param mode     the OpenGL draw-mode of the mesh.
+     * @param vertices the vertex buffer.
+     * @param indices  the index buffer.
+     */
     public Pos3IndexedMesh(int usage, int mode, FloatBuffer vertices, IntBuffer indices) {
         this.state = State.UNINITIALIZED;
 
@@ -57,10 +71,20 @@ public class Pos3IndexedMesh implements Mesh {
     }
 
 
+    /**
+     * Sets the vertex buffer of this mesh.
+     *
+     * @param vertices the new vertex buffer of this mesh.
+     */
     public void setVertexBuffer(FloatBuffer vertices) {
         this.vertices = vertices;
     }
 
+    /**
+     * Sets the index buffer of this mesh.
+     *
+     * @param indices the new index buffer of this mesh.
+     */
     public void setIndexBuffer(IntBuffer indices) {
         this.indices = indices;
     }
@@ -189,13 +213,13 @@ public class Pos3IndexedMesh implements Mesh {
     }
 
     @Override
-    public void addLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
-        ltObservers.add(lto);
+    public boolean addLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
+        return ltObservers.add(lto);
     }
 
     @Override
-    public void removeLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
-        ltObservers.remove(lto);
+    public boolean removeLifeTimeObserver(LifeTimeObserver<Mesh> lto) {
+        return ltObservers.remove(lto);
     }
 
     @Override
@@ -204,11 +228,21 @@ public class Pos3IndexedMesh implements Mesh {
     }
 
 
+    /**
+     * {@code MeshBucket} implementation for the {@code Pos3IndexedMesh}.
+     */
     public class Bucket implements MeshBucket {
         private final float zIndex;
         private final int   offset;
         private final int   count;
 
+        /**
+         * Constructs a new bucket with the given properties.
+         *
+         * @param zIndex the z-index of the bucket.
+         * @param offset the offset (in floats) of the data in the buffer.
+         * @param count  the vertex-count of the data in the buffer.
+         */
         public Bucket(float zIndex, int offset, int count) {
             this.zIndex = zIndex;
             this.offset = offset;

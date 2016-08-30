@@ -3,6 +3,11 @@ package microtrafficsim.core.vis.opengl.shader.attributes;
 import microtrafficsim.core.vis.opengl.DataTypes;
 
 
+/**
+ * Default vertex attributes.
+ *
+ * @author Maximilian Luz
+ */
 public class VertexAttributes {
     private VertexAttributes() {}
 
