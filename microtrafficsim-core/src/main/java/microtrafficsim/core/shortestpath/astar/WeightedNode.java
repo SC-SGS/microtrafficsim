@@ -6,7 +6,7 @@ import microtrafficsim.core.shortestpath.ShortestPathNode;
 
 /**
  * <p>
- * This class supports {@link AbstractAStarAlgorithm} by saving the relevant
+ * This class supports {@link AStarAlgorithm} by saving the relevant
  * weights of the nodes to find the shortest path. This class also implements
  * compareTo, that is comparing the whole weight f = g + h. <br>
  * g: Real weight from the start to this node. <br>

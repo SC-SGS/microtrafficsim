@@ -11,7 +11,7 @@ package microtrafficsim.core.shortestpath;
 public interface ShortestPathEdge {
 
     /**
-     * @return Length of this edge in cells.
+     * @return Length of this edge in a certain unit.
      */
     int getLength();
 
@@ -25,7 +25,7 @@ public interface ShortestPathEdge {
      * could be passed faster than a shorter road, where you have to drive more
      * slowly.
      *
-     * @return Time to pass this edge.
+     * @return Time to pass this edge in milliseconds
      */
     float getTimeCostMillis();
 

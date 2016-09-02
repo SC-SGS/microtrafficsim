@@ -31,8 +31,21 @@ public interface ShortestPathAlgorithm {
     }
 
     /**
-     * @return A sequence of edges, starting from the start node to
-     * the end node.
+     * <pr>
+     * This method calculates the shortest path and returns a stack containing all edges starting with
+     * an edge leaving the given start node and ending with an edge going to the given end node.
+     * <p>
+     * A stack is chosen because it is useful for dynamic routing: if the next k edges are (however) a bad choice now,
+     * you could just pop them until a certain node and you can add another path to it by pushing new edges on the
+     * stack.
+     * <p>
+     * IMPORTANT: This method MUST NOT clear the given stack. In case of dynamic routing, you have to ensure that the
+     * data, which is already in the stack, gets not damaged.
+     *
+     * @param start First node of the shortest path
+     * @param end Last node of the shortest path
+     * @param shortestPath This data structure gets NOT cleared, but filled with the edges of the shortest path, that is
+     *                     calculated in this method.
      */
     void findShortestPath(ShortestPathNode start,
                           ShortestPathNode end,

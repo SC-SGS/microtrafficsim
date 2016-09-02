@@ -1,11 +1,14 @@
 package logic.dijkstra;
 
+import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
-import microtrafficsim.core.shortestpath.astar.impl.ShortestWayDijkstra;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.shortestpath.astar.AStarAlgorithm;
+import microtrafficsim.core.shortestpath.astar.impl.FastestWayAStar;
+import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Vec2f;
 import org.junit.Before;
@@ -23,7 +26,8 @@ import static org.junit.Assert.assertTrue;
 
 
 /**
- *
+ * This test creates small graphs and checks a certain instance of {@link ShortestPathAlgorithm} defined in
+ * {@link #setupClass()}.
  *
  * @author Dominic Parga Cacheiro
  */
@@ -31,9 +35,9 @@ public class UnitTestDijkstraExample {
     private static final Logger logger = LoggerFactory.getLogger(UnitTestDijkstraExample.class);
 
     private static SimulationConfig    config;
-    private static ShortestWayDijkstra dijkstra;
+    private static ShortestPathAlgorithm shortestPathAlgorithm;
     private static Vec2f               rubbish;
-    private final int                  maxVelocity = -1;
+    private final int                  maxVelocity = 1;
     private Stack<ShortestPathEdge>    shortestPath;
     private LinkedList<DirectedEdge>   correctShortestPath;
     private StreetGraph                graph;
@@ -42,8 +46,10 @@ public class UnitTestDijkstraExample {
 
     @BeforeClass
     public static void setupClass() {
-        config   = new SimulationConfig();
-        dijkstra = new ShortestWayDijkstra();
+        config = new SimulationConfig();
+        shortestPathAlgorithm = AStarAlgorithm.createShortestWayDijkstra();
+//        shortestPathAlgorithm = new FastestWayAStar(7.5f);
+//        shortestPathAlgorithm = new LinearDistanceAStar(7.5f);
         rubbish  = new Vec2f(1.0f, 1.0f);
     }
 
@@ -111,7 +117,8 @@ public class UnitTestDijkstraExample {
         start = a;
         end   = e;
 
-        dijkstra.findShortestPath(start, end, shortestPath);
+        shortestPath.clear();
+        shortestPathAlgorithm.findShortestPath(start, end, shortestPath);
 
         // correct path
         correctShortestPath.addLast(ab);
@@ -131,7 +138,8 @@ public class UnitTestDijkstraExample {
 
         logger.info("Test: Correct if no path exists?");
         Node f              = new Node(config, uselessPosition);
-        dijkstra.findShortestPath(start, f, shortestPath);
+        shortestPath.clear();
+        shortestPathAlgorithm.findShortestPath(start, f, shortestPath);
         assertTrue(null, shortestPath.isEmpty());
     }
 
@@ -228,7 +236,8 @@ public class UnitTestDijkstraExample {
         start = g;
         end   = c;
 
-        dijkstra.findShortestPath(start, end, shortestPath);
+        shortestPath.clear();
+        shortestPathAlgorithm.findShortestPath(start, end, shortestPath);
 
         // correct path
         correctShortestPath.addLast(gd);
@@ -339,7 +348,8 @@ public class UnitTestDijkstraExample {
         start = g;
         end   = c;
 
-        dijkstra.findShortestPath(start, end, shortestPath);
+        shortestPath.clear();
+        shortestPathAlgorithm.findShortestPath(start, end, shortestPath);
 
         // correct paths
         // g-d-e-b-c
