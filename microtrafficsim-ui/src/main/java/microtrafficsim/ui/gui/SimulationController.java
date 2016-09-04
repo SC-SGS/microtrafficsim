@@ -402,7 +402,7 @@ public class SimulationController implements GUIController {
 
             @Override
             public String getDescription() {
-                return ".processing";
+                return ".osm";
             }
 
             @Override
@@ -419,7 +419,7 @@ public class SimulationController implements GUIController {
                 if (extension == null) return false;
 
                 switch (extension) {
-                case "processing": return true;
+                case "osm": return true;
                 default:    return false;
                 }
             }

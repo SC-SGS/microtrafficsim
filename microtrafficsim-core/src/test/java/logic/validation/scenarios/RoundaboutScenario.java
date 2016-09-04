@@ -28,7 +28,7 @@ import java.util.function.Supplier;
  */
 public class RoundaboutScenario extends ValidationScenario {
 
-    private static final String OSM_FILENAME = "roundabout.processing";
+    private static final String OSM_FILENAME = "roundabout.osm";
     private Node                topRight, topLeft, left, bottom, right;
     // left is no start point!
     private NextScenarioState nextScenarioState;
