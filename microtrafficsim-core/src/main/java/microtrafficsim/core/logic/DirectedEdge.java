@@ -124,21 +124,6 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
     }
 
     @Override
-    public float getCurrentUsage() {
-        int activeLaneCounter = 0;
-        int vehicleCount      = 0;
-
-        for (Lane lane : lanes) {
-            if (lane != null) {
-                activeLaneCounter++;
-                vehicleCount = vehicleCount + lane.getVehicleCount();
-            }
-        }
-
-        return ((float) vehicleCount) / activeLaneCounter;
-    }
-
-    @Override
     public float getTimeCostMillis() {
         // 1000f because velocity is in cells/s = cells/1000ms
         return (1000f * getLength()) / maxVelocity;

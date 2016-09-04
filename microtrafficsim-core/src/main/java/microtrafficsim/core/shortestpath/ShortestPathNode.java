@@ -3,6 +3,7 @@ package microtrafficsim.core.shortestpath;
 import microtrafficsim.core.map.Mappable;
 
 import java.util.Iterator;
+import java.util.Set;
 
 
 /**
@@ -15,7 +16,12 @@ public interface ShortestPathNode extends Mappable {
     /**
      * @param incoming The leaving edges are depending on the incoming edge.
      *                 Therefore, this parameter is needed.
-     * @return An iterator over all edges that are leaving this node
+     * @return A set of all edges that are leaving this node
      */
-    Iterator<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming);
+    Set<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming);
+
+    /**
+     * @return A set of all edges that are coming in this node
+     */
+    Set<ShortestPathEdge> getIncomingEdges();
 }

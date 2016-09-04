@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  * This class represents one crossing point of two or more @DirectedEdge#s.
  * <p>
- * IDijkstrableNode serves functionality for shortest path calculations.
+ * ShortestPathNode serves functionality for shortest path calculations.
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
@@ -36,11 +36,9 @@ public class Node implements ShortestPathNode {
     private boolean                     anyChangeSinceUpdate;
 
     // edges
-    private HashMap<DirectedEdge, Byte> leavingEdges;    // edge, index(for
+    private HashMap<DirectedEdge, Byte> leavingEdges;    // edge, index(for crossing logic)
+    private HashMap<DirectedEdge, Byte> incomingEdges;    // edge, index(for crossing logic)
 
-    // crossing logic)
-    private HashMap<DirectedEdge, Byte> incomingEdges;    // edge, index(for
-                                                          // crossing logic)
 
     /**
      * Standard constructor. The name is just for printing use and has no
@@ -350,11 +348,11 @@ public class Node implements ShortestPathNode {
 
     /*
     |======================|
-    | (i) IDijkstrableNode |
+    | (i) ShortestPathNode |
     |======================|
     */
     @Override
-    public Iterator<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming) {
+    public Set<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming) {
         HashSet<ShortestPathEdge> returnEdges = new HashSet<>();
 
         if (incoming != null) {
@@ -364,9 +362,9 @@ public class Node implements ShortestPathNode {
                 if (restrictedLeavingLanes != null)
                     returnEdges.addAll(
                             restrictedLeavingLanes.stream().map(Lane::getAssociatedEdge).collect(Collectors.toList()));
-                // before: (wtf Intellij is so awesome)
-                // for (Lane leavingLane : restrictedLeavingLanes)
-                // returnEdges.add(leavingLane.getAssociatedEdge());
+                    // before: (wtf Intellij is so awesome)
+                    // for (Lane leavingLane : restrictedLeavingLanes)
+                    // returnEdges.add(leavingLane.getAssociatedEdge());
                 else
                     returnEdges.addAll(leavingEdges.keySet());
             }
@@ -374,7 +372,12 @@ public class Node implements ShortestPathNode {
             returnEdges.addAll(leavingEdges.keySet());
         }
 
-        return returnEdges.iterator();
+        return returnEdges;
+    }
+
+    @Override
+    public Set<ShortestPathEdge> getIncomingEdges() {
+        return new HashSet<>(incomingEdges.keySet());
     }
 
     @Override

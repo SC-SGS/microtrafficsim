@@ -8,7 +8,7 @@ import microtrafficsim.core.shortestpath.ShortestPathEdge;
  *
  * @author Dominic Parga Cacheiro
  */
-class EdgeWeightTuple {
+public class EdgeWeightTuple {
     float            weight;
     ShortestPathEdge edge;
 

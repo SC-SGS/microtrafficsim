@@ -3,7 +3,6 @@ package microtrafficsim.core.shortestpath.astar;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
-import microtrafficsim.math.HaversineDistanceCalculator;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -11,20 +10,13 @@ import java.util.function.Function;
 
 
 /**
- * This class represents an abstract A* algorithm. It is abstract because you
- * have to extend "getEdgeWeight(@IDijkstrableEdge edge)" and
- * "estimate({@link ShortestPathEdge} edge)". Therefore you are just allowed to use
- * positive edge weights.
- * <p>
- * In case you want to implement Dijkstra's algorithm, you have to extend this
- * class and implement getEdgeWeight(...) and estimate(...) should return 0.
- * <p>
- * IShortestPathAlgorithm serves
- * "findShortestPath(IDijkstrableNode start, IDijkstrableNode end)"
+ * This class represents an A* algorithm. You can use the constructor for own implementations of the weight and
+ * estimation function, but you can also use {@link #createShortestWayDijkstra()} for a standard implementation of
+ * Dijkstra's algorithm.
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class AStarAlgorithm implements ShortestPathAlgorithm {
+public class AStar implements ShortestPathAlgorithm {
 
     private HashSet<ShortestPathNode> visitedNodes;
     private HashMap<ShortestPathNode, EdgeWeightTuple> predecessors;
@@ -54,8 +46,8 @@ public class AStarAlgorithm implements ShortestPathAlgorithm {
      *                           2) This estimation has to be >= 0
      *
      */
-    public AStarAlgorithm(Function<ShortestPathEdge, Float> edgeWeightFunction,
-                          BiFunction<ShortestPathNode, ShortestPathNode, Float> estimationFunction) {
+    public AStar(Function<ShortestPathEdge, Float> edgeWeightFunction,
+                 BiFunction<ShortestPathNode, ShortestPathNode, Float> estimationFunction) {
         visitedNodes = new HashSet<>();
         predecessors = new HashMap<>();
         queue        = new PriorityQueue<>();
@@ -68,8 +60,8 @@ public class AStarAlgorithm implements ShortestPathAlgorithm {
      * @return Standard implementation of Dijkstra's algorithm for calculating the shortest (not necessarily fastest)
      * path using {@link ShortestPathEdge#getLength()}
      */
-    public static AStarAlgorithm createShortestWayDijkstra() {
-        return new AStarAlgorithm(
+    public static AStar createShortestWayDijkstra() {
+        return new AStar(
                 edge -> (float)edge.getLength(),
                 (destination, routeDestination) -> 0f
         );
@@ -84,15 +76,11 @@ public class AStarAlgorithm implements ShortestPathAlgorithm {
     public void findShortestPath(ShortestPathNode start, ShortestPathNode end, Stack<ShortestPathEdge> shortestPath) {
         if (start != end) {
             // INIT (the same as in the while-loop below)
-            // this is needed to guarantee that each node in the queue has a
-            // predecessor
-            // => no if-condition if it has a predecessor
+            // this is needed because the first node has no predecessors in this algorithm
             WeightedNode origin = new WeightedNode(start, 0f, estimationFunction.apply(start, end));
             visitedNodes.add(origin.node);
             // iterate over all leaving edges
-            Iterator<ShortestPathEdge> leavingEdges = origin.node.getLeavingEdges(null);
-            while (leavingEdges.hasNext()) {
-                ShortestPathEdge edge = leavingEdges.next();
+            for (ShortestPathEdge edge : origin.node.getLeavingEdges(null)) {
                 ShortestPathNode dest = edge.getDestination();
                 float            g    = origin.g + edgeWeightFunction.apply(edge);
 
@@ -136,9 +124,7 @@ public class AStarAlgorithm implements ShortestPathAlgorithm {
                     visitedNodes.add(origin.node);
 
                     // iterate over all leaving edges
-                    leavingEdges = origin.node.getLeavingEdges(predecessors.get(origin.node).edge);
-                    while (leavingEdges.hasNext()) {
-                        ShortestPathEdge edge = leavingEdges.next();
+                    for (ShortestPathEdge edge : origin.node.getLeavingEdges(predecessors.get(origin.node).edge)) {
                         ShortestPathNode dest = edge.getDestination();
                         float            g    = origin.g + edgeWeightFunction.apply(edge);
 

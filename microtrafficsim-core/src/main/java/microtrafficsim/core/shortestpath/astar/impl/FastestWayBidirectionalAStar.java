@@ -2,6 +2,7 @@ package microtrafficsim.core.shortestpath.astar.impl;
 
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.astar.AStar;
+import microtrafficsim.core.shortestpath.astar.BidirectionalAStar;
 import microtrafficsim.math.HaversineDistanceCalculator;
 
 
@@ -11,9 +12,9 @@ import microtrafficsim.math.HaversineDistanceCalculator;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class FastestWayAStar extends AStar {
+public class FastestWayBidirectionalAStar extends BidirectionalAStar {
 
-    public FastestWayAStar(float metersPerCell) {
+    public FastestWayBidirectionalAStar(float metersPerCell) {
         super(
                 ShortestPathEdge::getTimeCostMillis,
                 (destination, routeDestination) ->

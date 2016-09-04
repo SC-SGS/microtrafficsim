@@ -6,9 +6,11 @@ import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.shortestpath.astar.AStarAlgorithm;
+import microtrafficsim.core.shortestpath.astar.AStar;
+import microtrafficsim.core.shortestpath.astar.BidirectionalAStar;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayAStar;
-import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
+import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
+import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Vec2f;
 import org.junit.Before;
@@ -47,9 +49,12 @@ public class UnitTestDijkstraExample {
     @BeforeClass
     public static void setupClass() {
         config = new SimulationConfig();
-        shortestPathAlgorithm = AStarAlgorithm.createShortestWayDijkstra();
+//        shortestPathAlgorithm = AStar.createShortestWayDijkstra();
 //        shortestPathAlgorithm = new FastestWayAStar(7.5f);
 //        shortestPathAlgorithm = new LinearDistanceAStar(7.5f);
+//        shortestPathAlgorithm = BidirectionalAStar.createShortestWayDijkstra();
+//        shortestPathAlgorithm = new FastestWayBidirectionalAStar(7.5f);
+//        shortestPathAlgorithm = new LinearDistanceBidirectionalAStar(7.5f);
         rubbish  = new Vec2f(1.0f, 1.0f);
     }
 

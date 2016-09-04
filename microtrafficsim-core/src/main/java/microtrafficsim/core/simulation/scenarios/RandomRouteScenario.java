@@ -6,7 +6,9 @@ import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.area.RectangleArea;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayAStar;
+import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
+import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 
 import java.util.Random;
@@ -55,9 +57,9 @@ public class RandomRouteScenario extends AbstractStartEndScenario {
             @Override
             public ShortestPathAlgorithm get() {
                 if (random.nextFloat() < 1.0f) {
-                    return new FastestWayAStar(config.metersPerCell);
+                    return new FastestWayBidirectionalAStar(config.metersPerCell);
                 } else {
-                    return new LinearDistanceAStar(config.metersPerCell);
+                    return new LinearDistanceBidirectionalAStar(config.metersPerCell);
                 }
             }
         };

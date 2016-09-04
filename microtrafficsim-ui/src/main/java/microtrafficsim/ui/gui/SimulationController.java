@@ -406,7 +406,7 @@ public class SimulationController implements GUIController {
 
             @Override
             public String getDescription() {
-                return ".processing";
+                return ".processing"; // TODO Max fragen
             }
 
             @Override
@@ -423,8 +423,8 @@ public class SimulationController implements GUIController {
                 if (extension == null) return false;
 
                 switch (extension) {
-                case "processing": return true;
-                default:    return false;
+                case "processing": return true; // TODO Max fragen
+                default:           return false;
                 }
             }
         });
