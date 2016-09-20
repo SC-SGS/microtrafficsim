@@ -4,7 +4,6 @@ import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.primitives.Node;
 import microtrafficsim.osm.primitives.Way;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -18,14 +17,17 @@ import java.util.function.Predicate;
  */
 public class FeatureDefinition {
 
+    public static FeatureDefinition createDependencyPlaceholder() {
+        return new FeatureDefinition("placeholder -- do not use", new FeatureDependency(), null, null, null);
+    }
+
     private String              name;
-    private int                 genindex;
+    private FeatureDependency   dependency;
     private FeatureGenerator    generator;
     private Predicate<Node>     nodeMatcher;
     private Predicate<Way>      wayMatcher;
     private Set<Class<? extends Component>> nodeComponents;
     private Set<Class<? extends Component>> wayComponents;
-
 
     /**
      * Creates a new {@code FeatureDefinition} with the provided parameters.
@@ -35,30 +37,28 @@ public class FeatureDefinition {
      * <p>
      * This call is equivalent to
      * {@link
-     * FeatureDefinition#FeatureDefinition(String, int, FeatureGenerator,
-     * Predicate, Predicate, Set, Set)
-     * FeatureDefinition(name, genindex, generator, nodeMatcher, wayMatcher, null, null)
+     * FeatureDefinition#FeatureDefinition(String, FeatureDependency, FeatureGenerator, Predicate, Predicate, Set, Set)
+     * FeatureDefinition(name, dependency, generator, nodeMatcher, wayMatcher, null, null)
      * }
      *
      * @param name        the (unique) name of the {@code Feature}.
-     * @param genindex    the generator-index of the {@code Feature}.
+     * @param dependency  the dependencies of the {@code Feature}.
      * @param generator   the generator to generate the {@code FeaturePrimitive}s of this {@code Feature}.
      * @param nodeMatcher a predicate to specify which nodes belong to this {@code Feature}.
      * @param wayMatcher  a predicate to specify which ways belong to this {@code Feature}.
      */
-    public FeatureDefinition(String name, int genindex, FeatureGenerator generator, Predicate<Node> nodeMatcher,
-                             Predicate<Way> wayMatcher) {
-        this(name, genindex, generator, nodeMatcher, wayMatcher, null, null);
+    public FeatureDefinition(String name, FeatureDependency dependency, FeatureGenerator generator,
+                             Predicate<Node> nodeMatcher, Predicate<Way> wayMatcher) {
+        this(name, dependency, generator, nodeMatcher, wayMatcher, null, null);
     }
 
     /**
      * Creates a new {@code FeatureDefinition} with the provided parameters.
-     * {@code genindex} specifies when this feature should be generated (in
-     * relation to other features), this may depend on the data-{@code
-     * Processor} used.
+     * {@code dependency} specifies the dependencies of this feature in context of generation, i.e. when this feature
+     * should be generated in relation to other features (this may depend on the data-{@code Processor} used).
      *
      * @param name           the (unique) name of the {@code Feature}.
-     * @param genindex       the generator-index of the {@code Feature}.
+     * @param dependency     the dependencies of the {@code Feature}.
      * @param generator      the generator to generate the {@code FeaturePrimitive}s of this {@code Feature}.
      * @param nodeMatcher    a predicate to specify which nodes belong to this {@code Feature}.
      * @param wayMatcher     a predicate to specify which ways belong to this {@code Feature}.
@@ -67,68 +67,23 @@ public class FeatureDefinition {
      * @param wayComponents  the type of {@code WayEntity}'s {@code Component}s to be initialized
      *                       besides the ones specified by the generator.
      */
-    public FeatureDefinition(String name, int genindex, FeatureGenerator generator, Predicate<Node> nodeMatcher,
-                             Predicate<Way> wayMatcher, Set<Class<? extends Component>> nodeComponents,
+    public FeatureDefinition(String name, FeatureDependency dependency, FeatureGenerator generator,
+                             Predicate<Node> nodeMatcher, Predicate<Way> wayMatcher,
+                             Set<Class<? extends Component>> nodeComponents,
                              Set<Class<? extends Component>> wayComponents) {
         this.name        = name;
         this.generator   = generator;
-        this.genindex    = genindex;
-        this.nodeMatcher = nodeMatcher;
-        this.wayMatcher  = wayMatcher;
+        this.dependency  = dependency;
+        this.nodeMatcher = nodeMatcher != null ? nodeMatcher : n -> false;
+        this.wayMatcher  = wayMatcher != null ? wayMatcher : n -> false;
 
-        this.nodeComponents = new HashSet<>(generator.getRequiredNodeComponents());
-        this.wayComponents  = new HashSet<>(generator.getRequiredWayComponents());
+        if (generator != null) {
+            this.nodeComponents = new HashSet<>(generator.getRequiredNodeComponents());
+            this.wayComponents = new HashSet<>(generator.getRequiredWayComponents());
+        }
 
         if (nodeComponents != null) this.nodeComponents.addAll(nodeComponents);
-
         if (wayComponents != null) this.wayComponents.addAll(wayComponents);
-    }
-
-    /**
-     * Tests whether the given set of FeatureDefinitions has one or more features
-     * with the specified generator-index.
-     *
-     * @param features the feature-definitions in which to look for the specified
-     *                 type.
-     * @param genindex the generator-index to look for.
-     * @return true if {@code features} contains a definition with the specified
-     * generator-index.
-     */
-    public static boolean hasGeneratorIndex(Collection<FeatureDefinition> features, int genindex) {
-        boolean has = false;
-
-        for (FeatureDefinition fd : features) {
-            if (fd.getGeneratorIndex() == genindex) {
-                has = true;
-                break;
-            }
-        }
-
-        return has;
-    }
-
-    /**
-     * Tests whether the given set of FeatureDefinitions has one or more features
-     * with a generator-index between the specified bounds (both inclusive).
-     *
-     * @param features the feature-definitions in which to look for the specified
-     *                 type.
-     * @param lower    the lower bounds in which the generator-index may lie (inclusive).
-     * @param upper    the upper bounds in which the generator-index may lie (inclusive).
-     * @return true if {@code features} contains a definition with a generator-index satisfying
-     * {@code lower <= genindex <= upper}
-     */
-    public static boolean hasGeneratorIndex(Collection<FeatureDefinition> features, int lower, int upper) {
-        boolean has = false;
-
-        for (FeatureDefinition fd : features) {
-            if (lower <= fd.genindex && fd.genindex <= upper) {
-                has = true;
-                break;
-            }
-        }
-
-        return has;
     }
 
     /**
@@ -141,12 +96,12 @@ public class FeatureDefinition {
     }
 
     /**
-     * Returns the generator-index of the Feature described by this definition.
+     * Returns the dependencies of the Feature described by this definition.
      *
-     * @return the generator-index of this FeatureDefinition.
+     * @return the dependencies of this FeatureDefinition.
      */
-    public int getGeneratorIndex() {
-        return genindex;
+    public FeatureDependency getDependency() {
+        return dependency;
     }
 
     /**

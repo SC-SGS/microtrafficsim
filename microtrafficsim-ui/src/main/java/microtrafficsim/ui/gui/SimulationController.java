@@ -450,7 +450,7 @@ public class SimulationController implements GUIController {
 
                 mapviewer.changeMap(result);
                 frame.setTitle("MicroTrafficSim - " + file.getName());
-            } catch (XMLStreamException | IOException | InterruptedException e) {
+            } catch (Exception e) {
                 lock_gui.lock();
                 transiate(GUIEvent.DID_PARSE);
                 lock_gui.unlock();

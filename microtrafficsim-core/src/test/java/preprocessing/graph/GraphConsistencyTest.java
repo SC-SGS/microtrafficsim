@@ -5,7 +5,6 @@ import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
-import microtrafficsim.osm.parser.features.FeatureDefinition;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.core.parser.processing.Connector;
 import microtrafficsim.core.parser.processing.GraphNodeComponent;
@@ -69,9 +68,6 @@ public class GraphConsistencyTest {
      */
     private static final File OPTIONAL_TEST_FILE = null;
 
-    private static final int GENIDX_BEFORE      = 256;
-    private static final int GENIDX_STREETGRAPH = 512;
-
     /**
      * Comparator to order {@code WaySliceMappings} by their {@code from.start} index
      */
@@ -101,9 +97,10 @@ public class GraphConsistencyTest {
      *
      * @throws IOException        relayed from parser
      * @throws XMLStreamException relayed from parser
+     * @throws Exception          relayed from parser
      */
     @BeforeClass
-    public static void initializeTestData() throws IOException, XMLStreamException {
+    public static void initializeTestData() throws Exception {
         File osmxml;
 
         //noinspection ConstantConditions
@@ -112,7 +109,7 @@ public class GraphConsistencyTest {
         else
             osmxml = OPTIONAL_TEST_FILE;
 
-        testdata = TestData.parse(osmxml, GENIDX_BEFORE, GENIDX_STREETGRAPH, SG_WAY_MATCHER);
+        testdata = TestData.parse(osmxml, SG_WAY_MATCHER);
 
         // setup DataSet for tests
         setupTestNodeComponents(testdata.stage1);
@@ -131,7 +128,7 @@ public class GraphConsistencyTest {
 
         // set up way-intersection info
         for (WayEntity way : dataset.ways.values()) {
-            if (!FeatureDefinition.hasGeneratorIndex(way.features, GENIDX_STREETGRAPH)) continue;
+            if (!way.features.contains(testdata.streetgraph)) continue;
 
             for (long ref : way.nodes) {
                 NodeEntity        node = dataset.nodes.get(ref);
@@ -492,7 +489,7 @@ public class GraphConsistencyTest {
                 assertTrue(way.nodes[i - 1] != way.nodes[i]);
 
             // if way is part of StreetGraph, there must be a StreetComponent
-            if (FeatureDefinition.hasGeneratorIndex(way.features, GENIDX_STREETGRAPH)) assertNotNull(streetcomp);
+            if (way.features.contains(testdata.streetgraph)) assertNotNull(streetcomp);
 
             // check values of StreetComponent, if it exists
             if (streetcomp != null) {
@@ -551,12 +548,12 @@ public class GraphConsistencyTest {
             }
 
             // assert that all referenced entities  are contained in dataset
-            r.from.stream().forEach((Long id) -> assertNotNull(dataset.ways.get(id)));
-            r.to.stream().forEach((Long id) -> assertNotNull(dataset.ways.get(id)));
+            r.from.forEach((Long id) -> assertNotNull(dataset.ways.get(id)));
+            r.to.forEach((Long id) -> assertNotNull(dataset.ways.get(id)));
             if (r.viaType == Primitive.Type.NODE)
-                r.via.stream().forEach((Long id) -> assertNotNull(dataset.nodes.get(id)));
+                r.via.forEach((Long id) -> assertNotNull(dataset.nodes.get(id)));
             else
-                r.via.stream().forEach((Long id) -> assertNotNull(dataset.ways.get(id)));
+                r.via.forEach((Long id) -> assertNotNull(dataset.ways.get(id)));
         }
     }
 
@@ -1018,7 +1015,8 @@ public class GraphConsistencyTest {
 
             // count cyclic ways
             for (WayEntity way : tnc.ways)
-                if (node.id == way.nodes[0] && node.id == way.nodes[way.nodes.length - 1]) cyclic++;
+                if (node.id == way.nodes[0] && node.id == way.nodes[way.nodes.length - 1])
+                    cyclic++;
 
             assertEquals("invalid split point", size, count - cyclic);
         }
@@ -1044,7 +1042,7 @@ public class GraphConsistencyTest {
             assertFalse(mappings.isEmpty());
 
             // the mapping must be unique on StreetGraph
-            if (FeatureDefinition.hasGeneratorIndex(way.features, GENIDX_STREETGRAPH)) {
+            if (way.features.contains(testdata.streetgraph)) {
                 assertEquals(1, mappings.size());    // has to be unique
                 assertWayMappingValid(mappings.get(0), way);
                 assertConnectorPropagation(testdata.stage1, testdata.stage2, mappings.get(0));
@@ -1086,7 +1084,7 @@ public class GraphConsistencyTest {
                 assertWayMappingValid(mapping, way);
 
             // make sure connector propagation is correct, if this is part of the StreetGraph
-            if (FeatureDefinition.hasGeneratorIndex(way.features, GENIDX_STREETGRAPH)) {
+            if (way.features.contains(testdata.streetgraph)) {
                 for (ArrayList<WaySliceMapping> mapping : mappings)
                     assertConnectorPropagation(testdata.stage2, testdata.stage1, mapping);
             }

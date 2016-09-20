@@ -30,28 +30,28 @@ import java.util.Set;
 public class OSMStreetGraphSanitizer implements Processor {
     private static Logger logger = LoggerFactory.getLogger(OSMStreetGraphSanitizer.class);
 
-    private int             idxStreetGraph;
-    private LongIDGenerator idgen;
+    private FeatureDefinition streetgraph;
+    private LongIDGenerator   idgen;
 
     /**
      * Constructs a new sanitizer for the given properties.
      *
-     * @param genindexStreetGraph the generator-index of the street-graph, used to identify the features belonging to
-     *                            the street-graph.
-     * @param idgen               the id-generator used to generate new ids for the ways of the street-graph.
+     * @param streetgraph the {@code FeatureDefinition} (may be a placeholder) of the street-graph, used to identify
+     *                    the features belonging to the street-graph.
+     * @param idgen       the id-generator used to generate new ids for the ways of the street-graph.
      */
-    public OSMStreetGraphSanitizer(int genindexStreetGraph, LongIDGenerator idgen) {
-        this.idxStreetGraph = genindexStreetGraph;
-        this.idgen          = idgen;
+    public OSMStreetGraphSanitizer(FeatureDefinition streetgraph, LongIDGenerator idgen) {
+        this.streetgraph = streetgraph;
+        this.idgen       = idgen;
     }
 
 
     @Override
     public void execute(Parser parser, DataSet dataset) {
         splitABAWays(dataset);
-        OSMProcessor.updateGraphNodeComponents(dataset, idxStreetGraph);
+        OSMProcessor.updateGraphNodeComponents(dataset, streetgraph);
         removeDoubledWays(dataset);
-        OSMProcessor.updateGraphNodeComponents(dataset, idxStreetGraph);
+        OSMProcessor.updateGraphNodeComponents(dataset, streetgraph);
         logDoubledWays(dataset);
     }
 
@@ -67,11 +67,9 @@ public class OSMStreetGraphSanitizer implements Processor {
         ArrayList<WayEntity> add    = new ArrayList<>();
 
         for (WayEntity way : dataset.ways.values()) {
-            if (way.nodes.length != 3) continue;
-
-            if (!FeatureDefinition.hasGeneratorIndex(way.features, idxStreetGraph)) continue;
-
-            if (way.nodes[0] != way.nodes[2]) continue;
+            if (way.nodes.length != 3)               continue;
+            if (!way.features.contains(streetgraph)) continue;
+            if (way.nodes[0] != way.nodes[2])        continue;
 
             int[] splitpoints  = {1};
             WayEntity[] splits = Ways.split(dataset, way, splitpoints, idgen);
@@ -94,8 +92,8 @@ public class OSMStreetGraphSanitizer implements Processor {
         HashSet<Long> remove = new HashSet<>();
 
         for (WayEntity way : dataset.ways.values()) {
-            if (remove.contains(way.id)) continue;
-            if (!FeatureDefinition.hasGeneratorIndex(way.features, idxStreetGraph)) continue;
+            if (remove.contains(way.id))             continue;
+            if (!way.features.contains(streetgraph)) continue;
 
             // get all possible matches
             HashSet<WayEntity> referenced = new HashSet<>();
@@ -176,8 +174,8 @@ public class OSMStreetGraphSanitizer implements Processor {
         HashSet<WayEntity> checked = new HashSet<>();
 
         for (WayEntity way : dataset.ways.values()) {
-            if (checked.contains(way)) continue;
-            if (!FeatureDefinition.hasGeneratorIndex(way.features, idxStreetGraph)) continue;
+            if (checked.contains(way))               continue;
+            if (!way.features.contains(streetgraph)) continue;
 
             // get all possible matches
             HashSet<WayEntity> referenced = new HashSet<>();

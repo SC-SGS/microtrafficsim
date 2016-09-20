@@ -11,6 +11,7 @@ import microtrafficsim.core.vis.mesh.style.Style;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.parser.features.streets.StreetFeatureGenerator;
+import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.primitives.Way;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
@@ -29,15 +30,11 @@ class LightStyleSheet implements StyleSheet {
 
     private static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
 
-    private ParserConfig                       parserConfig;
     private Color                              colorBackground;
     private ArrayList<MapFeatureDefinition<?>> features;
-    private ArrayList<LayerDefinition>     layers;
+    private ArrayList<LayerDefinition>         layers;
 
     {
-        /* parser configuration */
-        parserConfig = new ParserConfig(256, 512);
-
         /* color definitions */
         colorBackground = Color.fromRGB(0xFFFFFF);
 
@@ -71,16 +68,16 @@ class LightStyleSheet implements StyleSheet {
         MapFeatureGenerator<Street> generator = new StreetFeatureGenerator();
 
         features = new ArrayList<>();
-        features.add(genStreetFeatureDef("streets:motorway", generator, prMotorway));
-        features.add(genStreetFeatureDef("streets:trunk", generator, prTrunk));
-        features.add(genStreetFeatureDef("streets:primary", generator, prPrimary));
-        features.add(genStreetFeatureDef("streets:secondary", generator, prSecondary));
-        features.add(genStreetFeatureDef("streets:tertiary", generator, prTertiary));
-        features.add(genStreetFeatureDef("streets:unclassified", generator, prUnclassified));
-        features.add(genStreetFeatureDef("streets:residential", generator, prResidential));
-        features.add(genStreetFeatureDef("streets:road", generator, prRoad));
+        features.add(genStreetFeatureDef("streets:motorway",      generator, prMotorway));
+        features.add(genStreetFeatureDef("streets:trunk",         generator, prTrunk));
+        features.add(genStreetFeatureDef("streets:primary",       generator, prPrimary));
+        features.add(genStreetFeatureDef("streets:secondary",     generator, prSecondary));
+        features.add(genStreetFeatureDef("streets:tertiary",      generator, prTertiary));
+        features.add(genStreetFeatureDef("streets:unclassified",  generator, prUnclassified));
+        features.add(genStreetFeatureDef("streets:residential",   generator, prResidential));
+        features.add(genStreetFeatureDef("streets:road",          generator, prRoad));
         features.add(genStreetFeatureDef("streets:living_street", generator, prLivingStreet));
-        features.add(genStreetFeatureDef("streets:track", generator, prTrack));
+        features.add(genStreetFeatureDef("streets:track",         generator, prTrack));
 
         /* styles */
         ShaderProgramSource streets = getStreetShader();
@@ -189,11 +186,6 @@ class LightStyleSheet implements StyleSheet {
     }
 
     @Override
-    public ParserConfig getParserConfiguration() {
-        return parserConfig;
-    }
-
-    @Override
     public Collection<MapFeatureDefinition<?>> getFeatureDefinitions() {
         return features;
     }
@@ -214,8 +206,11 @@ class LightStyleSheet implements StyleSheet {
      */
     private MapFeatureDefinition<Street> genStreetFeatureDef(String name, MapFeatureGenerator<Street> generator,
                                                              Predicate<Way> predicate) {
-        return new MapFeatureDefinition<>(
-                name, parserConfig.generatorIndexOfStreetGraph + 1, generator, n -> false, predicate);
+        FeatureDependency dependency = new FeatureDependency();
+        dependency.addRequires(DEPENDS_ON_UNIFICATION);
+        dependency.addRequires(DEPENDS_ON_STREETGRAPH);
+
+        return new MapFeatureDefinition<>(name, dependency, generator, n -> false, predicate);
     }
 
     /**

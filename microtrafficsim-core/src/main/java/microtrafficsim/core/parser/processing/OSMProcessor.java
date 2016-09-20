@@ -1,5 +1,6 @@
 package microtrafficsim.core.parser.processing;
 
+import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.osm.parser.Parser;
 import microtrafficsim.osm.parser.base.DataSet;
@@ -45,10 +46,12 @@ import java.util.*;
 public class OSMProcessor implements Processor {
     private static Logger logger = LoggerFactory.getLogger(OSMProcessor.class);
 
-    private int idxBefore;
-    private int idxStreetGraph;
+    public static final FeatureDefinition PLACEHOLDER_UNIFICATION = FeatureDefinition.createDependencyPlaceholder();
 
-    private LongIDGenerator wayIdGenerator;
+    private FeatureDefinition streetgraph;
+    private LongIDGenerator   wayIdGenerator;
+
+    private FeatureGenerator.Properties genprops;
 
     private Processor datasetSanitizer;
     private Processor streetgraphSanitizer;
@@ -59,18 +62,18 @@ public class OSMProcessor implements Processor {
      * are the generator-indices described in the classes JavaDoc-comment.
      * <p>
      * This call is similar to {@link
-     * OSMProcessor#OSMProcessor(int, int, OSMDataSetSanitizer.BoundaryMgmt, LongIDGenerator)
-     * OSMProcessor(idxBefore, idxStreetGraph, new BasicLongIDGenerator())
+     * OSMProcessor#OSMProcessor(FeatureGenerator.Properties, FeatureDefinition, LongIDGenerator)
+     * OSMProcessor(bounds, streetgraph, new BasicLongIDGenerator())
      * }
      * </p>
+     * Note: {@code streetgraph} may just be a marker-definition (dummy) and not full definition, the real definition
+     * should be applied to the {@code DataSet} on which this processor operates.
      *
-     * @param idxBefore      the maximum generator-index of features
-     *                       generated before the unification process.
-     * @param idxStreetGraph the generator-index of the street-graph.
-     * @param bounds         the method used to handle map-boundaries.
+     * @param genprops    the properties used for generating the features.
+     * @param streetgraph the {@code FeatureDefinition} used to identify features belonging to the street-graph.
      */
-    public OSMProcessor(int idxBefore, int idxStreetGraph, OSMDataSetSanitizer.BoundaryMgmt bounds) {
-        this(idxBefore, idxStreetGraph, bounds, new BasicLongIDGenerator());
+    public OSMProcessor(FeatureGenerator.Properties genprops, FeatureDefinition streetgraph) {
+        this(genprops, streetgraph, new BasicLongIDGenerator());
     }
 
     /**
@@ -78,22 +81,22 @@ public class OSMProcessor implements Processor {
      * are the generator-indices described in the classes JavaDoc-comment.
      * <p>
      * This call is similar to {@link
-     * OSMProcessor#OSMProcessor(int, int, LongIDGenerator, Processor, Processor)
-     * OSMProcessor(idxBefore, idxStreetGraph, wayIdGenerator, new
-     * OSMDataSetSanizier(), new OSMStreetGraphSanitizer(idxStreetGraph, wayIdGenerator))
+     * OSMProcessor#OSMProcessor(FeatureGenerator.Properties, FeatureDefinition, LongIDGenerator, Processor, Processor)
+     * OSMProcessor(streetgraph, wayIdGenerator, new OSMDataSetSanizier(),
+     * new OSMStreetGraphSanitizer(idxStreetGraph, wayIdGenerator))
      * }
      * </p>
+     * Note: {@code streetgraph} may just be a marker-definition (dummy) and not full definition, the real definition
+     * should be applied to the {@code DataSet} on which this processor operates.
      *
-     * @param idxBefore      the maximum generator-index of features
-     *                       generated before the unification process.
-     * @param idxStreetGraph the generator-index of the street-graph.
-     * @param bounds         the method used to handle map-boundaries.
+     * @param genprops       the properties used for generating the features.
+     * @param streetgraph    the {@code FeatureDefinition} used to identify features belonging to the street-graph.
      * @param wayIdGenerator the ID-generator used for new way-IDs.
      */
-    public OSMProcessor(int idxBefore, int idxStreetGraph, OSMDataSetSanitizer.BoundaryMgmt bounds,
+    public OSMProcessor(FeatureGenerator.Properties genprops, FeatureDefinition streetgraph,
                         LongIDGenerator wayIdGenerator) {
-        this(idxBefore, idxStreetGraph, wayIdGenerator, new OSMDataSetSanitizer(bounds),
-             new OSMStreetGraphSanitizer(idxStreetGraph, wayIdGenerator));
+        this(genprops, streetgraph, wayIdGenerator, new OSMDataSetSanitizer(genprops),
+                new OSMStreetGraphSanitizer(streetgraph, wayIdGenerator));
     }
 
     /**
@@ -103,22 +106,20 @@ public class OSMProcessor implements Processor {
      * The {@code wayIdGenerator} is used to create new IDs for the unified
      * ways.
      * </p>
+     * Note: {@code streetgraph} may just be a marker-definition (dummy) and not full definition, the real definition
+     * should be applied to the {@code DataSet} on which this processor operates.
      *
-     * @param idxBefore            the maximum generator-index of features generated before
-     *                             the unification process.
-     * @param idxStreetGraph       the generator-index of the street-graph.
+     * @param streetgraph          the {@code FeatureDefinition} used to identify features belonging to the
+     *                             street-graph.
      * @param wayIdGenerator       the ID-generator used for new way-IDs.
      * @param datasetSanitizer     the Processor used for sanitizing the data-set.
      * @param streetgraphSanitizer the Processor used for sanitizing the
      *                             street-graph during the unification-process.
      */
-    public OSMProcessor(int idxBefore, int idxStreetGraph, LongIDGenerator wayIdGenerator, Processor datasetSanitizer,
-                        Processor streetgraphSanitizer) {
-        if (idxBefore >= idxStreetGraph)
-            throw new IllegalArgumentException("idxBefore must not be greater than or equal to idxStreetGraph");
-
-        this.idxBefore            = idxBefore;
-        this.idxStreetGraph       = idxStreetGraph;
+    public OSMProcessor(FeatureGenerator.Properties genprops, FeatureDefinition streetgraph,
+                        LongIDGenerator wayIdGenerator, Processor datasetSanitizer, Processor streetgraphSanitizer) {
+        this.genprops             = genprops;
+        this.streetgraph          = streetgraph;
         this.wayIdGenerator       = wayIdGenerator;
         this.datasetSanitizer     = datasetSanitizer;
         this.streetgraphSanitizer = streetgraphSanitizer;
@@ -130,11 +131,11 @@ public class OSMProcessor implements Processor {
      * various processing steps
      *
      * @param dataset        the DataSet on which to execute this step on.
-     * @param idxStreetGraph the generator-index of the street-graph.
+     * @param streetgraph    the {@code FeatureDefinition} used to identify features belonging to the street-graph.
      */
-    public static void setupGraphNodeComponents(DataSet dataset, int idxStreetGraph) {
+    public static void setupGraphNodeComponents(DataSet dataset, FeatureDefinition streetgraph) {
         for (WayEntity way : dataset.ways.values()) {
-            if (!FeatureDefinition.hasGeneratorIndex(way.features, idxStreetGraph)) continue;
+            if (!way.features.contains(streetgraph)) continue;
 
             for (long ref : way.nodes) {
                 NodeEntity node = dataset.nodes.get(ref);
@@ -157,9 +158,9 @@ public class OSMProcessor implements Processor {
      * various processing steps.
      *
      * @param dataset        the DataSet on which to execute this step on.
-     * @param idxStreetGraph the generator-index of the street-graph.
+     * @param streetgraph    the {@code FeatureDefinition} used to identify features belonging to the street-graph.
      */
-    public static void updateGraphNodeComponents(DataSet dataset, int idxStreetGraph) {
+    public static void updateGraphNodeComponents(DataSet dataset, FeatureDefinition streetgraph) {
         for (NodeEntity node : dataset.nodes.values()) {
             GraphNodeComponent uc = node.get(GraphNodeComponent.class);
             if (uc == null) continue;
@@ -167,7 +168,7 @@ public class OSMProcessor implements Processor {
             uc.ways.clear();
         }
 
-        setupGraphNodeComponents(dataset, idxStreetGraph);
+        setupGraphNodeComponents(dataset, streetgraph);
     }
 
     /**
@@ -315,7 +316,7 @@ public class OSMProcessor implements Processor {
         for (WayEntity way : dataset.ways.values()) {
 
             // if not part of streetgraph just change the id
-            if (!FeatureDefinition.hasGeneratorIndex(way.features, idxStreetGraph)) {
+            if (!way.features.contains(streetgraph)) {
                 way.id = wayIdGenerator.next();
                 ways.put(way.id, way);
 
@@ -365,43 +366,46 @@ public class OSMProcessor implements Processor {
     }
 
 
-    @Override
-    public void execute(Parser parser, DataSet dataset) {
-        FeatureSystem featuresys = parser.getFeatureSystem();
-
-        // sanitize dataset
-        datasetSanitizer.execute(parser, dataset);
-
-        // create connectors, apply restrictions
-        setupGraphNodeComponents(dataset, idxStreetGraph);
-        setupGraphWayComponents(dataset);
-        applyRestrictionRelations(dataset);
-
-        // generate first features
-        featuresys.generateAllFeatures(dataset, Integer.MIN_VALUE, idxBefore);
-
+    private void unify(DataSet dataset, Parser parser) throws Exception {
         // unify StreetGraph: setup
         logger.debug("dataset before unification: " + dataset.nodes.size() + " nodes, " + dataset.ways.size()
-                     + " ways");
-        updateGraphNodeComponents(dataset, idxStreetGraph);
+                + " ways");
+        updateGraphNodeComponents(dataset, streetgraph);
 
         // unify StreetGraph: split
         unifySplit(dataset);
-        updateGraphNodeComponents(dataset, idxStreetGraph);
+        updateGraphNodeComponents(dataset, streetgraph);
 
         // unify StreetGraph: sanitize
         streetgraphSanitizer.execute(parser, dataset);
-        updateGraphNodeComponents(dataset, idxStreetGraph);
+        updateGraphNodeComponents(dataset, streetgraph);
 
         // unify: StreetGraph merge
         unifyMerge(dataset);
         removeGraphNodeComponents(dataset);
         logger.debug("dataset after unification:  " + dataset.nodes.size() + " nodes, " + dataset.ways.size()
-                     + " ways");
+                + " ways");
+    }
 
-        // generate remaining features
-        featuresys.generateAllFeatures(dataset, idxBefore + 1, idxStreetGraph - 1);
-        featuresys.generateAllFeatures(dataset, idxStreetGraph);
-        featuresys.generateAllFeatures(dataset, idxStreetGraph + 1, Integer.MAX_VALUE);
+    @Override
+    public void execute(Parser parser, DataSet dataset) throws Exception {
+        FeatureSystem featuresys = parser.getFeatureSystem();
+
+        // replace unification-placeholder with dummy-definition and generator
+        FeatureDefinition unification = new FeatureDefinition("", null, (ds, fd, p) -> unify(ds, parser), null, null);
+        List<FeatureDefinition> features = featuresys.getAllFeaturesInOrderOfDependency();
+        features.replaceAll(x -> x == PLACEHOLDER_UNIFICATION ? unification : x);
+
+        // sanitize dataset
+        datasetSanitizer.execute(parser, dataset);
+
+        // create connectors, apply restrictions
+        setupGraphNodeComponents(dataset, streetgraph);
+        setupGraphWayComponents(dataset);
+        applyRestrictionRelations(dataset);
+
+        // generate everything
+        for (FeatureDefinition def : features)
+            def.getGenerator().execute(dataset, def, genprops);
     }
 }

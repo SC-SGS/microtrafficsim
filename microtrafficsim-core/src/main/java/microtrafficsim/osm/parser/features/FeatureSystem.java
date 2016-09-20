@@ -1,13 +1,11 @@
 package microtrafficsim.osm.parser.features;
 
-import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.primitives.Node;
 import microtrafficsim.osm.primitives.Way;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -18,6 +16,7 @@ import java.util.stream.Collectors;
  * @author Maximilian Luz
  */
 public class FeatureSystem implements FeatureMatcher {
+    private static final Logger logger = LoggerFactory.getLogger(FeatureSystem.class);
 
     private HashMap<String, FeatureDefinition> features;
 
@@ -104,68 +103,50 @@ public class FeatureSystem implements FeatureMatcher {
         return features.values();
     }
 
-    /**
-     * Returns all features with the given generator-index contained in this
-     * FeatureSystem.
-     *
-     * @param genindex the generator-index of the features to return.
-     * @return all features with the given index.
-     */
-    public List<FeatureDefinition> getAllFeatures(int genindex) {
-        return features.values().stream()
-                .filter(d -> d.getGeneratorIndex() == genindex)
-                .collect(Collectors.toList());
+    public List<FeatureDefinition> getAllFeaturesInOrderOfDependency() throws CyclicDependenciesException {
+        // create one-directional dependency structure
+        HashMap<FeatureDefinition, DependencyNode> nodes = new HashMap<>();
+        for (FeatureDefinition def : this.features.values()) {
+            DependencyNode node = new DependencyNode(def);
+            node.dependencies.addAll(def.getDependency().getRequires());
+            nodes.put(def, node);
+        }
+
+        for (FeatureDefinition required : this.features.values()) {
+            for (FeatureDefinition def : required.getDependency().getRequiredBy()) {
+                if (def == null) continue;
+                DependencyNode n = nodes.get(def);
+                if (n == null) {
+                    logger.warn("could not resolve feature dependency");
+                    continue;
+                }
+                n.dependencies.add(required);
+            }
+        }
+
+        // recursive topology-sort
+        LinkedList<FeatureDefinition> sorted = new LinkedList<>();
+
+        while (!nodes.isEmpty()) {
+            DependencyNode node = nodes.values().iterator().next();
+            recursiveTopologySort(node, nodes, sorted);
+        }
+
+        return sorted;
     }
 
-    /**
-     * Returns all features with a generator-index between the given bounds
-     * (both inclusive) in this FeatureSystem.
-     *
-     * @param lower the lower bounds in which the generator-index may lie (inclusive).
-     * @param upper the upper bounds in which the generator-index may lie (inclusive).
-     * @return all features where the generator-index satisfies
-     * {@code lower <= genindex <= upper}
-     */
-    public List<FeatureDefinition> getAllFeatures(int lower, int upper) {
-        return features.values()
-                .stream()
-                .filter(d -> lower <= d.getGeneratorIndex() && d.getGeneratorIndex() <= upper)
-                .collect(Collectors.toList());
-    }
+    private void recursiveTopologySort(DependencyNode node, HashMap<FeatureDefinition, DependencyNode> available,
+                                       LinkedList<FeatureDefinition> result) throws CyclicDependenciesException {
+        if (node.visited) throw new CyclicDependenciesException();
+        node.visited = true;
 
-    /**
-     * Execute the generator for the given FeatureDefinition on the DataSet.
-     *
-     * @param dataset the DataSet on which the generators should be executed.
-     * @param feature the Feature to be generated.
-     */
-    public void generateFeature(DataSet dataset, FeatureDefinition feature) {
-        feature.getGenerator().execute(dataset, feature);
-    }
+        for (FeatureDefinition def : node.dependencies) {
+            DependencyNode n = available.get(def);
+            if (n != null) recursiveTopologySort(n, available, result);
+        }
 
-    /**
-     * Execute all generators for the given generator-index on the DataSet.
-     *
-     * @param dataset  the DataSet on which the generators should be executed.
-     * @param genindex the generator-index of the Features for which the
-     *                 generators should be executed.
-     */
-    public void generateAllFeatures(DataSet dataset, int genindex) {
-        for (FeatureDefinition fd : getAllFeatures(genindex))
-            fd.getGenerator().execute(dataset, fd);
-    }
-
-    /**
-     * Execute all generators for the given range of generator-indices on the DataSet
-     * ({@code lower <= genindex <= upper}).
-     *
-     * @param dataset the DataSet on which the generators should be executed.
-     * @param lower   the lower bounds in which the generator-index may lie (inclusive).
-     * @param upper   the upper bounds in which the generator-index may lie (inclusive).
-     */
-    public void generateAllFeatures(DataSet dataset, int lower, int upper) {
-        for (FeatureDefinition fd : getAllFeatures(lower, upper))
-            fd.getGenerator().execute(dataset, fd);
+        available.remove(node.feature);
+        result.add(node.feature);
     }
 
 
@@ -177,5 +158,20 @@ public class FeatureSystem implements FeatureMatcher {
     @Override
     public Set<FeatureDefinition> getFeatures(Way w) {
         return features.values().stream().filter(d -> d.matches(w)).collect(Collectors.toSet());
+    }
+
+
+    public static class CyclicDependenciesException extends Exception {}
+
+    private static class DependencyNode {
+        final FeatureDefinition feature;
+        final ArrayList<FeatureDefinition> dependencies;
+        boolean visited;
+
+        DependencyNode(FeatureDefinition feature) {
+            this.feature = feature;
+            this.dependencies = new ArrayList<>();
+            this.visited = false;
+        }
     }
 }

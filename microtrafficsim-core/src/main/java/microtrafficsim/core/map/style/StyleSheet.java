@@ -3,11 +3,12 @@ package microtrafficsim.core.map.style;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.vis.opengl.utils.Color;
+import microtrafficsim.osm.parser.features.FeatureDefinition;
+import microtrafficsim.osm.parser.features.FeatureDependency;
 
 import java.util.Collection;
+import java.util.function.UnaryOperator;
 
-
-// TODO: comments
 
 /**
  * Stylesheet for the tile-based visualization.
@@ -15,6 +16,9 @@ import java.util.Collection;
  * @author Maximilian Luz
  */
 public interface StyleSheet {
+    FeatureDefinition DEPENDS_ON_STREETGRAPH = FeatureDefinition.createDependencyPlaceholder();
+    FeatureDefinition DEPENDS_ON_UNIFICATION = FeatureDefinition.createDependencyPlaceholder();
+
 
     /**
      * Returns the background-color of this style-sheet.
@@ -31,16 +35,9 @@ public interface StyleSheet {
     Color getTileBackgroundColor();
 
     /**
-     * Returns the parser-configuration of this style.
+     * Returns the feature-definitions of this style.
      *
-     * @return the parser-configuration of this style.
-     */
-    ParserConfig getParserConfiguration();
-
-    /**
-     * Returns the map feature-definitions of this style.
-     *
-     * @return the map feature-definitions of this style.
+     * @return the feature-definitions of this style.
      */
     Collection<MapFeatureDefinition<?>> getFeatureDefinitions();
 
@@ -51,32 +48,20 @@ public interface StyleSheet {
      */
     Collection<LayerDefinition> getLayers();
 
-    /**
-     * Parser configuration for style.
-     */
-    class ParserConfig {
 
-        /**
-         * The generator-index marking the unification-process in the sequence of generators.
-         */
-        public final int generatorIndexOfUnification;
+    default void replaceDependencyPlaceholders(FeatureDefinition unification, FeatureDefinition streetgraph) {
+        UnaryOperator<FeatureDefinition> replacefn = x -> {
+            if (x == DEPENDS_ON_STREETGRAPH)
+                return streetgraph;
+            else if (x == DEPENDS_ON_UNIFICATION)
+                return unification;
+            else
+                return x;
+        };
 
-        /**
-         * The generator-index marking the street-graph generation-process in the sequence of generators.
-         */
-        public final int generatorIndexOfStreetGraph;
-
-        /**
-         * Constructs a new {@code ParserConfig}.
-         *
-         * @param generatorIndexOfUnification the generator-index marking the unification-process in the sequence of
-         *                                    generators.
-         * @param generatorIndexOfStreetGraph the generator-index marking the street-graph generation-process in the
-         *                                    sequence of generators.
-         */
-        public ParserConfig(int generatorIndexOfUnification, int generatorIndexOfStreetGraph) {
-            this.generatorIndexOfUnification = generatorIndexOfUnification;
-            this.generatorIndexOfStreetGraph = generatorIndexOfStreetGraph;
+        for (MapFeatureDefinition<?> def : getFeatureDefinitions()) {
+            def.getDependency().getRequires().replaceAll(replacefn);
+            def.getDependency().getRequiredBy().replaceAll(replacefn);
         }
     }
 }

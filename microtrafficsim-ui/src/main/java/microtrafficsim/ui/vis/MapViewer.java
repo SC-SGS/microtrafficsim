@@ -109,5 +109,5 @@ public interface MapViewer {
 
     void changeMap(OSMParser.Result result) throws InterruptedException;
 
-    OSMParser.Result parse(File file) throws IOException, XMLStreamException;
+    OSMParser.Result parse(File file) throws Exception;
 }

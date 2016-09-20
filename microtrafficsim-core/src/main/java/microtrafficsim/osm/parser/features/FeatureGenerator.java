@@ -15,15 +15,22 @@ import java.util.Set;
  */
 public interface FeatureGenerator {
 
+    class Properties {
+        public enum BoundaryManagement { NONE, RECALCULATE, CLIP }
+
+        public BoundaryManagement bounds = BoundaryManagement.NONE;
+    }
+
     /**
      * Execute this generator on the specified DataSet to generate Features for the
      * given FeatureDefinition.
      *
-     * @param dataset the DataSet on which to execute this generator.
-     * @param feature the FeautureDefinition describing the Features which should
-     *                be generated.
+     * @param dataset    the DataSet on which to execute this generator.
+     * @param feature    the FeautureDefinition describing the Features which should
+     *                   be generated.
+     * @param properties the properties to be used when generating this feature.
      */
-    void execute(DataSet dataset, FeatureDefinition feature);
+    void execute(DataSet dataset, FeatureDefinition feature, Properties properties) throws Exception;
 
     /**
      * Returns the type of {@code Component}s which need to be initialized on a

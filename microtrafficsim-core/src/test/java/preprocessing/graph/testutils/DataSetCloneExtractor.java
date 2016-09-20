@@ -10,6 +10,8 @@ import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,16 +23,19 @@ import java.util.Set;
  * @author Maximilian Luz
  */
 class DataSetCloneExtractor implements FeatureGenerator {
+    private static final Logger logger = LoggerFactory.getLogger(DataSetCloneExtractor.class);
 
+    private String name;
     private DataSet dataset;
 
-    DataSetCloneExtractor() {
-        dataset = null;
+    DataSetCloneExtractor(String name) {
+        this.name = name;
+        this.dataset = null;
     }
 
 
     @Override
-    public void execute(DataSet dataset, FeatureDefinition feature) {
+    public void execute(DataSet dataset, FeatureDefinition feature, Properties properties) {
         DataSet clone = new DataSet();
 
         clone.bounds = new Bounds(dataset.bounds);
@@ -45,6 +50,8 @@ class DataSetCloneExtractor implements FeatureGenerator {
             clone.relations.add(r.clone());
 
         // NOTE: relations other than RestrictionRelations are not needed for the tests
+
+        logger.debug("performing DataSet clone-extraction: " + name);
 
         this.dataset = clone;
     }

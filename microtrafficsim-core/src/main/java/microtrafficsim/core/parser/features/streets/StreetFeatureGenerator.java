@@ -59,7 +59,7 @@ public class StreetFeatureGenerator implements MapFeatureGenerator<Street> {
 
 
     @Override
-    public void execute(DataSet dataset, FeatureDefinition feature) {
+    public void execute(DataSet dataset, FeatureDefinition feature, Properties properties) {
         ArrayList<Street>     streets = new ArrayList<>();
         ArrayList<Coordinate> coords  = new ArrayList<>();
 

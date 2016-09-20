@@ -8,8 +8,9 @@ import microtrafficsim.core.parser.features.*;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
 import microtrafficsim.core.parser.features.streets.StreetFeatureGenerator;
-import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.osm.parser.features.FeatureDependency;
+import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
@@ -18,9 +19,7 @@ import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFacto
 import microtrafficsim.osm.primitives.Node;
 import microtrafficsim.osm.primitives.Way;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.File;
-import java.io.IOException;
 import java.util.function.Predicate;
 
 
@@ -34,7 +33,7 @@ public class ParserExample {
     private static final String DEFAULT_OSM_XML = "map.processing";
 
 
-    public static void main(String[] args) throws XMLStreamException, IOException {
+    public static void main(String[] args) throws Exception {
         File file;
 
         if (args.length == 1) {
@@ -113,35 +112,38 @@ public class ParserExample {
             return false;
         };
 
-        // set the generator-indices
-        int genindexBefore      = 256;
-        int genindexStreetGraph = 512;
-
         // create the feature generators
         MapFeatureGenerator<Street> streetsGenerator = new StreetFeatureGenerator();
-        StreetGraphGenerator sgGenerator      = new StreetGraphGenerator(new SimulationConfig());
+        StreetGraphGenerator        sgGenerator      = new StreetGraphGenerator(new SimulationConfig());
 
         // define the features
-        MapFeatureDefinition<Street> streets= new MapFeatureDefinition<>(
-                "streets",
-                genindexStreetGraph + 1,    // generate after StreetGraph
-                streetsGenerator,
-                streetgraphNodeMatcher,
-                streetgraphWayMatcher
-        );
 
         StreetGraphFeatureDefinition sg = new StreetGraphFeatureDefinition(
                 "streetgraph",
-                genindexStreetGraph,
+                new FeatureDependency(),            // street-graph are managed automatically
                 sgGenerator,
                 streetgraphNodeMatcher,
                 streetgraphWayMatcher
         );
 
+        FeatureDependency streetsDependency = new FeatureDependency();
+        streetsDependency.addRequires(sg);                                  // streets-feature depends on street-graph
+        streetsDependency.addRequires(OSMParser.PLACEHOLDER_UNIFICATION);   // streets-feature depends on street
+                                                                            //  unification step
+
+        MapFeatureDefinition<Street> streets = new MapFeatureDefinition<>(
+                "streets",
+                streetsDependency,
+                streetsGenerator,
+                streetgraphNodeMatcher,
+                streetgraphWayMatcher
+        );
+
+        FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
+        genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.RECALCULATE;
+
         return new OSMParser.Config()
-                .setBoundaryManagementMethod(OSMDataSetSanitizer.BoundaryMgmt.RE_CALCULATE)
-                .setGeneratorIndexUnification(genindexBefore)
-                .setGeneratorIndexStreetGraph(genindexStreetGraph)
+                .setGeneratorProperties(genprops)
                 .setStreetGraphFeatureDefinition(sg)
                 .putMapFeatureDefinition(streets)
                 .putWayInitializer(StreetComponent.class, new StreetComponentFactory())

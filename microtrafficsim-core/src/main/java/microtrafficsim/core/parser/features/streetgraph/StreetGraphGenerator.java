@@ -79,7 +79,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
     }
 
     @Override
-    public void execute(DataSet dataset, FeatureDefinition feature) {
+    public void execute(DataSet dataset, FeatureDefinition feature, Properties properties) {
         /*
          * STATUS: - all edges are added with only one lane and priority=false -
          * Lane-Connectors are generated directly from Street-Connectors (one to
