@@ -28,25 +28,19 @@ import java.util.*;
  * Preprocessing unit for the OpenStreetMap data used in simulation and
  * visualization. Responsible for unified simulation and visualization data and
  * calling the generator-functions for these.
- * <p>
- * The OSMProcessor requires two generator-indices {@code idxBefore} and {@code
- * idxStreetGraph}. With these values one can specify when Features are
- * generated in relation to the unification process: Features with a
- * generator-index less than or equal to {@code idxBefore} are generated before
- * the unification-process is executed. Features with a generator-index greater
- * than {@code idxBefore} are generated after the unification process. Features
- * with a generator-index of {@code idxStreetGraph} are generated next. They are
- * assumed to be direct parts of the StreetGraph and thus must fulfill certain
- * requirements (eg. have a StreetComponent). At last Features with a
- * generator-index greater than {@code idxStreetGraph} are generated.
- * </p>
  *
  * @author Maximilian Luz
  */
 public class OSMProcessor implements Processor {
     private static Logger logger = LoggerFactory.getLogger(OSMProcessor.class);
 
-    public static final FeatureDefinition PLACEHOLDER_UNIFICATION = FeatureDefinition.createDependencyPlaceholder();
+    /**
+     * The placeholder used both in dependencies and the list of feature-definitions to indicate the street unification
+     * step. Users of this class must explicitly add this placeholder to the list of features if the unification-step
+     * should be performed.
+     */
+    public static final FeatureDefinition PLACEHOLDER_UNIFICATION
+            = FeatureDefinition.createDependencyPlaceholder("do not use -- placeholder for street-unification step");
 
     private FeatureDefinition streetgraph;
     private LongIDGenerator   wayIdGenerator;
@@ -58,8 +52,7 @@ public class OSMProcessor implements Processor {
 
 
     /**
-     * Creates a new {@code OSMProcessor} where {@code idxBefore} and {@code idxStreetGraph}
-     * are the generator-indices described in the classes JavaDoc-comment.
+     * Creates a new {@code OSMProcessor}.
      * <p>
      * This call is similar to {@link
      * OSMProcessor#OSMProcessor(FeatureGenerator.Properties, FeatureDefinition, LongIDGenerator)
@@ -77,8 +70,7 @@ public class OSMProcessor implements Processor {
     }
 
     /**
-     * Creates a new {@code OSMProcessor} where {@code idxBefore} and {@code idxStreetGraph}
-     * are the generator-indices described in the classes JavaDoc-comment.
+     * Creates a new {@code OSMProcessor}.
      * <p>
      * This call is similar to {@link
      * OSMProcessor#OSMProcessor(FeatureGenerator.Properties, FeatureDefinition, LongIDGenerator, Processor, Processor)
@@ -100,8 +92,7 @@ public class OSMProcessor implements Processor {
     }
 
     /**
-     * Creates a new {@code OSMProcessor} where {@code idxBefore} and {@code idxStreetGraph}
-     * are the generator-indices described in the classes JavaDoc-comment.
+     * Creates a new {@code OSMProcessor}.
      * <p>
      * The {@code wayIdGenerator} is used to create new IDs for the unified
      * ways.

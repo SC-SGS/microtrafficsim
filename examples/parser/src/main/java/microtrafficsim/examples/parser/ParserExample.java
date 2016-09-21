@@ -117,7 +117,6 @@ public class ParserExample {
         StreetGraphGenerator        sgGenerator      = new StreetGraphGenerator(new SimulationConfig());
 
         // define the features
-
         StreetGraphFeatureDefinition sg = new StreetGraphFeatureDefinition(
                 "streetgraph",
                 new FeatureDependency(),            // street-graph are managed automatically
@@ -139,9 +138,11 @@ public class ParserExample {
                 streetgraphWayMatcher
         );
 
+        // set the generator properties to recalculate the map-bounds after parsing
         FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
         genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.RECALCULATE;
 
+        // generate the parser
         return new OSMParser.Config()
                 .setGeneratorProperties(genprops)
                 .setStreetGraphFeatureDefinition(sg)

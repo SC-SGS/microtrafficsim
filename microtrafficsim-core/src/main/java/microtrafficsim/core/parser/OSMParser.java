@@ -22,8 +22,8 @@ import microtrafficsim.osm.primitives.Way;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.stream.Collector;
 
@@ -35,6 +35,12 @@ import java.util.stream.Collector;
  * @author Maximilian Luz
  */
 public class OSMParser {
+
+    /**
+     * Placeholder {@code FeatureDefinition} to be used to indicate the street-unification step either in dependencies
+     * or (internally) in the list of generated features. The user of this class does not need to explicitly add
+     * the placeholder to the list of feature-definitions.
+     */
     public static final FeatureDefinition PLACEHOLDER_UNIFICATION = OSMProcessor.PLACEHOLDER_UNIFICATION;
 
     private Parser           parser;
@@ -61,7 +67,9 @@ public class OSMParser {
         // add features
         FeatureSystem featuresys = parser.getFeatureSystem();
         featuresys.putFeatures(config.features.values());
-        featuresys.putFeature(OSMProcessor.PLACEHOLDER_UNIFICATION);    // placeholder will be captured by OSMProcessor
+
+        if (!featuresys.getAllFeatures().contains(OSMProcessor.PLACEHOLDER_UNIFICATION))
+            featuresys.putFeature(OSMProcessor.PLACEHOLDER_UNIFICATION);    // placeholder will be used by OSMProcessor
 
         if (config.streetgraph != null) {
             config.streetgraph.getDependency().addRequires(PLACEHOLDER_UNIFICATION);
@@ -74,7 +82,7 @@ public class OSMParser {
         parser.getRelationManager().putFactories(config.relationInitializers);
 
         // add extractor for bounds, make sure it is generated before every other feature
-        ArrayList<FeatureDefinition> extractorRequires = new ArrayList<>();
+        HashSet<FeatureDefinition> extractorRequires = new HashSet<>();
         extractorRequires.addAll(config.features.values());
         if (config.streetgraph != null) extractorRequires.add(config.streetgraph);
 
@@ -159,7 +167,7 @@ public class OSMParser {
         }
 
         /**
-         * Sets the boundary-management method used to handle boundaries.
+         * Sets the properties to be used for generating the features.
          *
          * @param genprops the properties to be used for generating features.
          * @return this configuration.

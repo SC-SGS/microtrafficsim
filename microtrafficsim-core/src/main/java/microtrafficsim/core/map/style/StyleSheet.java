@@ -16,8 +16,20 @@ import java.util.function.UnaryOperator;
  * @author Maximilian Luz
  */
 public interface StyleSheet {
-    FeatureDefinition DEPENDS_ON_STREETGRAPH = FeatureDefinition.createDependencyPlaceholder();
-    FeatureDefinition DEPENDS_ON_UNIFICATION = FeatureDefinition.createDependencyPlaceholder();
+
+    /**
+     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-graph-generation.
+     */
+    FeatureDefinition DEPENDS_ON_STREETGRAPH
+            = FeatureDefinition.createDependencyPlaceholder(
+                    "placeholder for streetgraph feature-definitnion (stylesheet)");
+
+    /**
+     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-unification step.
+     */
+    FeatureDefinition DEPENDS_ON_UNIFICATION
+            = FeatureDefinition.createDependencyPlaceholder(
+                    "placeholder for unification feature-definitnion (stylesheet)");
 
 
     /**
@@ -49,19 +61,26 @@ public interface StyleSheet {
     Collection<LayerDefinition> getLayers();
 
 
+    /**
+     * Replace the placeholder-{@code FeatureDefinition}s of this {@code StyleSheet} with the specified
+     * {@code FeatureDefinition}s.
+     *
+     * @param unification the definition to replace the unification-step-placeholder with.
+     * @param streetgraph the definition to replace the streetgraph-placeholder with.
+     */
     default void replaceDependencyPlaceholders(FeatureDefinition unification, FeatureDefinition streetgraph) {
-        UnaryOperator<FeatureDefinition> replacefn = x -> {
-            if (x == DEPENDS_ON_STREETGRAPH)
-                return streetgraph;
-            else if (x == DEPENDS_ON_UNIFICATION)
-                return unification;
-            else
-                return x;
-        };
-
         for (MapFeatureDefinition<?> def : getFeatureDefinitions()) {
-            def.getDependency().getRequires().replaceAll(replacefn);
-            def.getDependency().getRequiredBy().replaceAll(replacefn);
+            if (def.getDependency().getRequires().remove(DEPENDS_ON_STREETGRAPH))
+                def.getDependency().getRequires().add(streetgraph);
+
+            if (def.getDependency().getRequires().remove(DEPENDS_ON_UNIFICATION))
+                def.getDependency().getRequires().add(unification);
+
+            if (def.getDependency().getRequiredBy().remove(DEPENDS_ON_STREETGRAPH))
+                def.getDependency().getRequiredBy().add(streetgraph);
+
+            if (def.getDependency().getRequiredBy().remove(DEPENDS_ON_UNIFICATION))
+                def.getDependency().getRequiredBy().add(unification);
         }
     }
 }

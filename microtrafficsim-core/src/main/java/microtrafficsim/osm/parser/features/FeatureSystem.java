@@ -103,6 +103,14 @@ public class FeatureSystem implements FeatureMatcher {
         return features.values();
     }
 
+    /**
+     * Return all {@code FeatureDefinition}s associated with this feature-system in a sorted manner, described by their
+     * dependency-relations, such that resulting list can be directly used to generate them in a valid order.
+     *
+     * @return the dependency-sorted list of {@code FeatureDefinition}s.
+     * @throws CyclicDependenciesException if a cyclic dependency has been detected and thus no order can be
+     * established.
+     */
     public List<FeatureDefinition> getAllFeaturesInOrderOfDependency() throws CyclicDependenciesException {
         // create one-directional dependency structure
         HashMap<FeatureDefinition, DependencyNode> nodes = new HashMap<>();
@@ -135,6 +143,14 @@ public class FeatureSystem implements FeatureMatcher {
         return sorted;
     }
 
+    /**
+     * Recursive topological sort.
+     * @param node      the node to start this recursive step with.
+     * @param available the available nodes, associated by their feature-definition.
+     * @param result    the sorted list of feature-definitions (result).
+     * @throws CyclicDependenciesException if a cyclic dependency has been detected and thus a topological sort
+     * can not be successfully applied.
+     */
     private void recursiveTopologySort(DependencyNode node, HashMap<FeatureDefinition, DependencyNode> available,
                                        LinkedList<FeatureDefinition> result) throws CyclicDependenciesException {
         if (node.visited) throw new CyclicDependenciesException();
@@ -161,8 +177,14 @@ public class FeatureSystem implements FeatureMatcher {
     }
 
 
+    /**
+     * Exception to be thrown when a cyclic dependency relation has been encountered.
+     */
     public static class CyclicDependenciesException extends Exception {}
 
+    /**
+     * Node-class used for topological sorting.
+     */
     private static class DependencyNode {
         final FeatureDefinition feature;
         final ArrayList<FeatureDefinition> dependencies;

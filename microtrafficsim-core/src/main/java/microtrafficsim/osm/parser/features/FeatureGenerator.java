@@ -15,9 +15,28 @@ import java.util.Set;
  */
 public interface FeatureGenerator {
 
+    /**
+     * Property-class describing global properties to be used for multiple generators.
+     */
     class Properties {
-        public enum BoundaryManagement { NONE, RECALCULATE, CLIP }
 
+        /**
+         * Methods to be used for boundary-management.
+         */
+        public enum BoundaryManagement {
+            /** do nothing */
+            NONE,
+
+            /** re-calculate the bounds */
+            RECALCULATE,
+
+            /** clip geometry/data to the bounds */
+            CLIP
+        }
+
+        /**
+         * The boundary-management to use.
+         */
         public BoundaryManagement bounds = BoundaryManagement.NONE;
     }
 

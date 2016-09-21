@@ -43,7 +43,7 @@ public class MapFeatureDefinition<T extends FeaturePrimitive> extends FeatureDef
      * Creates a new {@code MapFeatureDefinition} with the given properties.
      *
      * @param name        the name of the feature.
-     * @param dependency     the dependencies of the feature.
+     * @param dependency  the dependencies of the feature.
      * @param generator   the generator for the feature.
      * @param nodeMatcher the predicate to select the nodes that belong to the feature.
      * @param wayMatcher  the predicate to select the ways that belong to the feature.

@@ -17,6 +17,7 @@ public interface Processor {
      *
      * @param parser  the parser on which the Processor should be executed.
      * @param dataset the DataStore on which the Processor should be executed.
+     * @throws Exception if any exception occurres during the execution.
      */
     void execute(Parser parser, DataSet dataset) throws Exception;
 }

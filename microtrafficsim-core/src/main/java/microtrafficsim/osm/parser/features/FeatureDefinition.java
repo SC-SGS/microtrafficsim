@@ -17,8 +17,8 @@ import java.util.function.Predicate;
  */
 public class FeatureDefinition {
 
-    public static FeatureDefinition createDependencyPlaceholder() {
-        return new FeatureDefinition("placeholder -- do not use", new FeatureDependency(), null, null, null);
+    public static FeatureDefinition createDependencyPlaceholder(String name) {
+        return new FeatureDefinition(name, new FeatureDependency(), null, null, null);
     }
 
     private String              name;
@@ -30,10 +30,9 @@ public class FeatureDefinition {
     private Set<Class<? extends Component>> wayComponents;
 
     /**
-     * Creates a new {@code FeatureDefinition} with the provided parameters.
-     * {@code genindex} specifies when this feature should be generated (in
-     * relation to other features), this may depend on the data-{@code
-     * Processor} used.
+     * Creates a new {@code FeatureDefinition} with the provided parameters. {@code dependency} specifies the
+     * dependencies of this feature in context of generation, i.e. when this feature should be generated in relation to
+     * other features (this may depend on the data-{@code Processor} used).
      * <p>
      * This call is equivalent to
      * {@link
@@ -53,9 +52,9 @@ public class FeatureDefinition {
     }
 
     /**
-     * Creates a new {@code FeatureDefinition} with the provided parameters.
-     * {@code dependency} specifies the dependencies of this feature in context of generation, i.e. when this feature
-     * should be generated in relation to other features (this may depend on the data-{@code Processor} used).
+     * Creates a new {@code FeatureDefinition} with the provided parameters. {@code dependency} specifies the
+     * dependencies of this feature in context of generation, i.e. when this feature should be generated in relation to
+     * other features (this may depend on the data-{@code Processor} used).
      *
      * @param name           the (unique) name of the {@code Feature}.
      * @param dependency     the dependencies of the {@code Feature}.
