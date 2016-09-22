@@ -12,7 +12,7 @@ import microtrafficsim.utils.datacollection.ConcurrentHashDataCollector;
 import microtrafficsim.utils.datacollection.Data;
 import microtrafficsim.utils.datacollection.DataCollector;
 import microtrafficsim.utils.datacollection.Tag;
-import microtrafficsim.utils.fileio.FileManager;
+import microtrafficsim.utils.io.FileManager;
 
 import java.util.*;
 
