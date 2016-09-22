@@ -2,7 +2,7 @@ package microtrafficsim.core.shortestpath;
 
 import microtrafficsim.core.map.Mappable;
 
-import java.util.Iterator;
+import java.util.Collection;
 
 
 /**
@@ -17,5 +17,5 @@ public interface ShortestPathNode extends Mappable {
      *                 Therefore, this parameter is needed.
      * @return An iterator over all edges that are leaving this node
      */
-    Iterator<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming);
+    Collection<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming);
 }

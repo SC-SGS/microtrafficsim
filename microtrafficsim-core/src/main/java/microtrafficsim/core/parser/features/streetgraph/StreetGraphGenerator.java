@@ -1,7 +1,6 @@
 package microtrafficsim.core.parser.features.streetgraph;
 
 import microtrafficsim.core.logic.DirectedEdge;
-import microtrafficsim.core.logic.Direction;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
@@ -9,7 +8,6 @@ import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.osm.parser.features.streets.info.StreetType;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.DistanceCalculator;
-import microtrafficsim.math.Geometry;
 import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.math.Vec2f;
 import microtrafficsim.osm.parser.base.DataSet;
@@ -206,24 +204,19 @@ public class StreetGraphGenerator implements FeatureGenerator {
      */
     private void addConnectors(DataSet dataset, WayEntity wayFrom) {
         StreetGraphWayComponent sgwcFrom = wayFrom.get(StreetGraphWayComponent.class);
-        if (sgwcFrom == null) return;
-        if (sgwcFrom.forward == null && sgwcFrom.backward == null) return;
+        GraphWayComponent       gwcFrom  = wayFrom.get(GraphWayComponent.class);
 
         Node sgNodeStart = dataset.nodes.get(wayFrom.nodes[0]).get(StreetGraphNodeComponent.class).node;
-        Node sgNodeEnd
-                = dataset.nodes.get(wayFrom.nodes[wayFrom.nodes.length - 1]).get(StreetGraphNodeComponent.class).node;
+        Node sgNodeEnd   = dataset.nodes.get(wayFrom.nodes[wayFrom.nodes.length - 1]).get(StreetGraphNodeComponent.class).node;
 
-        GraphWayComponent gwcFrom = wayFrom.get(GraphWayComponent.class);
 
         // u-turns
-        for (Connector c : gwcFrom.uturn) {
-            if (sgwcFrom.forward == null || sgwcFrom.backward == null) continue;
-
-            // XXX u-turns should probably have a special direction?
-            if (c.via.id == wayFrom.nodes[0]) {
-                sgNodeStart.addConnector(sgwcFrom.backward.getLane(0), sgwcFrom.forward.getLane(0), Direction.LEFT);
-            } else if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1]) {
-                sgNodeStart.addConnector(sgwcFrom.forward.getLane(0), sgwcFrom.backward.getLane(0), Direction.LEFT);
+        if (sgwcFrom.forward != null && sgwcFrom.backward != null) {
+            for (Connector c : gwcFrom.uturn) {
+                if (c.via.id == wayFrom.nodes[0])
+                    sgNodeStart.addConnector(sgwcFrom.backward.getLane(0), sgwcFrom.forward.getLane(0));
+                else if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1])
+                    sgNodeStart.addConnector(sgwcFrom.forward.getLane(0), sgwcFrom.backward.getLane(0));
             }
         }
 
@@ -232,52 +225,30 @@ public class StreetGraphGenerator implements FeatureGenerator {
             StreetGraphWayComponent sgwcTo = c.to.get(StreetGraphWayComponent.class);
             if (sgwcTo == null) continue;
 
-            NodeEntity q = dataset.nodes.get(c.via.id);
             // <---o--->
-            if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[0]) {
-                NodeEntity p   = dataset.nodes.get(wayFrom.nodes[1]);
-                NodeEntity r   = dataset.nodes.get(c.to.nodes[1]);
-                Direction  dir = Geometry.calcCurveDirection((float) p.lon, (float) p.lat, (float) q.lon, (float) q.lat,
-                                                            (float) r.lon, (float) r.lat);
-                addEdgeConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.forward, dir);
-            }
+            if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[0])
+                addEdgeConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.forward);
 
             // <---o<---
-            if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[c.to.nodes.length - 1]) {
-                NodeEntity p   = dataset.nodes.get(wayFrom.nodes[1]);
-                NodeEntity r   = dataset.nodes.get(c.to.nodes[c.to.nodes.length - 2]);
-                Direction  dir = Geometry.calcCurveDirection((float) p.lon, (float) p.lat, (float) q.lon, (float) q.lat,
-                                                            (float) r.lon, (float) r.lat);
-                addEdgeConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.backward, dir);
-            }
+            if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[c.to.nodes.length - 1])
+                addEdgeConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.backward);
 
             // --->o--->
-            if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[0]) {
-                NodeEntity p   = dataset.nodes.get(wayFrom.nodes[wayFrom.nodes.length - 2]);
-                NodeEntity r   = dataset.nodes.get(c.to.nodes[1]);
-                Direction  dir = Geometry.calcCurveDirection((float) p.lon, (float) p.lat, (float) q.lon, (float) q.lat,
-                                                            (float) r.lon, (float) r.lat);
-                addEdgeConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.forward, dir);
-            }
+            if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[0])
+                addEdgeConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.forward);
 
             // --->o<---
-            if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[c.to.nodes.length - 1]) {
-                NodeEntity p   = dataset.nodes.get(wayFrom.nodes[wayFrom.nodes.length - 2]);
-                NodeEntity r   = dataset.nodes.get(c.to.nodes[c.to.nodes.length - 2]);
-                Direction  dir = Geometry.calcCurveDirection((float) p.lon, (float) p.lat, (float) q.lon, (float) q.lat,
-                                                            (float) r.lon, (float) r.lat);
-                addEdgeConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.backward, dir);
-            }
+            if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[c.to.nodes.length - 1])
+                addEdgeConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.backward);
         }
 
         // cyclic connectors
         if (sgNodeStart == sgNodeEnd) {
             if (gwcFrom.cyclicEndToStart && sgwcFrom.forward != null)
-                sgNodeStart.addConnector(sgwcFrom.forward.getLane(0), sgwcFrom.forward.getLane(0), Direction.STRAIGHT);
+                sgNodeStart.addConnector(sgwcFrom.forward.getLane(0), sgwcFrom.forward.getLane(0));
 
             if (gwcFrom.cyclicStartToEnd && sgwcFrom.backward != null)
-                sgNodeStart.addConnector(sgwcFrom.backward.getLane(0), sgwcFrom.backward.getLane(0),
-                                         Direction.STRAIGHT);
+                sgNodeStart.addConnector(sgwcFrom.backward.getLane(0), sgwcFrom.backward.getLane(0));
         }
     }
 
@@ -289,12 +260,11 @@ public class StreetGraphGenerator implements FeatureGenerator {
      *             should originate.
      * @param to   the {@code DirectedEdge} to which the generated connectors
      *             should lead.
-     * @param dir  the {@code Direction} required for the connector.
      */
-    private void addEdgeConnectors(Node via, DirectedEdge from, DirectedEdge to, Direction dir) {
+    private void addEdgeConnectors(Node via, DirectedEdge from, DirectedEdge to) {
         if (from == null || to == null) return;
 
-        via.addConnector(from.getLane(0), to.getLane(0), dir);
+        via.addConnector(from.getLane(0), to.getLane(0));
     }
 
     /**

@@ -23,19 +23,6 @@ import java.util.*;
  */
 public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
 
-    private HashSet<ShortestPathNode> visitedNodes;
-    private HashMap<ShortestPathNode, EdgeWeightTuple> predecessors;
-    private PriorityQueue<WeightedNode> queue;
-
-    /**
-     * Standard constructor.
-     */
-    public AbstractAStarAlgorithm() {
-        visitedNodes = new HashSet<>();
-        predecessors = new HashMap<>();
-        queue        = new PriorityQueue<>();
-    }
-
     /**
      * <p>
      * The A* algorithm uses a node A from the priority queue for actualizing
@@ -86,90 +73,81 @@ public abstract class AbstractAStarAlgorithm implements ShortestPathAlgorithm {
     // |============================|
     @Override
     public Queue<? extends ShortestPathEdge> findShortestPath(ShortestPathNode start, ShortestPathNode end) {
+        PriorityQueue<Node> queue = new PriorityQueue<>();
+        HashMap<ShortestPathNode, Node> visited = new HashMap<>();
 
-        LinkedList<ShortestPathEdge> shortestPath = new LinkedList<>();
-        if (start != end) {
-            // INIT (the same as in the while-loop below)
-            // this is needed to guarantee that each node in the queue has a
-            // predecessor
-            // => no if-condition if it has a predecessor
-            WeightedNode origin = new WeightedNode(start, 0f, estimate(start, end));
-            visitedNodes.add(origin.node);
-            // iterate over all leaving edges
-            Iterator<ShortestPathEdge> leavingEdges = origin.node.getLeavingEdges(null);
-            while (leavingEdges.hasNext()) {
-                ShortestPathEdge edge = leavingEdges.next();
-                ShortestPathNode dest = edge.getDestination();
-                float            g    = origin.g + getEdgeWeight(edge);
+        Node origin = new Node(start, null, 0, estimate(start, end));
+        queue.add(origin);
 
-                // update predecessors
-                EdgeWeightTuple p = predecessors.get(dest);
-                if (p == null) {
-                    predecessors.put(dest, new EdgeWeightTuple(g, edge));
-                } else {
-                    if (p.weight > g) {
-                        p.weight = g;
-                        p.edge   = edge;
-                    }
+        while (!queue.isEmpty()) {
+            Node current = queue.poll();
+
+            if (current.node == end) {     // found the shortest path
+                LinkedList<ShortestPathEdge> result = new LinkedList<>();
+
+                while (current.predecessor != null) {
+                    result.addFirst(current.predecessor);
+                    current = visited.get(current.predecessor.getOrigin());
                 }
 
-                // push new node into priority queue
-                if (!visitedNodes.contains(dest)) { queue.add(new WeightedNode(dest, g, estimate(dest, end))); }
+                return result;
             }
 
-            // ALGORITHM
-            // now: each node in the queue has a predecessor
-            while (!queue.isEmpty()) {
-                origin = queue.poll();
+            if (visited.keySet().contains(current.node))
+                continue;
 
-                if (!visitedNodes.contains(origin.node)) {
-                    // if shortest path to end is already found
-                    if (origin.node == end) {
-                        // create shortest path
-                        ShortestPathNode curNode = end;
+            visited.put(current.node, current);
+            for (ShortestPathEdge leaving : current.node.getLeavingEdges(current.predecessor)) {
+                ShortestPathNode next = leaving.getDestination();
 
-                        while (curNode != start) {
-                            ShortestPathEdge curEdge = predecessors.get(curNode).edge;
-                            // "unchecked" cast is checked
-                            shortestPath.addFirst(curEdge);
-                            curNode = curEdge.getOrigin();
-                        }
-
-                        break;
-                    }
-
-                    visitedNodes.add(origin.node);
-
-                    // iterate over all leaving edges
-                    leavingEdges = origin.node.getLeavingEdges(predecessors.get(origin.node).edge);
-                    while (leavingEdges.hasNext()) {
-                        ShortestPathEdge edge = leavingEdges.next();
-                        ShortestPathNode dest = edge.getDestination();
-                        float            g    = origin.g + getEdgeWeight(edge);
-
-                        // update predecessors
-                        EdgeWeightTuple p = predecessors.get(dest);
-                        if (p == null) {
-                            predecessors.put(dest, new EdgeWeightTuple(g, edge));
-                        } else {
-                            if (p.weight > g) {
-                                p.weight = g;
-                                p.edge   = edge;
-                            }
-                        }
-
-                        // push new node into priority queue
-                        if (!visitedNodes.contains(dest)) { queue.add(new WeightedNode(dest, g, estimate(dest, end))); }
-                    }
-                }
+                if (!visited.keySet().contains(next))
+                    queue.add(new Node(next, leaving, current.cost + getEdgeWeight(leaving), estimate(next, end)));
             }
         }
 
-        // refresh
-        visitedNodes.clear();
-        predecessors.clear();
-        queue.clear();
+        System.out.println("no way found from " + start.toString() + " to " + end.toString());
+        return new LinkedList<>();
+    }
+    /*
+     * Note: the algorithm above is actually not quite correct: The leaving edges depend on the incoming edge, so
+     * if a shortest-path would lead through a certain node from a certain edge that enables different outgoing edges
+     * than the evaluation of said node before, and such an outgoing edge is only accessible from the incoming edge used
+     * at the second evaluation, the algorithm would not provide a correct answer, because the node will not be
+     * evaluated two (or more) times.
+     *
+     * The correct behaviour could be restored by storing visited nodes in combination with outgoing edges.
+     */
 
-        return shortestPath;
+
+    /**
+     * Node for the A* algorithm.
+     */
+    public static class Node implements Comparable<Node> {
+        final ShortestPathNode node;
+        final ShortestPathEdge predecessor;
+        final float            cost;            // cost from start to this node
+        final float            weight;          // weight = cost + estimate
+
+        /**
+         * Standard constructor.
+         *
+         * @param node        the {@link ShortestPathNode} to be wrapped.
+         * @param predecessor the edge leading to this node.
+         * @param cost        the actual cost from the start to this node.
+         * @param estimate    the estimated cost to reach the destination from this node.
+         */
+        Node(ShortestPathNode node, ShortestPathEdge predecessor, float cost, float estimate) {
+            this.node        = node;
+            this.predecessor = predecessor;
+            this.cost        = cost;
+            this.weight      = cost + estimate;
+        }
+
+        @Override
+        public int compareTo(Node other) {
+            if (weight < other.weight) return -1;
+            if (weight > other.weight) return 1;
+            return 0;
+        }
     }
 }

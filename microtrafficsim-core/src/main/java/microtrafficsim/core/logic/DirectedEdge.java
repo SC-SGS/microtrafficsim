@@ -64,7 +64,7 @@ public class DirectedEdge implements ShortestPathEdge, ILogicEdge {
 
     @Override
     public int hashCode() {
-        return new FNVHashBuilder().add(ID).add(origin).add(destination).add(numberOfCells).getHash();
+        return Long.hashCode(ID);
     }
 
     Lane[] getLanes() {
@@ -95,8 +95,8 @@ public class DirectedEdge implements ShortestPathEdge, ILogicEdge {
     }
 
     void reset() {
-        lanes    = new Lane[lanes.length];
-        lanes[0] = new Lane(this, 0);
+        for (Lane lane : lanes)
+            lane.reset();
     }
 
     /*

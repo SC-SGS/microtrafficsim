@@ -8,7 +8,6 @@ import microtrafficsim.core.shortestpath.ShortestPathNode;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.Vec2f;
-import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class Node implements ShortestPathNode {
 
-    public final Long        ID;
+    public final long        ID;
     private SimulationConfig config;
     private Random           random;
     private Coordinate       coordinate;
@@ -66,7 +65,7 @@ public class Node implements ShortestPathNode {
 
     @Override
     public int hashCode() {
-        return new FNVHashBuilder().add(ID).add(coordinate).getHash();
+        return Long.hashCode(ID);
     }
 
     @Override
@@ -278,11 +277,16 @@ public class Node implements ShortestPathNode {
      *
      * @param incoming
      * @param leaving
-     * @param direction UNUSED
      */
-    public void addConnector(Lane incoming, Lane leaving, Direction direction) {
-        if (!restrictions.containsKey(incoming)) { restrictions.put(incoming, new ArrayList<>()); }
-        restrictions.get(incoming).add(leaving);
+    public void addConnector(Lane incoming, Lane leaving) {
+        ArrayList<Lane> succeeding = restrictions.get(incoming);
+
+        if (succeeding == null) {
+            succeeding = new ArrayList<>();
+            restrictions.put(incoming, succeeding);
+        }
+
+        succeeding.add(leaving);
     }
 
     /**
@@ -348,27 +352,18 @@ public class Node implements ShortestPathNode {
     |======================|
     */
     @Override
-    public Iterator<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming) {
+    public Set<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming) {
+        if (incoming == null) return Collections.unmodifiableSet(leavingEdges.keySet());
+
         HashSet<ShortestPathEdge> returnEdges = new HashSet<>();
 
-        if (incoming != null) {
-            for (Lane incomingLane : ((DirectedEdge) incoming).getLanes()) {
-                ArrayList<Lane> restrictedLeavingLanes = restrictions.get(incomingLane);
-                // if there exist restrictions
-                if (restrictedLeavingLanes != null)
-                    returnEdges.addAll(
-                            restrictedLeavingLanes.stream().map(Lane::getAssociatedEdge).collect(Collectors.toList()));
-                // before: (wtf Intellij is so awesome)
-                // for (Lane leavingLane : restrictedLeavingLanes)
-                // returnEdges.add(leavingLane.getAssociatedEdge());
-                else
-                    returnEdges.addAll(leavingEdges.keySet());
-            }
-        } else {
-            returnEdges.addAll(leavingEdges.keySet());
+        for (Lane incomingLane : ((DirectedEdge) incoming).getLanes()) {
+            ArrayList<Lane> leaving = restrictions.get(incomingLane);
+            if (leaving != null)
+                returnEdges.addAll(leaving.stream().map(Lane::getAssociatedEdge).collect(Collectors.toSet()));
         }
 
-        return returnEdges.iterator();
+        return returnEdges;
     }
 
     @Override

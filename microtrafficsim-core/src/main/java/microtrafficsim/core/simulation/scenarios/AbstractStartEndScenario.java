@@ -71,7 +71,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
         random      = new Random(config.seed);
         // used for printing vehicle creation process
         lastPercentage  = 0;
-        percentageDelta = 5;    // > 0 !!!
+        percentageDelta = 1;//5;    // > 0 !!!
     }
 
     /**

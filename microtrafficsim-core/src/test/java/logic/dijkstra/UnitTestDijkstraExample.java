@@ -220,6 +220,8 @@ public class UnitTestDijkstraExample {
         start = g;
         end   = c;
 
+        logger.info(a.toString());
+        logger.info(e.toString());
         correctShortestPath = dijkstra.findShortestPath(start, end);
 
         // correct path

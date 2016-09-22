@@ -281,6 +281,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
             DirectedEdge edge = logic.getDirectedEdge();
             if (edge == null) continue;
             StreetEntity street = edge.getEntity();
+            if (street == null) continue;
             if (street.getBackwardEdge() != null && street.getForwardEdge() != null) {
                 pos.x += dir.y * laneOffsetSign * VEHICLE_LANE_OFFSET * VEHICLE_SCALE_NORM;
                 pos.y -= dir.x * laneOffsetSign * VEHICLE_LANE_OFFSET * VEHICLE_SCALE_NORM;

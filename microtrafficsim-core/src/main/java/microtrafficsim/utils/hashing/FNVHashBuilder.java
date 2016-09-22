@@ -6,7 +6,7 @@ package microtrafficsim.utils.hashing;
  *
  * @author Maximilian Luz
  */
-public class FNVHashBuilder implements HashBuilder {
+public final class FNVHashBuilder implements HashBuilder {
     private static final int FNV_PRIME = 16777619;
     private static final int FNV_BASE = (int) 2166136261L;
 
