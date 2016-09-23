@@ -449,9 +449,9 @@ public class OSMProcessor implements Processor {
         FeatureSystem featuresys = parser.getFeatureSystem();
 
         // replace placeholders with dummy-definition and generator
-        FeatureDefinition clipping    = new FeatureDefinition("clipping",
+        FeatureDefinition clipping    = new FeatureDefinition(OSMProcessor.class.getCanonicalName() + " street-clipping",
                 new FeatureDependency(), (ds, fd, p) -> clipWays(ds, p),   null, null);
-        FeatureDefinition unification = new FeatureDefinition("street-unification",
+        FeatureDefinition unification = new FeatureDefinition(OSMProcessor.class.getCanonicalName() + " street-unification",
                 new FeatureDependency(), (ds, fd, p) -> unify(ds, parser), null, null);
 
         List<FeatureDefinition> features = featuresys.getAllFeaturesInOrderOfDependency();
