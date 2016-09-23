@@ -200,9 +200,6 @@ public class TileBasedMapViewer implements MapViewer {
 
     @Override
     public OSMParser createParser(SimulationConfig simconfig) {
-        /* replace the style-placeholders with the feature-definitions/placeholders used by the osm-processor */
-        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_WAY_CLIPPING, OSMParser.PLACEHOLDER_UNIFICATION, null);
-
         /* global properties for (all) generators */
         FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
         genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.CLIP;
@@ -210,6 +207,7 @@ public class TileBasedMapViewer implements MapViewer {
         /* create a configuration, add factories for parsed components */
         OSMParser.Config osmconfig = new OSMParser.Config().setGeneratorProperties(genprops);
 
+        StreetGraphFeatureDefinition streetgraph = null;
         if (simconfig != null) {
             // predicates to match/select features
             Predicate<Way> streetgraphMatcher = w -> {
@@ -240,7 +238,7 @@ public class TileBasedMapViewer implements MapViewer {
                 return false;
             };
 
-            StreetGraphFeatureDefinition streetgraph = new StreetGraphFeatureDefinition(
+            streetgraph = new StreetGraphFeatureDefinition(
                     "streetgraph",
                     new FeatureDependency(OSMParser.PLACEHOLDER_UNIFICATION, null),
                     new StreetGraphGenerator(simconfig),
@@ -250,6 +248,10 @@ public class TileBasedMapViewer implements MapViewer {
 
             osmconfig.setStreetGraphFeatureDefinition(streetgraph);
         }
+
+        /* replace the style-placeholders with the feature-definitions/placeholders used by the osm-processor */
+        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_WAY_CLIPPING, OSMParser.PLACEHOLDER_UNIFICATION,
+                streetgraph);
 
         osmconfig.putWayInitializer(StreetComponent.class, new StreetComponentFactory())
                 .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
