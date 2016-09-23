@@ -37,9 +37,16 @@ import java.util.stream.Collector;
 public class OSMParser {
 
     /**
-     * Placeholder {@code FeatureDefinition} to be used to indicate the street-unification step either in dependencies
-     * or (internally) in the list of generated features. The user of this class does not need to explicitly add
-     * the placeholder to the list of feature-definitions.
+     * Placeholder {@code FeatureDefinition} to be used to indicate the way-clipping step (of the pre-processing stage)
+     * either in dependencies or (internally) in the list of generated features. The user of this class does note
+     * need to explicitly add this placeholder to the list of feature-definitions.
+     */
+    public static final FeatureDefinition PLACEHOLDER_WAY_CLIPPING = OSMProcessor.PLACEHOLDER_WAY_CLIPPING;
+
+    /**
+     * Placeholder {@code FeatureDefinition} to be used to indicate the street-unification step (of the pre-processing
+     * stage) either in dependencies or (internally) in the list of generated features. The user of this class does not
+     * need to explicitly add this placeholder to the list of feature-definitions.
      */
     public static final FeatureDefinition PLACEHOLDER_UNIFICATION = OSMProcessor.PLACEHOLDER_UNIFICATION;
 
@@ -68,8 +75,11 @@ public class OSMParser {
         FeatureSystem featuresys = parser.getFeatureSystem();
         featuresys.putFeatures(config.features.values());
 
+        if (!featuresys.getAllFeatures().contains(OSMProcessor.PLACEHOLDER_WAY_CLIPPING))
+            featuresys.putFeature(OSMProcessor.PLACEHOLDER_WAY_CLIPPING);
+
         if (!featuresys.getAllFeatures().contains(OSMProcessor.PLACEHOLDER_UNIFICATION))
-            featuresys.putFeature(OSMProcessor.PLACEHOLDER_UNIFICATION);    // placeholder will be used by OSMProcessor
+            featuresys.putFeature(OSMProcessor.PLACEHOLDER_UNIFICATION);
 
         if (config.streetgraph != null) {
             config.streetgraph.getDependency().addRequires(PLACEHOLDER_UNIFICATION);

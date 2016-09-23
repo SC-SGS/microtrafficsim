@@ -1,5 +1,6 @@
 package microtrafficsim.core.parser.processing;
 
+import microtrafficsim.osm.parser.ecs.components.traits.Removeable;
 import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
@@ -24,7 +25,7 @@ import java.util.HashSet;
  *
  * @author Maximilian Luz
  */
-public class GraphWayComponent extends Component implements Mergeable<GraphWayComponent>, Splittable, Reversible {
+public class GraphWayComponent extends Component implements Mergeable<GraphWayComponent>, Splittable, Reversible, Removeable {
 
     public HashSet<Connector> uturn;
     public HashSet<Connector> from;
@@ -369,5 +370,14 @@ public class GraphWayComponent extends Component implements Mergeable<GraphWayCo
         boolean swap     = cyclicEndToStart;
         cyclicEndToStart = cyclicStartToEnd;
         cyclicStartToEnd = swap;
+    }
+
+    @Override
+    public void remove(DataSet dataset) {
+        for (Connector c : this.from)
+            c.to.get(GraphWayComponent.class).to.remove(c);
+
+        for (Connector c : this.to)
+            c.from.get(GraphWayComponent.class).from.remove(c);
     }
 }

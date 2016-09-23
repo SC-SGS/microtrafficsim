@@ -182,7 +182,9 @@ public class Main {
                 streetgraphMatcher
         );
 
-        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_UNIFICATION, streetgraph);
+        /* replace the style-placeholders with the feature-definitions/placeholders used by the osm-processor */
+        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_UNIFICATION ,OSMParser.PLACEHOLDER_UNIFICATION,
+                                            streetgraph);
 
         /* global properties for (all) generators */
         FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();

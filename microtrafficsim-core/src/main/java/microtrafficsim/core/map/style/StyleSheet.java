@@ -18,18 +18,25 @@ import java.util.function.UnaryOperator;
 public interface StyleSheet {
 
     /**
-     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-graph-generation.
+     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-unification step.
      */
-    FeatureDefinition DEPENDS_ON_STREETGRAPH
+    FeatureDefinition DEPENDS_ON_WAY_CLIPPING
             = FeatureDefinition.createDependencyPlaceholder(
-                    "placeholder for streetgraph feature-definitnion (stylesheet)");
+                    "placeholder for way-clipping stage (stylesheet)");
 
     /**
      * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-unification step.
      */
     FeatureDefinition DEPENDS_ON_UNIFICATION
             = FeatureDefinition.createDependencyPlaceholder(
-                    "placeholder for unification feature-definitnion (stylesheet)");
+                    "placeholder for street-unification stage (stylesheet)");
+
+    /**
+     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-graph-generation.
+     */
+    FeatureDefinition DEPENDS_ON_STREETGRAPH
+            = FeatureDefinition.createDependencyPlaceholder(
+                    "placeholder for streetgraph feature-definitnion (stylesheet)");
 
 
     /**
@@ -65,22 +72,30 @@ public interface StyleSheet {
      * Replace the placeholder-{@code FeatureDefinition}s of this {@code StyleSheet} with the specified
      * {@code FeatureDefinition}s.
      *
+     * @param clipping    the definition to replace the way-clipping-step-placeholder with.
      * @param unification the definition to replace the unification-step-placeholder with.
      * @param streetgraph the definition to replace the streetgraph-placeholder with.
      */
-    default void replaceDependencyPlaceholders(FeatureDefinition unification, FeatureDefinition streetgraph) {
+    default void replaceDependencyPlaceholders(FeatureDefinition clipping, FeatureDefinition unification,
+                                               FeatureDefinition streetgraph) {
         for (MapFeatureDefinition<?> def : getFeatureDefinitions()) {
-            if (def.getDependency().getRequires().remove(DEPENDS_ON_STREETGRAPH))
-                def.getDependency().getRequires().add(streetgraph);
+            if (def.getDependency().getRequires().remove(DEPENDS_ON_WAY_CLIPPING))
+                def.getDependency().getRequires().add(clipping);
 
             if (def.getDependency().getRequires().remove(DEPENDS_ON_UNIFICATION))
                 def.getDependency().getRequires().add(unification);
 
-            if (def.getDependency().getRequiredBy().remove(DEPENDS_ON_STREETGRAPH))
-                def.getDependency().getRequiredBy().add(streetgraph);
+            if (def.getDependency().getRequires().remove(DEPENDS_ON_STREETGRAPH))
+                def.getDependency().getRequires().add(streetgraph);
+
+            if (def.getDependency().getRequiredBy().remove(DEPENDS_ON_WAY_CLIPPING))
+                def.getDependency().getRequiredBy().add(clipping);
 
             if (def.getDependency().getRequiredBy().remove(DEPENDS_ON_UNIFICATION))
                 def.getDependency().getRequiredBy().add(unification);
+
+            if (def.getDependency().getRequiredBy().remove(DEPENDS_ON_STREETGRAPH))
+                def.getDependency().getRequiredBy().add(streetgraph);
         }
     }
 }

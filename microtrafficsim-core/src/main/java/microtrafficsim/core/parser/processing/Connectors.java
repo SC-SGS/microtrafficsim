@@ -73,6 +73,8 @@ public class Connectors {
      * @param c the {@code Connector} to remove.
      */
     public static void remove(Connector c) {
+        if (c == null) return;
+
         if (c.to == c.from) {       // u-turn connector
             c.to.get(GraphWayComponent.class).uturn.remove(c);
         } else {                    // from-to connector
@@ -80,4 +82,27 @@ public class Connectors {
             c.to.get(GraphWayComponent.class).to.remove(c);
         }
     }
+
+    /**
+     * Removes the given {@code Connector} from the specific sets in the {@code GraphWayComponent} of the referenced
+     * Ways, if such a component exists on that way. These Components do not need to be present.
+     *
+     * @param c the {@code Connector} to remove.
+     */
+    public static void tryRemove(Connector c) {
+        if (c == null) return;
+
+        if (c.to == c.from) {       // u-turn connector
+            GraphWayComponent gwc = c.to.get(GraphWayComponent.class);
+            if (gwc != null) gwc.uturn.remove(c);
+
+        } else {                    // from-to connector
+            GraphWayComponent gwcFrom = c.from.get(GraphWayComponent.class);
+            if (gwcFrom != null) gwcFrom.from.remove(c);
+
+            GraphWayComponent gwcTo = c.to.get(GraphWayComponent.class);
+            if (gwcTo != null) gwcTo.to.remove(c);
+        }
+    }
+
 }

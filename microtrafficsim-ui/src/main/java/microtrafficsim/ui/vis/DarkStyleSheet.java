@@ -198,6 +198,7 @@ class DarkStyleSheet implements StyleSheet {
     private MapFeatureDefinition<Street> genStreetFeatureDef(String name, MapFeatureGenerator<Street> generator,
                                                              Predicate<Way> predicate) {
         FeatureDependency dependency = new FeatureDependency();
+        dependency.addRequires(DEPENDS_ON_WAY_CLIPPING);
         dependency.addRequires(DEPENDS_ON_UNIFICATION);
         dependency.addRequires(DEPENDS_ON_STREETGRAPH);
 

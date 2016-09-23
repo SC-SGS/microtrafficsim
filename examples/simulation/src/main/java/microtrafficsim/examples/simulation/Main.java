@@ -346,7 +346,8 @@ public class Main {
                 streetgraphMatcher
         );
 
-        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_UNIFICATION, streetgraph);
+        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_WAY_CLIPPING, OSMParser.PLACEHOLDER_UNIFICATION,
+                                            streetgraph);
 
         /* global properties for (all) generators */
         FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();

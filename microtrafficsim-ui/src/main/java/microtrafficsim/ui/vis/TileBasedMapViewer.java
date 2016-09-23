@@ -104,9 +104,9 @@ public class TileBasedMapViewer implements MapViewer {
     private static final int MSAA = 0;
 
 
-    private VisualizationPanel              vpanel;
-    private TileBasedVisualization          visualization;
-    private OSMParser                       parser;
+    private VisualizationPanel          vpanel;
+    private TileBasedVisualization      visualization;
+    private OSMParser                   parser;
     private Collection<LayerDefinition> layers;
 
     @Override
@@ -200,6 +200,8 @@ public class TileBasedMapViewer implements MapViewer {
 
     @Override
     public OSMParser createParser(SimulationConfig simconfig) {
+        /* replace the style-placeholders with the feature-definitions/placeholders used by the osm-processor */
+        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_WAY_CLIPPING, OSMParser.PLACEHOLDER_UNIFICATION, null);
 
         /* global properties for (all) generators */
         FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();

@@ -28,12 +28,10 @@ import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFac
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 
 import javax.swing.*;
-import javax.xml.stream.XMLStreamException;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 
 
@@ -227,11 +225,11 @@ public class MapViewer {
      * @return the created parser
      */
     private static OSMParser createParser() {
-        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_UNIFICATION, null);
+        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_WAY_CLIPPING, OSMParser.PLACEHOLDER_UNIFICATION, null);
 
         /* global properties for (all) generators */
         FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
-        genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.RECALCULATE;
+        genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.CLIP;
 
         /* create a configuration, add factories for parsed components */
         OSMParser.Config config = new OSMParser.Config()

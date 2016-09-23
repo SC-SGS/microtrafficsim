@@ -1,19 +1,24 @@
 package microtrafficsim.core.parser.processing;
 
-import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
+import microtrafficsim.core.map.Bounds;
+import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.components.traits.Mergeable;
+import microtrafficsim.osm.parser.ecs.components.traits.Removeable;
 import microtrafficsim.osm.parser.ecs.components.traits.Reversible;
 import microtrafficsim.osm.parser.ecs.components.traits.Splittable;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
+import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.utils.collections.ArrayUtils;
 import microtrafficsim.utils.id.LongIDGenerator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 
 /**
@@ -314,13 +319,12 @@ public class Ways {
      *
      * @param dataset     the DataSet on which to perform this action on.
      * @param way         the WayEntity to split
-     * @param splitpoints the indices at which the ways should be split.
+     * @param splitpoints the sorted array of indices at which the ways should be split.
      * @param idgen       the ID-Generator used to create the IDs for the new {@code
      *                    WayEnities}.
      * @return an Array containing all splits.
      */
     public static WayEntity[] split(DataSet dataset, WayEntity way, int[] splitpoints, LongIDGenerator idgen) {
-
         // append last node-index to split-indices
         int[] indices = new int[splitpoints.length + 1];
         System.arraycopy(splitpoints, 0, indices, 0, splitpoints.length);
@@ -341,15 +345,179 @@ public class Ways {
 
         // split components (not actually a split, rather a post-processing on the cloned components)
         for (Component c : way.getAll().values())
-            if (c instanceof Splittable) ((Splittable) c).split(dataset, splits, splitpoints);
-
+            if (c instanceof Splittable)
+                ((Splittable) c).split(dataset, splits, splitpoints);
 
         return splits;
     }
 
+    public static WayEntity[] clip(DataSet dataset, WayEntity way, LongIDGenerator wayIdGen,
+                                   BiFunction<Coordinate, WayEntity, NodeEntity> nodeFactory) {
+        ArrayList<Boolean> accept      = new ArrayList<>();
+        ArrayList<Integer> splitpoints = new ArrayList<>();
+
+        ArrayList<Long> nodes = ArrayUtils.toList(way.nodes);
+
+        NodeEntity first = dataset.nodes.get(nodes.get(0));
+        accept.add(csComputeCode(dataset.bounds, first.lat, first.lon) == CS_OUTCODE_INSIDE);
+
+        for (int i = 1; i < nodes.size(); i++) {
+            NodeEntity a = dataset.nodes.get(nodes.get(i-1));
+            NodeEntity b = dataset.nodes.get(nodes.get(i));
+
+            double posA = 0.0;
+            double latA = a.lat;
+            double lonA = a.lon;
+
+            double posB = 1.0;
+            double latB = b.lat;
+            double lonB = b.lon;
+
+            int outcodeA = csComputeCode(dataset.bounds, latA, lonA);
+            int outcodeB = csComputeCode(dataset.bounds, latB, lonB);
+
+            boolean acceptSegment;
+            while (true) {
+                if ((outcodeA | outcodeB) == 0) {               // trivial accept
+                    acceptSegment = true;
+                    break;                                      // still accepting, continue to the next segment
+                } else if ((outcodeA & outcodeB) != 0) {        // trivial reject
+                    acceptSegment = false;
+                    break;                                      // still rejecting, continue to the next segment
+                }
+
+                double pos = 0, lat = 0, lon = 0;
+                int outside = outcodeA != CS_OUTCODE_INSIDE ? outcodeA : outcodeB;
+
+                if ((outside & CS_OUTCODE_MINLAT) != 0) {
+                    pos = (dataset.bounds.minlat - a.lat) / (b.lat - a.lat);
+                    lat = dataset.bounds.minlat;
+                    lon = a.lon + (b.lon - a.lon) * pos;
+
+                } else if ((outside & CS_OUTCODE_MAXLAT) != 0) {
+                    pos = (dataset.bounds.maxlat - a.lat) / (b.lat - a.lat);
+                    lat = dataset.bounds.maxlat;
+                    lon = a.lon + (b.lon - a.lon) * pos;
+
+                } else if ((outside & CS_OUTCODE_MINLON) != 0) {
+                    pos = (dataset.bounds.minlon - a.lon) / (b.lon - a.lon);
+                    lat = a.lat + (b.lat - a.lat) * pos;
+                    lon = dataset.bounds.minlon;
+
+                } else if ((outside & CS_OUTCODE_MAXLON) != 0) {
+                    pos = (dataset.bounds.maxlon - a.lon) / (b.lon - a.lon);
+                    lat = a.lat + (b.lat - a.lat) * pos;
+                    lon = dataset.bounds.maxlon;
+                }
+
+                if (outside == outcodeA) {
+                    posA = pos;
+                    latA = lat;
+                    lonA = lon;
+                    outcodeA = csComputeCode(dataset.bounds, latA, lonA);
+                } else {
+                    posB = pos;
+                    latB = lat;
+                    lonB = lon;
+                    outcodeB = csComputeCode(dataset.bounds, latB, lonB);
+                }
+            }
+
+            if (acceptSegment) {                                // if we accept the (remaining) part of the segment
+                if (posA > posB) {                              // swap if posA > posB
+                    double pos = posB;
+                    double lat = latB;
+                    double lon = lonB;
+
+                    posB = posA;
+                    latB = latA;
+                    lonB = lonA;
+
+                    posA = pos;
+                    latA = lat;
+                    lonA = lon;
+                }
+
+                if (posA != 0.0) {                              // if position of A != segment start
+                    NodeEntity n = nodeFactory.apply(new Coordinate(latA, lonA), way);
+                    dataset.nodes.put(n.id, n);
+                    nodes.add(i, n.id);
+                    splitpoints.add(i);
+                    accept.add(true);                           // out -> in: accept the newly started segment
+                    i++;
+                }
+
+                if (posB != 1.0) {                              // if position of B != segment start
+                    NodeEntity n = nodeFactory.apply(new Coordinate(latB, lonB), way);
+                    dataset.nodes.put(n.id, n);
+                    nodes.add(i, n.id);
+                    splitpoints.add(i);
+                    accept.add(false);                          // in -> out: reject the newly started segment
+                    i++;
+                }
+            }
+        }
+
+        if (!splitpoints.isEmpty()) {                           // if we have some split-points, split/filter the way
+            int keepsize = (int) accept.stream().filter(x -> x).count();
+            WayEntity[] result = new WayEntity[keepsize];
+
+            way.nodes = ArrayUtils.toArray(nodes, null);
+            WayEntity[] splits = split(dataset, way, ArrayUtils.toArray(splitpoints, null), wayIdGen);
+
+            int index = 0;
+            for (int i = 0; i < splits.length; i++) {
+                if (accept.get(i)) {
+                    result[index] = splits[i];
+                    index++;
+                } else {
+                    splits[i].getAll().values().stream()
+                            .filter(c -> c instanceof Removeable)
+                            .forEach(c -> ((Removeable) c).remove(dataset));
+                }
+            }
+
+            return result;
+
+        } else if (accept.get(0)) {                             // full accept
+            way.id = wayIdGen.next();
+            return new WayEntity[]{ way };
+
+        } else {                                                // full reject
+            way.getAll().values().stream()
+                    .filter(c -> c instanceof Removeable)
+                    .forEach(c -> ((Removeable) c).remove(dataset));
+
+            return new WayEntity[]{};
+        }
+    }
+
+    // constants for Cohen-Sutherland clipping
+    private static final int CS_OUTCODE_INSIDE = 0b0000;
+    private static final int CS_OUTCODE_MINLON = 0b0001;
+    private static final int CS_OUTCODE_MAXLON = 0b0010;
+    private static final int CS_OUTCODE_MINLAT = 0b0100;
+    private static final int CS_OUTCODE_MAXLAT = 0b1000;
+
+    private static int csComputeCode(Bounds bounds, double lat, double lon) {
+        int outcode = CS_OUTCODE_INSIDE;
+
+        if (lat < bounds.minlat)
+            outcode |= CS_OUTCODE_MINLAT;
+        else if (lat > bounds.maxlat)
+            outcode |= CS_OUTCODE_MAXLAT;
+
+        if (lon < bounds.minlon)
+            outcode |= CS_OUTCODE_MINLON;
+        else if (lon > bounds.maxlon)
+            outcode |= CS_OUTCODE_MAXLON;
+
+        return outcode;
+    }
+
     /**
      * Returns a set of references to all Nodes on which the given way intersects
-     * with itself.
+     * with itself. This method requires {@code GraphWayComponent}s to be present and initialized.
      *
      * @param dataset the DataSet on which to perform this action on.
      * @param way     the way to get the the self-intersection-points for.
@@ -360,7 +528,8 @@ public class Ways {
         HashSet<Long> xpts = new HashSet<>();
 
         for (long ref : way.nodes)
-            if (dataset.nodes.get(ref).get(GraphNodeComponent.class).ways.count(way) > 1) xpts.add(ref);
+            if (dataset.nodes.get(ref).get(GraphNodeComponent.class).ways.count(way) > 1)
+                xpts.add(ref);
 
         return xpts;
     }

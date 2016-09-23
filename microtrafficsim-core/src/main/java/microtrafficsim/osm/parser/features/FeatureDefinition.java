@@ -17,8 +17,25 @@ import java.util.function.Predicate;
  */
 public class FeatureDefinition {
 
+    /**
+     * Creates a new placeholder {@code FeatureDefinition} with the given name.
+     *
+     * @param name the name of the placeholder.
+     * @return the created {@code FeatureDefinition}.
+     */
     public static FeatureDefinition createDependencyPlaceholder(String name) {
-        return new FeatureDefinition(name, new FeatureDependency(), null, null, null);
+        return createDependencyPlaceholder(name, new FeatureDependency());
+    }
+
+    /**
+     * Creates a new placeholder {@code FeatureDefinition} with the given name and dependency.
+     *
+     * @param name       the name of the placeholder.
+     * @param dependency the dependency-description for this placeholder.
+     * @return the created {@code FeatureDefinition}.
+     */
+    public static FeatureDefinition createDependencyPlaceholder(String name, FeatureDependency dependency) {
+        return new FeatureDefinition(name, dependency, null, null, null);
     }
 
     private String              name;
