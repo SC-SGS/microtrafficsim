@@ -1,5 +1,6 @@
 package microtrafficsim.core.parser.processing;
 
+import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
@@ -448,8 +449,10 @@ public class OSMProcessor implements Processor {
         FeatureSystem featuresys = parser.getFeatureSystem();
 
         // replace placeholders with dummy-definition and generator
-        FeatureDefinition clipping    = new FeatureDefinition("", null, (ds, fd, p) -> clipWays(ds, p),   null, null);
-        FeatureDefinition unification = new FeatureDefinition("", null, (ds, fd, p) -> unify(ds, parser), null, null);
+        FeatureDefinition clipping    = new FeatureDefinition("clipping",
+                new FeatureDependency(), (ds, fd, p) -> clipWays(ds, p),   null, null);
+        FeatureDefinition unification = new FeatureDefinition("street-unification",
+                new FeatureDependency(), (ds, fd, p) -> unify(ds, parser), null, null);
 
         List<FeatureDefinition> features = featuresys.getAllFeaturesInOrderOfDependency();
         features.replaceAll(x -> {
@@ -460,6 +463,26 @@ public class OSMProcessor implements Processor {
             else
                 return x;
         });
+
+        if (BuildSetup.DEBUG_CORE_PARSER) {
+            logger.debug("generating features in order:");
+            for (FeatureDefinition def : features) {
+                StringBuilder builder = new StringBuilder()
+                        .append(def.getName())
+                        .append(", [req. before: ");
+
+                for (FeatureDefinition d : def.getDependency().getRequires())
+                    if (d != null)
+                        builder.append(d.getName()).append(", ");
+
+                builder.append("| req. after: ");
+                for (FeatureDefinition d : def.getDependency().getRequiredBy())
+                    if (d != null)
+                        builder.append(d.getName()).append(", ");
+
+                logger.debug(builder.append("]").toString());
+            }
+        }
 
         // sanitize dataset
         datasetSanitizer.execute(parser, dataset);

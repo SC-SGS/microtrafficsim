@@ -94,7 +94,10 @@ public class OSMParser {
         // add extractor for bounds, make sure it is generated before every other feature
         HashSet<FeatureDefinition> extractorRequires = new HashSet<>();
         extractorRequires.addAll(config.features.values());
-        if (config.streetgraph != null) extractorRequires.add(config.streetgraph);
+        extractorRequires.add(PLACEHOLDER_WAY_CLIPPING);
+        extractorRequires.add(PLACEHOLDER_UNIFICATION);
+        if (config.streetgraph != null)
+            extractorRequires.add(config.streetgraph);
 
         DataSetExtractor  extractor = new DataSetExtractor();
         FeatureDefinition extractordef = new FeatureDefinition(
