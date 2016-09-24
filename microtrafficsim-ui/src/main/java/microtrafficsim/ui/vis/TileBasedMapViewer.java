@@ -76,7 +76,7 @@ public class TileBasedMapViewer implements MapViewer {
     /**
      * The used style sheet, defining style and content of the visualization.
      */
-    private static final StyleSheet STYLE = new LightStyleSheet();
+    private static final StyleSheet STYLE = new MonochromeStyleSheet();
 
     /* -- internal settings -------------------------------------------------------------------- */
 
