@@ -49,8 +49,7 @@ public class TileGridOverlay implements Overlay {
     private VertexArrayObject vao;
 
 
-    /**
-     * Constructs a new {@code TileGridOverlay} for the given {@code TilingScheme}.
+    /** * Constructs a new {@code TileGridOverlay} for the given {@code TilingScheme}.
      *
      * @param scheme the {@code TilingScheme} for which this overlay should be created.
      */
@@ -177,13 +176,8 @@ public class TileGridOverlay implements Overlay {
 
 
     @Override
-    public void enable() {
-        this.enabled = true;
-    }
-
-    @Override
-    public void disable() {
-        this.enabled = false;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override

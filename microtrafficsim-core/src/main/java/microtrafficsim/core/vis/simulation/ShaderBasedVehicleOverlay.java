@@ -270,13 +270,8 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
 
 
     @Override
-    public void enable() {
-        this.enabled = true;
-    }
-
-    @Override
-    public void disable() {
-        this.enabled = false;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override
