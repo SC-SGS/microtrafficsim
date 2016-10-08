@@ -15,12 +15,12 @@ dependencies {
 }
 
 distributions {
-	main {
-		baseName = 'microtrafficsim-core'
-		contents {
-			from { '../LICENSE' }
-			from { '../README.md' }
-			from jar
-		}
-	}
+    main {
+        baseName = 'microtrafficsim-core'
+        contents {
+            from { '../LICENSE' }
+            from { '../README.md' }
+            from jar
+        }
+    }
 }
