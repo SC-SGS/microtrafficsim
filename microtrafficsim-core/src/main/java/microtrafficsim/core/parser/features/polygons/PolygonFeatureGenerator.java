@@ -36,12 +36,12 @@ public class PolygonFeatureGenerator implements MapFeatureGenerator<Polygon> {
 
     @Override
     public void execute(DataSet dataset, FeatureDefinition feature, Properties properties) throws Exception {
-        generated.clear();
-
         ArrayList<Polygon> polygons = new ArrayList<>();
 
         for (WayEntity way : dataset.ways.values()) {
             if (!way.features.contains(feature)) continue;
+
+            // TODO: clip outline
 
             Coordinate[] outline = new Coordinate[way.nodes.length];
             for (int i = 0; i < outline.length; i++) {
