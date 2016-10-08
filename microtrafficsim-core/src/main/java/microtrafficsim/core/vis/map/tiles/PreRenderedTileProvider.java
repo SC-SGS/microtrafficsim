@@ -32,11 +32,9 @@ import microtrafficsim.utils.resources.Resource;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 
 
@@ -384,7 +382,7 @@ public class PreRenderedTileProvider implements TileProvider {
         final int   targetPoolSize;
         private int actualPoolSize;
 
-        private LinkedList<TileBuffer> unused = new LinkedList<>();
+        private Queue<TileBuffer> unused = new ConcurrentLinkedQueue<>();
 
         /**
          * Constructs a new, empty {@code TileBufferPool}.
@@ -426,7 +424,7 @@ public class PreRenderedTileProvider implements TileProvider {
          */
         void release(RenderContext context, TileBuffer buffer) {
             if (actualPoolSize < targetPoolSize && unused != null) {
-                unused.push(buffer);
+                unused.add(buffer);
             } else {
                 buffer.dispose(context);
                 actualPoolSize--;
@@ -619,9 +617,15 @@ public class PreRenderedTileProvider implements TileProvider {
                 buffer = pool.require(context);
 
                 // render tile to FBO
-                gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, buffer.fbo);
-                gl.glClearBufferfv(GL3.GL_COLOR, 0, new float[] {bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a}, 0);
-                gl.glClearBufferfv(GL3.GL_DEPTH, 0, new float[] {0.f}, 0);
+                try {   // TODO: TEMPORARY DEBUG TRY CATCH
+                    gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, buffer.fbo);
+                    gl.glClearBufferfv(GL3.GL_COLOR, 0, new float[]{bgcolor.r, bgcolor.g, bgcolor.b, bgcolor.a}, 0);
+                    gl.glClearBufferfv(GL3.GL_DEPTH, 0, new float[]{0.f}, 0);
+                } catch (NullPointerException e) {
+                    System.err.println(gl);
+                    System.err.println(buffer);
+                    throw e;
+                }
 
                 context.Viewport.set(gl, 0, 0, pool.width, pool.height);
 

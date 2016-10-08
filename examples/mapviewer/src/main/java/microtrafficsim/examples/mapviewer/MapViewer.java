@@ -81,7 +81,7 @@ public class MapViewer {
      * the geometry will be stored in a grid. To reduce memory requirements, geometry is not
      * stored for each layer but just for this one.
      */
-    private static final int TILE_GRID_LEVEL = 17;
+    private static final int TILE_GRID_LEVEL = 12;
 
     /**
      * The number of worker threads loading tiles and their geometry in parallel, during

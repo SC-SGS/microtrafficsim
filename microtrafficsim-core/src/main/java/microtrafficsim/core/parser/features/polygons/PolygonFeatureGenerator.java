@@ -6,6 +6,7 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.Feature;
 import microtrafficsim.core.map.features.Polygon;
 import microtrafficsim.core.parser.features.MapFeatureGenerator;
+import microtrafficsim.core.vis.mesh.utils.Polygons;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
@@ -41,12 +42,20 @@ public class PolygonFeatureGenerator implements MapFeatureGenerator<Polygon> {
         for (WayEntity way : dataset.ways.values()) {
             if (!way.features.contains(feature)) continue;
 
-            // TODO: clip outline
+            boolean explicit = way.nodes[0] == way.nodes[way.nodes.length - 1];
 
-            Coordinate[] outline = new Coordinate[way.nodes.length];
-            for (int i = 0; i < outline.length; i++) {
+            Coordinate[] outline = new Coordinate[explicit ? way.nodes.length : way.nodes.length + 1];
+            for (int i = 0; i < way.nodes.length; i++) {
                 NodeEntity node = dataset.nodes.get(way.nodes[i]);
                 outline[i] = new Coordinate(node.lat, node.lon);
+            }
+
+            if (!explicit)
+                outline[outline.length - 1] = new Coordinate(outline[0]);
+
+            if (properties.bounds == Properties.BoundaryManagement.CLIP) {
+                outline = Polygons.clip(dataset.bounds, outline);
+                if (outline == null) continue;
             }
 
             polygons.add(new Polygon(way.id, outline));

@@ -492,13 +492,21 @@ public class Ways {
         }
     }
 
-    // constants for Cohen-Sutherland clipping
+    // out-codes for Cohen-Sutherland clipping
     private static final int CS_OUTCODE_INSIDE = 0b0000;
     private static final int CS_OUTCODE_MINLON = 0b0001;
     private static final int CS_OUTCODE_MAXLON = 0b0010;
     private static final int CS_OUTCODE_MINLAT = 0b0100;
     private static final int CS_OUTCODE_MAXLAT = 0b1000;
 
+    /**
+     * Compute the out-code used by the Cohen-Sutherland clipping algorithm
+     *
+     * @param bounds the bounds used for clipping.
+     * @param lat    the latitude of the point for which the code should be computed.
+     * @param lon    the longitude of the point for which the code should be computed.
+     * @return the computed out-code for the given point.
+     */
     private static int csComputeCode(Bounds bounds, double lat, double lon) {
         int outcode = CS_OUTCODE_INSIDE;
 

@@ -89,6 +89,9 @@ public class PolygonMeshGenerator implements FeatureMeshGenerator {
                               ArrayList<Coordinate> vertices, ArrayList<Integer> indices) throws InterruptedException {
         int restart = context.PrimitiveRestart.getIndex();
 
+        // TODO: triangulate polygons
+        // NOTE: outline may have start-node == end-node
+
         int counter = 0;
         HashMap<Coordinate, Integer> indexmap = new HashMap<>();
 
