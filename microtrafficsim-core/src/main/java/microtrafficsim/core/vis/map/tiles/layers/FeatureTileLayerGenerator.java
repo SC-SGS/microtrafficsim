@@ -1,11 +1,13 @@
 package microtrafficsim.core.vis.map.tiles.layers;
 
 import microtrafficsim.core.map.FeaturePrimitive;
+import microtrafficsim.core.map.features.Polygon;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.tiles.mesh.FeatureMeshGenerator;
+import microtrafficsim.core.vis.map.tiles.mesh.PolygonMeshGenerator;
 import microtrafficsim.core.vis.map.tiles.mesh.StreetMeshGenerator;
 import microtrafficsim.core.vis.mesh.ManagedMesh;
 import microtrafficsim.core.vis.mesh.Mesh;
@@ -56,7 +58,10 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
         this.loading    = new HashSet<>();
         this.generators = new HashMap<>();
 
-        if (defaultInit) { generators.put(Street.class, new StreetMeshGenerator()); }
+        if (defaultInit) {
+            generators.put(Street.class, new StreetMeshGenerator());
+            generators.put(Polygon.class, new PolygonMeshGenerator());
+        }
     }
 
 

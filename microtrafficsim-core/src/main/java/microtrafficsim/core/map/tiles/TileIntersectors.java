@@ -2,6 +2,7 @@ package microtrafficsim.core.map.tiles;
 
 import microtrafficsim.core.map.features.MultiLine;
 import microtrafficsim.core.map.features.Point;
+import microtrafficsim.core.map.features.Polygon;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
@@ -49,13 +50,13 @@ public class TileIntersectors {
             if ((a.x < tile.xmin && b.x < tile.xmin) || (a.x > tile.xmax && b.x > tile.xmax)) continue;
             if ((a.y < tile.ymin && b.y < tile.ymin) || (a.y > tile.ymax && b.y > tile.ymax)) continue;
 
-            // clamp to tile
+            // clamp line-segment to tile
             double cxa = clamp(a.x, tile.xmin, tile.xmax);
             double cxb = clamp(b.x, tile.xmin, tile.xmax);
             double cya = clamp(a.y, tile.ymin, tile.ymax);
             double cyb = clamp(b.y, tile.ymin, tile.ymax);
 
-            // transform to line coordinates
+            // transform the clamped coordinates to line coordinates
             double sxa = (cxa - a.x) / (b.x - a.x);
             double sxb = (cxb - a.x) / (b.x - a.x);
             double sya = (cya - a.y) / (b.y - a.y);
@@ -63,6 +64,51 @@ public class TileIntersectors {
 
             // check if line-segments intersect
             if (sxb >= sxa && syb >= sya) return true;
+
+            a = b;
+        }
+
+        return false;
+    }
+
+    /**
+     * Tests the given polygon projected using the given projection for intersection against the given tile.
+     *
+     * @param polygon    the polygon to test for intersection.
+     * @param tile       the tile to test the polygon against.
+     * @param projection the projection used to project the given polygon.
+     * @return {@code true} if the projected polygon intersects with the given tile.
+     */
+    public static boolean intersect(Polygon polygon, Rect2d tile, Projection projection) {
+        boolean x = false;      // x-axis coverage flag
+        boolean y = false;      // y-axis coverage flag
+
+        Vec2d a = projection.project(polygon.outline[0]);
+        for (int i = 1; i < polygon.outline.length; i++) {
+            Vec2d b = projection.project(polygon.outline[i]);
+
+            // if completely out of bounds, continue
+            if ((a.x < tile.xmin && b.x < tile.xmin) || (a.x > tile.xmax && b.x > tile.xmax)) continue;
+            if ((a.y < tile.ymin && b.y < tile.ymin) || (a.y > tile.ymax && b.y > tile.ymax)) continue;
+
+            // clamp outline-segment to tile
+            double cxa = clamp(a.x, tile.xmin, tile.xmax);
+            double cxb = clamp(b.x, tile.xmin, tile.xmax);
+            double cya = clamp(a.y, tile.ymin, tile.ymax);
+            double cyb = clamp(b.y, tile.ymin, tile.ymax);
+
+            // transform the clamped coordinates to line coordinates
+            double sxa = (cxa - a.x) / (b.x - a.x);
+            double sxb = (cxb - a.x) / (b.x - a.x);
+            double sya = (cya - a.y) / (b.y - a.y);
+            double syb = (cyb - a.y) / (b.y - a.y);
+
+            // set x/y-axis coverage flags
+            x |= sxb >= sxa;
+            y |= syb >= sya;
+
+            // if the outline covers both the x- and y-axis of the rectangle, the polygon intersects the rectangle.
+            if (x && y) return true;
 
             a = b;
         }

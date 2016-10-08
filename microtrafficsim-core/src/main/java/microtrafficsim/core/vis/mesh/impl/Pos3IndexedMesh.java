@@ -154,8 +154,6 @@ public class Pos3IndexedMesh implements Mesh {
         gl.glBufferData(ibo.target, indices.capacity() * 4L, indices, usage);
         gl.glBindBuffer(ibo.target, 0);
 
-        // generate dummy vao
-
         state = State.LOADED;
         return true;
     }

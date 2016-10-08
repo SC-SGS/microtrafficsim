@@ -1,11 +1,13 @@
 package microtrafficsim.examples.mapviewer;
 
 import com.jogamp.opengl.GL3;
+import microtrafficsim.core.map.features.Polygon;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.parser.features.MapFeatureGenerator;
+import microtrafficsim.core.parser.features.polygons.PolygonFeatureGenerator;
 import microtrafficsim.core.parser.features.streets.StreetFeatureGenerator;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.mesh.style.Style;
@@ -148,30 +150,37 @@ class MonochromeStyleSheet implements StyleSheet {
                 new MinorStreetBasePredicate("living_street")
         };
 
-        /* define and add the features */
-        MapFeatureGenerator<Street> generator = new StreetFeatureGenerator();
+        features = new ArrayList<>(names.length + 2);
+        layers   = new ArrayList<>(2 * names.length + 2);
 
-        features = new ArrayList<>(names.length);
+        /* define and add the features */
+        MapFeatureGenerator<Street>  streetgen = new StreetFeatureGenerator();
+        MapFeatureGenerator<Polygon> polygen   = new PolygonFeatureGenerator();
+
+        features.add(genPolygonFeatureDef("buildings", polygen, way -> way.tags.get("building") != null));
+
         for (int i = 0; i < names.length; i++)
-            features.add(genStreetFeatureDef(names[i], generator, predicates[i]));
+            features.add(genStreetFeatureDef(names[i], streetgen, predicates[i]));
 
         /* styles and layers*/
         ShaderProgramSource streets = getStreetShader();
+        ShaderProgramSource polygons = getPolygonShader();
 
         int index = 0;
-        layers = new ArrayList<>();
+
+        layers.add(genLayer("buildings", index++, 0, 19, "buildings", genPolygonStyle(polygons, Color.fromRGB(0xFF0000))));
 
         for (int zoom = 19; zoom >= 0; zoom--) {
             for (int i = names.length - 1; i >= 0; i--) {
                 if (activeOutline[i].test(zoom)) {
-                    Style style = genStyle(streets, colorsOutline[i], linewidthOutline[i].get(zoom), SCALE_MAXLEVEL);
+                    Style style = genStreetStyle(streets, colorsOutline[i], linewidthOutline[i].get(zoom), SCALE_MAXLEVEL);
                     layers.add(genLayer(names[i] + ":outline:" + zoom, index++, zoom, zoom, names[i], style));
                 }
             }
 
             for (int i = names.length - 1; i >= 0; i--) {
                 if (activeInline[i].test(zoom)) {
-                    Style style = genStyle(streets, colorsInline[i], linewidthInline[i].get(zoom), SCALE_MAXLEVEL);
+                    Style style = genStreetStyle(streets, colorsInline[i], linewidthInline[i].get(zoom), SCALE_MAXLEVEL);
                     layers.add(genLayer(names[i] + ":inline:" + zoom, index++, zoom, zoom, names[i], style));
                 }
             }
@@ -218,6 +227,16 @@ class MonochromeStyleSheet implements StyleSheet {
         return new MapFeatureDefinition<>(name, dependency, generator, n -> false, predicate);
     }
 
+    private MapFeatureDefinition<Polygon> genPolygonFeatureDef(String name, MapFeatureGenerator<Polygon> generator,
+                                                               Predicate<Way> predicate) {
+        FeatureDependency dependency = new FeatureDependency();
+        dependency.addBefore(DEPENDS_ON_WAY_CLIPPING);
+        dependency.addBefore(DEPENDS_ON_UNIFICATION);
+        dependency.addBefore(DEPENDS_ON_STREETGRAPH);
+
+        return new MapFeatureDefinition<>(name, dependency, generator, n -> false, predicate);
+    }
+
     /**
      * Return the source of the shader used for street-rendering.
      *
@@ -237,6 +256,22 @@ class MonochromeStyleSheet implements StyleSheet {
     }
 
     /**
+     * Return the source of the shader used for polygon-rendering.
+     *
+     * @return the created shader-sources.
+     */
+    private ShaderProgramSource getPolygonShader() {
+        Resource vert = new PackagedResource(MonochromeStyleSheet.class, "/shaders/features/polygons/polygons.vs");
+        Resource frag = new PackagedResource(MonochromeStyleSheet.class, "/shaders/features/polygons/polygons.fs");
+
+        ShaderProgramSource prog = new ShaderProgramSource("polygons");
+        prog.addSource(GL3.GL_VERTEX_SHADER, vert);
+        prog.addSource(GL3.GL_FRAGMENT_SHADER, frag);
+
+        return prog;
+    }
+
+    /**
      * Generate a style for streets based on the specific properties.
      *
      * @param shader    the shader to be used in the generated style.
@@ -245,13 +280,26 @@ class MonochromeStyleSheet implements StyleSheet {
      * @param scalenorm the scale-normal of the generated style.
      * @return the generated style.
      */
-    private Style genStyle(ShaderProgramSource shader, Color color, float linewidth, float scalenorm) {
+    private Style genStreetStyle(ShaderProgramSource shader, Color color, float linewidth, float scalenorm) {
         Style style = new Style(shader);
         style.setUniformSupplier("u_color", color::toVec4f);
         style.setUniformSupplier("u_linewidth", () -> linewidth);
         style.setUniformSupplier("u_viewscale_norm", () -> scalenorm);
         style.setProperty("adjacency_primitives", true);
         style.setProperty("use_joins_when_possible", true);
+        return style;
+    }
+
+    /**
+     * Generate a style for polygons based on the specific properties.
+     *
+     * @param shader    the shader to be used in the generated style.
+     * @param color     the color to be used in generated style.
+     * @return the generated style.
+     */
+    private Style genPolygonStyle(ShaderProgramSource shader, Color color) {
+        Style style = new Style(shader);
+        style.setUniformSupplier("u_color", color::toVec4f);
         return style;
     }
 

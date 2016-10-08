@@ -57,6 +57,11 @@ public class StreetFeatureGenerator implements MapFeatureGenerator<Street> {
         return generated;
     }
 
+    @Override
+    public void clear() {
+        this.generated.clear();
+    }
+
 
     @Override
     public void execute(DataSet dataset, FeatureDefinition feature, Properties properties) {
@@ -86,7 +91,6 @@ public class StreetFeatureGenerator implements MapFeatureGenerator<Street> {
             float len = 0;
             for (double d : dist)
                 len += d;
-
 
             // create street
             StreetComponent sc = way.get(StreetComponent.class);

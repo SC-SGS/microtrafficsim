@@ -34,20 +34,17 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
     @Override
     public FeatureMeshKey getKey(RenderContext context, FeatureTileLayerSource source, TileId tile, Rect2d target) {
-        return new StreetMeshKey(context,
-                                 getFeatureBounds(source, tile),
-                                 target,
-                                 source.getFeatureProvider(),
-                                 source.getFeatureName(),
-                                 source.getTilingScheme(),
-                                 source.getRevision(),
-                                 getPropAdjacency(source.getStyle()),
-                                 getPropJoinsWhenPossible(source.getStyle()));
-    }
-
-    @Override
-    public TileRect getFeatureBounds(FeatureTileLayerSource src, TileId tile) {
-        return src.getFeatureProvider().getFeatureBounds(src.getFeatureName(), tile);
+        return new StreetMeshKey(
+                context,
+                getFeatureBounds(source, tile),
+                target,
+                source.getFeatureProvider(),
+                source.getFeatureName(),
+                source.getTilingScheme(),
+                source.getRevision(),
+                getPropAdjacency(source.getStyle()),
+                getPropJoinsWhenPossible(source.getStyle())
+        );
     }
 
     @Override
@@ -73,15 +70,17 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         ArrayList<ArrayList<Integer>> indices  = new ArrayList<>();
         int                           mode;
 
-        if (adjacency) {
-            generateAdjacencyMesh(context, feature, joinsWhenPossible, vertices, indices);
-            mode = GL3.GL_LINE_STRIP_ADJACENCY;
-        } else {
-            generateStandardMesh(context, feature, vertices, indices);
-            mode = GL3.GL_LINE_STRIP;
+        try {
+            if (adjacency) {
+                generateAdjacencyMesh(context, feature, joinsWhenPossible, vertices, indices);
+                mode = GL3.GL_LINE_STRIP_ADJACENCY;
+            } else {
+                generateStandardMesh(context, feature, vertices, indices);
+                mode = GL3.GL_LINE_STRIP;
+            }
+        } finally {
+            src.getFeatureProvider().release(feature);
         }
-
-        src.getFeatureProvider().release(feature);
 
         // create vertex buffer
         FloatBuffer vb = FloatBuffer.allocate(vertices.size() * 3);
@@ -135,7 +134,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
     private void generateAdjacencyMesh(RenderContext context, TileFeature<? extends Street> feature,
                                        boolean joinsWhenPossible, ArrayList<Vertex> vertices,
                                        ArrayList<ArrayList<Integer>> indices) throws InterruptedException {
-        int restartIndex = context.PrimitiveRestart.getIndex();
+        int restart = context.PrimitiveRestart.getIndex();
 
         // get all intersections
         HashMultiMap<Coordinate, Street> intersections = null;
@@ -246,7 +245,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 bucket.add(index);
             }
 
-            bucket.add(restartIndex);
+            bucket.add(restart);
         }
 
         indices.addAll(buckets.values());
@@ -261,9 +260,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
      * @param indices  the generated list of indices.
      * @throws InterruptedException if the generation-process has been interrupted.
      */
-    private void generateStandardMesh( RenderContext context, TileFeature<? extends Street> feature,
+    private void generateStandardMesh(RenderContext context, TileFeature<? extends Street> feature,
             ArrayList<Vertex> vertices, ArrayList<ArrayList<Integer>> indices) throws InterruptedException {
-        int restartIndex = context.PrimitiveRestart.getIndex();
+        int restart = context.PrimitiveRestart.getIndex();
 
         int counter = 0;
         HashMap<Vertex, Integer>           indexmap = new HashMap<>();
@@ -294,7 +293,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 bucket.add(index);
             }
 
-            bucket.add(restartIndex);
+            bucket.add(restart);
         }
 
         indices.addAll(buckets.values());

@@ -22,4 +22,9 @@ public interface MapFeatureGenerator<T extends FeaturePrimitive> extends Feature
      * {@code null} if no features have been generated yet.
      */
     Map<String, Feature<T>> getGeneratedFeatures();
+
+    /**
+     * Clears the internal storage of generated features.
+     */
+    void clear();
 }

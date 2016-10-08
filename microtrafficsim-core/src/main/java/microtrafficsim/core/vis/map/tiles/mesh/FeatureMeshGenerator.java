@@ -35,7 +35,9 @@ public interface FeatureMeshGenerator {
      * @param tile the tile for which the bounds should be returned.
      * @return the actually provided bounds by this generator in combination with the given source for the given tile.
      */
-    TileRect getFeatureBounds(FeatureTileLayerSource src, TileId tile);
+    default TileRect getFeatureBounds(FeatureTileLayerSource src, TileId tile) {
+        return src.getFeatureProvider().getFeatureBounds(src.getFeatureName(), tile);
+    }
 
     /**
      * Generates a mesh on the given context from the given source for the given tile, projecting it to the provided
