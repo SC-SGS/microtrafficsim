@@ -1,7 +1,6 @@
 package microtrafficsim.core.parser.features.polygons;
 
 
-import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.Feature;
 import microtrafficsim.core.map.features.Polygon;
@@ -40,18 +39,17 @@ public class PolygonFeatureGenerator implements MapFeatureGenerator<Polygon> {
         ArrayList<Polygon> polygons = new ArrayList<>();
 
         for (WayEntity way : dataset.ways.values()) {
-            if (!way.features.contains(feature)) continue;
+            if (!way.features.contains(feature))
+                continue;
 
-            boolean explicit = way.nodes[0] == way.nodes[way.nodes.length - 1];
+            if (way.nodes[0] != way.nodes[way.nodes.length - 1])
+                continue;
 
-            Coordinate[] outline = new Coordinate[explicit ? way.nodes.length : way.nodes.length + 1];
+            Coordinate[] outline = new Coordinate[way.nodes.length];
             for (int i = 0; i < way.nodes.length; i++) {
                 NodeEntity node = dataset.nodes.get(way.nodes[i]);
                 outline[i] = new Coordinate(node.lat, node.lon);
             }
-
-            if (!explicit)
-                outline[outline.length - 1] = new Coordinate(outline[0]);
 
             if (properties.bounds == Properties.BoundaryManagement.CLIP) {
                 outline = Polygons.clip(dataset.bounds, outline);

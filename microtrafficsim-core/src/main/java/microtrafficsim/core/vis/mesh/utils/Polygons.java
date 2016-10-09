@@ -5,10 +5,7 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.collections.ArrayUtils;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 
 /**
@@ -62,15 +59,21 @@ public class Polygons {
                                 bounds.minlat,
                                 a.lon + (b.lon - a.lon) * (bounds.minlat - a.lat) / (b.lat - a.lat)
                         );
-                        addIfNotAtEnd(clipped, c);
+
+                        if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(c))
+                            clipped.add(c);
                     }
-                    addIfNotAtEnd(clipped, b);
+
+                    if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(b))
+                        clipped.add(b);
                 } else if (a.lat >= bounds.minlat) {
                     Coordinate c = new Coordinate(
                             bounds.minlat,
                             a.lon + (b.lon - a.lon) * (bounds.minlat - a.lat) / (b.lat - a.lat)
                     );
-                    addIfNotAtEnd(clipped, c);
+
+                    if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(c))
+                        clipped.add(c);
                 }
 
                 a = b;
@@ -91,15 +94,21 @@ public class Polygons {
                                 bounds.maxlat,
                                 a.lon + (b.lon - a.lon) * (bounds.maxlat - a.lat) / (b.lat - a.lat)
                         );
-                        addIfNotAtEnd(clipped, c);
+
+                        if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(c))
+                            clipped.add(c);
                     }
-                    addIfNotAtEnd(clipped, b);
+
+                    if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(b))
+                        clipped.add(b);
                 } else if (a.lat <= bounds.maxlat) {
                     Coordinate c = new Coordinate(
                             bounds.maxlat,
                             a.lon + (b.lon - a.lon) * (bounds.maxlat - a.lat) / (b.lat - a.lat)
                     );
-                    addIfNotAtEnd(clipped, c);
+
+                    if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(c))
+                        clipped.add(c);
                 }
 
                 a = b;
@@ -120,15 +129,22 @@ public class Polygons {
                                 a.lat + (b.lat - a.lat) * (bounds.minlon - a.lon) / (b.lon - a.lon),
                                 bounds.minlon
                         );
-                        addIfNotAtEnd(clipped, c);
+
+                        if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(c))
+                            clipped.add(c);
                     }
-                    addIfNotAtEnd(clipped, b);
+
+                    if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(b))
+                        clipped.add(b);
+
                 } else if (a.lon >= bounds.minlon) {
                     Coordinate c = new Coordinate(
                             a.lat + (b.lat - a.lat) * (bounds.minlon - a.lon) / (b.lon - a.lon),
                             bounds.minlon
                     );
-                    addIfNotAtEnd(clipped, c);
+
+                    if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(c))
+                        clipped.add(c);
                 }
 
                 a = b;
@@ -149,32 +165,35 @@ public class Polygons {
                                 a.lat + (b.lat - a.lat) * (bounds.maxlon - a.lon) / (b.lon - a.lon),
                                 bounds.maxlon
                         );
-                        addIfNotAtEnd(clipped, c);
+
+                        if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(c))
+                            clipped.add(c);
                     }
-                    addIfNotAtEnd(clipped, b);
+
+                    if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(b))
+                        clipped.add(b);
+
                 } else if (a.lon <= bounds.maxlon) {
                     Coordinate c = new Coordinate(
                             a.lat + (b.lat - a.lat) * (bounds.maxlon - a.lon) / (b.lon - a.lon),
                             bounds.maxlon
                     );
-                    addIfNotAtEnd(clipped, c);
+
+                    if (clipped.isEmpty() || !clipped.get(clipped.size() - 1).equals(c))
+                        clipped.add(c);
                 }
 
                 a = b;
             }
-            if (clipped.size() <= 2) return null;
         }
 
         // ensure start == end
         if (!clipped.get(0).equals(clipped.get(clipped.size() - 1)))
             clipped.add(new Coordinate(clipped.get(0)));
 
-        return clipped.toArray(new Coordinate[clipped.size()]);
-    }
+        if (clipped.size() < 4) return null;
 
-    private static void addIfNotAtEnd(ArrayList<Coordinate> dest, Coordinate c) {
-        if (dest.isEmpty() || !dest.get(dest.size() - 1).equals(c))
-            dest.add(c);
+        return clipped.toArray(new Coordinate[clipped.size()]);
     }
 
     /**
