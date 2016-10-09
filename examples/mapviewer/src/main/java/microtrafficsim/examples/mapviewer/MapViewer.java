@@ -94,11 +94,6 @@ public class MapViewer {
      */
     private static final boolean PRINT_FRAME_STATS = false;
 
-    /**
-     * Enable n-times multi-sample anti aliasing with the specified number of samples, if it is greater than one.
-     */
-    private static final int MSAA = 0;
-
 
     /**
      * Set up this example. Layer definitions describe the visual layers
@@ -199,12 +194,6 @@ public class MapViewer {
 
         /* get the default configuration for the visualization */
         VisualizerConfig config = vis.getDefaultConfig();
-
-        /* enable multi-sample anti-aliasing if specified */
-        if (MSAA > 1) {
-            config.glcapabilities.setSampleBuffers(true);
-            config.glcapabilities.setNumSamples(MSAA);
-        }
 
         /* create and return a new visualization panel */
         return new VisualizationPanel(vis, config);
