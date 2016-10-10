@@ -157,6 +157,10 @@ class MonochromeStyleSheet implements StyleSheet {
         MapFeatureGenerator<Street>  streetgen = new StreetFeatureGenerator();
         MapFeatureGenerator<Polygon> polygen   = new PolygonFeatureGenerator();
 
+        features.add(genPolygonFeatureDef("water", polygen,
+                way -> "water".equals(way.tags.get("natural")) || "riverbank".equals(way.tags.get("waterway")))
+        );
+
         features.add(genPolygonFeatureDef("landuse",   polygen, way -> way.tags.get("landuse") != null));
         features.add(genPolygonFeatureDef("buildings", polygen, way -> way.tags.get("building") != null));
 
@@ -169,6 +173,7 @@ class MonochromeStyleSheet implements StyleSheet {
 
         int index = 0;
 
+        layers.add(genLayer("ply:water",     index++,  0, 19, "water",     genPolygonStyle(polygons, Color.fromRGB(0x5555FF))));
         layers.add(genLayer("ply:landuse",   index++, 12, 19, "landuse",   genPolygonStyle(polygons, Color.fromRGB(0x909090))));
         layers.add(genLayer("ply:buildings", index++, 12, 19, "buildings", genPolygonStyle(polygons, Color.fromRGB(0xFF0000))));
 

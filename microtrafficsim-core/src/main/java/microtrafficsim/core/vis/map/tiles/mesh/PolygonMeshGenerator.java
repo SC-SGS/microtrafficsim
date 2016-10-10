@@ -11,6 +11,7 @@ import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.mesh.Mesh;
 import microtrafficsim.core.vis.mesh.impl.Pos3IndexedMesh;
+import microtrafficsim.core.vis.mesh.utils.Polygons;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.collections.ArrayUtils;
@@ -44,28 +45,22 @@ public class PolygonMeshGenerator implements FeatureMeshGenerator {
         TileFeature<Polygon> feature = src.getFeatureProvider().require(src.getFeatureName(), tile);
         if (feature == null) return null;
 
-        // get tile and source properties
-        TilingScheme scheme     = src.getTilingScheme();
-        Projection   projection = scheme.getProjection();
-        Rect2d       bounds     = scheme.getBounds(getFeatureBounds(src, tile));
-
         // generate mesh
-        ArrayList<Coordinate> vertices = new ArrayList<>();
-        ArrayList<Integer>    indices  = new ArrayList<>();
+        ArrayList<Vec2d>   vertices = new ArrayList<>();
+        ArrayList<Integer> indices  = new ArrayList<>();
 
         try {
-            generateMesh(context, feature, vertices, indices);
+            generateMesh(context, feature, src, tile, target, vertices, indices);
         } finally {
             src.getFeatureProvider().release(feature);
         }
 
         // create vertex buffer
         FloatBuffer vb = FloatBuffer.allocate(vertices.size() * 3);
-        for (Coordinate v : vertices) {
+        for (Vec2d v : vertices) {
             if (Thread.interrupted()) throw new InterruptedException();
-            Vec2d projected = project(projection, bounds, target, v);
-            vb.put((float) projected.x);
-            vb.put((float) projected.y);
+            vb.put((float) v.x);
+            vb.put((float) v.y);
             vb.put(0.0f);
         }
         vb.rewind();
@@ -76,7 +71,7 @@ public class PolygonMeshGenerator implements FeatureMeshGenerator {
         ib.rewind();
 
         // create mesh and buckets
-        Pos3IndexedMesh mesh = new Pos3IndexedMesh(GL3.GL_STATIC_DRAW, GL3.GL_LINE_STRIP, vb, ib);
+        Pos3IndexedMesh mesh = new Pos3IndexedMesh(GL3.GL_STATIC_DRAW, GL3.GL_TRIANGLES, vb, ib);
 
         ArrayList<Pos3IndexedMesh.Bucket> buckets = new ArrayList<>();
         buckets.add(mesh.new Bucket(0, 0, indices.size()));
@@ -85,28 +80,43 @@ public class PolygonMeshGenerator implements FeatureMeshGenerator {
         return mesh;
     }
 
-    private void generateMesh(RenderContext context, TileFeature<? extends Polygon> feature,
-                              ArrayList<Coordinate> vertices, ArrayList<Integer> indices) throws InterruptedException {
+    private void generateMesh(RenderContext context, TileFeature<? extends Polygon> feature, FeatureTileLayerSource src,
+                              TileId tile, Rect2d target, ArrayList<Vec2d> vertices, ArrayList<Integer> indices)
+            throws InterruptedException {
+
+        TilingScheme scheme     = src.getTilingScheme();
+        Projection   projection = scheme.getProjection();
+        Rect2d       bounds     = scheme.getBounds(getFeatureBounds(src, tile));
+
         int restart = context.PrimitiveRestart.getIndex();
 
-        // TODO: triangulate polygons
-        // NOTE: outline may have start-node == end-node
+        // TODO: replace triangulation-method
+        // NOTE: outline has start-node == end-node
 
         int counter = 0;
-        HashMap<Coordinate, Integer> indexmap = new HashMap<>();
+        HashMap<Vec2d, Integer> indexmap = new HashMap<>();
 
         for (Polygon polygon : feature.getData()) {
             if (Thread.interrupted()) throw new InterruptedException();
 
-            for (Coordinate c : polygon.outline) {
+            Vec2d[] outline     = project(projection, bounds, target, polygon.outline, 0, polygon.outline.length - 1);
+            int[]   polyindices = Polygons.triangulate(outline);
+            if (polyindices == null) {
+                System.err.println("Failed to triangulate polygon (around coordinate " + polygon.outline[0].toString() + ").");
+                continue;
+            }
+
+            for (int i : polyindices) {
+                Vec2d vertex = outline[i];
+
                 int     index;
-                Integer indexobj = indexmap.get(c);
+                Integer indexobj = indexmap.get(vertex);
                 if (indexobj != null) {
                     index = indexobj;
                 } else {
                     index = counter++;
-                    vertices.add(c);
-                    indexmap.put(c, index);
+                    vertices.add(vertex);
+                    indexmap.put(vertex, index);
                 }
 
                 indices.add(index);
@@ -116,9 +126,28 @@ public class PolygonMeshGenerator implements FeatureMeshGenerator {
         }
     }
 
+    /**
+     * Project the given {@code Coordinate}s from the given source-rectangle to the given target-rectangle using the
+     * given projection.
+     *
+     * @param projection the projection to use.
+     * @param from       the source rectangle.
+     * @param to         the target rectangle.
+     * @param c          the coordinate to project.
+     * @return the projected coordinate as vector.
+     */
+    private static Vec2d[] project(Projection projection, Rect2d from, Rect2d to, Coordinate[] c, int start, int len) {
+        Vec2d[] result = new Vec2d[len];
+
+        for (int i = 0; i < len; i++)
+            result[i] = project(projection, from, to, c[i + start]);
+
+        return result;
+    }
 
     /**
-     * Project the given {@code Coordinate} from the given rectangle to the given rectangle using the given projection.
+     * Project the given {@code Coordinate} from the given source-rectangle to the given target-rectangle using the
+     * given projection.
      *
      * @param projection the projection to use.
      * @param from       the source rectangle.
