@@ -7,7 +7,6 @@ import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.Visualizer;
@@ -21,6 +20,7 @@ import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
+import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
@@ -28,12 +28,10 @@ import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFac
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 
 import javax.swing.*;
-import javax.xml.stream.XMLStreamException;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 
 
@@ -74,7 +72,7 @@ public class MapViewer {
     /**
      * The used style sheet, defining style and content of the visualization.
      */
-    private static final StyleSheet STYLE = new LightStyleSheet();
+    private static final StyleSheet STYLE = new MonochromeStyleSheet();
 
     /* -- internal settings -------------------------------------------------------------------- */
 
@@ -116,8 +114,8 @@ public class MapViewer {
     private static void show(File file) throws UnsupportedFeatureException {
         /* set up layer and tile provider */
         Collection<LayerDefinition> layers        = STYLE.getLayers();
-        TileLayerProvider               layerProvider = createLayerProvider(layers);
-        PreRenderedTileProvider         provider      = new PreRenderedTileProvider(layerProvider);
+        TileLayerProvider           layerProvider = createLayerProvider(layers);
+        PreRenderedTileProvider     provider      = new PreRenderedTileProvider(layerProvider);
 
         /* create the visualizer */
         TileBasedVisualization visualization = createVisualization(provider);
@@ -227,14 +225,15 @@ public class MapViewer {
      * @return the created parser
      */
     private static OSMParser createParser() {
-        /* get the parser configuration from the given style */
-        StyleSheet.ParserConfig styleconfig = STYLE.getParserConfiguration();
+        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_WAY_CLIPPING, OSMParser.PLACEHOLDER_UNIFICATION, null);
+
+        /* global properties for (all) generators */
+        FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
+        genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.CLIP;
 
         /* create a configuration, add factories for parsed components */
         OSMParser.Config config = new OSMParser.Config()
-                .setBoundaryManagementMethod(OSMDataSetSanitizer.BoundaryMgmt.RE_CALCULATE)
-                .setGeneratorIndexUnification(styleconfig.generatorIndexOfUnification)
-                .setGeneratorIndexStreetGraph(styleconfig.generatorIndexOfStreetGraph)
+                .setGeneratorProperties(genprops)
                 .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
                 .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
                 .putRelationInitializer("restriction", new RestrictionRelationFactory());
@@ -301,7 +300,7 @@ public class MapViewer {
 
                 /* center the view to the parsed area */
                 vis.resetView();
-            } catch (XMLStreamException | IOException | InterruptedException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 Runtime.getRuntime().halt(1);
             }

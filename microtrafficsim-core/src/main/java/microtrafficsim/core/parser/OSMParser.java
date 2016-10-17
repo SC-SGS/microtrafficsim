@@ -6,12 +6,12 @@ import microtrafficsim.core.map.Feature;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
-import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
 import microtrafficsim.osm.parser.Parser;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.ComponentFactory;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
+import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.FeatureSystem;
 import microtrafficsim.core.parser.processing.OSMProcessor;
@@ -23,6 +23,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.stream.Collector;
 
@@ -35,9 +36,24 @@ import java.util.stream.Collector;
  */
 public class OSMParser {
 
+    /**
+     * Placeholder {@code FeatureDefinition} to be used to indicate the way-clipping step (of the pre-processing stage)
+     * either in dependencies or (internally) in the list of generated features. The user of this class does note
+     * need to explicitly add this placeholder to the list of feature-definitions.
+     */
+    public static final FeatureDefinition PLACEHOLDER_WAY_CLIPPING = OSMProcessor.PLACEHOLDER_WAY_CLIPPING;
+
+    /**
+     * Placeholder {@code FeatureDefinition} to be used to indicate the street-unification step (of the pre-processing
+     * stage) either in dependencies or (internally) in the list of generated features. The user of this class does not
+     * need to explicitly add this placeholder to the list of feature-definitions.
+     */
+    public static final FeatureDefinition PLACEHOLDER_UNIFICATION = OSMProcessor.PLACEHOLDER_UNIFICATION;
+
     private Parser           parser;
     private Config           config;
     private DataSetExtractor extractor;
+
     private OSMParser(Parser parser, Config config, DataSetExtractor extractor) {
         this.parser    = parser;
         this.config    = config;
@@ -52,24 +68,41 @@ public class OSMParser {
      */
     public static OSMParser create(Config config) {
         // create parser
-        OSMProcessor processor = new OSMProcessor(config.genindexUnify, config.genindexStreetGraph, config.bounds);
+        OSMProcessor processor = new OSMProcessor(config.genprops, config.streetgraph);
         Parser       parser    = new Parser(processor);
 
         // add features
         FeatureSystem featuresys = parser.getFeatureSystem();
-        if (config.streetgraph != null) featuresys.putFeature(config.streetgraph);
         featuresys.putFeatures(config.features.values());
+
+        if (!featuresys.getAllFeatures().contains(OSMProcessor.PLACEHOLDER_WAY_CLIPPING))
+            featuresys.putFeature(OSMProcessor.PLACEHOLDER_WAY_CLIPPING);
+
+        if (!featuresys.getAllFeatures().contains(OSMProcessor.PLACEHOLDER_UNIFICATION))
+            featuresys.putFeature(OSMProcessor.PLACEHOLDER_UNIFICATION);
+
+        if (config.streetgraph != null) {
+            config.streetgraph.getDependency().addRequires(PLACEHOLDER_UNIFICATION);
+            featuresys.putFeature(config.streetgraph);
+        }
 
         // add initializers
         parser.getNodeEntityManager().getInitializerMap().putAll(config.nodeInitializers);
         parser.getWayEntityManager().getInitializerMap().putAll(config.wayInitializers);
         parser.getRelationManager().putFactories(config.relationInitializers);
 
-        // add extractor for bounds
+        // add extractor for bounds, make sure it is generated before every other feature
+        HashSet<FeatureDefinition> extractorRequires = new HashSet<>();
+        extractorRequires.addAll(config.features.values());
+        extractorRequires.add(PLACEHOLDER_WAY_CLIPPING);
+        extractorRequires.add(PLACEHOLDER_UNIFICATION);
+        if (config.streetgraph != null)
+            extractorRequires.add(config.streetgraph);
+
         DataSetExtractor  extractor = new DataSetExtractor();
         FeatureDefinition extractordef = new FeatureDefinition(
                 "microtrafficsim.core.parser.OSMParser.BoundsExtractor",
-                Integer.MIN_VALUE,    // assure this is generated before everything else
+                new FeatureDependency(null, extractorRequires),
                 extractor,
                 (Node n) -> false,
                 (Way w) -> false
@@ -86,9 +119,10 @@ public class OSMParser {
      * @param file the file to parse.
      * @return the result parsed from the given file.
      * @throws XMLStreamException for mal-formed XML documents.
-     * @throws IOException if the file cannot be read.
+     * @throws IOException        if the file cannot be read.
+     * @throws Exception          if any other exception occurred during processing.
      */
-    public Result parse(File file) throws XMLStreamException, IOException {
+    public Result parse(File file) throws Exception {
         parser.parse(file);
 
         // get feature set
@@ -111,10 +145,7 @@ public class OSMParser {
      * Configuration for the {@code OSMParser}.
      */
     public static class Config {
-        private int                              genindexUnify;
-        private int                              genindexStreetGraph;
-        private OSMDataSetSanitizer.BoundaryMgmt bounds;
-
+        private FeatureGenerator.Properties          genprops;
         private StreetGraphFeatureDefinition         streetgraph;
         private Map<String, MapFeatureDefinition<?>> features;
 
@@ -126,7 +157,7 @@ public class OSMParser {
          * Constructs a new (empty) configuration.
          */
         public Config() {
-            this.bounds               = OSMDataSetSanitizer.BoundaryMgmt.NONE;
+            this.genprops             = new FeatureGenerator.Properties();
             this.streetgraph          = null;
             this.features             = new HashMap<>();
             this.nodeInitializers     = new HashMap<>();
@@ -140,9 +171,7 @@ public class OSMParser {
          * @param other the configuration from which this configuration should be copied.
          */
         public Config(Config other) {
-            this.genindexUnify        = other.genindexUnify;
-            this.genindexStreetGraph  = other.genindexStreetGraph;
-            this.bounds               = other.bounds;
+            this.genprops             = other.genprops;
             this.streetgraph          = other.streetgraph;
             this.features             = new HashMap<>(other.features);
             this.nodeInitializers     = new HashMap<>(other.nodeInitializers);
@@ -151,47 +180,13 @@ public class OSMParser {
         }
 
         /**
-         * Sets the generator index used to determine the features that need to be generated before the
-         * unification step of the streets. Features with generator index less or equal to the unification
-         * index are generated before the street unification step, features with a generator index higher
-         * than the unification index after this step. The unification index must always be lower than the
-         * street-graph generator index.
+         * Sets the properties to be used for generating the features.
          *
-         * @param genindexUnify the index determining which features to generate before the unification
-         *                      step and which after.
-         * @return this configuration.
-         * @see Config#setGeneratorIndexStreetGraph(int)
-         */
-        public Config setGeneratorIndexUnification(int genindexUnify) {
-            this.genindexUnify = genindexUnify;
-            return this;
-        }
-
-        /**
-         * Sets the generator index used to determine the features that need to be generated before the
-         * street graph is generated. Features with generator index less or equal to the street-graph
-         * index are generated before the street-graph, features with a generator index higher than the
-         * street-graph index after this step. The street-graph index must always be higher than the
-         * unification index.
-         *
-         * @param genindexStreetGraph the index determining which features to generate before the
-         *                            street-graph and which after.
-         * @return this configuration.
-         * @see Config#setGeneratorIndexUnification(int)
-         */
-        public Config setGeneratorIndexStreetGraph(int genindexStreetGraph) {
-            this.genindexStreetGraph = genindexStreetGraph;
-            return this;
-        }
-
-        /**
-         * Sets the boundary-management method used to handle boundaries.
-         *
-         * @param bounds the boundary management method.
+         * @param genprops the properties to be used for generating features.
          * @return this configuration.
          */
-        public Config setBoundaryManagementMethod(OSMDataSetSanitizer.BoundaryMgmt bounds) {
-            this.bounds = bounds;
+        public Config setGeneratorProperties(FeatureGenerator.Properties genprops) {
+            this.genprops = genprops;
             return this;
         }
 
@@ -311,7 +306,7 @@ public class OSMParser {
         public Bounds bounds;
 
         @Override
-        public void execute(DataSet dataset, FeatureDefinition feature) {
+        public void execute(DataSet dataset, FeatureDefinition feature, FeatureGenerator.Properties genprops) {
             this.bounds = new Bounds(dataset.bounds);
         }
     }

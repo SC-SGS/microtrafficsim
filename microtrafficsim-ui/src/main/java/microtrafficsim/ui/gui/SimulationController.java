@@ -406,7 +406,7 @@ public class SimulationController implements GUIController {
 
             @Override
             public String getDescription() {
-                return ".processing"; // TODO Max fragen
+                return ".osm";
             }
 
             @Override
@@ -423,8 +423,8 @@ public class SimulationController implements GUIController {
                 if (extension == null) return false;
 
                 switch (extension) {
-                case "processing": return true; // TODO Max fragen
-                default:           return false;
+                    case "osm": return true;
+                    default:    return false;
                 }
             }
         });
@@ -454,7 +454,7 @@ public class SimulationController implements GUIController {
 
                 mapviewer.changeMap(result);
                 frame.setTitle("MicroTrafficSim - " + file.getName());
-            } catch (XMLStreamException | IOException | InterruptedException e) {
+            } catch (Exception e) {
                 lock_gui.lock();
                 transiate(GUIEvent.DID_PARSE);
                 lock_gui.unlock();

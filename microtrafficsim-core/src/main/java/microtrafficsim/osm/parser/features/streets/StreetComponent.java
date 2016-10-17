@@ -20,10 +20,10 @@ import microtrafficsim.utils.hashing.FNVHashBuilder;
  */
 public class StreetComponent extends Component implements Mergeable<StreetComponent>, ReverseEquals, Reversible {
 
-    public StreetType streettype;
-    public LaneInfo lanes;
+    public StreetType   streettype;
+    public LaneInfo     lanes;
     public MaxspeedInfo maxspeed;
-    public OnewayInfo oneway;
+    public OnewayInfo   oneway;
     public boolean      roundabout;
     public float        layer;
 

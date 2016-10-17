@@ -9,7 +9,6 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
-import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
@@ -25,6 +24,8 @@ import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
+import microtrafficsim.osm.parser.features.FeatureDependency;
+import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
@@ -75,7 +76,7 @@ public class TileBasedMapViewer implements MapViewer {
     /**
      * The used style sheet, defining style and content of the visualization.
      */
-    private static final StyleSheet STYLE = new LightStyleSheet();
+    private static final StyleSheet STYLE = new MonochromeStyleSheet();
 
     /* -- internal settings -------------------------------------------------------------------- */
 
@@ -103,9 +104,9 @@ public class TileBasedMapViewer implements MapViewer {
     private static final int MSAA = 0;
 
 
-    private VisualizationPanel              vpanel;
-    private TileBasedVisualization          visualization;
-    private OSMParser                       parser;
+    private VisualizationPanel          vpanel;
+    private TileBasedVisualization      visualization;
+    private OSMParser                   parser;
     private Collection<LayerDefinition> layers;
 
     @Override
@@ -199,15 +200,14 @@ public class TileBasedMapViewer implements MapViewer {
 
     @Override
     public OSMParser createParser(SimulationConfig simconfig) {
-        /* get the parser configuration from the given style */
-        StyleSheet.ParserConfig styleconfig = STYLE.getParserConfiguration();
+        /* global properties for (all) generators */
+        FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
+        genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.CLIP;
 
         /* create a configuration, add factories for parsed components */
-        OSMParser.Config osmconfig = new OSMParser.Config()
-                .setBoundaryManagementMethod(OSMDataSetSanitizer.BoundaryMgmt.CLIP)
-                .setGeneratorIndexUnification(styleconfig.generatorIndexOfUnification)
-                .setGeneratorIndexStreetGraph(styleconfig.generatorIndexOfStreetGraph);
+        OSMParser.Config osmconfig = new OSMParser.Config().setGeneratorProperties(genprops);
 
+        StreetGraphFeatureDefinition streetgraph = null;
         if (simconfig != null) {
             // predicates to match/select features
             Predicate<Way> streetgraphMatcher = w -> {
@@ -238,15 +238,20 @@ public class TileBasedMapViewer implements MapViewer {
                 return false;
             };
 
-            StreetGraphFeatureDefinition streetgraph
-                    = new StreetGraphFeatureDefinition("streetgraph",
-                                                       styleconfig.generatorIndexOfStreetGraph,
-                                                       new StreetGraphGenerator(simconfig),
-                                                       n -> false,
-                                                       streetgraphMatcher);
+            streetgraph = new StreetGraphFeatureDefinition(
+                    "streetgraph",
+                    new FeatureDependency(OSMParser.PLACEHOLDER_UNIFICATION, null),
+                    new StreetGraphGenerator(simconfig),
+                    n -> false,
+                    streetgraphMatcher
+            );
 
             osmconfig.setStreetGraphFeatureDefinition(streetgraph);
         }
+
+        /* replace the style-placeholders with the feature-definitions/placeholders used by the osm-processor */
+        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_WAY_CLIPPING, OSMParser.PLACEHOLDER_UNIFICATION,
+                streetgraph);
 
         osmconfig.putWayInitializer(StreetComponent.class, new StreetComponentFactory())
                 .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
@@ -291,7 +296,7 @@ public class TileBasedMapViewer implements MapViewer {
     }
 
     @Override
-    public OSMParser.Result parse(File file) throws IOException, XMLStreamException {
+    public OSMParser.Result parse(File file) throws Exception {
         return parser.parse(file);
     }
 }

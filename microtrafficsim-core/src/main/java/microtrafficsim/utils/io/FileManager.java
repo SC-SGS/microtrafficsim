@@ -1,4 +1,4 @@
-package microtrafficsim.utils.fileio;
+package microtrafficsim.utils.io;
 
 import java.io.File;
 import java.io.FileOutputStream;

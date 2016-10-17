@@ -1,6 +1,7 @@
 # Microscopic Traffic Simulation
 with OpenStreetMap data.
 
+![Teaser: New York](teaser.png "Teaser: New York")
 
 ## News
 We are cleaning up the existing project. This includes detailed Javadocs,

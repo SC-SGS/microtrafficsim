@@ -106,8 +106,9 @@ public class Parser {
      * @param file the file to be parsed.
      * @throws XMLStreamException if the XML-file is malformed.
      * @throws IOException        if the specified file cannot be read.
+     * @throws Exception          if any other exception occurred during processing.
      */
-    public void parse(File file) throws XMLStreamException, IOException {
+    public void parse(File file) throws Exception {
         logger.info("start parsing '" + file.getPath() + "'");
         DataSet datastore = extract(file);
 

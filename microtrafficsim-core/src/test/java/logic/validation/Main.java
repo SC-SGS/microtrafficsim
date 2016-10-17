@@ -26,6 +26,8 @@ import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
 import microtrafficsim.math.random.ConcurrentRndGenGenerator;
+import microtrafficsim.osm.parser.features.FeatureDependency;
+import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
@@ -145,9 +147,6 @@ public class Main {
      * @return the created parser
      */
     private static OSMParser getParser(SimulationConfig simcfg) {
-        /* get the parser configuration from the given style */
-        StyleSheet.ParserConfig styleconfig = STYLE.getParserConfiguration();
-
         /* predicate to match/select the streets that belong to the simulated graph */
         Predicate<Way> streetgraphMatcher = w -> {
             if (!w.visible) return false;
@@ -179,16 +178,23 @@ public class Main {
         /* create the feature definition for the simulated graph */
         StreetGraphFeatureDefinition streetgraph = new StreetGraphFeatureDefinition(
                 "streetgraph",
-                styleconfig.generatorIndexOfStreetGraph,
+                new FeatureDependency(),
                 new StreetGraphGenerator(simcfg),
                 n -> false,
                 streetgraphMatcher
         );
 
+        /* replace the style-placeholders with the feature-definitions/placeholders used by the osm-processor */
+        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_UNIFICATION ,OSMParser.PLACEHOLDER_UNIFICATION,
+                                            streetgraph);
+
+        /* global properties for (all) generators */
+        FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
+        genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.CLIP;
+
         /* create a configuration, add factories for parsed components */
         OSMParser.Config config = new OSMParser.Config()
-                .setGeneratorIndexUnification(styleconfig.generatorIndexOfUnification)
-                .setGeneratorIndexStreetGraph(styleconfig.generatorIndexOfStreetGraph)
+                .setGeneratorProperties(genprops)
                 .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
                 .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
                 .putRelationInitializer("restriction", new RestrictionRelationFactory())

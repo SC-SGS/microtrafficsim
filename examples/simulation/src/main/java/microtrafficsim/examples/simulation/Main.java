@@ -9,7 +9,6 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
-import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
 import microtrafficsim.core.simulation.Simulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
@@ -26,6 +25,8 @@ import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
 import microtrafficsim.examples.simulation.scenarios.Scenario;
+import microtrafficsim.osm.parser.features.FeatureDependency;
+import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
@@ -308,9 +309,6 @@ public class Main {
      * @return the created parser
      */
     private static OSMParser createParser(SimulationConfig simconfig) {
-        /* get the parser configuration from the given style */
-        StyleSheet.ParserConfig styleconfig = STYLE.getParserConfiguration();
-
         /* predicate to match/select the streets that belong to the simulated graph */
         Predicate<Way> streetgraphMatcher = w -> {
             if (!w.visible) return false;
@@ -342,17 +340,22 @@ public class Main {
         /* create the feature definition for the simulated graph */
         StreetGraphFeatureDefinition streetgraph = new StreetGraphFeatureDefinition(
                 "streetgraph",
-                styleconfig.generatorIndexOfStreetGraph,
+                new FeatureDependency(OSMParser.PLACEHOLDER_UNIFICATION, null),
                 new StreetGraphGenerator(simconfig),
                 n -> false,
                 streetgraphMatcher
         );
 
+        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_WAY_CLIPPING, OSMParser.PLACEHOLDER_UNIFICATION,
+                                            streetgraph);
+
+        /* global properties for (all) generators */
+        FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
+        genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.CLIP;
+
         /* create a configuration, add factories for parsed components */
         OSMParser.Config config = new OSMParser.Config()
-                .setBoundaryManagementMethod(OSMDataSetSanitizer.BoundaryMgmt.CLIP)
-                .setGeneratorIndexUnification(styleconfig.generatorIndexOfUnification)
-                .setGeneratorIndexStreetGraph(styleconfig.generatorIndexOfStreetGraph)
+                .setGeneratorProperties(genprops)
                 .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
                 .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
                 .putRelationInitializer("restriction", new RestrictionRelationFactory())

@@ -3,11 +3,12 @@ package microtrafficsim.core.map.style;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.vis.opengl.utils.Color;
+import microtrafficsim.osm.parser.features.FeatureDefinition;
+import microtrafficsim.osm.parser.features.FeatureDependency;
 
 import java.util.Collection;
+import java.util.function.UnaryOperator;
 
-
-// TODO: comments
 
 /**
  * Stylesheet for the tile-based visualization.
@@ -15,6 +16,28 @@ import java.util.Collection;
  * @author Maximilian Luz
  */
 public interface StyleSheet {
+
+    /**
+     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-unification step.
+     */
+    FeatureDefinition DEPENDS_ON_WAY_CLIPPING
+            = FeatureDefinition.createDependencyPlaceholder(
+                    "placeholder for way-clipping stage (stylesheet)");
+
+    /**
+     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-unification step.
+     */
+    FeatureDefinition DEPENDS_ON_UNIFICATION
+            = FeatureDefinition.createDependencyPlaceholder(
+                    "placeholder for street-unification stage (stylesheet)");
+
+    /**
+     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-graph-generation.
+     */
+    FeatureDefinition DEPENDS_ON_STREETGRAPH
+            = FeatureDefinition.createDependencyPlaceholder(
+                    "placeholder for streetgraph feature-definitnion (stylesheet)");
+
 
     /**
      * Returns the background-color of this style-sheet.
@@ -31,16 +54,9 @@ public interface StyleSheet {
     Color getTileBackgroundColor();
 
     /**
-     * Returns the parser-configuration of this style.
+     * Returns the feature-definitions of this style.
      *
-     * @return the parser-configuration of this style.
-     */
-    ParserConfig getParserConfiguration();
-
-    /**
-     * Returns the map feature-definitions of this style.
-     *
-     * @return the map feature-definitions of this style.
+     * @return the feature-definitions of this style.
      */
     Collection<MapFeatureDefinition<?>> getFeatureDefinitions();
 
@@ -51,32 +67,35 @@ public interface StyleSheet {
      */
     Collection<LayerDefinition> getLayers();
 
+
     /**
-     * Parser configuration for style.
+     * Replace the placeholder-{@code FeatureDefinition}s of this {@code StyleSheet} with the specified
+     * {@code FeatureDefinition}s.
+     *
+     * @param clipping    the definition to replace the way-clipping-step-placeholder with.
+     * @param unification the definition to replace the unification-step-placeholder with.
+     * @param streetgraph the definition to replace the streetgraph-placeholder with.
      */
-    class ParserConfig {
+    default void replaceDependencyPlaceholders(FeatureDefinition clipping, FeatureDefinition unification,
+                                               FeatureDefinition streetgraph) {
+        for (MapFeatureDefinition<?> def : getFeatureDefinitions()) {
+            if (def.getDependency().getRequires().remove(DEPENDS_ON_WAY_CLIPPING))
+                def.getDependency().getRequires().add(clipping);
 
-        /**
-         * The generator-index marking the unification-process in the sequence of generators.
-         */
-        public final int generatorIndexOfUnification;
+            if (def.getDependency().getRequires().remove(DEPENDS_ON_UNIFICATION))
+                def.getDependency().getRequires().add(unification);
 
-        /**
-         * The generator-index marking the street-graph generation-process in the sequence of generators.
-         */
-        public final int generatorIndexOfStreetGraph;
+            if (def.getDependency().getRequires().remove(DEPENDS_ON_STREETGRAPH))
+                def.getDependency().getRequires().add(streetgraph);
 
-        /**
-         * Constructs a new {@code ParserConfig}.
-         *
-         * @param generatorIndexOfUnification the generator-index marking the unification-process in the sequence of
-         *                                    generators.
-         * @param generatorIndexOfStreetGraph the generator-index marking the street-graph generation-process in the
-         *                                    sequence of generators.
-         */
-        public ParserConfig(int generatorIndexOfUnification, int generatorIndexOfStreetGraph) {
-            this.generatorIndexOfUnification = generatorIndexOfUnification;
-            this.generatorIndexOfStreetGraph = generatorIndexOfStreetGraph;
+            if (def.getDependency().getRequiredBy().remove(DEPENDS_ON_WAY_CLIPPING))
+                def.getDependency().getRequiredBy().add(clipping);
+
+            if (def.getDependency().getRequiredBy().remove(DEPENDS_ON_UNIFICATION))
+                def.getDependency().getRequiredBy().add(unification);
+
+            if (def.getDependency().getRequiredBy().remove(DEPENDS_ON_STREETGRAPH))
+                def.getDependency().getRequiredBy().add(streetgraph);
         }
     }
 }

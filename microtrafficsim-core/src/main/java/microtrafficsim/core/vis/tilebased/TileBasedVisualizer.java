@@ -260,7 +260,7 @@ public class TileBasedVisualizer implements Visualizer {
 
         UniformSampler2D uFboColorSampler = (UniformSampler2D) fboCopyShader.getUniform("u_color_sampler");
         UniformSampler2D uFboDepthSampler = (UniformSampler2D) fboCopyShader.getUniform("u_depth_sampler");
-        uFboColorSampler.set(FBO_COLOR_TEXUNIT);
+        //uFboColorSampler.set(FBO_COLOR_TEXUNIT);
         uFboDepthSampler.set(FBO_DEPTH_TEXUNIT);
 
         // create backbuffer
@@ -347,7 +347,11 @@ public class TileBasedVisualizer implements Visualizer {
 
     @Override
     public void display(RenderContext context) throws Exception {
-        GL3 gl     = context.getDrawable().getGL().getGL3();
+        GL3 gl = context.getDrawable().getGL().getGL3();
+
+        int width  = context.getDrawable().getSurfaceWidth();
+        int height = context.getDrawable().getSurfaceHeight();
+        uViewport.set(width, height, 1.f / width, 1.f / height);
 
         context.DepthTest.enable(gl);
         context.DepthTest.setFunction(gl, GL3.GL_ALWAYS, true);
