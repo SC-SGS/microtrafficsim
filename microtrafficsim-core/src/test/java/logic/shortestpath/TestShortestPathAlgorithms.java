@@ -1,15 +1,16 @@
-package logic.dijkstra;
+package logic.shortestpath;
 
-import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
+import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.astar.AStar;
 import microtrafficsim.core.shortestpath.astar.BidirectionalAStar;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayAStar;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
+import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Vec2f;
@@ -19,8 +20,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Stack;
 
 import static org.junit.Assert.assertEquals;
@@ -33,40 +32,109 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Dominic Parga Cacheiro
  */
-public class UnitTestDijkstraExample {
-    private static final Logger logger = LoggerFactory.getLogger(UnitTestDijkstraExample.class);
+public class TestShortestPathAlgorithms {
+    private static final Logger logger = LoggerFactory.getLogger(TestShortestPathAlgorithms.class);
 
-    private static SimulationConfig    config;
+    private static SimulationConfig     config;
     private static ShortestPathAlgorithm shortestPathAlgorithm;
-    private static Vec2f               rubbish;
-    private final int                  maxVelocity = 1;
-    private Stack<ShortestPathEdge>    shortestPath;
-    private LinkedList<DirectedEdge>   correctShortestPath;
-    private StreetGraph                graph;
-    private Node                       start, end;
-    private Coordinate                 uselessPosition = new Coordinate(0, 0);
+    private static Vec2f                rubbish;
+    private final int                   maxVelocity = 1;
+    private Stack<ShortestPathEdge>     shortestPath;
+    private Stack<DirectedEdge>         correctShortestPath;
+    private StreetGraph                 graph;
+    private Node                        start, end;
+    private Coordinate                  uselessPosition = new Coordinate(0, 0);
 
     @BeforeClass
     public static void setupClass() {
         config = new SimulationConfig();
-//        shortestPathAlgorithm = AStar.createShortestWayDijkstra();
-//        shortestPathAlgorithm = new FastestWayAStar(7.5f);
-//        shortestPathAlgorithm = new LinearDistanceAStar(7.5f);
-//        shortestPathAlgorithm = BidirectionalAStar.createShortestWayDijkstra();
-//        shortestPathAlgorithm = new FastestWayBidirectionalAStar(7.5f);
-//        shortestPathAlgorithm = new LinearDistanceBidirectionalAStar(7.5f);
         rubbish  = new Vec2f(1.0f, 1.0f);
     }
 
     @Before
     public void setup() {
-        graph        = new StreetGraph(0, 0, 0, 0);
-        correctShortestPath = new LinkedList<>();
+        graph = new StreetGraph(0, 0, 0, 0);
+        correctShortestPath = new Stack<>();
         shortestPath = new Stack<>();
     }
 
+    /*
+    |=======|
+    | tests |
+    |=======|
+    */
     @Test
-    public void isDijkstraDangerous() {
+    public void testDijkstra() {
+        shortestPathAlgorithm = AStar.createShortestWayDijkstra();
+        shortestPathAlgorithm.preprocess();
+        isDangerous();
+        isShortestPathCorrect();
+        multipleCorrectPathsPossible();
+    }
+
+    @Test
+    public void testFastestWayAStar() {
+        shortestPathAlgorithm = new FastestWayAStar(config.metersPerCell);
+        shortestPathAlgorithm.preprocess();
+        isDangerous();
+        isShortestPathCorrect();
+        multipleCorrectPathsPossible();
+    }
+
+    @Test
+    public void testLinearDistanceAStar() {
+        shortestPathAlgorithm = new LinearDistanceAStar(config.metersPerCell);
+        shortestPathAlgorithm.preprocess();
+        isDangerous();
+        isShortestPathCorrect();
+        multipleCorrectPathsPossible();
+    }
+
+    @Test
+    public void testBidirectionalDijkstra() {
+        shortestPathAlgorithm = BidirectionalAStar.createShortestWayDijkstra();
+        shortestPathAlgorithm.preprocess();
+        isDangerous();
+        isShortestPathCorrect();
+        multipleCorrectPathsPossible();
+    }
+
+    @Test
+    public void testFastestWayBidirectionalAStar() {
+        shortestPathAlgorithm = new FastestWayBidirectionalAStar(config.metersPerCell);
+        shortestPathAlgorithm.preprocess();
+        isDangerous();
+        isShortestPathCorrect();
+        multipleCorrectPathsPossible();
+    }
+
+    @Test
+    public void testLinearDistanceBidirectionalAStar() {
+        shortestPathAlgorithm = new LinearDistanceBidirectionalAStar(config.metersPerCell);
+        shortestPathAlgorithm.preprocess();
+        isDangerous();
+        isShortestPathCorrect();
+        multipleCorrectPathsPossible();
+    }
+
+    /*
+    |================|
+    | test case impl |
+    |================|
+    */
+    /**
+     * <p>
+     * This method creates a graph using {@link DirectedEdge} and {@link Node} and checks the shortest path algorithm
+     * for:<br>
+     * &bull Is the shortest path correct? This check differs from the method {@link #isShortestPathCorrect()} in the
+     * graph (this graph here is a few nodes smaller). <br>
+     * &bull Is the shortest path not changing the graph? <br>
+     * &bull Is the shortest path empty if there does not exist a shortest path?
+     *
+     * <p>
+     * Console output is generated, so you will be able to differentiate the errors above.
+     */
+    private void isDangerous() {
         // create nodes
         Node a = new Node(config, uselessPosition);
         Node b = new Node(config, uselessPosition);
@@ -126,30 +194,34 @@ public class UnitTestDijkstraExample {
         shortestPathAlgorithm.findShortestPath(start, end, shortestPath);
 
         // correct path
-        correctShortestPath.addLast(ab);
-        correctShortestPath.addLast(bc);
-        correctShortestPath.addLast(cd);
-        correctShortestPath.addLast(de);
+        correctShortestPath.clear();
+        correctShortestPath.push(de);
+        correctShortestPath.push(cd);
+        correctShortestPath.push(bc);
+        correctShortestPath.push(ab);
 
         String graphAfter = graph.toString();
 
         // tests
         logger.info("Test: Is shortest path correct?");
-        for (DirectedEdge edge : correctShortestPath)
-            assertEquals(null, edge, shortestPath.pop());
+        assertEquals(correctShortestPath, shortestPath);
 
         logger.info("Test: Correct and graph has not been mutated?");
-        assertEquals(null, graphBefore, graphAfter);
+        assertEquals(graphBefore, graphAfter);
 
         logger.info("Test: Correct if no path exists?");
-        Node f              = new Node(config, uselessPosition);
+        Node f = new Node(config, uselessPosition);
         shortestPath.clear();
         shortestPathAlgorithm.findShortestPath(start, f, shortestPath);
-        assertTrue(null, shortestPath.isEmpty());
+        assertTrue(shortestPath.isEmpty());
     }
 
-    @Test
-    public void isShortestPathCorrect() {
+    /**
+     * <p>
+     * This method creates a graph using {@link DirectedEdge} and {@link Node} and checks the shortest path algorithm
+     * for its correctness. The graph contains circles.
+     */
+    private void isShortestPathCorrect() {
         // create nodes
         Node a = new Node(config, uselessPosition);
         Node b = new Node(config, uselessPosition);
@@ -245,18 +317,22 @@ public class UnitTestDijkstraExample {
         shortestPathAlgorithm.findShortestPath(start, end, shortestPath);
 
         // correct path
-        correctShortestPath.addLast(gd);
-        correctShortestPath.addLast(de);
-        correctShortestPath.addLast(ea);
-        correctShortestPath.addLast(ac);
+        correctShortestPath.clear();
+        correctShortestPath.push(ac);
+        correctShortestPath.push(ea);
+        correctShortestPath.push(de);
+        correctShortestPath.push(gd);
 
         logger.info("Test: Is shortest path correct?");
-        for (DirectedEdge edge : correctShortestPath)
-            assertEquals(null, edge, shortestPath.pop());
+        assertEquals(correctShortestPath, shortestPath);
     }
 
-    @Test
-    public void multipleCorrectPathsPossible() {
+    /**
+     * <p>
+     * This method creates a graph using {@link DirectedEdge} and {@link Node} and checks the shortest path algorithm
+     * for correctness, if there is more than one shortest path.
+     */
+    private void multipleCorrectPathsPossible() {
         // create nodes
         Node a = new Node(config, uselessPosition);
         Node b = new Node(config, uselessPosition);
@@ -357,36 +433,22 @@ public class UnitTestDijkstraExample {
         shortestPathAlgorithm.findShortestPath(start, end, shortestPath);
 
         // correct paths
+        correctShortestPath.clear();
         // g-d-e-b-c
-        correctShortestPath.addLast(gd);
-        correctShortestPath.addLast(de);
-        correctShortestPath.addLast(eb);
-        correctShortestPath.addLast(bc);
-
-        // g-d-e-a-c
-        LinkedList<DirectedEdge> sp2 = new LinkedList<>();
-        sp2.addLast(gd);
-        sp2.addLast(de);
-        sp2.addLast(ea);
-        sp2.addLast(ac);
-
+        correctShortestPath.push(bc);
+        correctShortestPath.push(eb);
+        correctShortestPath.push(de);
+        correctShortestPath.push(gd);
         logger.info("Test: Correct if there are two shortest paths?");
-        boolean isFirst = true, isSecond = true;
-        // check first one
-        Iterator<ShortestPathEdge> iter = shortestPath.iterator();
-        for (DirectedEdge edge : correctShortestPath) {
-            if (!edge.equals(iter.next())) {
-                isFirst = false;
-                break;
-            }
+        boolean isCorrect = shortestPath.equals(correctShortestPath);
+        if (!isCorrect) {
+            // g-d-e-a-c
+            correctShortestPath.clear();
+            correctShortestPath.push(ac);
+            correctShortestPath.push(ea);
+            correctShortestPath.push(de);
+            correctShortestPath.push(gd);
+            assertTrue(shortestPath.equals(correctShortestPath));
         }
-        // check second one
-        for (DirectedEdge edge : sp2) {
-            if (!edge.equals(shortestPath.pop())) {
-                isSecond = false;
-                break;
-            }
-        }
-        assertTrue(null, isFirst || isSecond);
     }
 }
