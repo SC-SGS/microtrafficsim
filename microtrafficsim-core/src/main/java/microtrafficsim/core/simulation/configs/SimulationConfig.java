@@ -37,6 +37,7 @@ public final class SimulationConfig {
     public LongIDGenerator longIDGenerator;
     public RndGenGenerator rndGenGenerator;
     public float           metersPerCell;
+    public int             globalMaxVelocity;
     // todo private int cellNumberScale; (depending on meters per cell!)
     public int              speedup;
     public long             seed;// TODO
@@ -76,11 +77,12 @@ public final class SimulationConfig {
      */
     public void reset() {
         // 1/3,6 = 25/90 = 0,277... => 0,277 m/cell means 1 cell/s <=> 1 km/h
-        metersPerCell = 7.5f; // Nagel-Schreckenberg-Model
-        speedup       = 1;
-        seed          = new Random().nextLong();
-        logger        = new SimulationLogger(false);
-        ageForPause   = -1;
+        metersPerCell     = 7.5f; // Nagel-Schreckenberg-Model
+        globalMaxVelocity = 6;
+        speedup           = 1;
+        seed              = new Random().nextLong();
+        logger            = new SimulationLogger(false);
+        ageForPause       = -1;
         // visualization
         visualization.reset();
         // crossing logic
@@ -128,12 +130,13 @@ public final class SimulationConfig {
      */
     public void update(SimulationConfig config) {
         // general
-        longIDGenerator = config.longIDGenerator;
-        metersPerCell   = config.metersPerCell;
-        speedup         = config.speedup;
-        seed            = config.seed;
-        logger          = config.logger;
-        ageForPause     = config.ageForPause;
+        longIDGenerator   = config.longIDGenerator;
+        metersPerCell     = config.metersPerCell;
+        globalMaxVelocity = config.globalMaxVelocity;
+        speedup           = config.speedup;
+        seed              = config.seed;
+        logger            = config.logger;
+        ageForPause       = config.ageForPause;
         // visualization
         visualization.update(config.visualization);
         // crossing logic

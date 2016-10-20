@@ -6,7 +6,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
- * TODO
+ * <p>
+ * This class represents a simple hash map storing {@link Tag}s (equals Strings) as keys and lists of Data per key.
  *
  * @author Dominic Parga Cacheiro
  */
@@ -20,6 +21,11 @@ public class ConcurrentHashDataCollector implements DataCollector<Object> {
         lock    = new ReentrantLock(true);
     }
 
+    /*
+    |===============|
+    | DataCollector |
+    |===============|
+    */
     @Override
     public int size(String tag) {
         Tag t    = new Tag(tag);

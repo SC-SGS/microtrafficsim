@@ -4,7 +4,8 @@ import microtrafficsim.core.map.Coordinate;
 
 
 /**
- * TODO
+ * This area is a simple approach for an area with hole or cut part. It just saves two areas, one defining "in"
+ * excluding the second one.
  *
  * @author Dominic Parga Cacheiro
  */

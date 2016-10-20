@@ -28,8 +28,9 @@ class WeightedNode implements Comparable<WeightedNode> {
      * @param g    Real weight from the start to this node.
      * @param h    Estimated weight of the way from this node to the end.
      */
-    WeightedNode(ShortestPathNode node, float g, float h) {
+    WeightedNode(ShortestPathNode node, ShortestPathEdge predecessor, float g, float h) {
         this.node = node;
+        this.predecessor = predecessor;
         this.g    = g;
         f         = g + h;
     }

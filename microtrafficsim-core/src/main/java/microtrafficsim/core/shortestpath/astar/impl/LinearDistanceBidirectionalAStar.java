@@ -5,8 +5,8 @@ import microtrafficsim.math.HaversineDistanceCalculator;
 
 
 /**
- * This class extends the abstract A* algorithm for defining the edge weights
- * and heuristic function meeting the Dijkstra's algorithms conditions.
+ * This class extends the bidirectional A* algorithm for defining the edge weights and heuristic function meeting the
+ * Dijkstra's algorithms conditions. The found way is the shortest one.
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */

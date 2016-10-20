@@ -18,9 +18,6 @@ import java.util.function.Function;
  */
 public class AStar implements ShortestPathAlgorithm {
 
-    private HashSet<ShortestPathNode> visitedNodes;
-    private HashMap<ShortestPathNode, EdgeWeightTuple> predecessors;
-    private PriorityQueue<WeightedNode> queue;
     private final Function<ShortestPathEdge, Float> edgeWeightFunction;
     private final BiFunction<ShortestPathNode, ShortestPathNode, Float> estimationFunction;
 
@@ -48,10 +45,6 @@ public class AStar implements ShortestPathAlgorithm {
      */
     public AStar(Function<ShortestPathEdge, Float> edgeWeightFunction,
                  BiFunction<ShortestPathNode, ShortestPathNode, Float> estimationFunction) {
-        visitedNodes = new HashSet<>();
-        predecessors = new HashMap<>();
-        queue        = new PriorityQueue<>();
-
         this.edgeWeightFunction = edgeWeightFunction;
         this.estimationFunction = estimationFunction;
     }
@@ -72,85 +65,48 @@ public class AStar implements ShortestPathAlgorithm {
     | (i) ShortestPathAlgorithm |
     |===========================|
     */
+    /**
+     * This method is not needed in this algorithm and thus its empty.
+     */
+    @Override
+    public void preprocess() {
+
+    }
+
     @Override
     public void findShortestPath(ShortestPathNode start, ShortestPathNode end, Stack<ShortestPathEdge> shortestPath) {
-        if (start != end) {
-            // INIT (the same as in the while-loop below)
-            // this is needed because the first node has no predecessors in this algorithm
-            WeightedNode origin = new WeightedNode(start, 0f, estimationFunction.apply(start, end));
-            visitedNodes.add(origin.node);
-            // iterate over all leaving edges
-            for (ShortestPathEdge edge : origin.node.getLeavingEdges(null)) {
-                ShortestPathNode dest = edge.getDestination();
-                float            g    = origin.g + edgeWeightFunction.apply(edge);
 
-                // update predecessors
-                EdgeWeightTuple p = predecessors.get(dest);
-                if (p == null) {
-                    predecessors.put(dest, new EdgeWeightTuple(g, edge));
-                } else {
-                    if (p.weight > g) {
-                        p.weight = g;
-                        p.edge   = edge;
-                    }
+        if (start == end)
+            return;
+        HashMap<ShortestPathNode, WeightedNode> visitedNodes = new HashMap<>();
+        PriorityQueue<WeightedNode>             queue        = new PriorityQueue<>();
+        queue.add(new WeightedNode(start, null, 0f, estimationFunction.apply(start, end)));
+
+        while (!queue.isEmpty()) {
+            WeightedNode current = queue.poll();
+
+            if (current.node == end) { // shortest path found
+                while (current.predecessor != null) {
+                    shortestPath.push(current.predecessor);
+                    current = visitedNodes.get(current.predecessor.getOrigin());
                 }
+
+                return;
+            }
+
+            if (visitedNodes.keySet().contains(current.node))
+                continue;
+            visitedNodes.put(current.node, current);
+
+            // iterate over all leaving edges
+            for (ShortestPathEdge leaving : current.node.getLeavingEdges(current.predecessor)) {
+                ShortestPathNode dest = leaving.getDestination();
+                float            g    = current.g + edgeWeightFunction.apply(leaving);
 
                 // push new node into priority queue
-                if (!visitedNodes.contains(dest)) {
-                    queue.add(new WeightedNode(dest, g, estimationFunction.apply(dest, end)));
-                }
-            }
-
-            // ALGORITHM
-            // now: each node in the queue has a predecessor
-            while (!queue.isEmpty()) {
-                origin = queue.poll();
-
-                if (!visitedNodes.contains(origin.node)) {
-                    // if shortest path to end is already found
-                    if (origin.node == end) {
-                        // create shortest path
-                        ShortestPathNode curNode = end;
-
-                        while (curNode != start) {
-                            ShortestPathEdge curEdge = predecessors.get(curNode).edge;
-                            shortestPath.push(curEdge);
-                            curNode = curEdge.getOrigin();
-                        }
-
-                        break;
-                    }
-
-                    visitedNodes.add(origin.node);
-
-                    // iterate over all leaving edges
-                    for (ShortestPathEdge edge : origin.node.getLeavingEdges(predecessors.get(origin.node).edge)) {
-                        ShortestPathNode dest = edge.getDestination();
-                        float            g    = origin.g + edgeWeightFunction.apply(edge);
-
-                        // update predecessors
-                        EdgeWeightTuple p = predecessors.get(dest);
-                        if (p == null) {
-                            predecessors.put(dest, new EdgeWeightTuple(g, edge));
-                        } else {
-                            if (p.weight > g) {
-                                p.weight = g;
-                                p.edge   = edge;
-                            }
-                        }
-
-                        // push new node into priority queue
-                        if (!visitedNodes.contains(dest)) {
-                            queue.add(new WeightedNode(dest, g, estimationFunction.apply(dest, end)));
-                        }
-                    }
-                }
+                if (!visitedNodes.keySet().contains(dest))
+                    queue.add(new WeightedNode(dest, leaving, g, estimationFunction.apply(dest, end)));
             }
         }
-
-        // refresh
-        visitedNodes.clear();
-        predecessors.clear();
-        queue.clear();
     }
 }

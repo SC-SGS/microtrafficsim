@@ -1,6 +1,5 @@
 package microtrafficsim.core.shortestpath;
 
-import java.util.Queue;
 import java.util.Stack;
 
 
@@ -23,7 +22,7 @@ import java.util.Stack;
 public interface ShortestPathAlgorithm {
 
     /**
-     * This method is needed for some algorithms for preperations needed for faster shortest path finding. It is
+     * This method is needed for some algorithms for preparations needed for faster shortest path finding. It is
      * implemented empty per default.
      */
     default void preprocess() {

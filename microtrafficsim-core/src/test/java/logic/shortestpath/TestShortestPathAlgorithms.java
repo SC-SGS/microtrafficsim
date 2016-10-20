@@ -74,7 +74,7 @@ public class TestShortestPathAlgorithms {
 
     @Test
     public void testFastestWayAStar() {
-        shortestPathAlgorithm = new FastestWayAStar(config.metersPerCell);
+        shortestPathAlgorithm = new FastestWayAStar(config.metersPerCell, config.globalMaxVelocity);
         shortestPathAlgorithm.preprocess();
         isDangerous();
         isShortestPathCorrect();
@@ -101,7 +101,7 @@ public class TestShortestPathAlgorithms {
 
     @Test
     public void testFastestWayBidirectionalAStar() {
-        shortestPathAlgorithm = new FastestWayBidirectionalAStar(config.metersPerCell);
+        shortestPathAlgorithm = new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);
         shortestPathAlgorithm.preprocess();
         isDangerous();
         isShortestPathCorrect();

@@ -9,7 +9,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- *
+ * This class represents an bidirectional A* algorithm. You can use the constructor for own implementations of the
+ * weight and estimation function, but you can also use {@link #createShortestWayDijkstra()} for a standard
+ * implementation of Dijkstra's algorithm (bidirectional).
  *
  * @author Dominic Parga Cacheiro
  */
@@ -67,6 +69,19 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
                 edge -> (float)edge.getLength(),
                 (destination, routeDestination) -> 0f
         );
+    }
+
+    /*
+    |===========================|
+    | (i) ShortestPathAlgorithm |
+    |===========================|
+    */
+    /**
+     * This method is not needed in this algorithm and thus its empty.
+     */
+    @Override
+    public void preprocess() {
+
     }
 
     @Override

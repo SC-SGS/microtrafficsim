@@ -57,7 +57,7 @@ public class RandomRouteScenario extends AbstractStartEndScenario {
             @Override
             public ShortestPathAlgorithm get() {
                 if (random.nextFloat() < 1.0f) {
-                    return new FastestWayBidirectionalAStar(config.metersPerCell);
+                    return new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);
                 } else {
                     return new LinearDistanceBidirectionalAStar(config.metersPerCell);
                 }

@@ -39,7 +39,7 @@ public class Scenario extends EndOfTheWorldScenario {
             @Override
             public ShortestPathAlgorithm get() {
                 if (random.nextFloat() < 1.0f) {
-                    return new FastestWayAStar(config.metersPerCell);
+                    return new FastestWayAStar(config.metersPerCell, config.globalMaxVelocity);
                 } else {
                     return new LinearDistanceAStar(config.metersPerCell);
                 }
