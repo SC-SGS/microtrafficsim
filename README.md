@@ -12,7 +12,7 @@ removing quick fixes or creating branches for them.
 Demonstrations and examples can be executed using `gradle`. All OpenStreetMap
 (OSM) files need to be in the OSM XML format, as, for example, provided by the
 [OpenStreetMap web interface](https://www.openstreetmap.org). A (somewhat)
-stable demonstration can be executed from the `tmp/tdw`-branch (see Main UI).
+stable demonstration can be executed from the `master`-branch (see Main UI).
 
 #### Main UI
 The main UI provides an overview of the simulation. The scenario is currently
