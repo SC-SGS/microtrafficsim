@@ -28,7 +28,9 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * This test creates small graphs and checks a certain instance of {@link ShortestPathAlgorithm} defined in
- * {@link #setupClass()}.
+ * {@link #setupClass()}.<br>
+ * For more detailed information about adding new test cases or existing test cases,
+ * see {@link #testAll()}.
  *
  * @author Dominic Parga Cacheiro
  */
@@ -67,51 +69,57 @@ public class TestShortestPathAlgorithms {
     public void testDijkstra() {
         shortestPathAlgorithm = AStar.createShortestWayDijkstra();
         shortestPathAlgorithm.preprocess();
-        isDangerous();
-        isShortestPathCorrect();
-        multipleCorrectPathsPossible();
+        testAll();
     }
 
     @Test
     public void testFastestWayAStar() {
         shortestPathAlgorithm = new FastestWayAStar(config.metersPerCell, config.globalMaxVelocity);
         shortestPathAlgorithm.preprocess();
-        isDangerous();
-        isShortestPathCorrect();
-        multipleCorrectPathsPossible();
+        testAll();
     }
 
     @Test
     public void testLinearDistanceAStar() {
         shortestPathAlgorithm = new LinearDistanceAStar(config.metersPerCell);
         shortestPathAlgorithm.preprocess();
-        isDangerous();
-        isShortestPathCorrect();
-        multipleCorrectPathsPossible();
+        testAll();
     }
 
     @Test
     public void testBidirectionalDijkstra() {
         shortestPathAlgorithm = BidirectionalAStar.createShortestWayDijkstra();
         shortestPathAlgorithm.preprocess();
-        isDangerous();
-        isShortestPathCorrect();
-        multipleCorrectPathsPossible();
+        testAll();
     }
 
     @Test
     public void testFastestWayBidirectionalAStar() {
         shortestPathAlgorithm = new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);
         shortestPathAlgorithm.preprocess();
-        isDangerous();
-        isShortestPathCorrect();
-        multipleCorrectPathsPossible();
+        testAll();
     }
 
     @Test
     public void testLinearDistanceBidirectionalAStar() {
         shortestPathAlgorithm = new LinearDistanceBidirectionalAStar(config.metersPerCell);
         shortestPathAlgorithm.preprocess();
+        testAll();
+    }
+
+    /**
+     * <p>
+     * Executes: <br>
+     * &bull {@link #isDangerous()} <br>
+     * &bull {@link #isShortestPathCorrect()} <br>
+     * &bull {@link #multipleCorrectPathsPossible()} <br>
+     *
+     * <p>
+     * A {@code @Test} method is needed if you want to add a new shortest path algorithm for testing <br>
+     * A new test case implementation has to be added to this method.
+     *
+     */
+    private void testAll() {
         isDangerous();
         isShortestPathCorrect();
         multipleCorrectPathsPossible();

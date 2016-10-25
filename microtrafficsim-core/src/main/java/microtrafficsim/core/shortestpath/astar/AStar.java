@@ -80,12 +80,13 @@ public class AStar implements ShortestPathAlgorithm {
             return;
         HashMap<ShortestPathNode, WeightedNode> visitedNodes = new HashMap<>();
         PriorityQueue<WeightedNode>             queue        = new PriorityQueue<>();
-        queue.add(new WeightedNode(start, null, 0f, estimationFunction.apply(start, end)));
+        queue.add(new WeightedNode(start, null, null, 0f, estimationFunction.apply(start, end)));
 
         while (!queue.isEmpty()) {
             WeightedNode current = queue.poll();
 
             if (current.node == end) { // shortest path found
+                // create shortest path
                 while (current.predecessor != null) {
                     shortestPath.push(current.predecessor);
                     current = visitedNodes.get(current.predecessor.getOrigin());
@@ -105,7 +106,7 @@ public class AStar implements ShortestPathAlgorithm {
 
                 // push new node into priority queue
                 if (!visitedNodes.keySet().contains(dest))
-                    queue.add(new WeightedNode(dest, leaving, g, estimationFunction.apply(dest, end)));
+                    queue.add(new WeightedNode(dest, leaving, null, g, estimationFunction.apply(dest, end)));
             }
         }
     }

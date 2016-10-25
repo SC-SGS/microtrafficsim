@@ -16,9 +16,6 @@ import java.util.function.Function;
  * @author Dominic Parga Cacheiro
  */
 public class BidirectionalAStar implements ShortestPathAlgorithm {
-    private HashSet<ShortestPathNode> forwardVisitedNodes, backwardVisitedNodes;
-    private HashMap<ShortestPathNode, EdgeWeightTuple> predecessors, successors;
-    private PriorityQueue<WeightedNode> forwardQueue, backwardQueue;
     private final Function<ShortestPathEdge, Float> edgeWeightFunction;
     private final BiFunction<ShortestPathNode, ShortestPathNode, Float> estimationFunction;
 
@@ -45,17 +42,7 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
      *
      */
     public BidirectionalAStar(Function<ShortestPathEdge, Float> edgeWeightFunction,
-                 BiFunction<ShortestPathNode, ShortestPathNode, Float> estimationFunction) {
-        // forward
-        forwardVisitedNodes = new HashSet<>();
-        predecessors = new HashMap<>();
-        forwardQueue = new PriorityQueue<>();
-
-        // backward
-        backwardVisitedNodes = new HashSet<>();
-        successors = new HashMap<>();
-        backwardQueue = new PriorityQueue<>();
-
+                              BiFunction<ShortestPathNode, ShortestPathNode, Float> estimationFunction) {
         this.edgeWeightFunction = edgeWeightFunction;
         this.estimationFunction = estimationFunction;
     }
@@ -86,172 +73,112 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
 
     @Override
     public void findShortestPath(ShortestPathNode start, ShortestPathNode end, Stack<ShortestPathEdge> shortestPath) {
-        if (start != end) {
-            // INIT FORWARDS (the same as in the while-loop below)
-            // this is needed because the first node has no predecessors in this algorithm
-            float estimation = estimationFunction.apply(start, end);
-            WeightedNode origin = new WeightedNode(start, 0f, estimation);
-            forwardVisitedNodes.add(origin.node);
-            // iterate over all leaving edges
-            for (ShortestPathEdge edge : origin.node.getLeavingEdges(null)) {
-                ShortestPathNode dest = edge.getDestination();
-                float            g    = origin.g + edgeWeightFunction.apply(edge);
 
-                // update predecessors
-                EdgeWeightTuple p = predecessors.get(dest);
-                if (p == null) {
-                    predecessors.put(dest, new EdgeWeightTuple(g, edge));
-                } else {
-                    if (p.weight > g) {
-                        p.weight = g;
-                        p.edge   = edge;
-                    }
+        if (start == end)
+            return;
+
+        /*
+        |================|
+        | INITIALIZATION |
+        |================|
+        */
+        // both
+        float estimation = estimationFunction.apply(start, end);
+        // forward
+        HashMap<ShortestPathNode, WeightedNode> forwardVisitedNodes = new HashMap<>();
+        PriorityQueue<WeightedNode>             forwardQueue        = new PriorityQueue<>();
+        forwardQueue.add(new WeightedNode(start, null, null, 0f, estimation));
+        // backward
+        HashMap<ShortestPathNode, WeightedNode> backwardVisitedNodes = new HashMap<>();
+        PriorityQueue<WeightedNode>             backwardQueue        = new PriorityQueue<>();
+        backwardQueue.add(new WeightedNode(end, null, null, 0f, estimation));
+
+        /*
+        |================|
+        | LOOP/ALGORITHM |
+        |================|
+        */
+        WeightedNode meetingNode = null;
+        // while at least one is not empty
+        while (!(forwardQueue.isEmpty() && backwardQueue.isEmpty())) {
+            // one step forwards
+            if (!forwardQueue.isEmpty()) {
+                WeightedNode current = forwardQueue.poll();
+
+                WeightedNode backwardsCurrent = backwardVisitedNodes.get(current.node);
+                if (backwardsCurrent != null) { // shortest path found
+                    meetingNode = current;
+                    meetingNode.successor = backwardsCurrent.successor;
+                    break;
                 }
 
-                // push new node into priority queue
-                if (!forwardVisitedNodes.contains(dest)) {
-                    forwardQueue.add(new WeightedNode(dest, g, estimationFunction.apply(dest, end)));
-                }
-            }
+                if (!forwardVisitedNodes.keySet().contains(current.node)) {
+                    forwardVisitedNodes.put(current.node, current);
 
-            // INIT BACKWARDS (the same as in the while-loop below)
-            // this is needed because the last node has no successors in this algorithm
-            WeightedNode destination = new WeightedNode(end, 0f, estimation);
-            backwardVisitedNodes.add(destination.node);
-            // iterate over all incoming edges
-            for (ShortestPathEdge edge : destination.node.getIncomingEdges()) {
-                ShortestPathNode orig = edge.getOrigin();
-                float            g    = destination.g + edgeWeightFunction.apply(edge);
+                    // iterate over all leaving edges
+                    for (ShortestPathEdge leaving : current.node.getLeavingEdges(current.predecessor)) {
+                        ShortestPathNode dest = leaving.getDestination();
+                        float g = current.g + edgeWeightFunction.apply(leaving);
 
-                // update predecessors
-                EdgeWeightTuple p = successors.get(orig);
-                if (p == null) {
-                    successors.put(orig, new EdgeWeightTuple(g, edge));
-                } else {
-                    if (p.weight > g) {
-                        p.weight = g;
-                        p.edge   = edge;
-                    }
-                }
-
-                // push new node into priority queue
-                if (!backwardVisitedNodes.contains(orig)) {
-                    backwardQueue.add(new WeightedNode(orig, g, estimationFunction.apply(start, orig)));
-                }
-            }
-
-            // ALGORITHM
-            // now: each node in the queues has a predecessor/successor
-            // while at least one queue is not empty
-            ShortestPathNode meetingNode = null;
-            while (!(forwardQueue.isEmpty() && backwardQueue.isEmpty())) {
-                // one step FORWARDS
-                if (!forwardQueue.isEmpty()) {
-                    origin = forwardQueue.poll();
-
-                    if (!forwardVisitedNodes.contains(origin.node)) {
-                        // if shortest path to end is already found
-                        if (backwardVisitedNodes.contains(origin.node)) {
-                            meetingNode = origin.node;
-                            break;
-                        }
-
-                        forwardVisitedNodes.add(origin.node);
-
-                        // iterate over all leaving edges
-                        for (ShortestPathEdge edge : origin.node.getLeavingEdges(predecessors.get(origin.node).edge)) {
-                            ShortestPathNode dest = edge.getDestination();
-                            float g = origin.g + edgeWeightFunction.apply(edge);
-
-                            // update predecessors
-                            EdgeWeightTuple p = predecessors.get(dest);
-                            if (p == null) {
-                                predecessors.put(dest, new EdgeWeightTuple(g, edge));
-                            } else {
-                                if (p.weight > g) {
-                                    p.weight = g;
-                                    p.edge = edge;
-                                }
-                            }
-
-                            // push new node into priority queue
-                            if (!forwardVisitedNodes.contains(dest)) {
-                                forwardQueue.add(new WeightedNode(dest, g, estimationFunction.apply(dest, end)));
-                            }
-                        }
-                    }
-                }
-
-                // one step BACKWARDS
-                if (!backwardQueue.isEmpty()) {
-                    destination = backwardQueue.poll();
-
-                    if (!backwardVisitedNodes.contains(destination.node)) {
-                        // if shortest path to start is already found
-                        if (forwardVisitedNodes.contains(destination.node)) {
-                            meetingNode = destination.node;
-                            break;
-                        }
-
-                        backwardVisitedNodes.add(destination.node);
-
-                        // iterate over all incoming edges
-                        for (ShortestPathEdge edge : destination.node.getIncomingEdges()) {
-                            ShortestPathNode orig = edge.getOrigin();
-                            float g = destination.g + edgeWeightFunction.apply(edge);
-
-                            // update successors
-                            EdgeWeightTuple p = successors.get(orig);
-                            if (p == null) {
-                                successors.put(orig, new EdgeWeightTuple(g, edge));
-                            } else {
-                                if (p.weight > g) {
-                                    p.weight = g;
-                                    p.edge = edge;
-                                }
-                            }
-
-                            // push new node into priority queue
-                            if (!backwardVisitedNodes.contains(orig)) {
-                                backwardQueue.add(new WeightedNode(orig, g, estimationFunction.apply(start, orig)));
-                            }
-                        }
+                        // push new node into priority queue
+                        if (!forwardVisitedNodes.keySet().contains(dest))
+                            forwardQueue.add(
+                                    new WeightedNode(dest, leaving, null, g, estimationFunction.apply(dest, end)));
                     }
                 }
             }
 
-            if (meetingNode != null) {
-                // create shortest path
+            // one step backwards
+            if (!backwardQueue.isEmpty()) {
+                WeightedNode current = backwardQueue.poll();
 
-                // BACKWARDS
-                Stack<ShortestPathEdge> bin = new Stack<>();
-                ShortestPathNode curNode = meetingNode;
-                while (curNode != end) {
-                    ShortestPathEdge curEdge = successors.get(curNode).edge;
-                    bin.push(curEdge);
-                    curNode = curEdge.getDestination();
-                }
-                while (!bin.isEmpty()) {
-                    shortestPath.push(bin.pop());
+                WeightedNode forwardsCurrent = forwardVisitedNodes.get(current.node);
+                if (forwardsCurrent != null) { // shortest path found
+                    meetingNode = current;
+                    meetingNode.predecessor = forwardsCurrent.predecessor;
+                    break;
                 }
 
-                // FORWARDS
-                curNode = meetingNode;
-                while (curNode != start) {
-                    ShortestPathEdge curEdge = predecessors.get(curNode).edge;
-                    shortestPath.push(curEdge);
-                    curNode = curEdge.getOrigin();
+                if (!backwardVisitedNodes.keySet().contains(current.node)) {
+                    backwardVisitedNodes.put(current.node, current);
+
+                    // iterate over all incoming edges
+                    for (ShortestPathEdge incoming : current.node.getIncomingEdges()) {
+                        ShortestPathNode orig = incoming.getOrigin();
+                        float g = current.g + edgeWeightFunction.apply(incoming);
+
+                        // push new node into priority queue
+                        if (!backwardVisitedNodes.keySet().contains(orig))
+                            backwardQueue.add(
+                                    new WeightedNode(orig, null, incoming, g, estimationFunction.apply(start, orig)));
+                    }
                 }
             }
         }
 
-        // refresh FORWARDS
-        forwardVisitedNodes.clear();
-        predecessors.clear();
-        forwardQueue.clear();
-        // refresh BACKWARDS
-        backwardVisitedNodes.clear();
-        successors.clear();
-        backwardQueue.clear();
+
+        /*
+        |===============================|
+        | CREATE SHORTEST PATH IF FOUND |
+        |===============================|
+        */
+        if (meetingNode == null)
+            return;
+        Stack<ShortestPathEdge> bin = new Stack<>();
+        // create shortest path - last part
+        WeightedNode current = meetingNode;
+        while (current.successor != null) {
+            bin.push(current.successor);
+            current = backwardVisitedNodes.get(current.successor.getDestination());
+        }
+        while (!bin.isEmpty()) {
+            shortestPath.push(bin.pop());
+        }
+        // create shortest path - first part
+        current = meetingNode;
+        while (current.predecessor != null) {
+            shortestPath.push(current.predecessor);
+            current = forwardVisitedNodes.get(current.predecessor.getOrigin());
+        }
     }
 }
