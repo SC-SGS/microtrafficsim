@@ -61,8 +61,9 @@ documentation is sparse. We are currently working on this.
 ## Contributors
 Some people have worked on this project, but there is no right place to name them. Thus we name them here.
 
-**Jan-Oliver Schmidt**    
-has been part of our team in the very first 6 months. He worked at the single-laned traffic logic and our first paper.
-
-**Fabian Franzelin**    
+**Fabian Franzelin**  
 has been our supervisor for the first 6 months and he is still helping us in monthly/weekly meetings with advices and his experience.
+
+
+**Jan-Oliver Schmidt**  
+has been part of our team in the very first 6 months. He worked at the single-laned traffic logic and our first paper.
