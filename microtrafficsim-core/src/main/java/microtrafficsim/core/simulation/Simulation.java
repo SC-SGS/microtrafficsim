@@ -118,7 +118,6 @@ public interface Simulation extends VehicleStateListener {
     | vehicles |
     |==========|
     */
-
     /**
      * Returns the list of spawned (i.e. visible and ready to drive) vehicles.
      * Note: The state of the vehicles contained in this list may change due to

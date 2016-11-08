@@ -1,20 +1,22 @@
-package microtrafficsim.core.simulation.manager.impl;
+package microtrafficsim.core.simulation.stepexecutors.impl;
 
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-import microtrafficsim.core.simulation.manager.SimulationManager;
+import microtrafficsim.core.simulation.stepexecutors.VehicleStepExecutor;
 
 import java.util.Iterator;
 
 
 /**
+ * A single-threaded implementation of {@link VehicleStepExecutor}.
+ *
  * @author Dominic Parga Cacheiro
  */
-public class SingleThreadedSimulationManager implements SimulationManager {
+public class SingleThreadedVehicleStepExecutor implements VehicleStepExecutor {
 
     @Override
-    public void willMoveAll(long timeDeltaMillis, Iterator<AbstractVehicle> spawnedVehicle) {
-        spawnedVehicle.forEachRemaining((AbstractVehicle vehicle) -> {
+    public void willMoveAll(long timeDeltaMillis, Iterator<AbstractVehicle> iteratorSpawned) {
+        iteratorSpawned.forEachRemaining((AbstractVehicle vehicle) -> {
             vehicle.accelerate();
             vehicle.dash();
             vehicle.brake();

@@ -1,0 +1,114 @@
+package microtrafficsim.core.simulation.containers;
+
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
+import microtrafficsim.core.logic.vehicles.AbstractVehicle;
+import microtrafficsim.core.logic.vehicles.VehicleStateListener;
+
+import java.util.Set;
+import java.util.function.Supplier;
+
+
+/**
+ * This interface serves methods for handling vehicles in a general way without knowing the container's implementation
+ * details. Thus you can easily implement a new vehicle container (e.g. a concurrent one) and replace the old one by
+ * simply changing its initialization call.
+ *
+ * @author Dominic Parga Cacheiro
+ */
+public interface VehicleContainer extends VehicleStateListener {
+
+    /**
+     * This method should also ensure that concurrent accesses to this method are handled if needed, e.g. by a lock.
+     * {@link #unlockVehicleFactory()} should be called after using the factory to unlock it.
+     *
+     * @return A factory for creating vehicles' visualizations.
+     */
+    Supplier<VisualizationVehicleEntity> getVehicleFactory();
+
+    /**
+     * This method is only used if the vehicle factory should be unlocked after locking (e.g. in
+     * {@link #getVehicleFactory()}). So default implementation is empty. Extending it must include a new javadoc to
+     * ensure whether this method has to be called or not.
+     */
+    default void unlockVehicleFactory() {
+
+    }
+
+    /**
+     * Adds the vehicle as unspawned.
+     *
+     * @param vehicle Vehicle that has been added to the graph successfully.
+     */
+    void addVehicle(AbstractVehicle vehicle);
+
+    /**
+     * Clears this container, so after this call it is empty.
+     */
+    void clearAll();
+
+    /**
+     * @return The amount of all contained vehicles
+     */
+    int getVehicleCount();
+
+    /**
+     * @return The amount of all spawned vehicles
+     */
+    int getSpawnedCount();
+
+    /**
+     * @return The amount of all not spawned vehicles
+     */
+    int getNotSpawnedCount();
+
+    /**
+     * @return All vehicles in a set. This set does not necessarily be a copy of the set used by the implementation.
+     */
+    Set<AbstractVehicle> getVehicles();
+
+    /**
+     * @return All spawned vehicles in a set. This set does not necessarily be a copy of the set used by the
+     * implementation.
+     */
+    Set<AbstractVehicle> getSpawnedVehicles();
+
+    /**
+     * @return All not spawned vehicles in a set. This set does not necessarily be a copy of the set used by the
+     * implementation.
+     */
+    Set<AbstractVehicle> getNotSpawnedVehicles();
+
+    // probably unused :(
+    //	/**
+    //	 * Returns the index of the list of the greatest size less than or equal to
+    //	 * the given size, or -1 if there is no such element.
+    //	 *
+    //	 * @param size
+    //	 *            The size of the returning list
+    //	 * @return index of the list of the greatest size less than or equal to the
+    //	 *         given size, or -1 if there is no such element.
+    //	 */
+    //	private int floor(int size, ArrayList<? extends Set<? extends Object>> list) {
+    //
+    //		int mid;
+    //		int bottom = 0;
+    //		int top = list.size() - 1;
+    //		int floor = -1;
+    //		// 0 1 2 3 4 5 6
+    //		// x x x x x x x; size = 3
+    //
+    //		while (bottom <= top) {
+    //			mid = (top + bottom) / 2;
+    //			if (size > list.get(mid).size()) {
+    //				bottom = mid + 1;
+    //			} else if (size < list.get(mid).size()) {
+    //				top = mid - 1;
+    //			} else {
+    //				bottom = mid + 1;
+    //				floor = mid; //
+    //			}
+    //		}
+    //
+    //		return floor;
+    //	}
+}

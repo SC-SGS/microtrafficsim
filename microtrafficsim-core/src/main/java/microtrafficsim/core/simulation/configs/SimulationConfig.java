@@ -1,7 +1,5 @@
 package microtrafficsim.core.simulation.configs;
 
-import microtrafficsim.core.simulation.SimulationLogger;
-import microtrafficsim.math.random.BasicRndGenGenerator;
 import microtrafficsim.math.random.ConcurrentRndGenGenerator;
 import microtrafficsim.math.random.RndGenGenerator;
 import microtrafficsim.osm.parser.features.streets.info.StreetType;
@@ -22,7 +20,6 @@ import java.util.function.Function;
  * the real speedup could be less) <br>
  * &bull {@link #seed} this seed should be used for random variables and similar tasks; {@link #rndGenGenerator} also depends on
  * it per default <br>
- * &bull {@link #logger} just a class helping logging in a prettier format <br>
  * &bull {@link #ageForPause} This attribute can be used to pause a simulation after a certain number of steps <br>
  * &bull {@link #visualization} This configuration object contains attributes relevant for the visualization <br>
  * &bull {@link #crossingLogic} This configuration object contains attributes relevant for the crossing logic <br>
@@ -41,7 +38,6 @@ public final class SimulationConfig {
     // todo private int cellNumberScale; (depending on meters per cell!)
     public int              speedup;
     public long             seed;// TODO
-    public SimulationLogger logger;
     public int              ageForPause;
 
     // visualization
@@ -81,7 +77,6 @@ public final class SimulationConfig {
         globalMaxVelocity = 6;
         speedup           = 1;
         seed              = new Random().nextLong();
-        logger            = new SimulationLogger(false);
         ageForPause       = -1;
         // visualization
         visualization.reset();
@@ -135,7 +130,6 @@ public final class SimulationConfig {
         globalMaxVelocity = config.globalMaxVelocity;
         speedup           = config.speedup;
         seed              = config.seed;
-        logger            = config.logger;
         ageForPause       = config.ageForPause;
         // visualization
         visualization.update(config.visualization);

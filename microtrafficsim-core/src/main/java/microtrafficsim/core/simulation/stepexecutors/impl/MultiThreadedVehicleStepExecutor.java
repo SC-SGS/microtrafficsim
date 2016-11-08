@@ -1,9 +1,9 @@
-package microtrafficsim.core.simulation.manager.impl;
+package microtrafficsim.core.simulation.stepexecutors.impl;
 
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.manager.SimulationManager;
+import microtrafficsim.core.simulation.stepexecutors.VehicleStepExecutor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -15,15 +15,17 @@ import java.util.function.Consumer;
 
 
 /**
+ * A multi-threaded implementation of {@link VehicleStepExecutor} using a thread pool of {@link ExecutorService}.
+ *
  * @author Dominic Parga Cacheiro
  */
-public class MultiThreadedSimulationManager implements SimulationManager {
+public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
 
     private final SimulationConfig config;
     // multithreading
     private final ExecutorService pool;
 
-    public MultiThreadedSimulationManager(SimulationConfig config) {
+    public MultiThreadedVehicleStepExecutor(SimulationConfig config) {
 
         this.config = config;
         pool        = Executors.newFixedThreadPool(config.multiThreading.nThreads);
@@ -58,6 +60,7 @@ public class MultiThreadedSimulationManager implements SimulationManager {
     public void updateNodes(final Iterator<Node> iter) {
         ArrayList<Callable<Object>> tasks = new ArrayList<>(config.multiThreading.nThreads);
 
+        // add this task for every thread
         for (int c = 0; c < config.multiThreading.nThreads; c++)
             tasks.add(Executors.callable(() -> {
                 int nodesPerThread = config.multiThreading.nodesPerThread;

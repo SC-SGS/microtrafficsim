@@ -1,25 +1,32 @@
-package microtrafficsim.core.simulation.manager.impl;
+package microtrafficsim.core.simulation.containers.impl;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
-import microtrafficsim.core.simulation.manager.VehicleManager;
+import microtrafficsim.core.simulation.containers.VehicleContainer;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 
 /**
+ * This implementation of {@link VehicleContainer} uses a few sets for managing the vehicles. The used sets are
+ * concurrent so they can be edited while iterated.
+ *
  * @author Dominic Parga Cacheiro
  */
-public class SingleThreadedVehicleManager implements VehicleManager {
+public class BasicVehicleContainer implements VehicleContainer {
 
-    private Supplier<VisualizationVehicleEntity> vehicleFactory;
-    private Set<AbstractVehicle>            spawnedVehicles, notSpawnedVehicles, vehicles;
+    protected Supplier<VisualizationVehicleEntity> vehicleFactory;
+    protected Set<AbstractVehicle>                 spawnedVehicles, notSpawnedVehicles, vehicles;
 
-    public SingleThreadedVehicleManager(Supplier<VisualizationVehicleEntity> vehicleFactory) {
+    /**
+     * Default constructor. It initializes the used sets as concurrent ones, so they can be edited while iterated.
+     *
+     * @param vehicleFactory This factory is needed to create the vehicles' visualization components.
+     */
+    public BasicVehicleContainer(Supplier<VisualizationVehicleEntity> vehicleFactory) {
         spawnedVehicles     = ConcurrentHashMap.newKeySet();
         notSpawnedVehicles  = ConcurrentHashMap.newKeySet();
         vehicles            = ConcurrentHashMap.newKeySet();
@@ -36,18 +43,17 @@ public class SingleThreadedVehicleManager implements VehicleManager {
     }
 
     private void removeVehicle(AbstractVehicle vehicle, boolean spawned) {
-        if (spawned) {
+        if (spawned)
             spawnedVehicles.remove(vehicle);
-        } else {
+        else
             notSpawnedVehicles.remove(vehicle);
-        }
         vehicles.remove(vehicle);
     }
 
     /*
-    |====================|
-    | (i) VehicleManager |
-    |====================|
+    |======================|
+    | (i) VehicleContainer |
+    |======================|
     */
     @Override
     public Supplier<VisualizationVehicleEntity> getVehicleFactory() {
@@ -55,13 +61,15 @@ public class SingleThreadedVehicleManager implements VehicleManager {
     }
 
     @Override
-    public void unlockVehicleFactory() {
-        // nothing to do because single threaded
+    public void addVehicle(AbstractVehicle vehicle) {
+        addVehicle(vehicle, false);
     }
 
     @Override
-    public void addVehicle(AbstractVehicle vehicle) {
-        addVehicle(vehicle, false);
+    public void clearAll() {
+        notSpawnedVehicles.clear();
+        spawnedVehicles.clear();
+        vehicles.clear();
     }
 
     @Override
@@ -75,20 +83,13 @@ public class SingleThreadedVehicleManager implements VehicleManager {
     }
 
     @Override
-    public Iterator<AbstractVehicle> iteratorSpawned() {
-        return spawnedVehicles.iterator();
+    public int getNotSpawnedCount() {
+        return notSpawnedVehicles.size();
     }
 
     @Override
-    public Iterator<AbstractVehicle> iteratorNotSpawned() {
-        return notSpawnedVehicles.iterator();
-    }
-
-    @Override
-    public void clearAll() {
-        notSpawnedVehicles.clear();
-        spawnedVehicles.clear();
-        vehicles.clear();
+    public Set<AbstractVehicle> getVehicles() {
+        return vehicles;
     }
 
     @Override
@@ -97,10 +98,15 @@ public class SingleThreadedVehicleManager implements VehicleManager {
     }
 
     @Override
-    public Set<AbstractVehicle> getVehicles() {
-        return vehicles;
+    public Set<AbstractVehicle> getNotSpawnedVehicles() {
+        return notSpawnedVehicles;
     }
 
+    /*
+    |==========================|
+    | (i) VehicleStateListener |
+    |==========================|
+    */
     @Override
     public void stateChanged(AbstractVehicle vehicle) {
         if (vehicle.getState() == VehicleState.DESPAWNED) {

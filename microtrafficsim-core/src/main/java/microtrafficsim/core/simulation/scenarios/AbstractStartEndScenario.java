@@ -12,6 +12,9 @@ import microtrafficsim.core.simulation.AbstractSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.Distribution;
+import microtrafficsim.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -37,6 +40,8 @@ import java.util.function.Supplier;
  * @author Dominic Parga Cacheiro
  */
 public abstract class AbstractStartEndScenario extends AbstractSimulation {
+
+    private Logger logger = LoggerFactory.getLogger(AbstractStartEndScenario.class);
 
     protected final SimulationConfig config;
     private final Supplier<ShortestPathAlgorithm> scoutFactory;
@@ -242,7 +247,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
         int percentage = (100 * finished) / total;
         synchronized (percentageDelta) {
             if (percentage - lastPercentage >= percentageDelta) {
-                config.logger.info(percentage + "% vehicles created.");
+                logger.info(percentage + "% vehicles created.");
                 if (listener != null) listener.didProgress(percentage);
                 lastPercentage += percentageDelta;
             }
@@ -361,10 +366,10 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
     protected final void createAndAddVehicles(ProgressListener listener) {
 
         if (startFields.size() <= 0 || endFields.size() <= 0) {
-            if (startFields.size() <= 0) config.logger.info("You are using no or only empty start fields!");
-            if (endFields.size() <= 0) config.logger.info("You are using no or only empty end fields!");
+            if (startFields.size() <= 0) logger.info("You are using no or only empty start fields!");
+            if (endFields.size() <= 0) logger.info("You are using no or only empty end fields!");
         } else {
-            config.logger.info("CREATING VEHICLES started");
+            logger.info("CREATING VEHICLES started");
             long time = System.nanoTime();
 
             if (config.multiThreading.nThreads > 1)
@@ -372,7 +377,11 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
             else
                 singleThreadedVehicleCreation(listener);
 
-            config.logger.infoNanoseconds("CREATING VEHICLES finished after ", System.nanoTime() - time);
+            logger.info(StringUtils.buildTimeString(
+                    "CREATING VEHICLES finished after ",
+                    System.nanoTime() - time,
+                    "ns"
+            ).toString());
         }
     }
 

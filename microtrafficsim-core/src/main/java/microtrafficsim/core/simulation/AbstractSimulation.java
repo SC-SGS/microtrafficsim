@@ -5,16 +5,21 @@ import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.manager.SimulationManager;
-import microtrafficsim.core.simulation.manager.VehicleManager;
-import microtrafficsim.core.simulation.manager.impl.MultiThreadedSimulationManager;
-import microtrafficsim.core.simulation.manager.impl.MultiThreadedVehicleManager;
-import microtrafficsim.core.simulation.manager.impl.SingleThreadedSimulationManager;
-import microtrafficsim.core.simulation.manager.impl.SingleThreadedVehicleManager;
+import microtrafficsim.core.simulation.stepexecutors.VehicleStepExecutor;
+import microtrafficsim.core.simulation.containers.VehicleContainer;
+import microtrafficsim.core.simulation.stepexecutors.impl.MultiThreadedVehicleStepExecutor;
+import microtrafficsim.core.simulation.containers.impl.ConcurrentVehicleContainer;
+import microtrafficsim.core.simulation.stepexecutors.impl.SingleThreadedVehicleStepExecutor;
+import microtrafficsim.core.simulation.containers.impl.BasicVehicleContainer;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.interesting.progressable.ProgressListener;
+import microtrafficsim.utils.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import sun.rmi.runtime.Log;
 
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Supplier;
@@ -27,19 +32,18 @@ import java.util.function.Supplier;
  * {@link SimulationConfig}. In this config class, you can also set the number of threads. The
  * {@link AbstractSimulation} handles alone whether the simulation steps can be executed sequentially or parallel.
  * </p>
- * <p>
- * Logging can be disabled by setting {@link SimulationConfig#logger#enabled}.
- * </p>
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public abstract class AbstractSimulation implements Simulation {
+    private Logger logger = LoggerFactory.getLogger(AbstractSimulation.class); // TODO marker!
+
     protected final StreetGraph graph;
     private final SimulationConfig config;
 
     // manager
-    private final VehicleManager vehicleManager;
-    private final SimulationManager simManager;
+    private final VehicleContainer vehicleContainer;
+    private final VehicleStepExecutor vehicleStepExecutor;
 
     // simulation steps
     private boolean   prepared;
@@ -66,11 +70,11 @@ public abstract class AbstractSimulation implements Simulation {
         timestamp = -1;
         age       = 0;
         if (config.multiThreading.nThreads > 1) {
-            vehicleManager = new MultiThreadedVehicleManager(vehicleFactory);
-            simManager     = new MultiThreadedSimulationManager(config);
+            vehicleContainer = new ConcurrentVehicleContainer(vehicleFactory);
+            vehicleStepExecutor = new MultiThreadedVehicleStepExecutor(config);
         } else {
-            vehicleManager = new SingleThreadedVehicleManager(vehicleFactory);
-            simManager     = new SingleThreadedSimulationManager();
+            vehicleContainer = new BasicVehicleContainer(vehicleFactory);
+            vehicleStepExecutor = new SingleThreadedVehicleStepExecutor();
         }
     }
 
@@ -80,11 +84,10 @@ public abstract class AbstractSimulation implements Simulation {
     }
 
     /*
-      |=========|
-      | prepare |
-      |=========|
-      */
-
+    |=========|
+    | prepare |
+    |=========|
+    */
     /**
      * This method should be called before the simulation starts. E.g. it can be
      * used to set start nodes, that are used in the {@link AbstractSimulation}.
@@ -154,32 +157,46 @@ public abstract class AbstractSimulation implements Simulation {
         timeDeltaMillis = now - timestamp;
         timestamp       = now;
 
-        if (config.logger.enabled) {
+
+        Set<AbstractVehicle>
+                spawnedVehicles = vehicleContainer.getSpawnedVehicles(),
+                notSpawnedVehicles = vehicleContainer.getNotSpawnedVehicles();
+        if (logger.isDebugEnabled()) {
             time = System.nanoTime();
-            simManager.willMoveAll(timeDeltaMillis, vehicleManager.iteratorSpawned());
-            config.logger.debugNanoseconds("time brake() etc. = ", System.nanoTime() - time);
+            vehicleStepExecutor.willMoveAll(timeDeltaMillis, spawnedVehicles.iterator());
+            logger.debug(
+                    StringUtils.buildTimeString("time brake() etc. = ", System.nanoTime() - time, "ns").toString()
+            );
 
             time = System.nanoTime();
-            simManager.moveAll(vehicleManager.iteratorSpawned());
-            config.logger.debugNanoseconds("time move() = ", System.nanoTime() - time);
+            vehicleStepExecutor.moveAll(spawnedVehicles.iterator());
+            logger.debug(
+                    StringUtils.buildTimeString("time move() = ", System.nanoTime() - time, "ns").toString()
+            );
 
             time = System.nanoTime();
-            simManager.didMoveAll(vehicleManager.iteratorSpawned());
-            config.logger.debugNanoseconds("time didMove() = ", System.nanoTime() - time);
+            vehicleStepExecutor.didMoveAll(spawnedVehicles.iterator());
+            logger.debug(
+                    StringUtils.buildTimeString("time didMove() = ", System.nanoTime() - time, "ns").toString()
+            );
 
             time = System.nanoTime();
-            simManager.spawnAll(vehicleManager.iteratorNotSpawned());
-            config.logger.debugNanoseconds("time spawn() = ", System.nanoTime() - time);
+            vehicleStepExecutor.spawnAll(notSpawnedVehicles.iterator());
+            logger.debug(
+                    StringUtils.buildTimeString("time spawn() = ", System.nanoTime() - time, "ns").toString()
+            );
 
             time = System.nanoTime();
-            simManager.updateNodes(graph.getNodeIterator());
-            config.logger.debugNanoseconds("time updateNodes() = ", System.nanoTime() - time);
+            vehicleStepExecutor.updateNodes(graph.getNodeIterator());
+            logger.debug(
+                    StringUtils.buildTimeString("time updateNodes() = ", System.nanoTime() - time, "ns").toString()
+            );
         } else {
-            simManager.willMoveAll(timeDeltaMillis, vehicleManager.iteratorSpawned());
-            simManager.moveAll(vehicleManager.iteratorSpawned());
-            simManager.didMoveAll(vehicleManager.iteratorSpawned());
-            simManager.spawnAll(vehicleManager.iteratorNotSpawned());
-            simManager.updateNodes(graph.getNodeIterator());
+            vehicleStepExecutor.willMoveAll(timeDeltaMillis, spawnedVehicles.iterator());
+            vehicleStepExecutor.moveAll(spawnedVehicles.iterator());
+            vehicleStepExecutor.didMoveAll(spawnedVehicles.iterator());
+            vehicleStepExecutor.spawnAll(notSpawnedVehicles.iterator());
+            vehicleStepExecutor.updateNodes(graph.getNodeIterator());
         }
         age++;
     }
@@ -197,20 +214,20 @@ public abstract class AbstractSimulation implements Simulation {
     @Override
     public final void prepare() {
         prepared = false;
-        vehicleManager.clearAll();
+        vehicleContainer.clearAll();
         prepareScenario();
         createAndAddVehicles(null);
-        simManager.updateNodes(graph.getNodeIterator());
+        vehicleStepExecutor.updateNodes(graph.getNodeIterator());
         prepared = true;
     }
 
     @Override
     public final void prepare(ProgressListener listener) {
         prepared = false;
-        vehicleManager.clearAll();
+        vehicleContainer.clearAll();
         prepareScenario();
         createAndAddVehicles(listener);
-        simManager.updateNodes(graph.getNodeIterator());
+        vehicleStepExecutor.updateNodes(graph.getNodeIterator());
         prepared = true;
     }
 
@@ -235,15 +252,15 @@ public abstract class AbstractSimulation implements Simulation {
 
     @Override
     public void willRunOneStep() {
-        if (config.logger.enabled) {
+        if (logger.isDebugEnabled()) {
             if (isPrepared()) {
-                config.logger.debug("########## ########## ########## ########## ##");
-                config.logger.debug("NEW SIMULATION STEP");
-                config.logger.debug("simulation age before execution = " + getAge());
+                logger.debug("########## ########## ########## ########## ##");
+                logger.debug("NEW SIMULATION STEP");
+                logger.debug("simulation age before execution = " + getAge());
                 time = System.nanoTime();
             } else {
-                config.logger.debug("########## ########## ########## ########## ##");
-                config.logger.debug("NEW SIMULATION STEP (NOT PREPARED)");
+                logger.debug("########## ########## ########## ########## ##");
+                logger.debug("NEW SIMULATION STEP (NOT PREPARED)");
             }
         }
     }
@@ -262,9 +279,13 @@ public abstract class AbstractSimulation implements Simulation {
 
     @Override
     public void didRunOneStep() {
-        if (config.logger.enabled) {
-            if (isPrepared()) config.logger.debugNanoseconds("time for this step = ", System.nanoTime() - time);
-            config.logger.debug("number of vehicles after run = " + getVehiclesCount());
+        if (logger.isDebugEnabled()) {
+            if (isPrepared()) {
+                logger.debug(
+                        StringUtils.buildTimeString("time for this step = ", System.nanoTime() - time, "ns").toString()
+                );
+            }
+            logger.debug("number of vehicles after run = " + getVehiclesCount());
         }
     }
 
@@ -283,35 +304,35 @@ public abstract class AbstractSimulation implements Simulation {
 
     @Override
     public final ArrayList<? extends AbstractVehicle> getSpawnedVehicles() {
-        return new ArrayList<>(vehicleManager.getSpawnedVehicles());
+        return new ArrayList<>(vehicleContainer.getSpawnedVehicles());
     }
 
     @Override
     public final ArrayList<? extends AbstractVehicle> getVehicles() {
-        return new ArrayList<>(vehicleManager.getVehicles());
+        return new ArrayList<>(vehicleContainer.getVehicles());
     }
 
     @Override
     public int getSpawnedVehiclesCount() {
-        return vehicleManager.getSpawnedCount();
+        return vehicleContainer.getSpawnedCount();
     }
 
     @Override
     public int getVehiclesCount() {
-        return vehicleManager.getVehicleCount();
+        return vehicleContainer.getVehicleCount();
     }
 
     @Override
     public final VisualizationVehicleEntity createVisVehicle() {
-        VisualizationVehicleEntity v = vehicleManager.getVehicleFactory().get();
-        vehicleManager.unlockVehicleFactory();
+        VisualizationVehicleEntity v = vehicleContainer.getVehicleFactory().get();
+        vehicleContainer.unlockVehicleFactory();
         return v;
     }
 
     @Override
     public final boolean addVehicle(AbstractVehicle vehicle) {
         if (graph.addVehicle(vehicle)) {
-            vehicleManager.addVehicle(vehicle);
+            vehicleContainer.addVehicle(vehicle);
             return true;
         }
         return false;
@@ -319,6 +340,6 @@ public abstract class AbstractSimulation implements Simulation {
 
     @Override
     public void stateChanged(AbstractVehicle vehicle) {
-        vehicleManager.stateChanged(vehicle);
+        vehicleContainer.stateChanged(vehicle);
     }
 }

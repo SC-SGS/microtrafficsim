@@ -77,7 +77,6 @@ public class Main {
         config.seed                    = 1455374755807L;
         config.rndGenGenerator         = new ConcurrentRndGenGenerator(config.seed);
         config.multiThreading.nThreads = 1;
-        config.logger.enabled          = false;
 
         logger.debug("using '" + Long.toHexString(config.seed) + "' as seed");
     }
