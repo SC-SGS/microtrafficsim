@@ -18,6 +18,8 @@ import java.util.*;
 
 
 /**
+ * Just a quick implementation for a simulation wrapper class.
+ *
  * @author Dominic Parga Cacheiro
  */
 public class MeasuringScenario implements Simulation {
@@ -138,7 +140,7 @@ public class MeasuringScenario implements Simulation {
     @Override
     public final void didRunOneStep() {
 
-        // init a few variables to save execution time using the hasmap and for better overview
+        // init a few variables to save execution time using the hashmap and for better overview
         ArrayList<? extends AbstractVehicle> spawnedVehicles = null;
         boolean angerPerTimestep                             = enabledMeasurements.get(MeasuredType.ANGER_PER_TIMESTEP);
         boolean spawnedCountPerTimestep = enabledMeasurements.get(MeasuredType.SPAWNED_COUNT_PER_TIMESTEP);

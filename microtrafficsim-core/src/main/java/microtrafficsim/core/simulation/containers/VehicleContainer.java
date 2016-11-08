@@ -4,14 +4,22 @@ import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 
-import java.util.Set;
+import java.util.Collection;
 import java.util.function.Supplier;
 
 
 /**
+ * <p>
  * This interface serves methods for handling vehicles in a general way without knowing the container's implementation
  * details. Thus you can easily implement a new vehicle container (e.g. a concurrent one) and replace the old one by
  * simply changing its initialization call.
+ *
+ * <p>
+ * This interface does not need a remove-method, because it extends {@link VehicleStateListener}, which removes them if
+ * needed.
+ *
+ * <p>
+ * All getters should return an unmodifiable collection to guarantee only this class makes deep changes.
  *
  * @author Dominic Parga Cacheiro
  */
@@ -62,21 +70,22 @@ public interface VehicleContainer extends VehicleStateListener {
     int getNotSpawnedCount();
 
     /**
-     * @return All vehicles in a set. This set does not necessarily be a copy of the set used by the implementation.
+     * @return All vehicles in a collection. The returned collection should be unmodifiable to guarantee
+     * only this class makes deep changes.
      */
-    Set<AbstractVehicle> getVehicles();
+    Collection<AbstractVehicle> getVehicles();
 
     /**
-     * @return All spawned vehicles in a set. This set does not necessarily be a copy of the set used by the
-     * implementation.
+     * @return All spawned vehicles in a collection. The returned collection should be unmodifiable to guarantee
+     * only this class makes deep changes.
      */
-    Set<AbstractVehicle> getSpawnedVehicles();
+    Collection<AbstractVehicle> getSpawnedVehicles();
 
     /**
-     * @return All not spawned vehicles in a set. This set does not necessarily be a copy of the set used by the
-     * implementation.
+     * @return All not spawned vehicles in a collection. The returned collection should be unmodifiable to guarantee
+     * only this class makes deep changes.
      */
-    Set<AbstractVehicle> getNotSpawnedVehicles();
+    Collection<AbstractVehicle> getNotSpawnedVehicles();
 
     // probably unused :(
     //	/**

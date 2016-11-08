@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.simulation.containers.VehicleContainer;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -33,23 +34,6 @@ public class BasicVehicleContainer implements VehicleContainer {
         this.vehicleFactory = vehicleFactory;
     }
 
-    private void addVehicle(AbstractVehicle vehicle, boolean spawned) {
-        if (spawned) {
-            spawnedVehicles.add(vehicle);
-        } else {
-            notSpawnedVehicles.add(vehicle);
-        }
-        vehicles.add(vehicle);
-    }
-
-    private void removeVehicle(AbstractVehicle vehicle, boolean spawned) {
-        if (spawned)
-            spawnedVehicles.remove(vehicle);
-        else
-            notSpawnedVehicles.remove(vehicle);
-        vehicles.remove(vehicle);
-    }
-
     /*
     |======================|
     | (i) VehicleContainer |
@@ -62,7 +46,8 @@ public class BasicVehicleContainer implements VehicleContainer {
 
     @Override
     public void addVehicle(AbstractVehicle vehicle) {
-        addVehicle(vehicle, false);
+        notSpawnedVehicles.add(vehicle);
+        vehicles.add(vehicle);
     }
 
     @Override
@@ -89,7 +74,7 @@ public class BasicVehicleContainer implements VehicleContainer {
 
     @Override
     public Set<AbstractVehicle> getVehicles() {
-        return vehicles;
+        return Collections.unmodifiableSet(vehicles);
     }
 
     @Override
@@ -110,11 +95,12 @@ public class BasicVehicleContainer implements VehicleContainer {
     @Override
     public void stateChanged(AbstractVehicle vehicle) {
         if (vehicle.getState() == VehicleState.DESPAWNED) {
-            removeVehicle(vehicle, false);
-            removeVehicle(vehicle, true);
+            spawnedVehicles.remove(vehicle);
+            notSpawnedVehicles.remove(vehicle);
+            vehicles.remove(vehicle);
         } else if (vehicle.getState() == VehicleState.SPAWNED) {
-            removeVehicle(vehicle, false);
-            addVehicle(vehicle, true);
+            notSpawnedVehicles.remove(vehicle);
+            spawnedVehicles.add(vehicle);
         }
     }
 }

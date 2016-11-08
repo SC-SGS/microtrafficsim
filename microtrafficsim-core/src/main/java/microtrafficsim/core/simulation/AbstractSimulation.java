@@ -18,10 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.rmi.runtime.Log;
 
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.function.Supplier;
 
 
@@ -158,7 +155,7 @@ public abstract class AbstractSimulation implements Simulation {
         timestamp       = now;
 
 
-        Set<AbstractVehicle>
+        Collection<AbstractVehicle>
                 spawnedVehicles = vehicleContainer.getSpawnedVehicles(),
                 notSpawnedVehicles = vehicleContainer.getNotSpawnedVehicles();
         if (logger.isDebugEnabled()) {
@@ -213,12 +210,7 @@ public abstract class AbstractSimulation implements Simulation {
 
     @Override
     public final void prepare() {
-        prepared = false;
-        vehicleContainer.clearAll();
-        prepareScenario();
-        createAndAddVehicles(null);
-        vehicleStepExecutor.updateNodes(graph.getNodeIterator());
-        prepared = true;
+        prepare(null);
     }
 
     @Override
@@ -238,7 +230,7 @@ public abstract class AbstractSimulation implements Simulation {
 
     @Override
     public final void run() {
-        if (prepared && paused && config.speedup > 0) {
+        if (prepared && isPaused() && config.speedup > 0) {
             timerTask = new TimerTask() {
                 @Override
                 public void run() {
@@ -253,7 +245,7 @@ public abstract class AbstractSimulation implements Simulation {
     @Override
     public void willRunOneStep() {
         if (logger.isDebugEnabled()) {
-            if (isPrepared()) {
+            if (prepared) {
                 logger.debug("########## ########## ########## ########## ##");
                 logger.debug("NEW SIMULATION STEP");
                 logger.debug("simulation age before execution = " + getAge());
@@ -267,7 +259,7 @@ public abstract class AbstractSimulation implements Simulation {
 
     @Override
     public final void runOneStep() {
-        if (prepared && paused) doRunOneStep();
+        if (isPaused()) doRunOneStep();
     }
 
     @Override
@@ -280,7 +272,7 @@ public abstract class AbstractSimulation implements Simulation {
     @Override
     public void didRunOneStep() {
         if (logger.isDebugEnabled()) {
-            if (isPrepared()) {
+            if (prepared) {
                 logger.debug(
                         StringUtils.buildTimeString("time for this step = ", System.nanoTime() - time, "ns").toString()
                 );
@@ -308,7 +300,7 @@ public abstract class AbstractSimulation implements Simulation {
     }
 
     @Override
-    public final ArrayList<? extends AbstractVehicle> getVehicles() {
+    public final ArrayList<? extends AbstractVehicle> getVehicles() { // TODO could be replaced
         return new ArrayList<>(vehicleContainer.getVehicles());
     }
 
@@ -331,11 +323,12 @@ public abstract class AbstractSimulation implements Simulation {
 
     @Override
     public final boolean addVehicle(AbstractVehicle vehicle) {
-        if (graph.addVehicle(vehicle)) {
+        boolean spawningWasSuccessful = graph.addVehicle(vehicle);
+
+        if (spawningWasSuccessful)
             vehicleContainer.addVehicle(vehicle);
-            return true;
-        }
-        return false;
+
+        return spawningWasSuccessful;
     }
 
     @Override

@@ -7,9 +7,9 @@ import java.util.Iterator;
 
 
 /**
- * This graph just saves all @Node#s and all @DirectedEdge#s in a @HashSet. All
+ * This graph just saves all {@link Node}s and all {@link DirectedEdge}s in a {@link HashSet}. All
  * dependencies between nodes and edges are saved in these classes, not in this
- * graph.
+ * graph. This class is just a container for them with some functions for interaction.
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */

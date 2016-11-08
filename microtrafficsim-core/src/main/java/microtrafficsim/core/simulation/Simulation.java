@@ -59,12 +59,11 @@ public interface Simulation extends VehicleStateListener {
      * <p>
      * This method starts calling the simulation steps repeatedly. Nothing will
      * be done if the simulation is already running.
-     * </p>
+     *
      * <p>
      * The repeated simulation steps are started by a {@link Timer}. You can
      * stop it by calling {@link #cancel()}. You can call {@link #isPaused()} to
-     * ask if the simulation is running.
-     * </p>
+     * ask if the simulation is paused.
      */
     void run();
 
