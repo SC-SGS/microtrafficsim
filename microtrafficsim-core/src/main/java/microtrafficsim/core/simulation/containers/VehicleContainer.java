@@ -12,14 +12,15 @@ import java.util.function.Supplier;
  * <p>
  * This interface serves methods for handling vehicles in a general way without knowing the container's implementation
  * details. Thus you can easily implement a new vehicle container (e.g. a concurrent one) and replace the old one by
- * simply changing its initialization call.
+ * simply changing its initialization call. All getter return unmodifiable collections.
  *
  * <p>
  * This interface does not need a remove-method, because it extends {@link VehicleStateListener}, which removes them if
  * needed.
  *
  * <p>
- * All getters should return an unmodifiable collection to guarantee only this class makes deep changes.
+ * All getters for intern attributes should return an unmodifiable collection to guarantee only this class makes deep
+ * changes.
  *
  * @author Dominic Parga Cacheiro
  */
@@ -76,6 +77,12 @@ public interface VehicleContainer extends VehicleStateListener {
     Collection<AbstractVehicle> getVehicles();
 
     /**
+     * Returns the list of spawned (i.e. visible and ready to drive) vehicles.
+     * Note: The state of the vehicles contained in this list may change due to
+     * the asynchronous nature of the simulation, this means the associated
+     * {@link microtrafficsim.core.logic.DirectedEdge DirectedEdge} is {@code null}
+     * if the vehicle has de-spawned.
+     *
      * @return All spawned vehicles in a collection. The returned collection should be unmodifiable to guarantee
      * only this class makes deep changes.
      */

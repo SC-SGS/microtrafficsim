@@ -29,6 +29,7 @@ import microtrafficsim.utils.resources.Resource;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Supplier;
 
@@ -256,7 +257,8 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         double top    = viewpos.y + vy;
 
         // update vehicle list
-        Collection<? extends LogicVehicleEntity> vehicles = simulation.getSpawnedVehicles();
+        Collection<? extends LogicVehicleEntity>
+                vehicles = new ArrayList<>(simulation.getVehicleContainer().getSpawnedVehicles());
         int                                      len      = vehicles.size();
         if (len == 0) return;
 

@@ -76,7 +76,7 @@ public class PlusCrossroadScenario extends ValidationScenario {
         int updateGraphDelay = justInitialized ? 0 : 1;
 
         if (vehicleState == VehicleState.DESPAWNED) {
-            if (getVehiclesCount() == 0) {
+            if (getVehicleContainer().getVehicleCount() == 0) {
                 switch (nextScenarioState) {
                 case PRIORITY_TO_THE_RIGHT:
                     createAndAddCar(topRight, bottomRight, 0,                    Color.fromRGB(0xCC4C1A));
@@ -111,9 +111,9 @@ public class PlusCrossroadScenario extends ValidationScenario {
                     nextScenarioState = NextScenarioState.PRIORITY_TO_THE_RIGHT;
                     break;
                 }
-            } else if (getVehiclesCount() == 2) {
+            } else if (getVehicleContainer().getVehicleCount() == 2) {
                 if (nextScenarioState == NextScenarioState.PRIORITY_TO_THE_RIGHT) {
-                    getSpawnedVehicles().forEach((LogicVehicleEntity v) -> {
+                    getVehicleContainer().getSpawnedVehicles().forEach((LogicVehicleEntity v) -> {
                         if (v instanceof ValidationBlockingCar)
                             ((ValidationBlockingCar) v).toggleBlockMode();
                     });

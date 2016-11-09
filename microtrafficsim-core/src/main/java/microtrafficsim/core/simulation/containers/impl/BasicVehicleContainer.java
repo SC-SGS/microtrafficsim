@@ -5,6 +5,8 @@ import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.simulation.containers.VehicleContainer;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -79,12 +81,12 @@ public class BasicVehicleContainer implements VehicleContainer {
 
     @Override
     public Set<AbstractVehicle> getSpawnedVehicles() {
-        return spawnedVehicles;
+        return Collections.unmodifiableSet(spawnedVehicles);
     }
 
     @Override
     public Set<AbstractVehicle> getNotSpawnedVehicles() {
-        return notSpawnedVehicles;
+        return Collections.unmodifiableSet(notSpawnedVehicles);
     }
 
     /*

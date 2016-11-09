@@ -78,7 +78,7 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
     protected void updateScenarioState(VehicleState vehicleState) {
         int updateGraphDelay = justInitialized ? 0 : 1;
 
-        if (vehicleState == VehicleState.DESPAWNED && getVehiclesCount() == 0) {
+        if (vehicleState == VehicleState.DESPAWNED && getVehicleContainer().getVehicleCount() == 0) {
             switch (nextScenarioState) {
             case PRIORITY_TO_THE_MOTORWAY:
                 createAndAddCar(bottomMotorway, topMotorway, 0,                    Color.fromRGB(0xCC4C1A));

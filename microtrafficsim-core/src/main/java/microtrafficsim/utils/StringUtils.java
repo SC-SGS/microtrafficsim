@@ -8,7 +8,7 @@ package microtrafficsim.utils;
 public class StringUtils {
 
     public static StringBuilder buildTimeString(String label, long time, String unit) {
-        return buildTimeString(new StringBuilder(label), label, time, unit);
+        return buildTimeString(new StringBuilder(), label, time, unit);
     }
 
     public static StringBuilder buildTimeString(StringBuilder builder, String label, long time, String unit) {

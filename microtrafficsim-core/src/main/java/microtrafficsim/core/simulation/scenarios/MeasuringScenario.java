@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.simulation.Simulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.containers.VehicleContainer;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.HaversineDistanceCalculator;
@@ -141,10 +142,10 @@ public class MeasuringScenario implements Simulation {
     public final void didRunOneStep() {
 
         // init a few variables to save execution time using the hashmap and for better overview
-        ArrayList<? extends AbstractVehicle> spawnedVehicles = null;
+        Collection<? extends AbstractVehicle> spawnedVehicles = null;
         boolean angerPerTimestep                             = enabledMeasurements.get(MeasuredType.ANGER_PER_TIMESTEP);
         boolean spawnedCountPerTimestep = enabledMeasurements.get(MeasuredType.SPAWNED_COUNT_PER_TIMESTEP);
-        if (angerPerTimestep || spawnedCountPerTimestep) spawnedVehicles = getSpawnedVehicles();
+        if (angerPerTimestep || spawnedCountPerTimestep) spawnedVehicles = getVehicleContainer().getSpawnedVehicles();
 
         if (angerPerTimestep) {
             dataCollector.put(MeasuredType.ANGER_PER_TIMESTEP.filename, spawnedVehicles.size());
@@ -262,14 +263,14 @@ public class MeasuringScenario implements Simulation {
     public final void prepare() {
         simulation.prepare();
 
-        getVehicles().forEach(v -> v.setStateListener(this));
+        getVehicleContainer().getVehicles().forEach(v -> v.setStateListener(this));
     }
 
     @Override
     public final void prepare(ProgressListener listener) {
         simulation.prepare(listener);
 
-        getVehicles().forEach(v -> v.setStateListener(this));
+        getVehicleContainer().getVehicles().forEach(v -> v.setStateListener(this));
     }
 
     @Override
@@ -278,28 +279,8 @@ public class MeasuringScenario implements Simulation {
     }
 
     @Override
-    public final ArrayList<? extends AbstractVehicle> getSpawnedVehicles() {
-        return simulation.getSpawnedVehicles();
-    }
-
-    @Override
-    public final ArrayList<? extends AbstractVehicle> getVehicles() {
-        return simulation.getVehicles();
-    }
-
-    @Override
-    public final int getSpawnedVehiclesCount() {
-        return simulation.getSpawnedVehiclesCount();
-    }
-
-    @Override
-    public final int getVehiclesCount() {
-        return simulation.getVehiclesCount();
-    }
-
-    @Override
-    public final VisualizationVehicleEntity createVisVehicle() {
-        return simulation.createVisVehicle();
+    public VehicleContainer getVehicleContainer() {
+        return simulation.getVehicleContainer();
     }
 
     @Override

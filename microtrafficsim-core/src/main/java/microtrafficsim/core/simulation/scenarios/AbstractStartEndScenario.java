@@ -10,6 +10,7 @@ import microtrafficsim.core.map.area.Area;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.AbstractSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.containers.VehicleContainer;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.Distribution;
 import microtrafficsim.utils.StringUtils;
@@ -384,7 +385,6 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
             ).toString());
         }
     }
-
 
     /*
     |=========|

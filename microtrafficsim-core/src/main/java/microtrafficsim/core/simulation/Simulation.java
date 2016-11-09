@@ -4,9 +4,11 @@ import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.containers.VehicleContainer;
 import microtrafficsim.interesting.progressable.ProgressListener;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Timer;
 
 
@@ -20,10 +22,9 @@ public interface Simulation extends VehicleStateListener {
 
     /*
     |========================|
-    | simulation preperation |
+    | simulation preparation |
     |========================|
     */
-
     /**
      * @return True, if {@link #prepare()} has finished;
      * False otherwise
@@ -49,7 +50,6 @@ public interface Simulation extends VehicleStateListener {
     | simulation steps |
     |==================|
     */
-
     /**
      * @return Number of finished simulation steps.
      */
@@ -71,23 +71,21 @@ public interface Simulation extends VehicleStateListener {
      * <p>
      * This method is called before each simulation step. The default
      * implementation does nothing.
-     * </p>
      */
-    void willRunOneStep();
+    default void willRunOneStep() {}
 
     /**
-     * <p>
-     * This method does one simulation step if the simulation is paused. Nothing will be done
-     * if the simulation is already running.
-     * </p>
-     * <p>
-     * Calls {@link #willRunOneStep()} and {@link #didRunOneStep()}.
-     * </p>
+     * Does the same as {@link #doRunOneStep()} but only if the simulation is paused
+     * ({@link #isPaused()} {@code == true}). Nothing will be done if the simulation is already running.
      */
     void runOneStep();
 
     /**
-     * Does the same as {@link #runOneStep()} but independant from {@link #isPaused()}
+     * <p>
+     * This method does one simulation step if the simulation is prepared.
+     *
+     * <p>
+     * Calls {@link #willRunOneStep()} before a step and {@link #didRunOneStep()} after it.
      */
     void doRunOneStep();
 
@@ -95,9 +93,8 @@ public interface Simulation extends VehicleStateListener {
      * <p>
      * This method is called after each simulation step. The default
      * implementation does nothing.
-     * </p>
      */
-    void didRunOneStep();
+    default void didRunOneStep() {}
 
     /**
      * This method should stop iterating the simulation steps after the
@@ -118,37 +115,9 @@ public interface Simulation extends VehicleStateListener {
     |==========|
     */
     /**
-     * Returns the list of spawned (i.e. visible and ready to drive) vehicles.
-     * Note: The state of the vehicles contained in this list may change due to
-     * the asynchronous nature of the simulation, this means the associated
-     * {@link microtrafficsim.core.logic.DirectedEdge DirectedEdge} is {@code null}
-     * if the vehicle has de-spawned.
-     *
-     * @return A copy of the list containing all spawned vehicles. This list
-     * does not contain a copy of the vehicles, but the vehicles itself.
+     * @return An instance of the {@link VehicleContainer} used in this simulation to store and manage vehicles.
      */
-    ArrayList<? extends AbstractVehicle> getSpawnedVehicles();
-
-    /**
-     * @return A copy of the list containing all vehicles (spawned and not yet spawned). This list
-     * does not contain a copy of the vehicles, but the vehicles itself.
-     */
-    ArrayList<? extends AbstractVehicle> getVehicles();
-
-    /**
-     * @return The number of spawned vehicles.
-     */
-    int getSpawnedVehiclesCount();
-
-    /**
-     * @return The number of all vehicles (spawned and not spawned).
-     */
-    int getVehiclesCount();
-
-    /**
-     * @return Instance of {@link VisualizationVehicleEntity}.
-     */
-    VisualizationVehicleEntity createVisVehicle();
+    VehicleContainer getVehicleContainer();
 
     /**
      * This method adds the given vehicle to the graph and if success, this

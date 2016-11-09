@@ -16,7 +16,6 @@ import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.rmi.runtime.Log;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -47,7 +46,7 @@ public abstract class AbstractSimulation implements Simulation {
     private boolean   paused;
     private Timer     timer;
     private TimerTask timerTask;
-    private int       age;    // todo replace # steps by time
+    private int       age;
     private long      timeDeltaMillis, timestamp, pausedTimestamp;
 
     // logging
@@ -94,7 +93,7 @@ public abstract class AbstractSimulation implements Simulation {
 
     /**
      * This method should fill not spawned vehicles using {@link Simulation}.{@link #addVehicle(AbstractVehicle)} and
-     * {@link AbstractSimulation}.{@link #getSpawnedVehicles()}. The spawning and other work
+     * {@link AbstractSimulation}.{@link VehicleContainer#getSpawnedVehicles()}. The spawning and other work
      * will be done automatically.
      *
      * @param listener could be null; This listener gets informed if necessary changes are made.
@@ -109,7 +108,8 @@ public abstract class AbstractSimulation implements Simulation {
      */
     protected final void createAndAddVehicle(AbstractVehicle vehicle) {
 
-        VisualizationVehicleEntity visCar = createVisVehicle();
+        VisualizationVehicleEntity visCar = vehicleContainer.getVehicleFactory().get();
+        vehicleContainer.unlockVehicleFactory();
         VehicleEntity         entity = new VehicleEntity(config, vehicle, visCar);
         vehicle.setEntity(entity);
         visCar.setEntity(entity);
@@ -125,7 +125,8 @@ public abstract class AbstractSimulation implements Simulation {
      */
     protected final void createAndAddVehicle(AbstractVehicle vehicle, Color color) {
 
-        VisualizationVehicleEntity visCar = createVisVehicle();
+        VisualizationVehicleEntity visCar = vehicleContainer.getVehicleFactory().get();
+        vehicleContainer.unlockVehicleFactory();
         visCar.setBaseColor(color);
         VehicleEntity entity = new VehicleEntity(config, vehicle, visCar);
         vehicle.setEntity(entity);
@@ -138,65 +139,6 @@ public abstract class AbstractSimulation implements Simulation {
     | simulation steps |
     |==================|
     */
-
-    /**
-     * This method should be called in a loop to calculate one simulation step.
-     * A simulation step contains acceleration, dashing, braking, dawdling,
-     * moving and right before braking, all nodes are updating their traffic
-     * logic.
-     */
-    private void doSimulationStep() {
-
-        if (timestamp < 0)    // init
-            timestamp = System.currentTimeMillis();
-        long now      = System.currentTimeMillis();
-        //        timeDeltaMillis = Math.min(now - timestamp, 1000 / config.speedup.get());
-        timeDeltaMillis = now - timestamp;
-        timestamp       = now;
-
-
-        Collection<AbstractVehicle>
-                spawnedVehicles = vehicleContainer.getSpawnedVehicles(),
-                notSpawnedVehicles = vehicleContainer.getNotSpawnedVehicles();
-        if (logger.isDebugEnabled()) {
-            time = System.nanoTime();
-            vehicleStepExecutor.willMoveAll(timeDeltaMillis, spawnedVehicles.iterator());
-            logger.debug(
-                    StringUtils.buildTimeString("time brake() etc. = ", System.nanoTime() - time, "ns").toString()
-            );
-
-            time = System.nanoTime();
-            vehicleStepExecutor.moveAll(spawnedVehicles.iterator());
-            logger.debug(
-                    StringUtils.buildTimeString("time move() = ", System.nanoTime() - time, "ns").toString()
-            );
-
-            time = System.nanoTime();
-            vehicleStepExecutor.didMoveAll(spawnedVehicles.iterator());
-            logger.debug(
-                    StringUtils.buildTimeString("time didMove() = ", System.nanoTime() - time, "ns").toString()
-            );
-
-            time = System.nanoTime();
-            vehicleStepExecutor.spawnAll(notSpawnedVehicles.iterator());
-            logger.debug(
-                    StringUtils.buildTimeString("time spawn() = ", System.nanoTime() - time, "ns").toString()
-            );
-
-            time = System.nanoTime();
-            vehicleStepExecutor.updateNodes(graph.getNodeIterator());
-            logger.debug(
-                    StringUtils.buildTimeString("time updateNodes() = ", System.nanoTime() - time, "ns").toString()
-            );
-        } else {
-            vehicleStepExecutor.willMoveAll(timeDeltaMillis, spawnedVehicles.iterator());
-            vehicleStepExecutor.moveAll(spawnedVehicles.iterator());
-            vehicleStepExecutor.didMoveAll(spawnedVehicles.iterator());
-            vehicleStepExecutor.spawnAll(notSpawnedVehicles.iterator());
-            vehicleStepExecutor.updateNodes(graph.getNodeIterator());
-        }
-        age++;
-    }
 
     /*
     |================|
@@ -265,7 +207,59 @@ public abstract class AbstractSimulation implements Simulation {
     @Override
     public final void doRunOneStep() {
         willRunOneStep();
-        if (prepared) doSimulationStep();
+
+        if (prepared) {
+            if (timestamp < 0)    // init
+                timestamp = System.currentTimeMillis();
+            long now      = System.currentTimeMillis();
+            //        timeDeltaMillis = Math.min(now - timestamp, 1000 / config.speedup.get());
+            timeDeltaMillis = now - timestamp;
+            timestamp       = now;
+
+
+            Collection<AbstractVehicle>
+                    spawnedVehicles = vehicleContainer.getSpawnedVehicles(),
+                    notSpawnedVehicles = vehicleContainer.getNotSpawnedVehicles();
+            if (logger.isDebugEnabled()) {
+                time = System.nanoTime();
+                vehicleStepExecutor.willMoveAll(timeDeltaMillis, spawnedVehicles.iterator());
+                logger.debug(
+                        StringUtils.buildTimeString("time brake() etc. = ", System.nanoTime() - time, "ns").toString()
+                );
+
+                time = System.nanoTime();
+                vehicleStepExecutor.moveAll(spawnedVehicles.iterator());
+                logger.debug(
+                        StringUtils.buildTimeString("time move() = ", System.nanoTime() - time, "ns").toString()
+                );
+
+                time = System.nanoTime();
+                vehicleStepExecutor.didMoveAll(spawnedVehicles.iterator());
+                logger.debug(
+                        StringUtils.buildTimeString("time didMove() = ", System.nanoTime() - time, "ns").toString()
+                );
+
+                time = System.nanoTime();
+                vehicleStepExecutor.spawnAll(notSpawnedVehicles.iterator());
+                logger.debug(
+                        StringUtils.buildTimeString("time spawn() = ", System.nanoTime() - time, "ns").toString()
+                );
+
+                time = System.nanoTime();
+                vehicleStepExecutor.updateNodes(graph.getNodeIterator());
+                logger.debug(
+                        StringUtils.buildTimeString("time updateNodes() = ", System.nanoTime() - time, "ns").toString()
+                );
+            } else {
+                vehicleStepExecutor.willMoveAll(timeDeltaMillis, spawnedVehicles.iterator());
+                vehicleStepExecutor.moveAll(spawnedVehicles.iterator());
+                vehicleStepExecutor.didMoveAll(spawnedVehicles.iterator());
+                vehicleStepExecutor.spawnAll(notSpawnedVehicles.iterator());
+                vehicleStepExecutor.updateNodes(graph.getNodeIterator());
+            }
+            age++;
+        }
+
         didRunOneStep();
     }
 
@@ -277,7 +271,7 @@ public abstract class AbstractSimulation implements Simulation {
                         StringUtils.buildTimeString("time for this step = ", System.nanoTime() - time, "ns").toString()
                 );
             }
-            logger.debug("number of vehicles after run = " + getVehiclesCount());
+            logger.debug("number of vehicles after run = " + vehicleContainer.getVehicleCount());
         }
     }
 
@@ -290,35 +284,14 @@ public abstract class AbstractSimulation implements Simulation {
         paused = true;
     }
 
+    @Override
     public final boolean isPaused() {
         return paused;
     }
 
     @Override
-    public final ArrayList<? extends AbstractVehicle> getSpawnedVehicles() {
-        return new ArrayList<>(vehicleContainer.getSpawnedVehicles());
-    }
-
-    @Override
-    public final ArrayList<? extends AbstractVehicle> getVehicles() { // TODO could be replaced
-        return new ArrayList<>(vehicleContainer.getVehicles());
-    }
-
-    @Override
-    public int getSpawnedVehiclesCount() {
-        return vehicleContainer.getSpawnedCount();
-    }
-
-    @Override
-    public int getVehiclesCount() {
-        return vehicleContainer.getVehicleCount();
-    }
-
-    @Override
-    public final VisualizationVehicleEntity createVisVehicle() {
-        VisualizationVehicleEntity v = vehicleContainer.getVehicleFactory().get();
-        vehicleContainer.unlockVehicleFactory();
-        return v;
+    public VehicleContainer getVehicleContainer() {
+        return vehicleContainer;
     }
 
     @Override

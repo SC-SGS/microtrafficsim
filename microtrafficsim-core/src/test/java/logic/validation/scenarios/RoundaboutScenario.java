@@ -71,7 +71,7 @@ public class RoundaboutScenario extends ValidationScenario {
     protected final void updateScenarioState(VehicleState vehicleState) {
         int updateGraphDelay = justInitialized ? 0 : 1;
 
-        if (vehicleState == VehicleState.DESPAWNED && getVehiclesCount() == 0) {
+        if (vehicleState == VehicleState.DESPAWNED && getVehicleContainer().getVehicleCount() == 0) {
             switch (nextScenarioState) {
             case TOP_RIGHT:
                 createAndAddCar(topRight, right, 0,                     Color.fromRGB(0xCC4C1A));
