@@ -1,16 +1,14 @@
-package microtrafficsim.core.simulation.scenarios;
+package microtrafficsim.core.simulation.scenarios.oldimpl;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.map.area.Area;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.simulation.AbstractSimulation;
+import microtrafficsim.core.simulation.core.AbstractSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.containers.VehicleContainer;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.Distribution;
 import microtrafficsim.utils.StringUtils;

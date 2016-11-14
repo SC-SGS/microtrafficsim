@@ -1,4 +1,4 @@
-package microtrafficsim.core.simulation.containers;
+package microtrafficsim.core.simulation.scenarios.containers;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;

@@ -9,7 +9,7 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
-import microtrafficsim.core.simulation.Simulation;
+import microtrafficsim.core.simulation.core.OldSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
@@ -153,7 +153,7 @@ public class Main {
         SpriteBasedVehicleOverlay vehicleOverlay  = new SpriteBasedVehicleOverlay(PROJECTION);
 
         /* create the simulation */
-        Simulation sim = new Scenario(config, result.streetgraph, vehicleOverlay.getVehicleFactory());
+        OldSimulation sim = new Scenario(config, result.streetgraph, vehicleOverlay.getVehicleFactory());
         vehicleOverlay.setSimulation(sim);
 
         /* create and display the frame */
@@ -231,7 +231,7 @@ public class Main {
      * @param provider the provider providing the tiles to be displayed
      * @return the created visualization object
      */
-    private static TileBasedVisualization createVisualization(TileProvider provider, Simulation sim) {
+    private static TileBasedVisualization createVisualization(TileProvider provider, OldSimulation sim) {
         /* create a new visualization object */
         TileBasedVisualization vis
                 = new TileBasedVisualization(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, provider, NUM_TILE_WORKERS);

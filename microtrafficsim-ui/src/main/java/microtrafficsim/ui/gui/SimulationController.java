@@ -3,7 +3,7 @@ package microtrafficsim.ui.gui;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.simulation.Simulation;
+import microtrafficsim.core.simulation.core.OldSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
@@ -19,14 +19,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import javax.xml.stream.XMLStreamException;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
@@ -49,7 +47,7 @@ public class SimulationController implements GUIController {
     // general
     private GUIState    state, previousState;
     private StreetGraph streetgraph;
-    private Simulation  simulation;
+    private OldSimulation simulation;
 
     // visualization
     private MapViewer      mapviewer;
@@ -529,7 +527,7 @@ public class SimulationController implements GUIController {
      * is the constructor of the used Simulation.
      */
     public interface SimulationConstructor {
-        Simulation
+        OldSimulation
         instantiate(SimulationConfig config, StreetGraph streetgraph, Supplier<VisualizationVehicleEntity> vehicleFactory);
     }
 }

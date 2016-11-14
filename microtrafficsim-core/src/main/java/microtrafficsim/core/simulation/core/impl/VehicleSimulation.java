@@ -1,38 +1,35 @@
-package microtrafficsim.core.simulation;
+package microtrafficsim.core.simulation.core.impl;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.stepexecutors.VehicleStepExecutor;
-import microtrafficsim.core.simulation.containers.VehicleContainer;
-import microtrafficsim.core.simulation.stepexecutors.impl.MultiThreadedVehicleStepExecutor;
-import microtrafficsim.core.simulation.containers.impl.ConcurrentVehicleContainer;
-import microtrafficsim.core.simulation.stepexecutors.impl.SingleThreadedVehicleStepExecutor;
-import microtrafficsim.core.simulation.containers.impl.BasicVehicleContainer;
+import microtrafficsim.core.simulation.core.OldSimulation;
+import microtrafficsim.core.simulation.core.Simulation;
+import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
+import microtrafficsim.core.simulation.core.stepexecutors.impl.MultiThreadedVehicleStepExecutor;
+import microtrafficsim.core.simulation.core.stepexecutors.impl.SingleThreadedVehicleStepExecutor;
+import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
+import microtrafficsim.core.simulation.scenarios.containers.impl.BasicVehicleContainer;
+import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.function.Supplier;
 
 
 /**
- * <p>
- * This class manages the simulation. It serves methods for starting and pausing the simulation, but you have to
- * use it by extending it (class name: e.g. scenarios). The extension should include a static class extending
- * {@link SimulationConfig}. In this config class, you can also set the number of threads. The
- * {@link AbstractSimulation} handles alone whether the simulation steps can be executed sequentially or parallel.
- * </p>
- *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public abstract class AbstractSimulation implements Simulation {
-    private Logger logger = LoggerFactory.getLogger(AbstractSimulation.class); // TODO marker!
+public abstract class VehicleSimulation implements Simulation {
+    private Logger logger = LoggerFactory.getLogger(VehicleSimulation.class);
 
     protected final StreetGraph graph;
     private final SimulationConfig config;
@@ -55,7 +52,7 @@ public abstract class AbstractSimulation implements Simulation {
     /**
      * Default constructor.
      */
-    public AbstractSimulation(
+    public VehicleSimulation(
             SimulationConfig config, StreetGraph graph, Supplier<VisualizationVehicleEntity> vehicleFactory) {
         this.config = config;
         this.graph  = graph;
@@ -86,14 +83,14 @@ public abstract class AbstractSimulation implements Simulation {
     */
     /**
      * This method should be called before the simulation starts. E.g. it can be
-     * used to set start nodes, that are used in the {@link AbstractSimulation}.
+     * used to set start nodes, that are used in the {@link VehicleSimulation}.
      * {@link #createAndAddVehicles(ProgressListener)}.
      */
     protected abstract void prepareScenario();
 
     /**
-     * This method should fill not spawned vehicles using {@link Simulation}.{@link #addVehicle(AbstractVehicle)} and
-     * {@link AbstractSimulation}.{@link VehicleContainer#getSpawnedVehicles()}. The spawning and other work
+     * This method should fill not spawned vehicles using {@link OldSimulation}.{@link #addVehicle(AbstractVehicle)} and
+     * {@link VehicleSimulation}.{@link VehicleContainer#getSpawnedVehicles()}. The spawning and other work
      * will be done automatically.
      *
      * @param listener could be null; This listener gets informed if necessary changes are made.
@@ -108,12 +105,14 @@ public abstract class AbstractSimulation implements Simulation {
      */
     protected final void createAndAddVehicle(AbstractVehicle vehicle) {
 
-        VisualizationVehicleEntity visCar = vehicleContainer.getVehicleFactory().get();
+        VisualizationVehicleEntity visCar = vehicleContainer
+                .getVehicleFactory().get();
         vehicleContainer.unlockVehicleFactory();
-        VehicleEntity         entity = new VehicleEntity(config, vehicle, visCar);
+        VehicleEntity entity = new VehicleEntity(config, vehicle, visCar);
         vehicle.setEntity(entity);
         visCar.setEntity(entity);
-        addVehicle(vehicle);
+        if (graph.addVehicle(vehicle))
+            vehicleContainer.addVehicle(vehicle);
     }
 
     /**
@@ -125,20 +124,16 @@ public abstract class AbstractSimulation implements Simulation {
      */
     protected final void createAndAddVehicle(AbstractVehicle vehicle, Color color) {
 
-        VisualizationVehicleEntity visCar = vehicleContainer.getVehicleFactory().get();
+        VisualizationVehicleEntity visCar = vehicleContainer
+                .getVehicleFactory().get();
         vehicleContainer.unlockVehicleFactory();
         visCar.setBaseColor(color);
         VehicleEntity entity = new VehicleEntity(config, vehicle, visCar);
         vehicle.setEntity(entity);
         visCar.setEntity(entity);
-        addVehicle(vehicle);
+        if (graph.addVehicle(vehicle))
+            vehicleContainer.addVehicle(vehicle);
     }
-
-    /*
-    |==================|
-    | simulation steps |
-    |==================|
-    */
 
     /*
     |================|
@@ -292,16 +287,6 @@ public abstract class AbstractSimulation implements Simulation {
     @Override
     public VehicleContainer getVehicleContainer() {
         return vehicleContainer;
-    }
-
-    @Override
-    public final boolean addVehicle(AbstractVehicle vehicle) {
-        boolean spawningWasSuccessful = graph.addVehicle(vehicle);
-
-        if (spawningWasSuccessful)
-            vehicleContainer.addVehicle(vehicle);
-
-        return spawningWasSuccessful;
     }
 
     @Override

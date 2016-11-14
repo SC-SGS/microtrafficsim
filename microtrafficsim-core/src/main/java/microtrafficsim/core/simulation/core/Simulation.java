@@ -1,54 +1,44 @@
-package microtrafficsim.core.simulation;
+package microtrafficsim.core.simulation.core;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
+import microtrafficsim.core.simulation.builder.Builder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.containers.VehicleContainer;
+import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.interesting.progressable.ProgressListener;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Timer;
 
 
 /**
- * This interface serves methods to organize a simulation.
+ * <p>
+ * A simulation setup consists of three major parts: <br>
+ * &bull {@link Simulation}: the executor of simulation steps <br>
+ * &bull {@link Scenario}: the definition of routes etc. <br>
+ * &bull {@link Builder}: the scenario builder; e.g. pre-calculating routes by a
+ * given scenario
+ *
+ * <p>
+ * The simulation serves methods to execute a scenario after a builder
+ * prepared it.
  *
  * @author Dominic Parga Cacheiro
  */
 public interface Simulation extends VehicleStateListener {
-    SimulationConfig getConfig();
 
     /*
-    |========================|
-    | simulation preparation |
-    |========================|
+    |==========|
+    | scenario |
+    |==========|
     */
-    /**
-     * @return True, if {@link #prepare()} has finished;
-     * False otherwise
-     */
-    boolean isPrepared();
+    Scenario getScenario();
 
-    /**
-     * This method clears all vehicle lists and should initialize all important aspects, e.g. creating vehicles and
-     * routes. After finishing, {@link #isPrepared()} will return true.
-     */
-    void prepare();
-
-    /**
-     * This method clears all vehicle lists and should initialize all important aspects, e.g. creating vehicles and
-     * routes. After finishing, {@link #isPrepared()} will return true.
-     *
-     * @param listener This listener gets informed if necessary changes are made.
-     */
-    void prepare(ProgressListener listener);
+    void setScenario(Scenario scenario);
 
     /*
-    |==================|
-    | simulation steps |
-    |==================|
+    |======================|
+    | simulation execution |
+    |======================|
     */
     /**
      * @return Number of finished simulation steps.
@@ -108,23 +98,4 @@ public interface Simulation extends VehicleStateListener {
      * @return True, if the simulation does nothing; False if it is running.
      */
     boolean isPaused();
-
-    /*
-    |==========|
-    | vehicles |
-    |==========|
-    */
-    /**
-     * @return An instance of the {@link VehicleContainer} used in this simulation to store and manage vehicles.
-     */
-    VehicleContainer getVehicleContainer();
-
-    /**
-     * This method adds the given vehicle to the graph and if success, this
-     * method adds the vehicle to the list of not yet spawned vehicles, too.
-     *
-     * @param vehicle should be added
-     * @return True, if vehicle has been added to the graph; False otherwise
-     */
-    boolean addVehicle(AbstractVehicle vehicle);
 }

@@ -1,12 +1,10 @@
-package microtrafficsim.core.simulation.containers.impl;
+package microtrafficsim.core.simulation.scenarios.containers.impl;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
-import microtrafficsim.core.simulation.containers.VehicleContainer;
+import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

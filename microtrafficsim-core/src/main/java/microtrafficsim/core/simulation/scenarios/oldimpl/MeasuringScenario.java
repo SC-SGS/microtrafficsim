@@ -1,11 +1,10 @@
-package microtrafficsim.core.simulation.scenarios;
+package microtrafficsim.core.simulation.scenarios.oldimpl;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
-import microtrafficsim.core.simulation.Simulation;
+import microtrafficsim.core.simulation.core.OldSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.containers.VehicleContainer;
+import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.HaversineDistanceCalculator;
@@ -23,10 +22,10 @@ import java.util.*;
  *
  * @author Dominic Parga Cacheiro
  */
-public class MeasuringScenario implements Simulation {
+public class MeasuringScenario implements OldSimulation {
 
     private SimulationConfig config;
-    private Simulation       simulation;
+    private OldSimulation simulation;
     private Timer            timer;
     private boolean          paused;
     private DataCollector    dataCollector;
@@ -37,7 +36,7 @@ public class MeasuringScenario implements Simulation {
      *
      * @param simulation This simulation should be measured.
      */
-    public MeasuringScenario(SimulationConfig config, Simulation simulation) {
+    public MeasuringScenario(SimulationConfig config, OldSimulation simulation) {
         this(config, simulation, "data");
     }
 
@@ -47,7 +46,7 @@ public class MeasuringScenario implements Simulation {
      * @param simulation         This simulation should be measured.
      * @param PATH_TO_DATA_FILES Path to the folder where the measured data should be saved
      */
-    public MeasuringScenario(SimulationConfig config, Simulation simulation, final String PATH_TO_DATA_FILES) {
+    public MeasuringScenario(SimulationConfig config, OldSimulation simulation, final String PATH_TO_DATA_FILES) {
 
         this.config     = config;
         this.simulation = simulation;
@@ -281,11 +280,6 @@ public class MeasuringScenario implements Simulation {
     @Override
     public VehicleContainer getVehicleContainer() {
         return simulation.getVehicleContainer();
-    }
-
-    @Override
-    public final boolean addVehicle(AbstractVehicle vehicle) {
-        return simulation.addVehicle(vehicle);
     }
 
     public enum MeasuredType {

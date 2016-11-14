@@ -10,7 +10,7 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
-import microtrafficsim.core.simulation.Simulation;
+import microtrafficsim.core.simulation.core.OldSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
@@ -87,7 +87,7 @@ public class Main {
      * @param provider the provider providing the tiles to be displayed
      * @return the created visualization object
      */
-    private static TileBasedVisualization createVisualization(TileProvider provider, Simulation sim) {
+    private static TileBasedVisualization createVisualization(TileProvider provider, OldSimulation sim) {
         /* create a new visualization object */
         TileBasedVisualization vis
                 = new TileBasedVisualization(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, provider, NUM_TILE_WORKERS);
@@ -227,7 +227,7 @@ public class Main {
     }
 
     public static void show(Projection projection, File file, SimulationConfig scencfg,
-                            Class<? extends Simulation> simClazz) throws Exception {
+                            Class<? extends OldSimulation> simClazz) throws Exception {
 
         /* create configuration for scenarios */
         initSimulationConfig(scencfg);
@@ -257,7 +257,7 @@ public class Main {
         SpriteBasedVehicleOverlay overlay = new SpriteBasedVehicleOverlay(projection);
 
         /* create the simulation */
-        Simulation sim = simClazz.getConstructor(scencfg.getClass(), StreetGraph.class, Supplier.class)
+        OldSimulation sim = simClazz.getConstructor(scencfg.getClass(), StreetGraph.class, Supplier.class)
                                  .newInstance(scencfg, result.streetgraph, overlay.getVehicleFactory());
         overlay.setSimulation(sim);
 

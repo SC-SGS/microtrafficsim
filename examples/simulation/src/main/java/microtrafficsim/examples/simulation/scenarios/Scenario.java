@@ -6,7 +6,7 @@ import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.scenarios.EndOfTheWorldScenario;
+import microtrafficsim.core.simulation.scenarios.oldimpl.EndOfTheWorldScenario;
 
 import java.util.Random;
 import java.util.function.Supplier;

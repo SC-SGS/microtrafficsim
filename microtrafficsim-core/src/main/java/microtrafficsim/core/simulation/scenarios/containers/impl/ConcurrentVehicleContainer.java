@@ -1,7 +1,7 @@
-package microtrafficsim.core.simulation.containers.impl;
+package microtrafficsim.core.simulation.scenarios.containers.impl;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.simulation.containers.VehicleContainer;
+import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;

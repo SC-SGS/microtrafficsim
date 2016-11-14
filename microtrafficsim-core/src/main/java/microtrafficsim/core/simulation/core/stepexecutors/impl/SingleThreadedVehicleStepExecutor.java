@@ -1,8 +1,8 @@
-package microtrafficsim.core.simulation.stepexecutors.impl;
+package microtrafficsim.core.simulation.core.stepexecutors.impl;
 
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-import microtrafficsim.core.simulation.stepexecutors.VehicleStepExecutor;
+import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 
 import java.util.Iterator;
 
