@@ -1,20 +1,11 @@
 package microtrafficsim.core.simulation.core.impl;
 
-import microtrafficsim.core.entities.vehicle.VehicleEntity;
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.core.OldSimulation;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.core.stepexecutors.impl.MultiThreadedVehicleStepExecutor;
 import microtrafficsim.core.simulation.core.stepexecutors.impl.SingleThreadedVehicleStepExecutor;
-import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
-import microtrafficsim.core.simulation.scenarios.containers.impl.BasicVehicleContainer;
-import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
-import microtrafficsim.core.vis.opengl.utils.Color;
-import microtrafficsim.interesting.progressable.ProgressListener;
+import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,117 +13,36 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.function.Supplier;
 
 
 /**
- * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
+ * This class is an implementation of {@link Simulation} for {@link AbstractVehicle}s.
+ *
+ * @author Dominic Parga Cacheiro
  */
 public abstract class VehicleSimulation implements Simulation {
     private Logger logger = LoggerFactory.getLogger(VehicleSimulation.class);
 
-    protected final StreetGraph graph;
-    private final SimulationConfig config;
-
-    // manager
-    private final VehicleContainer vehicleContainer;
-    private final VehicleStepExecutor vehicleStepExecutor;
+    private Scenario scenario;
+    private VehicleStepExecutor vehicleStepExecutor;
 
     // simulation steps
-    private boolean   prepared;
     private boolean   paused;
     private Timer     timer;
     private TimerTask timerTask;
     private int       age;
-    private long      timeDeltaMillis, timestamp, pausedTimestamp;
 
     // logging
     private long time;
 
     /**
-     * Default constructor.
-     */
-    public VehicleSimulation(
-            SimulationConfig config, StreetGraph graph, Supplier<VisualizationVehicleEntity> vehicleFactory) {
-        this.config = config;
-        this.graph  = graph;
-        // simulation
-        prepared  = false;
-        paused    = true;
-        timer     = new Timer();
-        timestamp = -1;
-        age       = 0;
-        if (config.multiThreading.nThreads > 1) {
-            vehicleContainer = new ConcurrentVehicleContainer(vehicleFactory);
-            vehicleStepExecutor = new MultiThreadedVehicleStepExecutor(config);
-        } else {
-            vehicleContainer = new BasicVehicleContainer(vehicleFactory);
-            vehicleStepExecutor = new SingleThreadedVehicleStepExecutor();
-        }
-    }
-
-    @Override
-    public SimulationConfig getConfig() {
-        return config;
-    }
-
-    /*
-    |=========|
-    | prepare |
-    |=========|
-    */
-    /**
-     * This method should be called before the simulation starts. E.g. it can be
-     * used to set start nodes, that are used in the {@link VehicleSimulation}.
-     * {@link #createAndAddVehicles(ProgressListener)}.
-     */
-    protected abstract void prepareScenario();
-
-    /**
-     * This method should fill not spawned vehicles using {@link OldSimulation}.{@link #addVehicle(AbstractVehicle)} and
-     * {@link VehicleSimulation}.{@link VehicleContainer#getSpawnedVehicles()}. The spawning and other work
-     * will be done automatically.
+     * Default constructor. Adopts the given scenario by calling {@link #setScenario(Scenario)}.
      *
-     * @param listener could be null; This listener gets informed if necessary changes are made.
+     * @param scenario This scenario is executed later.
      */
-    protected abstract void createAndAddVehicles(ProgressListener listener);
-
-    /**
-     * This method could be called to add the given vehicle to the simulation. For visualization, this method creates an
-     * instance of {@link VisualizationVehicleEntity} and connects it to the given vehicle using a {@link VehicleEntity}.
-     *
-     * @param vehicle An instance of {@link AbstractVehicle}
-     */
-    protected final void createAndAddVehicle(AbstractVehicle vehicle) {
-
-        VisualizationVehicleEntity visCar = vehicleContainer
-                .getVehicleFactory().get();
-        vehicleContainer.unlockVehicleFactory();
-        VehicleEntity entity = new VehicleEntity(config, vehicle, visCar);
-        vehicle.setEntity(entity);
-        visCar.setEntity(entity);
-        if (graph.addVehicle(vehicle))
-            vehicleContainer.addVehicle(vehicle);
-    }
-
-    /**
-     * This method could be called to add the given vehicle to the simulation. For visualization, this method creates an
-     * instance of {@link VisualizationVehicleEntity} and connects it to the given vehicle using a {@link VehicleEntity}.
-     *
-     * @param vehicle An instance of {@link AbstractVehicle}
-     * @param color   The color of the vehicle
-     */
-    protected final void createAndAddVehicle(AbstractVehicle vehicle, Color color) {
-
-        VisualizationVehicleEntity visCar = vehicleContainer
-                .getVehicleFactory().get();
-        vehicleContainer.unlockVehicleFactory();
-        visCar.setBaseColor(color);
-        VehicleEntity entity = new VehicleEntity(config, vehicle, visCar);
-        vehicle.setEntity(entity);
-        visCar.setEntity(entity);
-        if (graph.addVehicle(vehicle))
-            vehicleContainer.addVehicle(vehicle);
+    public VehicleSimulation(Scenario scenario) {
+        setScenario(scenario);
+        timer = new Timer();
     }
 
     /*
@@ -141,23 +51,21 @@ public abstract class VehicleSimulation implements Simulation {
     |================|
     */
     @Override
-    public boolean isPrepared() {
-        return prepared;
+    public Scenario getScenario() {
+        return scenario;
     }
 
     @Override
-    public final void prepare() {
-        prepare(null);
-    }
+    public void setScenario(Scenario scenario) {
+        if (!isPaused())
+            throw new RuntimeException("The simulation sets a new scenario but is not paused.");
 
-    @Override
-    public final void prepare(ProgressListener listener) {
-        prepared = false;
-        vehicleContainer.clearAll();
-        prepareScenario();
-        createAndAddVehicles(listener);
-        vehicleStepExecutor.updateNodes(graph.getNodeIterator());
-        prepared = true;
+        this.scenario = scenario;
+        age = 0;
+        if (scenario.getConfig().multiThreading.nThreads > 1)
+            vehicleStepExecutor = new MultiThreadedVehicleStepExecutor(this);
+        else
+            vehicleStepExecutor = new SingleThreadedVehicleStepExecutor();
     }
 
     @Override
@@ -167,14 +75,14 @@ public abstract class VehicleSimulation implements Simulation {
 
     @Override
     public final void run() {
-        if (prepared && isPaused() && config.speedup > 0) {
+        if (scenario.isPrepared() && isPaused() && scenario.getConfig().speedup > 0) {
             timerTask = new TimerTask() {
                 @Override
                 public void run() {
                     doRunOneStep();
                 }
             };
-            timer.schedule(timerTask, 0, 1000 / config.speedup);
+            timer.schedule(timerTask, 0, 1000 / scenario.getConfig().speedup);
             paused = false;
         }
     }
@@ -182,13 +90,14 @@ public abstract class VehicleSimulation implements Simulation {
     @Override
     public void willRunOneStep() {
         if (logger.isDebugEnabled()) {
-            if (prepared) {
-                logger.debug("########## ########## ########## ########## ##");
+
+            logger.debug("########## ########## ########## ########## ##");
+
+            if (scenario.isPrepared()) {
                 logger.debug("NEW SIMULATION STEP");
                 logger.debug("simulation age before execution = " + getAge());
                 time = System.nanoTime();
             } else {
-                logger.debug("########## ########## ########## ########## ##");
                 logger.debug("NEW SIMULATION STEP (NOT PREPARED)");
             }
         }
@@ -203,21 +112,13 @@ public abstract class VehicleSimulation implements Simulation {
     public final void doRunOneStep() {
         willRunOneStep();
 
-        if (prepared) {
-            if (timestamp < 0)    // init
-                timestamp = System.currentTimeMillis();
-            long now      = System.currentTimeMillis();
-            //        timeDeltaMillis = Math.min(now - timestamp, 1000 / config.speedup.get());
-            timeDeltaMillis = now - timestamp;
-            timestamp       = now;
-
-
+        if (scenario.isPrepared()) {
             Collection<AbstractVehicle>
-                    spawnedVehicles = vehicleContainer.getSpawnedVehicles(),
-                    notSpawnedVehicles = vehicleContainer.getNotSpawnedVehicles();
+                    spawnedVehicles = scenario.getVehicleContainer().getSpawnedVehicles(),
+                    notSpawnedVehicles = scenario.getVehicleContainer().getNotSpawnedVehicles();
             if (logger.isDebugEnabled()) {
                 time = System.nanoTime();
-                vehicleStepExecutor.willMoveAll(timeDeltaMillis, spawnedVehicles.iterator());
+                vehicleStepExecutor.willMoveAll(spawnedVehicles.iterator());
                 logger.debug(
                         StringUtils.buildTimeString("time brake() etc. = ", System.nanoTime() - time, "ns").toString()
                 );
@@ -241,16 +142,16 @@ public abstract class VehicleSimulation implements Simulation {
                 );
 
                 time = System.nanoTime();
-                vehicleStepExecutor.updateNodes(graph.getNodeIterator());
+                vehicleStepExecutor.updateNodes(scenario.getGraph().getNodeIterator());
                 logger.debug(
                         StringUtils.buildTimeString("time updateNodes() = ", System.nanoTime() - time, "ns").toString()
                 );
             } else {
-                vehicleStepExecutor.willMoveAll(timeDeltaMillis, spawnedVehicles.iterator());
+                vehicleStepExecutor.willMoveAll(spawnedVehicles.iterator());
                 vehicleStepExecutor.moveAll(spawnedVehicles.iterator());
                 vehicleStepExecutor.didMoveAll(spawnedVehicles.iterator());
                 vehicleStepExecutor.spawnAll(notSpawnedVehicles.iterator());
-                vehicleStepExecutor.updateNodes(graph.getNodeIterator());
+                vehicleStepExecutor.updateNodes(scenario.getGraph().getNodeIterator());
             }
             age++;
         }
@@ -260,13 +161,16 @@ public abstract class VehicleSimulation implements Simulation {
 
     @Override
     public void didRunOneStep() {
+        if (scenario.getConfig().ageForPause == getAge())
+            cancel();
+
         if (logger.isDebugEnabled()) {
-            if (prepared) {
+            if (scenario.isPrepared()) {
                 logger.debug(
                         StringUtils.buildTimeString("time for this step = ", System.nanoTime() - time, "ns").toString()
                 );
             }
-            logger.debug("number of vehicles after run = " + vehicleContainer.getVehicleCount());
+            logger.debug("number of vehicles after run = " + scenario.getVehicleContainer().getVehicleCount());
         }
     }
 
@@ -285,12 +189,7 @@ public abstract class VehicleSimulation implements Simulation {
     }
 
     @Override
-    public VehicleContainer getVehicleContainer() {
-        return vehicleContainer;
-    }
-
-    @Override
     public void stateChanged(AbstractVehicle vehicle) {
-        vehicleContainer.stateChanged(vehicle);
+        scenario.getVehicleContainer().stateChanged(vehicle);
     }
 }

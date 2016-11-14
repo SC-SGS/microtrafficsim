@@ -15,7 +15,7 @@ import java.util.Iterator;
 public class SingleThreadedVehicleStepExecutor implements VehicleStepExecutor {
 
     @Override
-    public void willMoveAll(long timeDeltaMillis, Iterator<AbstractVehicle> iteratorSpawned) {
+    public void willMoveAll(Iterator<AbstractVehicle> iteratorSpawned) {
         iteratorSpawned.forEachRemaining((AbstractVehicle vehicle) -> {
             vehicle.accelerate();
             vehicle.dash();

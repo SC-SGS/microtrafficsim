@@ -24,7 +24,7 @@ public interface VehicleStepExecutor {
      * @param timeDeltaMillis Can be used to simulate in real time.
      * @param iteratorSpawned An iterator over all spawned vehicles getting prepared for moving.
      */
-    void willMoveAll(final long timeDeltaMillis, final Iterator<AbstractVehicle> iteratorSpawned);
+    void willMoveAll(final Iterator<AbstractVehicle> iteratorSpawned);
 
     /**
      * This method moves all spawned vehicles.

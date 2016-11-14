@@ -258,7 +258,6 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
     | create and add node fields |
     |============================|
     */
-
     /**
      * TODO
      */
@@ -295,7 +294,6 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
     | (i) Simulation |
     |================|
     */
-
     /**
      * This implementation calls {@link AbstractSimulation#cancel()}, if the simulation age reaches
      * {@link SimulationConfig#ageForPause}.

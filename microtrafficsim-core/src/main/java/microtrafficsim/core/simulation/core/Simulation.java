@@ -2,10 +2,7 @@ package microtrafficsim.core.simulation.core;
 
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.simulation.builder.Builder;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
-import microtrafficsim.interesting.progressable.ProgressListener;
 
 import java.util.Timer;
 
@@ -31,8 +28,16 @@ public interface Simulation extends VehicleStateListener {
     | scenario |
     |==========|
     */
+    /**
+     * @return Currently executed scenario
+     */
     Scenario getScenario();
 
+    /**
+     * Sets the scenario being executed. The simulation should be paused for this call.
+     *
+     * @param scenario This scenario is being executed
+     */
     void setScenario(Scenario scenario);
 
     /*

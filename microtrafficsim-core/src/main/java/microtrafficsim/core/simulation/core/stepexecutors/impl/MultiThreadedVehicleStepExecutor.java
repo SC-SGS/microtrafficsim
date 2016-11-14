@@ -2,7 +2,9 @@ package microtrafficsim.core.simulation.core.stepexecutors.impl;
 
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
+import microtrafficsim.core.simulation.configs.MultiThreadingConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 
 import java.util.ArrayList;
@@ -21,18 +23,18 @@ import java.util.function.Consumer;
  */
 public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
 
-    private final SimulationConfig config;
+    private final Simulation simulation;
     // multithreading
     private final ExecutorService pool;
 
-    public MultiThreadedVehicleStepExecutor(SimulationConfig config) {
+    public MultiThreadedVehicleStepExecutor(Simulation simulation) {
 
-        this.config = config;
-        pool        = Executors.newFixedThreadPool(config.multiThreading.nThreads);
+        this.simulation = simulation;
+        pool            = Executors.newFixedThreadPool(simulation.getScenario().getConfig().multiThreading.nThreads);
     }
 
     @Override
-    public void willMoveAll(long timeDeltaMillis, Iterator<AbstractVehicle> iteratorSpawned) {
+    public void willMoveAll(Iterator<AbstractVehicle> iteratorSpawned) {
         doVehicleTask((AbstractVehicle v) -> {
             v.accelerate();
             v.dash();
@@ -58,6 +60,9 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
 
     @Override
     public void updateNodes(final Iterator<Node> iter) {
+
+        SimulationConfig config = simulation.getScenario().getConfig();
+
         ArrayList<Callable<Object>> tasks = new ArrayList<>(config.multiThreading.nThreads);
 
         // add this task for every thread
@@ -85,13 +90,16 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
     }
 
     private void doVehicleTask(Consumer<AbstractVehicle> task, Iterator<AbstractVehicle> iter) {
+
+        MultiThreadingConfig config = simulation.getScenario().getConfig().multiThreading;
+
         LinkedList<Callable<Object>> tasks = new LinkedList<>();
 
         while (iter.hasNext()) {
             // fill current thread's vehicle list
-            ArrayList<AbstractVehicle> list = new ArrayList<>(config.multiThreading.vehiclesPerRunnable);
+            ArrayList<AbstractVehicle> list = new ArrayList<>(config.vehiclesPerRunnable);
             int                        c    = 0;
-            while (c++ < config.multiThreading.vehiclesPerRunnable && iter.hasNext()) {
+            while (c++ < config.vehiclesPerRunnable && iter.hasNext()) {
                 list.add(iter.next());
             }
             // let a thread work off the list
