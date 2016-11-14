@@ -219,7 +219,6 @@ public class Main {
         config.crossingLogic.priorityToTheRightEnabled    = true;
         config.crossingLogic.friendlyStandingInJamEnabled = true;
         config.crossingLogic.setOnlyOneVehicle(false);
-        config.logger.enabled                             = false;
 
         logger.debug("using '" + Long.toHexString(config.seed) + "' as seed");
     }
