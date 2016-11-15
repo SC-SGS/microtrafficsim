@@ -11,6 +11,8 @@ import microtrafficsim.core.simulation.core.AbstractSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.Distribution;
+import microtrafficsim.math.random.distributions.BasicWheelOfFortune;
+import microtrafficsim.math.random.distributions.WheelOfFortune;
 import microtrafficsim.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,8 +71,8 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
         // used for creating vehicles and routes etc.
         startFields = new HashMap<>();
         endFields   = new HashMap<>();
-        startWheel  = new WheelOfFortune(config.rndGenGenerator.next());
-        endWheel    = new WheelOfFortune(config.rndGenGenerator.next());
+        startWheel  = new BasicWheelOfFortune(config.rndGenGenerator.next());
+        endWheel    = new BasicWheelOfFortune(config.rndGenGenerator.next());
         random      = config.rndGenGenerator.next();
         // used for printing vehicle creation process
         lastPercentage  = 0;
@@ -286,7 +288,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
      */
     protected final void addEndField(Area area, int probabilitySize) {
         endFields.put(area, new ArrayList<>());
-        endWheel.addField(area, probabilitySize);
+        endWheel.add(area, probabilitySize);
     }
 
     /*
@@ -379,93 +381,6 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
                     System.nanoTime() - time,
                     "ns"
             ).toString());
-        }
-    }
-
-    /*
-    |=========|
-    | classes |
-    |=========|
-    */
-    /**
-     * TODO (also test)
-     *
-     * @author Dominic Parga Cacheiro
-     */
-    public static class WheelOfFortune {
-
-        private Random random;
-        private HashMap<Object, Integer> fields;
-        private ArrayList<Object> orderedObjects;
-        private int               n;
-
-        public WheelOfFortune(long seed) {
-            random         = new Random(seed);
-            fields         = new HashMap<>();
-            orderedObjects = new ArrayList<>();
-            n              = 0;
-        }
-
-        public WheelOfFortune(Random random) {
-            this.random    = random;
-            fields         = new HashMap<>();
-            orderedObjects = new ArrayList<>();
-            n              = 0;
-        }
-
-        /**
-         * TODO<br>
-         * <br>
-         * but can be called multiple times
-         *
-         * @param obj
-         * @param size
-         */
-        public void addField(Object obj, int size) {
-            if (!fields.containsKey(obj) && size > 0) {
-                fields.put(obj, size);
-                orderedObjects.add(obj);
-                n += size;
-            }
-        }
-
-        public void updateFieldSize(Object obj, int size) {
-            if (size <= 0) {
-                fields.remove(obj);
-            } else {
-                Integer oldSize = fields.put(obj, size);
-                if (oldSize != null)
-                    n += size - oldSize;
-                else
-                    n += size;
-            }
-        }
-
-        /**
-         * TODO Laufzeit könnte man auf Kosten von Speicher verbessern
-         *
-         * @param obj
-         */
-        public void remove(Object obj) {
-            fields.remove(obj);
-            orderedObjects.remove(obj);
-        }
-
-        public Object nextObject() {
-            if (n <= 0) return null;
-
-            int              i       = random.nextInt(n);
-            Iterator<Object> objects = orderedObjects.iterator();
-            Object           lastObj = null;
-            if (objects.hasNext()) {
-                do {
-                    lastObj = objects.next();
-                    i -= fields.get(lastObj);
-
-                } while (i >= 0 && objects.hasNext());
-            }
-
-            return lastObj;
         }
     }
 }

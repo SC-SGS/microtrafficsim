@@ -1,7 +1,7 @@
 package microtrafficsim.core.simulation.configs;
 
-import microtrafficsim.math.random.ConcurrentRndGenGenerator;
-import microtrafficsim.math.random.RndGenGenerator;
+import microtrafficsim.math.random.rndgengenerator.impl.ConcurrentRndGenGenerator;
+import microtrafficsim.math.random.rndgengenerator.RndGenGenerator;
 import microtrafficsim.osm.parser.features.streets.info.StreetType;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.id.LongIDGenerator;

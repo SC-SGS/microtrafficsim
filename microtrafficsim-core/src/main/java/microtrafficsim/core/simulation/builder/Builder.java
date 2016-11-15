@@ -20,7 +20,8 @@ import microtrafficsim.core.simulation.scenarios.Scenario;
 public interface Builder {
 
     /**
-     * Prepares the given scenario, e.g. it pre-calculates vehicle routes.
+     * Prepares the given scenario, e.g. it pre-calculates vehicle routes. If the scenario is already prepared, it
+     * gets prepared again.
      *
      * @param scenario This scenario should be prepared
      * @return The prepared scenario (same reference as the given one, just for practical purposes)

@@ -130,8 +130,8 @@ public class Node implements ShortestPathNode {
         random = config.rndGenGenerator.next();
 
         // crossing logic
-        assessedVehicles     = new HashSet<>();
-        maxPrioVehicles      = new HashSet<>();
+        assessedVehicles.clear();
+        maxPrioVehicles.clear();
         anyChangeSinceUpdate = false;
     }
 

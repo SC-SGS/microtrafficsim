@@ -34,11 +34,12 @@ public interface Simulation extends VehicleStateListener {
     Scenario getScenario();
 
     /**
-     * Sets the scenario being executed. The simulation should be paused for this call.
+     * Sets the scenario being executed. The simulation should be paused for this call. The scenario is initialized
+     * by updating all graph nodes.
      *
      * @param scenario This scenario is being executed
      */
-    void setScenario(Scenario scenario);
+    void initScenario(Scenario scenario);
 
     /*
     |======================|

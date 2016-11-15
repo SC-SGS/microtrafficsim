@@ -1,7 +1,7 @@
 package microtrafficsim.ui.preferences.impl;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.math.random.ConcurrentRndGenGenerator;
+import microtrafficsim.math.random.rndgengenerator.impl.ConcurrentRndGenGenerator;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
 

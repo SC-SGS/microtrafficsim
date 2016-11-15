@@ -23,11 +23,25 @@ import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
  */
 public interface Scenario {
 
+    /*
+    |=========|
+    | general |
+    |=========|
+    */
     SimulationConfig getConfig();
 
     StreetGraph getGraph();
 
-    boolean isPrepared();
-
     VehicleContainer getVehicleContainer();
+
+    void setPrepared(boolean isPrepared);
+
+    boolean isPrepared();
+    
+    /*
+    |=====================|
+    | builder interaction |
+    |=====================|
+    */
+
 }

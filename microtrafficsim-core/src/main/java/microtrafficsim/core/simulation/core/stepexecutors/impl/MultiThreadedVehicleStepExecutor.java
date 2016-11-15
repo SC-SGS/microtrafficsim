@@ -6,6 +6,7 @@ import microtrafficsim.core.simulation.configs.MultiThreadingConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
+import microtrafficsim.core.simulation.scenarios.Scenario;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,45 +24,43 @@ import java.util.function.Consumer;
  */
 public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
 
-    private final Simulation simulation;
     // multithreading
     private final ExecutorService pool;
 
-    public MultiThreadedVehicleStepExecutor(Simulation simulation) {
-
-        this.simulation = simulation;
-        pool            = Executors.newFixedThreadPool(simulation.getScenario().getConfig().multiThreading.nThreads);
+    public MultiThreadedVehicleStepExecutor(int nThreads) {
+        pool = Executors.newFixedThreadPool(nThreads);
     }
 
     @Override
-    public void willMoveAll(Iterator<AbstractVehicle> iteratorSpawned) {
-        doVehicleTask((AbstractVehicle v) -> {
+    public void willMoveAll(final Scenario scenario) {
+        doTask((AbstractVehicle v) -> {
             v.accelerate();
             v.dash();
             v.brake();
             v.dawdle();
-        }, iteratorSpawned);
+        }, scenario.getVehicleContainer().getSpawnedVehicles().iterator(), scenario);
     }
 
     @Override
-    public void moveAll(Iterator<AbstractVehicle> iteratorSpawned) {
-        doVehicleTask(AbstractVehicle::move, iteratorSpawned);
+    public void moveAll(final Scenario scenario) {
+        doTask(AbstractVehicle::move, scenario.getVehicleContainer().getSpawnedVehicles().iterator(), scenario);
     }
 
     @Override
-    public void didMoveAll(Iterator<AbstractVehicle> iteratorSpawned) {
-        doVehicleTask(AbstractVehicle::didMove, iteratorSpawned);
+    public void didMoveAll(final Scenario scenario) {
+        doTask(AbstractVehicle::didMove, scenario.getVehicleContainer().getSpawnedVehicles().iterator(), scenario);
     }
 
     @Override
-    public void spawnAll(Iterator<AbstractVehicle> iteratorNotSpawned) {
-        doVehicleTask(AbstractVehicle::spawn, iteratorNotSpawned);
+    public void spawnAll(final Scenario scenario) {
+        doTask(AbstractVehicle::spawn, scenario.getVehicleContainer().getNotSpawnedVehicles().iterator(), scenario);
     }
 
     @Override
-    public void updateNodes(final Iterator<Node> iter) {
+    public void updateNodes(final Scenario scenario) {
 
-        SimulationConfig config = simulation.getScenario().getConfig();
+        Iterator<Node> iter = scenario.getGraph().getNodeIterator();
+        SimulationConfig config = scenario.getConfig();
 
         ArrayList<Callable<Object>> tasks = new ArrayList<>(config.multiThreading.nThreads);
 
@@ -89,19 +88,18 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
         } catch (InterruptedException e) { e.printStackTrace(); }
     }
 
-    private void doVehicleTask(Consumer<AbstractVehicle> task, Iterator<AbstractVehicle> iter) {
+    private <T> void doTask(Consumer<T> task, Iterator<T> iter, final Scenario scenario) {
 
-        MultiThreadingConfig config = simulation.getScenario().getConfig().multiThreading;
+        MultiThreadingConfig config = scenario.getConfig().multiThreading;
 
         LinkedList<Callable<Object>> tasks = new LinkedList<>();
 
         while (iter.hasNext()) {
             // fill current thread's vehicle list
-            ArrayList<AbstractVehicle> list = new ArrayList<>(config.vehiclesPerRunnable);
-            int                        c    = 0;
-            while (c++ < config.vehiclesPerRunnable && iter.hasNext()) {
+            ArrayList<T> list = new ArrayList<>(config.vehiclesPerRunnable);
+            int c = 0;
+            while (c++ < config.vehiclesPerRunnable && iter.hasNext())
                 list.add(iter.next());
-            }
             // let a thread work off the list
             tasks.add(Executors.callable(() -> list.forEach(task)));
         }

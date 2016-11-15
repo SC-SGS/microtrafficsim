@@ -25,7 +25,7 @@ import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
-import microtrafficsim.math.random.ConcurrentRndGenGenerator;
+import microtrafficsim.math.random.rndgengenerator.impl.ConcurrentRndGenGenerator;
 import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;

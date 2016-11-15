@@ -3,6 +3,7 @@ package microtrafficsim.core.simulation.core.stepexecutors.impl;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
+import microtrafficsim.core.simulation.scenarios.Scenario;
 
 import java.util.Iterator;
 
@@ -15,8 +16,8 @@ import java.util.Iterator;
 public class SingleThreadedVehicleStepExecutor implements VehicleStepExecutor {
 
     @Override
-    public void willMoveAll(Iterator<AbstractVehicle> iteratorSpawned) {
-        iteratorSpawned.forEachRemaining((AbstractVehicle vehicle) -> {
+    public void willMoveAll(final Scenario scenario) {
+        scenario.getVehicleContainer().getSpawnedVehicles().forEach((AbstractVehicle vehicle) -> {
             vehicle.accelerate();
             vehicle.dash();
             vehicle.brake();
@@ -25,23 +26,22 @@ public class SingleThreadedVehicleStepExecutor implements VehicleStepExecutor {
     }
 
     @Override
-    public void moveAll(Iterator<AbstractVehicle> iteratorSpawned) {
-        while (iteratorSpawned.hasNext())
-            iteratorSpawned.next().move();
+    public void moveAll(final Scenario scenario) {
+        scenario.getVehicleContainer().getSpawnedVehicles().forEach(AbstractVehicle::move);
     }
 
     @Override
-    public void didMoveAll(Iterator<AbstractVehicle> iteratorSpawned) {
-        iteratorSpawned.forEachRemaining(AbstractVehicle::didMove);
+    public void didMoveAll(final Scenario scenario) {
+        scenario.getVehicleContainer().getSpawnedVehicles().forEach(AbstractVehicle::didMove);
     }
 
     @Override
-    public void spawnAll(Iterator<AbstractVehicle> iteratorNotSpawned) {
-        iteratorNotSpawned.forEachRemaining(AbstractVehicle::spawn);
+    public void spawnAll(final Scenario scenario) {
+        scenario.getVehicleContainer().getNotSpawnedVehicles().forEach(AbstractVehicle::spawn);
     }
 
     @Override
-    public void updateNodes(Iterator<Node> iter) {
-        iter.forEachRemaining(Node::update);
+    public void updateNodes(final Scenario scenario) {
+        scenario.getGraph().getNodeIterator().forEachRemaining(Node::update);
     }
 }

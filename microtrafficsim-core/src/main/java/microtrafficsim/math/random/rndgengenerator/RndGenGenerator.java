@@ -1,4 +1,4 @@
-package microtrafficsim.math.random;
+package microtrafficsim.math.random.rndgengenerator;
 
 import java.util.Random;
 

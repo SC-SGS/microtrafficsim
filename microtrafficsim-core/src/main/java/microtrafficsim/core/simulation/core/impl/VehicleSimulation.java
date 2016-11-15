@@ -36,12 +36,12 @@ public abstract class VehicleSimulation implements Simulation {
     private long time;
 
     /**
-     * Default constructor. Adopts the given scenario by calling {@link #setScenario(Scenario)}.
+     * Default constructor. Adopts the given scenario by calling {@link #initScenario(Scenario)}.
      *
      * @param scenario This scenario is executed later.
      */
     public VehicleSimulation(Scenario scenario) {
-        setScenario(scenario);
+        initScenario(scenario);
         timer = new Timer();
     }
 
@@ -56,16 +56,19 @@ public abstract class VehicleSimulation implements Simulation {
     }
 
     @Override
-    public void setScenario(Scenario scenario) {
+    public void initScenario(Scenario scenario) {
         if (!isPaused())
             throw new RuntimeException("The simulation sets a new scenario but is not paused.");
 
         this.scenario = scenario;
         age = 0;
-        if (scenario.getConfig().multiThreading.nThreads > 1)
-            vehicleStepExecutor = new MultiThreadedVehicleStepExecutor(this);
-        else
-            vehicleStepExecutor = new SingleThreadedVehicleStepExecutor();
+        int nThreads = scenario.getConfig().multiThreading.nThreads;
+        vehicleStepExecutor =
+                nThreads > 1 ?
+                        new MultiThreadedVehicleStepExecutor(nThreads) :
+                        new SingleThreadedVehicleStepExecutor();
+
+        vehicleStepExecutor.updateNodes(this.scenario);
     }
 
     @Override
@@ -113,45 +116,42 @@ public abstract class VehicleSimulation implements Simulation {
         willRunOneStep();
 
         if (scenario.isPrepared()) {
-            Collection<AbstractVehicle>
-                    spawnedVehicles = scenario.getVehicleContainer().getSpawnedVehicles(),
-                    notSpawnedVehicles = scenario.getVehicleContainer().getNotSpawnedVehicles();
             if (logger.isDebugEnabled()) {
                 time = System.nanoTime();
-                vehicleStepExecutor.willMoveAll(spawnedVehicles.iterator());
+                vehicleStepExecutor.willMoveAll(scenario);
                 logger.debug(
                         StringUtils.buildTimeString("time brake() etc. = ", System.nanoTime() - time, "ns").toString()
                 );
 
                 time = System.nanoTime();
-                vehicleStepExecutor.moveAll(spawnedVehicles.iterator());
+                vehicleStepExecutor.moveAll(scenario);
                 logger.debug(
                         StringUtils.buildTimeString("time move() = ", System.nanoTime() - time, "ns").toString()
                 );
 
                 time = System.nanoTime();
-                vehicleStepExecutor.didMoveAll(spawnedVehicles.iterator());
+                vehicleStepExecutor.didMoveAll(scenario);
                 logger.debug(
                         StringUtils.buildTimeString("time didMove() = ", System.nanoTime() - time, "ns").toString()
                 );
 
                 time = System.nanoTime();
-                vehicleStepExecutor.spawnAll(notSpawnedVehicles.iterator());
+                vehicleStepExecutor.spawnAll(scenario);
                 logger.debug(
                         StringUtils.buildTimeString("time spawn() = ", System.nanoTime() - time, "ns").toString()
                 );
 
                 time = System.nanoTime();
-                vehicleStepExecutor.updateNodes(scenario.getGraph().getNodeIterator());
+                vehicleStepExecutor.updateNodes(scenario);
                 logger.debug(
                         StringUtils.buildTimeString("time updateNodes() = ", System.nanoTime() - time, "ns").toString()
                 );
             } else {
-                vehicleStepExecutor.willMoveAll(spawnedVehicles.iterator());
-                vehicleStepExecutor.moveAll(spawnedVehicles.iterator());
-                vehicleStepExecutor.didMoveAll(spawnedVehicles.iterator());
-                vehicleStepExecutor.spawnAll(notSpawnedVehicles.iterator());
-                vehicleStepExecutor.updateNodes(scenario.getGraph().getNodeIterator());
+                vehicleStepExecutor.willMoveAll(scenario);
+                vehicleStepExecutor.moveAll(scenario);
+                vehicleStepExecutor.didMoveAll(scenario);
+                vehicleStepExecutor.spawnAll(scenario);
+                vehicleStepExecutor.updateNodes(scenario);
             }
             age++;
         }
