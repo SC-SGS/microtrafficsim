@@ -195,6 +195,23 @@ public class OrthographicView implements View {
 
 
     /**
+     * Centers this view on the specified target, displaying said target with the specified scale factor.
+     *
+     * @param target the target-area to center the view on.
+     * @param scale  the scale at which the target-area should be displayed, relative to this area. A scale of one
+     *               means that the area is displayed in its entirety plus additional margin if the aspect ratio of the
+     *               area does not match the screen. On higher values, only the center of the area will be displayed.
+     */
+    public void show(Rect2d target, float scale) {
+        double sx = (width * scale) / (target.xmax - target.xmin);
+        double sy = (height * scale) / (target.ymax - target.ymin);
+
+        setPosition((target.xmin + target.xmax) / 2.f, (target.ymin + target.ymax) / 2.f);
+        setScale(Math.min(sx, sy));
+    }
+
+
+    /**
      * Updates the projection and view-projection matrices.
      */
     private void updateProjection() {
