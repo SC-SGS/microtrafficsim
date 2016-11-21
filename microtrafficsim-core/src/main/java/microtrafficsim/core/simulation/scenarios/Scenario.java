@@ -1,18 +1,14 @@
 package microtrafficsim.core.simulation.scenarios;
 
-import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.area.Area;
-import microtrafficsim.core.shortestpath.ShortestPathNode;
 import microtrafficsim.core.simulation.builder.Builder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.core.OldSimulation;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 
 import java.util.Collection;
-import java.util.function.Function;
 
 /**
  * <p>

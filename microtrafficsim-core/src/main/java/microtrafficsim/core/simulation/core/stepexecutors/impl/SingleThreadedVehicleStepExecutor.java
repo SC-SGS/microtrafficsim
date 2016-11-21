@@ -5,8 +5,6 @@ import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
-import java.util.Iterator;
-
 
 /**
  * A single-threaded implementation of {@link VehicleStepExecutor}.

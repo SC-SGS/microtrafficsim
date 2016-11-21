@@ -30,9 +30,9 @@ import java.util.function.Supplier;
 public class TCrossroadScenario extends ValidationScenario {
 
     private static final String OSM_FILENAME = "T_crossroad.osm";
-    private Node                bottom       = null;
-    private Node                topRight     = null;
-    private Node                topLeft      = null;
+    private Node bottom       = null;
+    private Node topRight     = null;
+    private Node topLeft      = null;
     private NextScenarioState   nextScenarioState;
 
     /**

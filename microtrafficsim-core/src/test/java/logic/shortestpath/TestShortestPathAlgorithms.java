@@ -44,7 +44,7 @@ public class TestShortestPathAlgorithms {
     private Stack<ShortestPathEdge>     shortestPath;
     private Stack<DirectedEdge>         correctShortestPath;
     private StreetGraph                 graph;
-    private Node                        start, end;
+    private Node start, end;
     private Coordinate                  uselessPosition = new Coordinate(0, 0);
 
     @BeforeClass

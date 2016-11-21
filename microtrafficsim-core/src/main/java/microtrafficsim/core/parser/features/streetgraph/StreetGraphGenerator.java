@@ -144,8 +144,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
         NodeEntity      node1          = dataset.nodes.get(way.nodes[1]);
         NodeEntity      secondLastNode = dataset.nodes.get(way.nodes[way.nodes.length - 2]);
         NodeEntity      lastNode       = dataset.nodes.get(way.nodes[way.nodes.length - 1]);
-        Node            start          = getNode(node0);
-        Node            end            = getNode(lastNode);
+        Node start          = getNode(node0);
+        Node end            = getNode(lastNode);
         StreetComponent streetinfo     = way.get(StreetComponent.class);
 
         // generate edges

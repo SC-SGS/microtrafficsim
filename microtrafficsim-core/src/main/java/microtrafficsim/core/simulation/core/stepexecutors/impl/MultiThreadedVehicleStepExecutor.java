@@ -4,7 +4,6 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.configs.MultiThreadingConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 

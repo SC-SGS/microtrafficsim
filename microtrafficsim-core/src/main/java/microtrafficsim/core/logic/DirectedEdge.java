@@ -22,8 +22,8 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
     private final int maxVelocity;
     private final byte priorityLevel;
     private final Vec2f originDirection, destinationDirection;
-    private Node        origin;
-    private Node        destination;
+    private Node origin;
+    private Node destination;
     private Lane[] lanes;
     // visualization
     private StreetEntity entity;
