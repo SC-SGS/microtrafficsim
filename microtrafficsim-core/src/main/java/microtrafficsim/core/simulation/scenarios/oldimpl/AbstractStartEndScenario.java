@@ -156,7 +156,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
             Node start = bla[0];
             Node end   = bla[1];
             // create route
-            Route route = new Route(start, end);
+            Route<Node> route = new Route<>(start, end);
             scoutFactory.get().findShortestPath(start, end, route);
             // create and add vehicle
             // has permission to create vehicle
@@ -207,7 +207,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
                         end        = bla[1];
                     }
                     // create route
-                    Route route = new Route(start, end);
+                    Route<Node> route = new Route<>(start, end);
                     scoutFactory.get().findShortestPath(start, end, route);
                     // create and add vehicle
                     lock.lock();

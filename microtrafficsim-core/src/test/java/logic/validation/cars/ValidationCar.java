@@ -1,5 +1,6 @@
 package logic.validation.cars;
 
+import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.impl.Car;
@@ -12,11 +13,12 @@ import java.util.function.Function;
  * @author Dominic Parga Cacheiro
  */
 public class ValidationCar extends Car {
-    public ValidationCar(SimulationConfig config, VehicleStateListener stateListener, Route route) {
+    public ValidationCar(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route) {
         super(config, stateListener, route);
     }
 
-    public ValidationCar(SimulationConfig config, VehicleStateListener stateListener, Route route, int spawnDelay) {
+    public ValidationCar(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route, int
+            spawnDelay) {
         super(config, stateListener, route, spawnDelay);
     }
 

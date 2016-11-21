@@ -4,6 +4,7 @@ import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Lane;
+import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.interesting.emotions.Hulk;
@@ -44,7 +45,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     private VehicleStateListener  stateListener;
 
     // routing
-    private Route route;
+    private Route<Node> route;
     private int   age;
 
     // driving behaviour
@@ -63,12 +64,13 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     private boolean lastVelocityWasZero;
 
 
-    public AbstractVehicle(SimulationConfig config, VehicleStateListener stateListener, Route route) {
+    public AbstractVehicle(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route) {
 
         this(config, stateListener, route, 0);
     }
 
-    public AbstractVehicle(SimulationConfig config, VehicleStateListener stateListener, Route route, int spawnDelay) {
+    public AbstractVehicle(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route, int
+            spawnDelay) {
         this.config        = config;
         this.ID            = config.longIDGenerator.next();
         this.stateListener = stateListener;

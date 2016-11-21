@@ -1,5 +1,6 @@
 package microtrafficsim.core.logic.vehicles.impl;
 
+import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
@@ -33,13 +34,13 @@ public class Car extends AbstractVehicle {
     private int          anger;
     private int          totalAnger;
 
-    public Car(SimulationConfig config, VehicleStateListener stateListener, Route route) {
+    public Car(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route) {
         super(config, stateListener, route);
         anger      = 0;
         totalAnger = 0;
     }
 
-    public Car(SimulationConfig config, VehicleStateListener stateListener, Route route, int spawnDelay) {
+    public Car(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route, int spawnDelay) {
         super(config, stateListener, route, spawnDelay);
         anger      = 0;
         totalAnger = 0;

@@ -1,5 +1,6 @@
 package microtrafficsim.core.logic.vehicles.impl;
 
+import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -14,12 +15,12 @@ public class BlockingCar extends Car {
 
     private boolean blocking;
 
-    public BlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route route) {
+    public BlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route) {
         super(config, stateListener, route);
         blocking = false;
     }
 
-    public BlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route route, int spawnDelay) {
+    public BlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route, int spawnDelay) {
         super(config, stateListener, route, spawnDelay);
         blocking = false;
     }

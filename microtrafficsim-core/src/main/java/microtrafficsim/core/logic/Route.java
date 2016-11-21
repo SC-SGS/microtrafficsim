@@ -1,6 +1,7 @@
 package microtrafficsim.core.logic;
 
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
+import microtrafficsim.core.shortestpath.ShortestPathNode;
 
 import java.util.*;
 
@@ -10,10 +11,10 @@ import java.util.*;
  *
  * @author Dominic Parga Cacheiro
  */
-public class Route extends Stack<ShortestPathEdge> {
+public class Route<N extends ShortestPathNode> extends Stack<ShortestPathEdge> {
 
-    private Node                start;
-    private Node                end;
+    private N                start;
+    private N                end;
 
     /**
      * Default constructor.
@@ -21,16 +22,16 @@ public class Route extends Stack<ShortestPathEdge> {
      * @param start Start node of this route.
      * @param end End node of this route (on the ground of the stack)
      */
-    public Route(Node start, Node end) {
+    public Route(N start, N end) {
         this.start = start;
         this.end   = end;
     }
 
-    public Node getStart() {
+    public N getStart() {
         return start;
     }
 
-    public Node getEnd() {
+    public N getEnd() {
         return end;
     }
 

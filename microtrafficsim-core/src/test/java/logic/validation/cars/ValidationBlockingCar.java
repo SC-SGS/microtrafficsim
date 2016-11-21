@@ -1,5 +1,6 @@
 package logic.validation.cars;
 
+import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -12,12 +13,12 @@ public class ValidationBlockingCar extends ValidationCar {
 
     private boolean blocking;
 
-    public ValidationBlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route route) {
+    public ValidationBlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route) {
         super(config, stateListener, route);
         blocking = false;
     }
 
-    public ValidationBlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route route,
+    public ValidationBlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route,
                                  int spawnDelay) {
         super(config, stateListener, route, spawnDelay);
         blocking = false;

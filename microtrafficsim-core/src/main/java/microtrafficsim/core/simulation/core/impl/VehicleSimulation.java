@@ -20,7 +20,7 @@ import java.util.TimerTask;
  *
  * @author Dominic Parga Cacheiro
  */
-public abstract class VehicleSimulation implements Simulation {
+public class VehicleSimulation implements Simulation {
     private Logger logger = LoggerFactory.getLogger(VehicleSimulation.class);
 
     private Scenario scenario;
