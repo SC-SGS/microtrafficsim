@@ -13,10 +13,8 @@ public class VehicleEntity {
 
     private LogicVehicleEntity    logic;
     private VisualizationVehicleEntity visualization;
-    private SimulationConfig      config;
 
-    public VehicleEntity(SimulationConfig config, LogicVehicleEntity logic, VisualizationVehicleEntity visualization) {
-        this.config        = config;
+    public VehicleEntity(LogicVehicleEntity logic, VisualizationVehicleEntity visualization) {
         this.logic         = logic;
         this.visualization = visualization;
     }
@@ -37,14 +35,5 @@ public class VehicleEntity {
      */
     public VisualizationVehicleEntity getVisualization() {
         return visualization;
-    }
-
-    /**
-     * Returns the {@link SimulationConfig} used by this entity.
-     *
-     * @return the {@link SimulationConfig} used by this entity.
-     */
-    public SimulationConfig getConfig() {
-        return config;
     }
 }

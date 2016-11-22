@@ -91,17 +91,6 @@ public class StreetGraph {
     }
 
     /**
-     * This method just calls "vehicle.spawn()". For more information, see
-     * {@link AbstractVehicle}.{@link AbstractVehicle#spawn spawn()}.
-     *
-     * @param vehicle This vehicle should be added to the StreetGraph.
-     * @return True, if spawning was successful; False if despawned.
-     */
-    public boolean addVehicle(AbstractVehicle vehicle) {
-        return vehicle.register();
-    }
-
-    /**
      * This method resets the nodes and edges of the streetgraph. The "new" streetgraph will NOT be identical to the
      * previous one (e.g. random numbers will be different).
      */

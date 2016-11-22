@@ -35,7 +35,6 @@ import java.util.function.Function;
 public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
 
     // general
-    public final SimulationConfig config;
     public final long             ID;
     private final int             spawnDelay;
     private final Object          lock_priorityCounter = new Object();
@@ -64,15 +63,15 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     private boolean lastVelocityWasZero;
 
 
-    public AbstractVehicle(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route) {
+    public AbstractVehicle(long ID, long seed, VehicleStateListener stateListener, Route<Node> route) {
 
-        this(config, stateListener, route, 0);
+        this(ID, seed, stateListener, route, 0);
     }
 
-    public AbstractVehicle(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route, int
+    public AbstractVehicle(long ID, long seed, VehicleStateListener stateListener, Route<Node> route, int
             spawnDelay) {
-        this.config        = config;
-        this.ID            = config.longIDGenerator.next();
+        this.ID            = ID;
+        this.random        = new Random(seed); // TODO
         this.stateListener = stateListener;
         setState(VehicleState.NOT_SPAWNED);
 
@@ -192,7 +191,6 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     @Override
     public void setEntity(VehicleEntity entity) {
         this.entity = entity;
-        random      = entity.getConfig().rndGenGenerator.next();
     }
 
     @Override
@@ -258,7 +256,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
      *
      * @return True, if spawning was successful; False if despawned.
      */
-    public boolean register() {
+    public boolean registerInGraph() {
         if (!route.isEmpty()) {
             route.getStart().registerVehicle(this);
             return true;

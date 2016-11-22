@@ -27,23 +27,6 @@ import java.util.function.Supplier;
 public interface VehicleContainer extends VehicleStateListener {
 
     /**
-     * This method should also ensure that concurrent accesses to this method are handled if needed, e.g. by a lock.
-     * {@link #unlockVehicleFactory()} should be called after using the factory to unlock it.
-     *
-     * @return A factory for creating vehicles' visualizations.
-     */
-    Supplier<VisualizationVehicleEntity> getVehicleFactory();
-
-    /**
-     * This method is only used if the vehicle factory should be unlocked after locking (e.g. in
-     * {@link #getVehicleFactory()}). So default implementation is empty. Extending it must include a new javadoc to
-     * ensure whether this method has to be called or not.
-     */
-    default void unlockVehicleFactory() {
-
-    }
-
-    /**
      * Adds the vehicle as unspawned.
      *
      * @param vehicle Vehicle that has been added to the graph successfully.

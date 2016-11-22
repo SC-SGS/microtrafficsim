@@ -271,11 +271,11 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
      * multiple calls doesn't matter
      *
      * @param area            start field
-     * @param probabilitySize given to {@link WheelOfFortune#addField(Object, int)}
+     * @param probabilitySize given to {@link WheelOfFortune#add(Object, int)}
      */
     protected final void addStartField(Area area, int probabilitySize) {
         startFields.put(area, new ArrayList<>());
-        startWheel.addField(area, probabilitySize);
+        startWheel.add(area, probabilitySize);
     }
 
     /**
@@ -284,7 +284,7 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
      * multiple calls doesn't matter
      *
      * @param area            end field
-     * @param probabilitySize given to {@link WheelOfFortune#addField(Object, int)}
+     * @param probabilitySize given to {@link WheelOfFortune#add(Object, int)}
      */
     protected final void addEndField(Area area, int probabilitySize) {
         endFields.put(area, new ArrayList<>());

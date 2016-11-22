@@ -187,9 +187,4 @@ public class VehicleSimulation implements Simulation {
     public final boolean isPaused() {
         return paused;
     }
-
-    @Override
-    public void stateChanged(AbstractVehicle vehicle) {
-        scenario.getVehicleContainer().stateChanged(vehicle);
-    }
 }

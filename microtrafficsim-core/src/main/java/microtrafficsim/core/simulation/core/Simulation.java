@@ -21,7 +21,7 @@ import java.util.Timer;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface Simulation extends VehicleStateListener {
+public interface Simulation {
 
     /*
     |==========|

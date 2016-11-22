@@ -6,6 +6,7 @@ import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 
+import java.util.Random;
 import java.util.function.Function;
 
 
@@ -34,14 +35,14 @@ public class Car extends AbstractVehicle {
     private int          anger;
     private int          totalAnger;
 
-    public Car(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route) {
-        super(config, stateListener, route);
+    public Car(long ID, Random random, VehicleStateListener stateListener, Route<Node> route) {
+        super(ID, random, stateListener, route);
         anger      = 0;
         totalAnger = 0;
     }
 
-    public Car(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route, int spawnDelay) {
-        super(config, stateListener, route, spawnDelay);
+    public Car(long ID, Random random, VehicleStateListener stateListener, Route<Node> route, int spawnDelay) {
+        super(ID, random, stateListener, route, spawnDelay);
         anger      = 0;
         totalAnger = 0;
     }

@@ -1,7 +1,11 @@
 package microtrafficsim.core.simulation.builder;
 
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.interesting.progressable.ProgressListener;
+
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -24,7 +28,8 @@ public interface Builder {
      * gets prepared again.
      *
      * @param scenario This scenario should be prepared
+     * @param listener This listener should get information about the preparation progress
      * @return The prepared scenario (same reference as the given one, just for practical purposes)
      */
-    Scenario prepare(Scenario scenario);
+    Scenario prepare(final Scenario scenario, final ProgressListener listener);
 }

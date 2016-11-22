@@ -1,6 +1,7 @@
 package microtrafficsim.core.simulation.utils;
 
 import microtrafficsim.core.logic.Node;
+import microtrafficsim.utils.collections.Triple;
 
 /**
  * This interface represents an Origin-Destination-Matrix containing all start nodes as key and all destination
@@ -8,7 +9,7 @@ import microtrafficsim.core.logic.Node;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface ODMatrix extends Iterable<Object> {
+public interface ODMatrix extends Iterable<Triple<Node, Node, Integer>> {
 
     void inc(Node origin, Node destination);
 

@@ -2,6 +2,7 @@ package microtrafficsim.core.simulation.scenarios;
 
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.area.Area;
+import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.Builder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
@@ -9,6 +10,7 @@ import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 /**
  * <p>
@@ -82,9 +84,9 @@ public interface Scenario {
     ODMatrix getODMatrix();
 
     /*
-    |==================|
-    | start/end fields |
-    |==================|
+    |================|
+    | route creation |
+    |================|
     */
     /**
      * @return a predefined collection of origin-areas for creating the {@link ODMatrix} in a {@link Builder}
@@ -95,4 +97,9 @@ public interface Scenario {
      * @return a predefined collection of destination-areas for creating the {@link ODMatrix} in a {@link Builder}
      */
     Collection<Area> getDestinationFields();
+
+    /**
+     * @return A scout factory serving a ready shortest path algorithm for vehicle route calculation
+     */
+    Supplier<ShortestPathAlgorithm> getScoutFactory();
 }

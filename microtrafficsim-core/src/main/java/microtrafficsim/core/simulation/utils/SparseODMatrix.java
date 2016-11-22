@@ -1,6 +1,7 @@
 package microtrafficsim.core.simulation.utils;
 
 import microtrafficsim.core.logic.Node;
+import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.datacollection.Bundle;
 import microtrafficsim.utils.datacollection.Data;
 import microtrafficsim.utils.datacollection.Tag;
@@ -95,19 +96,16 @@ public class SparseODMatrix implements ODMatrix {
     }
 
     /**
-     * <p>
-     * Calling {@link Iterator#next()} three times of this iterator returns the elements of this matrix in the following order: <br>
-     * {@link Node} origin, {@link Node} destination, int count
-     *
-     * @return An iterator with element details described above
+     * @return An iterator with triples of (origin, destination, # of occurrence)
      */
     @Override
-    public Iterator<Object> iterator() {
-        return new Iterator<Object>() {
+    public Iterator<Triple<Node, Node, Integer>> iterator() {
+        return new Iterator<Triple<Node, Node, Integer>>() {
 
             private Iterator<Node>
                     origins              = matrix.keySet().iterator(),
                     current_destinations = null;
+            private Node origin;
 
             @Override
             public boolean hasNext() {
@@ -122,11 +120,16 @@ public class SparseODMatrix implements ODMatrix {
             }
 
             @Override
-            public Object next() {
+            public Triple<Node, Node, Integer> next() {
 
-                // TODO
+                // if and not while, because this class guarantees that every entry has children
+                if (current_destinations == null || !current_destinations.hasNext()) {
+                    origin = origins.next();
+                    current_destinations = matrix.get(origin).keySet().iterator();
+                }
 
-                return null;
+                Node dest = current_destinations.next();
+                return new Triple<>(origin, dest, matrix.get(origin).get(dest));
             }
         };
     }
