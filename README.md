@@ -7,6 +7,9 @@ with OpenStreetMap data.
 We are cleaning up the existing project. This includes detailed Javadocs,
 removing quick fixes or creating branches for them.
 
+In addition to that, the simulation package is being redesigned for better
+maintenance and more flexible code/scenario addition. 
+
 
 ## Demonstration and Examples
 Demonstrations and examples can be executed using `gradle`. All OpenStreetMap
@@ -54,8 +57,7 @@ All following attributes can be en-/disabled.
 
 
 ## Please Note
-This software is still in an experimental state. Due to a few deadlines, the
-documentation is sparse. We are currently working on this.
+This software is still in an experimental state.
 
 
 ## Contributors
