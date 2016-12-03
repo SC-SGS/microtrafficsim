@@ -1,10 +1,9 @@
 package microtrafficsim.core.simulation.configs;
 
-import microtrafficsim.math.random.rndgengenerator.impl.ConcurrentRndGenGenerator;
-import microtrafficsim.math.random.rndgengenerator.RndGenGenerator;
 import microtrafficsim.osm.parser.features.streets.info.StreetType;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
-import microtrafficsim.utils.id.LongIDGenerator;
+import microtrafficsim.utils.id.ConcurrentSeedGenerator;
+import microtrafficsim.utils.id.LongGenerator;
 
 import java.util.Random;
 import java.util.function.Function;
@@ -14,11 +13,11 @@ import java.util.function.Function;
  * <p>
  * This class contains the following simulation parameters/constants like the street priorities. <br>
  * &bull {@link #longIDGenerator} <br>
- * &bull {@link #rndGenGenerator} depends on seed; if you want to set the seed, you also should probably set this
+ * &bull {@link #seedGenerator} depends on seed; if you want to set the seed, you also should probably set this
  * attribute <br>
  * &bull {@link #speedup} a simple factor defining, how many steps should be calculated per second (depending on the cpu etc.,
  * the real speedup could be less) <br>
- * &bull {@link #seed} this seed should be used for random variables and similar tasks; {@link #rndGenGenerator} also depends on
+ * &bull {@link #seed} this seed should be used for random variables and similar tasks; {@link #seedGenerator} also depends on
  * it per default <br>
  * &bull {@link #ageForPause} This attribute can be used to pause a simulation after a certain number of steps <br>
  * &bull {@link #visualization} This configuration object contains attributes relevant for the visualization <br>
@@ -31,14 +30,14 @@ import java.util.function.Function;
  */
 public final class SimulationConfig {
     // general
-    public LongIDGenerator longIDGenerator;
-    public RndGenGenerator rndGenGenerator;
-    public float           metersPerCell;
-    public int             globalMaxVelocity;
+    public LongGenerator longIDGenerator;
+    public LongGenerator seedGenerator;
+    public float         metersPerCell;
+    public int           globalMaxVelocity;
     // todo private int cellNumberScale; (depending on meters per cell!)
-    public int              speedup;
-    public long             seed;// TODO
-    public int              ageForPause;
+    public int            speedup;
+    public long           seed;// TODO
+    public int            ageForPause;
 
     // visualization
     public VisualizationConfig visualization;
@@ -112,7 +111,7 @@ public final class SimulationConfig {
         multiThreading.reset();
         // general
         longIDGenerator = new ConcurrentLongIDGenerator();
-        rndGenGenerator = new ConcurrentRndGenGenerator(seed);
+        seedGenerator = new ConcurrentSeedGenerator(seed);
     }
 
     /**

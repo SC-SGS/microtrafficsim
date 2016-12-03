@@ -25,7 +25,7 @@ import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
-import microtrafficsim.math.random.rndgengenerator.impl.ConcurrentRndGenGenerator;
+import microtrafficsim.utils.id.ConcurrentSeedGenerator;
 import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
@@ -75,7 +75,7 @@ public class Main {
         config.metersPerCell           = 7.5f;
         config.longIDGenerator         = new ConcurrentLongIDGenerator();
         config.seed                    = 1455374755807L;
-        config.rndGenGenerator         = new ConcurrentRndGenGenerator(config.seed);
+        config.rndGenGenerator         = new ConcurrentSeedGenerator(config.seed);
         config.multiThreading.nThreads = 1;
 
         logger.debug("using '" + Long.toHexString(config.seed) + "' as seed");

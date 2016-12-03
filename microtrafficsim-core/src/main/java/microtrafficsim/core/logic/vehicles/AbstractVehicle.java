@@ -65,13 +65,13 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
 
     public AbstractVehicle(long ID, long seed, VehicleStateListener stateListener, Route<Node> route) {
 
-        this(ID, seed, stateListener, route, 0);
+        this(ID, seed, stateListener, route,0);
     }
 
     public AbstractVehicle(long ID, long seed, VehicleStateListener stateListener, Route<Node> route, int
             spawnDelay) {
         this.ID            = ID;
-        this.random        = new Random(seed); // TODO
+        this.random        = new Random(seed);
         this.stateListener = stateListener;
         setState(VehicleState.NOT_SPAWNED);
 

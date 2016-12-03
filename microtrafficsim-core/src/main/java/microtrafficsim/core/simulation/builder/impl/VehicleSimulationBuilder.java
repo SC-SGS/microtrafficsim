@@ -14,6 +14,7 @@ import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
 import microtrafficsim.interesting.progressable.ProgressListener;
+import microtrafficsim.math.Distribution;
 import microtrafficsim.utils.StringUtils;
 import microtrafficsim.utils.collections.Triple;
 import org.slf4j.Logger;
@@ -22,6 +23,11 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
@@ -33,8 +39,10 @@ public class VehicleSimulationBuilder implements Builder {
 
     private Logger logger = LoggerFactory.getLogger(VehicleSimulationBuilder.class);
 
+    private long seed;
+    private Random random;
     // used for printing vehicle creation process
-    private int lastPercentage;
+    private int           lastPercentage;
     private final Integer percentageDelta; // > 0 !!!
     // used for vehicle creation
     private final Supplier<VisualizationVehicleEntity> vehicleFactory;
@@ -42,12 +50,16 @@ public class VehicleSimulationBuilder implements Builder {
     /**
      * Default constructor
      *
+     * @param seed This seed is used for an instance of {@link Random} used for the creation of the
+     *             origin-destination-matrix in {@link #prepare(Scenario, ProgressListener)}
      * @param vehicleFactory is used for creating the visualized component of a vehicle
      */
-    public VehicleSimulationBuilder(Supplier<VisualizationVehicleEntity> vehicleFactory) {
+    public VehicleSimulationBuilder(final long seed, final Supplier<VisualizationVehicleEntity> vehicleFactory) {
 
         lastPercentage  = 0;
         percentageDelta = 5;
+        this.seed = seed;
+        this.random = new Random(seed);
 
         this.vehicleFactory = vehicleFactory;
     }
@@ -106,7 +118,6 @@ public class VehicleSimulationBuilder implements Builder {
             // build matrix
             // ---------- ---------- ---------- ---------- --
             ODMatrix odmatrix = new SparseODMatrix();
-            Random random = scenario.getConfig().rndGenGenerator.next();
             for (int i = 0; i < scenario.getConfig().maxVehicleCount; i++) {
                 int rdmOrig = random.nextInt(origins.size());
                 int rdmDest = random.nextInt(destinations.size());
@@ -150,11 +161,86 @@ public class VehicleSimulationBuilder implements Builder {
                 time_preparation,
                 "ns"
         ).toString());
+
         return scenario;
     }
 
     private void multiThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener) {
-        // TODO
+        SimulationConfig config = scenario.getConfig();
+        // TODO bisher nur reinkopiert, aber man sollte das mit der odmatrix machen
+
+
+        final int                   maxVehicleCount = config.maxVehicleCount;
+        final int                   nThreads        = config.multiThreading.nThreads;
+        ExecutorService pool            = Executors.newFixedThreadPool(nThreads);
+        ArrayList<Callable<Object>> todo            = new ArrayList<>(nThreads);
+
+        // deterministic/pseudo-random route + vehicle generation needs
+        // variables for synchronization:
+        orderIdx                                 = 0;
+        final int[] addedVehicles                = {0};
+        final Object lock_random                 = new Object();
+        final ReentrantLock lock                 = new ReentrantLock(true);
+        final               boolean[] permission = new boolean[nThreads];
+        Condition[] getPermission                = new Condition[nThreads];
+        for (int i = 0; i < getPermission.length; i++) {
+            getPermission[i] = lock.newCondition();
+            permission[i]    = i == 0;
+        }
+        // distribute vehicle generation uniformly over all threads
+        Iterator<Integer> bucketCounts = Distribution.uniformly(maxVehicleCount, nThreads);
+        while (bucketCounts.hasNext()) {
+            int bucketCount = bucketCounts.next();
+
+            todo.add(Executors.callable(() -> {
+                // calculate routes and create vehicles
+                int successfullyAdded = 0;
+                while (successfullyAdded < bucketCount) {
+                    Node start, end;
+                    int  idx;
+                    synchronized (lock_random) {
+                        idx = orderIdx % nThreads;
+                        orderIdx++;
+                        Node[] bla = findRouteNodes();
+                        start      = bla[0];
+                        end        = bla[1];
+                    }
+                    // create route
+                    Route<Node> route = new Route<>(start, end);
+                    scoutFactory.get().findShortestPath(start, end, route);
+                    // create and add vehicle
+                    lock.lock();
+                    // wait for permission
+                    if (!permission[idx]) {
+                        try {
+                            getPermission[idx].await();
+                        } catch (InterruptedException e) { e.printStackTrace(); }
+                    }
+                    // has permission to create vehicle
+                    if (!route.isEmpty()) {
+                        // add route to vehicle and vehicle to graph
+                        createAndAddVehicle(new Car(config, this, route));
+                        successfullyAdded++;
+                        addedVehicles[0]++;
+                    }
+                    // let next thread finish its work
+                    permission[idx] = false;
+                    int nextIdx     = (idx + 1) % nThreads;
+                    if (lock.hasWaiters(getPermission[nextIdx]))
+                        getPermission[nextIdx].signal();
+                    else
+                        permission[nextIdx] = true;
+
+                    lock.unlock();
+
+                    // nice output
+                    logProgress(addedVehicles[0], maxVehicleCount, listener);
+                }
+            }));
+        }
+        try {
+            pool.invokeAll(todo);
+        } catch (InterruptedException e) { e.printStackTrace(); }
     }
 
     private void singleThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener) {
@@ -183,7 +269,8 @@ public class VehicleSimulationBuilder implements Builder {
         VehicleContainer vehicleContainer = scenario.getVehicleContainer();
 
         // create vehicle components
-        AbstractVehicle vehicle = new Car(config, vehicleContainer, route);
+        AbstractVehicle vehicle = new Car(config.longIDGenerator.next(), config.seedGenerator.next(), vehicleContainer,
+                route);
         VisualizationVehicleEntity visCar;
         synchronized (vehicleFactory) {
             visCar = vehicleFactory.get();

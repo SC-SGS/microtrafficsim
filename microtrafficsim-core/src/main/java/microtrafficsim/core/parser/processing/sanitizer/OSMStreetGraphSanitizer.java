@@ -11,7 +11,7 @@ import microtrafficsim.core.parser.processing.GraphNodeComponent;
 import microtrafficsim.core.parser.processing.OSMProcessor;
 import microtrafficsim.core.parser.processing.Ways;
 import microtrafficsim.utils.collections.ArrayUtils;
-import microtrafficsim.utils.id.LongIDGenerator;
+import microtrafficsim.utils.id.LongGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ public class OSMStreetGraphSanitizer implements Processor {
     private static Logger logger = LoggerFactory.getLogger(OSMStreetGraphSanitizer.class);
 
     private FeatureDefinition streetgraph;
-    private LongIDGenerator   idgen;
+    private LongGenerator idgen;
 
     /**
      * Constructs a new sanitizer for the given properties.
@@ -40,7 +40,7 @@ public class OSMStreetGraphSanitizer implements Processor {
      *                    the features belonging to the street-graph.
      * @param idgen       the id-generator used to generate new ids for the ways of the street-graph.
      */
-    public OSMStreetGraphSanitizer(FeatureDefinition streetgraph, LongIDGenerator idgen) {
+    public OSMStreetGraphSanitizer(FeatureDefinition streetgraph, LongGenerator idgen) {
         this.streetgraph = streetgraph;
         this.idgen       = idgen;
     }

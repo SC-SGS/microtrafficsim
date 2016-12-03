@@ -2,13 +2,13 @@ package microtrafficsim.utils.id;
 
 
 /**
- * Simple implementation of the {@code LongIDGenerator}.
+ * Simple implementation of the {@code LongGenerator} returning IDs.
  * This is implementation works by simply incrementing an internal value and
  * thus is not thread-safe.
  *
  * @author Maximilian Luz
  */
-public class BasicLongIDGenerator implements LongIDGenerator {
+public class BasicLongIDGenerator implements LongGenerator {
 
     private long id;
 
