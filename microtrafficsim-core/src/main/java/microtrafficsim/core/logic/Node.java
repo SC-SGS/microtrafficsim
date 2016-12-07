@@ -189,6 +189,16 @@ public class Node implements ShortestPathNode {
         anyChangeSinceUpdate = false;
     }
 
+    /**
+     * <p>
+     *
+     *
+     * <p>
+     * Synchronized is important because the assertion works with the information whether a vehicle is registered or
+     * not.
+     *
+     * @param vehicle This vehicle gets registered in this node.
+     */
     public synchronized void registerVehicle(AbstractVehicle vehicle) {
 
         if (!assessedVehicles.contains(vehicle)) {

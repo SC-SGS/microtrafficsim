@@ -17,6 +17,7 @@ import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.Distribution;
 import microtrafficsim.utils.StringUtils;
 import microtrafficsim.utils.collections.Triple;
+import microtrafficsim.utils.concurrency.delegation.DynamicThreadDelegator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -166,14 +167,46 @@ public class VehicleSimulationBuilder implements Builder {
     }
 
     private void multiThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener) {
-        SimulationConfig config = scenario.getConfig();
+
+        // general attributes for this
+        final SimulationConfig config = scenario.getConfig();
+        Iterator<Triple<Node, Node, Integer>> iterator = scenario.getODMatrix().iterator();
+
+        DynamicThreadDelegator delegator = new DynamicThreadDelegator(config.multiThreading.nThreads);
+        delegator.doTask(triple -> {
+                    // TODO das funktioniert so nicht, denn im iterTask sollten Sachen gespeichert werden, die hier
+                    // TODO verwendet werden :(
+                },
+                iterator,
+                config.multiThreading.vehiclesPerRunnable);
+
+
+
+        // attributes relevant for concurrency
+        ArrayList<Callable<Object>> todo = new ArrayList<>(config.multiThreading.nThreads);
+
+        final long id;
+        final long seed;
+        final Route<Node> route;
+        synchronized (iterator) {
+            id = config.longIDGenerator.next();
+            seed = config.seedGenerator.next();
+            Triple<Node, Node, Integer> triple = iterator.next();
+            route = new Route<>(triple.obj0, triple.obj1);
+        }
+
+        scenario.getScoutFactory().get().findShortestPath(route.getStart(), route.getEnd(), route);
+        createAndAddVehicle(id, seed, route, scenario);
+
+
+
+
         // TODO bisher nur reinkopiert, aber man sollte das mit der odmatrix machen
 
 
         final int                   maxVehicleCount = config.maxVehicleCount;
-        final int                   nThreads        = config.multiThreading.nThreads;
-        ExecutorService pool            = Executors.newFixedThreadPool(nThreads);
-        ArrayList<Callable<Object>> todo            = new ArrayList<>(nThreads);
+        final int nThreads        = config.multiThreading.nThreads;
+        ExecutorService pool = Executors.newFixedThreadPool(nThreads);
 
         // deterministic/pseudo-random route + vehicle generation needs
         // variables for synchronization:
@@ -256,21 +289,24 @@ public class VehicleSimulationBuilder implements Builder {
             for (int i = 0; i < routeCount; i++) {
                 Route<Node> route = new Route<>(start, end);
                 scenario.getScoutFactory().get().findShortestPath(start, end, route);
-                createAndAddVehicle(scenario, route);
+                createAndAddVehicle(
+                        scenario.getConfig().longIDGenerator.next(),
+                        scenario.getConfig().seedGenerator.next(),
+                        route,
+                        scenario
+                );
                 logProgress(vehicleCount, scenario.getConfig().maxVehicleCount, listener);
             }
         }
     }
 
-    private void createAndAddVehicle(Scenario scenario, Route<Node> route) {
+    private void createAndAddVehicle(final long id, final long seed, Route<Node> route, Scenario scenario) {
 
         // init stuff
-        SimulationConfig config = scenario.getConfig();
         VehicleContainer vehicleContainer = scenario.getVehicleContainer();
 
         // create vehicle components
-        AbstractVehicle vehicle = new Car(config.longIDGenerator.next(), config.seedGenerator.next(), vehicleContainer,
-                route);
+        AbstractVehicle vehicle = new Car(id, seed, vehicleContainer, route);
         VisualizationVehicleEntity visCar;
         synchronized (vehicleFactory) {
             visCar = vehicleFactory.get();

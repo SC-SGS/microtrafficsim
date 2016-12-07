@@ -40,7 +40,7 @@
  * "
  */
 
-package microtrafficsim.utils.concurrency;
+package microtrafficsim.utils.concurrency.interruptsafe;
 
 import java.util.concurrent.*;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;

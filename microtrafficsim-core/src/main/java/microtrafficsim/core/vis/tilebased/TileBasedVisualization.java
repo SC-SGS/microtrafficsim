@@ -12,7 +12,7 @@ import microtrafficsim.core.vis.input.KeyController;
 import microtrafficsim.core.vis.input.OrthoInputController;
 import microtrafficsim.core.vis.map.tiles.TileProvider;
 import microtrafficsim.core.vis.view.OrthographicView;
-import microtrafficsim.utils.concurrency.InterruptSafeExecutors;
+import microtrafficsim.utils.concurrency.interruptsafe.InterruptSafeExecutors;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
