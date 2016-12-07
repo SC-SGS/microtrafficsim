@@ -171,22 +171,57 @@ public class VehicleSimulationBuilder implements Builder {
         // general attributes for this
         final SimulationConfig config = scenario.getConfig();
         Iterator<Triple<Node, Node, Integer>> iterator = scenario.getODMatrix().iterator();
-
+        // create vehicles multithreaded
+        final long[] id = new long[1];
+        final long[] seed = new long[1];
         DynamicThreadDelegator delegator = new DynamicThreadDelegator(config.multiThreading.nThreads);
         delegator.doTask(triple -> {
-                    // TODO das funktioniert so nicht, denn im iterTask sollten Sachen gespeichert werden, die hier
-                    // TODO verwendet werden :(
+                    Route<Node> route = new Route<>(triple.obj0, triple.obj1);
+                    scenario.getScoutFactory().get().findShortestPath(route.getStart(), route.getEnd(), route);
+                    createAndAddVehicle(id[0], seed[0], route, scenario);
+                    logProgress();
+
+
+
+
+                    Node start = triple.obj0;
+                    Node end = triple.obj1;
+                    int routeCount = triple.obj2;
+
+                    for (int i = 0; i < routeCount; i++) {
+                        Route<Node> route = new Route<>(start, end);
+                        scenario.getScoutFactory().get().findShortestPath(start, end, route);
+                        createAndAddVehicle(
+                                id[0],
+                                seed[0],
+                                route,
+                                scenario
+                        );
+                        logProgress(vehicleCount, scenario.getConfig().maxVehicleCount, listener);
+                    }
+
+                    vehicleCount += routeCount;
+
+
+
                 },
                 iterator,
+                tripleIterator -> {
+                    id[0] = config.longIDGenerator.next();
+                    seed[0] = config.seedGenerator.next();
+                    return tripleIterator.next();
+                },
                 config.multiThreading.vehiclesPerRunnable);
+
+
+
+
+
 
 
 
         // attributes relevant for concurrency
         ArrayList<Callable<Object>> todo = new ArrayList<>(config.multiThreading.nThreads);
-
-        final long id;
-        final long seed;
         final Route<Node> route;
         synchronized (iterator) {
             id = config.longIDGenerator.next();
@@ -297,6 +332,8 @@ public class VehicleSimulationBuilder implements Builder {
                 );
                 logProgress(vehicleCount, scenario.getConfig().maxVehicleCount, listener);
             }
+
+            vehicleCount += routeCount;
         }
     }
 

@@ -35,14 +35,5 @@ public class Route<N extends ShortestPathNode> extends Stack<ShortestPathEdge> {
         return end;
     }
 
-    public int calcLength() {
-        Iterator<ShortestPathEdge> iter = iterator();
 
-        int len = 0;
-        while (iter.hasNext()) {
-            len = len + iter.next().getLength();
-        }
-
-        return len;
-    }
 }

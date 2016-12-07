@@ -83,9 +83,46 @@ public class Node implements ShortestPathNode {
     | crossing logic |
     |================|
     */
+    /**
+     * <p>
+     * Rules:<br>
+     * &bull two not-spawned vehicles are compared by their IDs. The greater ID wins.<br>
+     * &bull spawned vehicles gets priority over not spawned vehicles. This makes sense when thinking about the
+     * situation, when you want to enter the street from your private parking place.<br>
+     * &bull two spawned vehicles means they are coming from a street and want to make a turn. Thus they have to be
+     * compared by the crossing logic (below).<br>
+     * IMPORTANT: The registration does NOT check the positions relative to each other vehicle ON THE STREET, but it
+     * checks/compares all information relevant for the crossing itself.
+     *
+     * <p>
+     * At first, the crossing logic checks whether the two vehicles' turning ways are crossing each other (otherwise
+     * return 0). If they are crossing, the origin-priorities are compared. If equal, the destination-priorities are
+     * compared. If equal, they have to be compared by right-before-left or randomly. All sub-comparisons can be
+     * enabled/disabled with the {@link SimulationConfig}.
+     *
+     * @return a comparator for two vehicles comparing their priority in a crossing situation
+     */
     private Comparator<AbstractVehicle> generateCrossingLogic() {
         return (v1, v2) -> {
-            // there is always a current edge and a next edge per vehicle
+            // main rules:
+            // (1) two not-spawned vehicles are compared by their IDs. The greater ID wins.
+            // (2) spawned vehicles before not spawned vehicles
+            // (3) two spawned vehicles => comparator
+
+            if (v1.getState() != VehicleState.SPAWNED) {
+                if (v2.getState() != VehicleState.SPAWNED) {
+                    // (1) v1 is NOT SPAWNED, v2 is NOT SPAWNED
+                    return Long.compare(v1.ID, v2.ID);
+                } else {
+                    // (2) v1 is NOT SPAWNED, v2 is SPAWNED
+                    return -1;
+                }
+            } else if (v2.getState() != VehicleState.SPAWNED) {
+                // (2) v1 is SPAWNED, v2 is NOT SPAWNED
+                return 1;
+            }
+
+            // (3) both SPAWNED => there is always a current edge and a next edge per vehicle
             byte origin1        = incomingEdges.get(v1.getDirectedEdge());
             byte destination1   = leavingEdges.get(v1.peekNextRouteSection());
             byte origin2        = incomingEdges.get(v2.getDirectedEdge());
@@ -113,10 +150,9 @@ public class Node implements ShortestPathNode {
                             // random
                             return random.nextInt(3) - 1;
                         }
-                    } else
-                        return cmp;
-                } else
-                    return cmp;
+                    }
+                }
+                return cmp;
             }
             return 0;
         };
@@ -191,84 +227,69 @@ public class Node implements ShortestPathNode {
 
     /**
      * <p>
-     *
+     * Registers the given vehicle at this node. For more information about the comparison itself, see
+     * {@link #generateCrossingLogic()}.
      *
      * <p>
-     * Synchronized is important because the assertion works with the information whether a vehicle is registered or
-     * not.
+     * This method is synchronized because the assertion works with the information whether a vehicle is registered or
+     * not => access should be after registration has finished.
      *
-     * @param vehicle This vehicle gets registered in this node.
+     * @param newVehicle This vehicle gets registered in this node.
      */
-    public synchronized void registerVehicle(AbstractVehicle vehicle) {
+    public synchronized void registerVehicle(AbstractVehicle newVehicle) {
 
-        if (!assessedVehicles.contains(vehicle)) {
+        if (!assessedVehicles.contains(newVehicle)) {
             // calculate priority counter
-            vehicle.resetPriorityCounter();
-            for (AbstractVehicle v : assessedVehicles) {
-                // main rules:
-                // 1) spawned vehicles before not spawned vehicles
-                // 2) registered, not spawned vehicles before new not-spawned
-                // ones
-                // => only the first vehicle, that wants to spawn, can do this
-                // 3) two spawned vehicles => comparator
+            newVehicle.resetPriorityCounter();
+            for (AbstractVehicle assessedVehicle : assessedVehicles) {
 
-                // 1) + 2)
-                if (vehicle.getState() != VehicleState.SPAWNED) {
-                    vehicle.decPriorityCounter();
-                    v.incPriorityCounter();
-                }    // 1) if new vehicle has spawned and registered one wants to
-                else if (v.getState() != VehicleState.SPAWNED) {
-                    vehicle.incPriorityCounter();
-                    v.decPriorityCounter();
-                }    // 3)
-                else {
-                    int cmp = crossingLogic.compare(vehicle, v);
-                    if (cmp > 0) {
-                        vehicle.incPriorityCounter();
-                        v.decPriorityCounter();
-                    } else if (cmp < 0) {
-                        vehicle.decPriorityCounter();
-                        v.incPriorityCounter();
-                    } else {
-                        vehicle.incPriorityCounter();
-                        v.incPriorityCounter();
-                    }
+                int cmp = crossingLogic.compare(newVehicle, assessedVehicle);
+                if (cmp > 0) {
+                    newVehicle.incPriorityCounter();
+                    assessedVehicle.decPriorityCounter();
+                } else if (cmp < 0) {
+                    newVehicle.decPriorityCounter();
+                    assessedVehicle.incPriorityCounter();
+                } else {
+                    newVehicle.incPriorityCounter();
+                    assessedVehicle.incPriorityCounter();
                 }
             }
-            assessedVehicles.add(vehicle);
+            assessedVehicles.add(newVehicle);
             anyChangeSinceUpdate = true;
         }
     }
 
     public synchronized void deregisterVehicle(AbstractVehicle vehicle) {
-
+        // TODO register läuft über crossingLogic.compare(...)
+        // TODO aber deregister noch nicht!
         if (assessedVehicles.remove(vehicle)) {
-            for (AbstractVehicle v : assessedVehicles) {
+            for (AbstractVehicle assessedVehicle : assessedVehicles) {
                 if (vehicle.getState() != VehicleState.SPAWNED) {
-                    if (v.getState() != VehicleState.SPAWNED) {
-                        // if vehicle and v are not spawned, the older one was prefered
+                    if (assessedVehicle.getState() != VehicleState.SPAWNED) {
+                        // if vehicle and assessedVehicle are not spawned, the older one was prefered
                         // => the older one has a higher priority counter
-                        if (vehicle.getPriorityCounter() > v.getPriorityCounter())
-                            v.incPriorityCounter();
+                        if (vehicle.getPriorityCounter() > assessedVehicle.getPriorityCounter())
+                            assessedVehicle.incPriorityCounter();
                         else
-                            v.decPriorityCounter();
+                            assessedVehicle.decPriorityCounter();
                     } else {
-                        // v has been the winner, but because vehicle is not
-                        // spawned yet, there can not exist a v
+                        // assessedVehicle has been the winner, but because vehicle is not
+                        // spawned yet, there can not exist a assessedVehicle
                         // => else should not be possible
-                        v.decPriorityCounter();
+                        assessedVehicle.decPriorityCounter();
                     }
                 } else {
-                    if (v.getState() != VehicleState.SPAWNED) {
-                        v.incPriorityCounter();
+                    if (assessedVehicle.getState() != VehicleState.SPAWNED) {
+                        assessedVehicle.incPriorityCounter();
                     } else {
-                        int cmp = crossingLogic.compare(vehicle, v);
+                        int cmp = crossingLogic.compare(vehicle, assessedVehicle);
                         if (cmp > 0) {
-                            v.incPriorityCounter();
+                            assessedVehicle.incPriorityCounter();
                         } else if (cmp < 0) {
-                            v.decPriorityCounter();
+                            assessedVehicle.decPriorityCounter();
                         } else {
-                            v.decPriorityCounter();
+                            assessedVehicle.decPriorityCounter();
                         }
                     }
                 }

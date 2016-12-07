@@ -99,7 +99,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
-    public static void validateDashAndDawdleFactors(float dashFactor, float dawdleFactor) throws Exception {
+    protected static void validateDashAndDawdleFactors(float dashFactor, float dawdleFactor) throws Exception {
         if (dashFactor + dawdleFactor > 1) throw new Exception("(dash factor + dawdle factor) has to be <= 1");
         if (dashFactor < 0) throw new Exception("Dash factor has to be positive.");
         if (dawdleFactor < 0) throw new Exception("Dawdle factor has to be positive.");
@@ -418,9 +418,8 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
             if (!route.isEmpty()) {
                 int distance    = lane.getAssociatedEdge().getLength() - cellPosition;
                 int maxVelocity = Math.min(getMaxVelocity(), lane.getAssociatedEdge().getMaxVelocity());
-                if (maxVelocity >= distance && vehicleInFront == null) {
+                if (maxVelocity >= distance && vehicleInFront == null)
                     lane.getAssociatedEdge().getDestination().registerVehicle(this);
-                }
             }
         }
     }
