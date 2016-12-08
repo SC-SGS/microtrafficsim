@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * <p>
@@ -17,6 +16,8 @@ import java.util.function.Function;
  * <p>
  * The other way is implemented in {@link StaticThreadDelegator}. This ThreadDelegator is called static, because it
  * creates lists of elements until no element is left, only then it starts working the tasks off.
+ *
+ * @author Dominic Parga Cacheiro
  */
 public class DynamicThreadDelegator implements ThreadDelegator {
 
@@ -27,7 +28,7 @@ public class DynamicThreadDelegator implements ThreadDelegator {
     }
 
     public DynamicThreadDelegator(int nThreads) {
-        this.pool = new FixedThreadPool(nThreads);
+        this(new FixedThreadPool(nThreads));
     }
 
     /*
@@ -42,14 +43,6 @@ public class DynamicThreadDelegator implements ThreadDelegator {
      */
     @Override
     public <T> void doTask(Consumer<T> elementTask, Iterator<T> iter, int elementCount) {
-        doTask(elementTask, iter, Iterator::next, elementCount);
-    }
-
-    @Override
-    public <T> void doTask(Consumer<T> elementTask,
-                           Iterator<T> iter,
-                           Function<Iterator<T>, T> iterNextTask,
-                           int elementCount) {
 
         ArrayList<Callable<Object>> tasks = new ArrayList<>(pool.nThreads);
 
@@ -62,7 +55,7 @@ public class DynamicThreadDelegator implements ThreadDelegator {
                         synchronized (iter) {
                             if (!iter.hasNext())
                                 break;
-                            list.add(iterNextTask.apply(iter));
+                            list.add(iter.next());
                         }
                     list.forEach(elementTask);
                 } while (iter.hasNext());

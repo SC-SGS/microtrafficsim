@@ -21,14 +21,4 @@ public interface ThreadDelegator {
      * @param <T> Anything that should be part of this task
      */
     <T> void doTask(Consumer<T> elementTask, Iterator<T> iter, int elementCount);
-
-    /**
-     * @param elementTask
-     * @param iter
-     * @param iterNextTask This function can be used as wrapper for the {@link Iterator#next()} operation and
-     *                     should return this item
-     * @param elementCount This is the number of elements that should be executed in one go
-     * @param <T> Anything that should be part of this task
-     */
-    <T> void doTask(Consumer<T> elementTask, Iterator<T> iter, Function<Iterator<T>, T> iterNextTask, int elementCount);
 }

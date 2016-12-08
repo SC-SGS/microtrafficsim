@@ -20,6 +20,8 @@ import java.util.function.Consumer;
  * The other way is implemented in {@link DynamicThreadDelegator}. This ThreadDelegator is called dynamic, because
  * the iterator is worked off dynamically: every task says, take a certain number of elements from the iterator and
  * work them off. After this, take the next elements and do the same.
+ *
+ * @author Dominic Parga Cacheiro
  */
 public class StaticThreadDelegator implements ThreadDelegator {
 
