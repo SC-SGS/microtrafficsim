@@ -7,6 +7,7 @@ import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.map.area.Area;
+import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.Builder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
@@ -24,9 +25,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
@@ -170,145 +171,36 @@ public class VehicleSimulationBuilder implements Builder {
 
         // general attributes for this
         final SimulationConfig config = scenario.getConfig();
-        Iterator<Triple<Node, Node, Integer>> iterator = scenario.getODMatrix().iterator();
-        // create vehicles multithreaded
-        final long[] id = new long[1];
-        final long[] seed = new long[1];
-        DynamicThreadDelegator delegator = new DynamicThreadDelegator(config.multiThreading.nThreads);
-        delegator.doTask(triple -> {
-                    Route<Node> route = new Route<>(triple.obj0, triple.obj1);
-                    scenario.getScoutFactory().get().findShortestPath(route.getStart(), route.getEnd(), route);
-                    createAndAddVehicle(id[0], seed[0], route, scenario);
-                    logProgress();
+        lastPercentage = 0;
+        final AtomicInteger finishedVehiclesCount = new AtomicInteger(0);
 
+        // create vehicles with empty routes and add them to the scenario (sequentially for determinism)
+        for (Triple<Node, Node, Integer> triple : scenario.getODMatrix()) {
+            Node start = triple.obj0;
+            Node end = triple.obj1;
+            int routeCount = triple.obj2;
 
+            for (int i = 0; i < routeCount; i++) { // "synchronized"
+                long id = config.longIDGenerator.next();
+                long seed = config.seedGenerator.next();
+                Route<Node> route = new Route<>(start, end);
+                AbstractVehicle vehicle = createVehicle(id, seed, route, scenario);
+                scenario.getVehicleContainer().addVehicle(vehicle);
+            }
+        }
 
-
-                    Node start = triple.obj0;
-                    Node end = triple.obj1;
-                    int routeCount = triple.obj2;
-
-                    for (int i = 0; i < routeCount; i++) {
-                        Route<Node> route = new Route<>(start, end);
-                        scenario.getScoutFactory().get().findShortestPath(start, end, route);
-                        createAndAddVehicle(
-                                id[0],
-                                seed[0],
-                                route,
-                                scenario
-                        );
-                        logProgress(vehicleCount, scenario.getConfig().maxVehicleCount, listener);
-                    }
-
-                    vehicleCount += routeCount;
-
-
-
+        // calculate routes multithreaded
+        new DynamicThreadDelegator(config.multiThreading.nThreads).doTask(
+                vehicle -> {
+                    ShortestPathAlgorithm scout = scenario.getScoutFactory().get();
+                    Route<Node> route = vehicle.getRoute();
+                    scout.findShortestPath(route.getStart(), route.getEnd(), route);
+                    vehicle.registerInGraph();
+                    int bla = finishedVehiclesCount.incrementAndGet();
+                    logProgress(bla, config.maxVehicleCount, listener);
                 },
-                iterator,
-                tripleIterator -> {
-                    id[0] = config.longIDGenerator.next();
-                    seed[0] = config.seedGenerator.next();
-                    return tripleIterator.next();
-                },
+                scenario.getVehicleContainer().getVehicles().iterator(),
                 config.multiThreading.vehiclesPerRunnable);
-
-
-
-
-
-
-
-
-        // attributes relevant for concurrency
-        ArrayList<Callable<Object>> todo = new ArrayList<>(config.multiThreading.nThreads);
-        final Route<Node> route;
-        synchronized (iterator) {
-            id = config.longIDGenerator.next();
-            seed = config.seedGenerator.next();
-            Triple<Node, Node, Integer> triple = iterator.next();
-            route = new Route<>(triple.obj0, triple.obj1);
-        }
-
-        scenario.getScoutFactory().get().findShortestPath(route.getStart(), route.getEnd(), route);
-        createAndAddVehicle(id, seed, route, scenario);
-
-
-
-
-        // TODO bisher nur reinkopiert, aber man sollte das mit der odmatrix machen
-
-
-        final int                   maxVehicleCount = config.maxVehicleCount;
-        final int nThreads        = config.multiThreading.nThreads;
-        ExecutorService pool = Executors.newFixedThreadPool(nThreads);
-
-        // deterministic/pseudo-random route + vehicle generation needs
-        // variables for synchronization:
-        orderIdx                                 = 0;
-        final int[] addedVehicles                = {0};
-        final Object lock_random                 = new Object();
-        final ReentrantLock lock                 = new ReentrantLock(true);
-        final               boolean[] permission = new boolean[nThreads];
-        Condition[] getPermission                = new Condition[nThreads];
-        for (int i = 0; i < getPermission.length; i++) {
-            getPermission[i] = lock.newCondition();
-            permission[i]    = i == 0;
-        }
-        // distribute vehicle generation uniformly over all threads
-        Iterator<Integer> bucketCounts = Distribution.uniformly(maxVehicleCount, nThreads);
-        while (bucketCounts.hasNext()) {
-            int bucketCount = bucketCounts.next();
-
-            todo.add(Executors.callable(() -> {
-                // calculate routes and create vehicles
-                int successfullyAdded = 0;
-                while (successfullyAdded < bucketCount) {
-                    Node start, end;
-                    int  idx;
-                    synchronized (lock_random) {
-                        idx = orderIdx % nThreads;
-                        orderIdx++;
-                        Node[] bla = findRouteNodes();
-                        start      = bla[0];
-                        end        = bla[1];
-                    }
-                    // create route
-                    Route<Node> route = new Route<>(start, end);
-                    scoutFactory.get().findShortestPath(start, end, route);
-                    // create and add vehicle
-                    lock.lock();
-                    // wait for permission
-                    if (!permission[idx]) {
-                        try {
-                            getPermission[idx].await();
-                        } catch (InterruptedException e) { e.printStackTrace(); }
-                    }
-                    // has permission to create vehicle
-                    if (!route.isEmpty()) {
-                        // add route to vehicle and vehicle to graph
-                        createAndAddVehicle(new Car(config, this, route));
-                        successfullyAdded++;
-                        addedVehicles[0]++;
-                    }
-                    // let next thread finish its work
-                    permission[idx] = false;
-                    int nextIdx     = (idx + 1) % nThreads;
-                    if (lock.hasWaiters(getPermission[nextIdx]))
-                        getPermission[nextIdx].signal();
-                    else
-                        permission[nextIdx] = true;
-
-                    lock.unlock();
-
-                    // nice output
-                    logProgress(addedVehicles[0], maxVehicleCount, listener);
-                }
-            }));
-        }
-        try {
-            pool.invokeAll(todo);
-        } catch (InterruptedException e) { e.printStackTrace(); }
     }
 
     private void singleThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener) {
@@ -322,14 +214,13 @@ public class VehicleSimulationBuilder implements Builder {
             int routeCount = triple.obj2;
 
             for (int i = 0; i < routeCount; i++) {
+                long id = scenario.getConfig().longIDGenerator.next();
+                long seed = scenario.getConfig().seedGenerator.next();
                 Route<Node> route = new Route<>(start, end);
+                AbstractVehicle vehicle = createVehicle(id, seed, route, scenario);
+                scenario.getVehicleContainer().addVehicle(vehicle);
                 scenario.getScoutFactory().get().findShortestPath(start, end, route);
-                createAndAddVehicle(
-                        scenario.getConfig().longIDGenerator.next(),
-                        scenario.getConfig().seedGenerator.next(),
-                        route,
-                        scenario
-                );
+                vehicle.registerInGraph();
                 logProgress(vehicleCount, scenario.getConfig().maxVehicleCount, listener);
             }
 
@@ -337,7 +228,7 @@ public class VehicleSimulationBuilder implements Builder {
         }
     }
 
-    private void createAndAddVehicle(final long id, final long seed, Route<Node> route, Scenario scenario) {
+    private AbstractVehicle createVehicle(final long id, final long seed, Route<Node> route, Scenario scenario) {
 
         // init stuff
         VehicleContainer vehicleContainer = scenario.getVehicleContainer();
@@ -354,19 +245,15 @@ public class VehicleSimulationBuilder implements Builder {
         vehicle.setEntity(entity);
         visCar.setEntity(entity);
 
-        // add to graph
-        if (vehicle.registerInGraph())
-            vehicleContainer.addVehicle(vehicle);
+        return vehicle;
     }
 
-    private void logProgress(int finished, int total, ProgressListener listener) {
+    private synchronized void logProgress(int finished, int total, ProgressListener listener) {
         int percentage = (100 * finished) / total;
-        synchronized (percentageDelta) {
-            if (percentage - lastPercentage >= percentageDelta) {
-                logger.info(percentage + "% vehicles created.");
-                if (listener != null) listener.didProgress(percentage);
-                lastPercentage += percentageDelta;
-            }
+        if (percentage - lastPercentage >= percentageDelta) {
+            logger.info(percentage + "% vehicles created.");
+            if (listener != null) listener.didProgress(percentage);
+            lastPercentage += percentageDelta;
         }
     }
 }

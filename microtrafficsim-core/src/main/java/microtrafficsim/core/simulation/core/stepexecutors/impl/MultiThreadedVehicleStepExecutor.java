@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.utils.concurrency.delegation.DynamicThreadDelegator;
+import microtrafficsim.utils.concurrency.delegation.StaticThreadDelegator;
 import microtrafficsim.utils.concurrency.delegation.ThreadDelegator;
 
 import java.util.concurrent.ExecutorService;
@@ -21,8 +22,12 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
     private final ThreadDelegator delegator;
 
     public MultiThreadedVehicleStepExecutor(int nThreads) {
-//        delegator = new StaticThreadDelegator(nThreads);
-        delegator = new DynamicThreadDelegator(nThreads);
+//        this(new StaticThreadDelegator(nThreads));
+        this(new DynamicThreadDelegator(nThreads));
+    }
+
+    public MultiThreadedVehicleStepExecutor(ThreadDelegator delegator) {
+        this.delegator = delegator;
     }
 
     @Override

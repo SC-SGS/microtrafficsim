@@ -30,8 +30,7 @@ public class Node implements ShortestPathNode {
     private HashMap<Lane, ArrayList<Lane>> restrictions;
 
     // crossing logic
-    private HashSet<AbstractVehicle>    assessedVehicles;
-    private HashSet<AbstractVehicle>    maxPrioVehicles;
+    private HashSet<AbstractVehicle>    maxPrioVehicles, assessedVehicles, newRegisteredVehicles, trashVehicles;
     private Comparator<AbstractVehicle> crossingLogic;
     private boolean                     anyChangeSinceUpdate;
 
@@ -47,14 +46,16 @@ public class Node implements ShortestPathNode {
     public Node(SimulationConfig config, Coordinate coordinate) {
         this.config     = config;
         ID              = config.longIDGenerator.next();
-        random          = config.rndGenGenerator.next();
+        random          = new Random(config.seedGenerator.next()); // TODO determinism => remember seed
         this.coordinate = coordinate;
 
         // crossing logic
-        assessedVehicles     = new HashSet<>();
-        maxPrioVehicles      = new HashSet<>();
-        crossingLogic        = generateCrossingLogic();
-        anyChangeSinceUpdate = false;
+        assessedVehicles      = new HashSet<>();
+        maxPrioVehicles       = new HashSet<>();
+        newRegisteredVehicles = new HashSet<>();
+        trashVehicles         = new HashSet<>();
+        crossingLogic         = generateCrossingLogic();
+        anyChangeSinceUpdate  = false;
 
         // edges
         restrictions  = new HashMap<>();
@@ -163,65 +164,139 @@ public class Node implements ShortestPathNode {
      * guaranteed, that it will be identical.
      */
     void reset() {
-        random = config.rndGenGenerator.next();
+        random = new Random(config.seedGenerator.next()); // TODO determinism => remember seed
 
         // crossing logic
         assessedVehicles.clear();
         maxPrioVehicles.clear();
+        newRegisteredVehicles.clear();
+        trashVehicles.clear();
         anyChangeSinceUpdate = false;
     }
 
-    public void update() {
+    /**
+     *
+     */
+    public synchronized void update() {
 
+        /*
+        |==============|
+        | remove trash |
+        |==============|
+        */
+        // if there is trash => assess all vehicles; due to random comparison, you can't trace back which vehicle
+        // has won
+        if (!trashVehicles.isEmpty()) {
+            // reset assessed vehicles due to random
+            for (AbstractVehicle vehicle : assessedVehicles) {
+                if (!trashVehicles.contains(vehicle)) {
+                    newRegisteredVehicles.add(vehicle);
+                    vehicle.resetPriorityCounter();
+                }
+            }
+
+            assessedVehicles.clear();
+            trashVehicles.clear();
+        }
+
+        /*
+        |===========|
+        | assertion |
+        |===========|
+        */
+        // if there are new vehicles => assess them
+        if (!newRegisteredVehicles.isEmpty()) {
+            for (AbstractVehicle newVehicle : newRegisteredVehicles) {
+                // invariant: every vehicle in newRegisteredVehicles has a reset priority counter
+                for (AbstractVehicle assessedVehicle : assessedVehicles) {
+
+                    int cmp = crossingLogic.compare(newVehicle, assessedVehicle);
+                    if (cmp > 0) {
+                        newVehicle.incPriorityCounter();
+                        assessedVehicle.decPriorityCounter();
+                    } else if (cmp < 0) {
+                        newVehicle.decPriorityCounter();
+                        assessedVehicle.incPriorityCounter();
+                    } else {
+                        newVehicle.incPriorityCounter();
+                        assessedVehicle.incPriorityCounter();
+                    }
+                }
+                assessedVehicles.add(newVehicle);
+            }
+
+            newRegisteredVehicles.clear();
+        }
+
+        // TODO hier hab ich aufgehört; möglicherweise kann das aber genau so bleiben.
+        /*
+        |==============================|
+        | find max prioritized vehicle |
+        |==============================|
+        */
         if (!assessedVehicles.isEmpty()) {
             maxPrioVehicles.clear();
-            Iterator<AbstractVehicle> iter = assessedVehicles.iterator();
 
             // get vehicles with max prio
-            int     maxPrio                  = Integer.MIN_VALUE;
-            boolean goWithoutPriorityEnabled = config.crossingLogic.friendlyStandingInJamEnabled;
-            while (iter.hasNext()) {
-                AbstractVehicle v = iter.next();
-                // if
-                // priority is higher than current highest priority
-                if (maxPrio <= v.getPriorityCounter()) {
-                    // if
-                    // next route has space for current vehicle
-                    // BUT
-                    // configs has to be false to enable going without priority:
-                    // false <=>  config.friendlyStandingInJamEnabled && !anyChangeSinceUpdate
-                    // true  <=> !config.friendlyStandingInJamEnabled || anyChangeSinceUpdate
-                    if (!goWithoutPriorityEnabled || anyChangeSinceUpdate
-                        || v.peekNextRouteSection().getLane(0).getMaxInsertionIndex() >= 0) {
-                        if (maxPrio < v.getPriorityCounter()) {
-                            maxPrioVehicles.clear();
-                            maxPrio = v.getPriorityCounter();
+            int maxPrio = Integer.MIN_VALUE;
+            for (AbstractVehicle vehicle : assessedVehicles) {
+                if (maxPrio <= vehicle.getPriorityCounter()) {
+                    // For all vehicles until now: the current vehicle is allowed to drive regarding priority.
+                    // BUT: it is still NOT allowed if all of the following conditions are true
+
+                    // PRO-TIP: Read the following statements as "if condition (1) is false, the case is clear and
+                    // vehicle gets permission. If it is true but condition (2) is false, the case is clear and vehicle
+                    // gets permission. If it is true as well but condition (3) is false, the case is clear and vehicle
+                    // gets permission."
+
+                    // (1) no change since last update
+                    // (2) no space for the vehicle at the next road
+                    // (3) friendly standing in jam is enabled; the effect of this boolean points out if it is false,
+                    // because then, a vehicle is taken into account although it has no space at the next road
+
+                    // (1)
+                    if (!anyChangeSinceUpdate) {
+                        // (3), different order than above for better performance
+                        if (config.crossingLogic.friendlyStandingInJamEnabled)
+                            // (2), different order than above for better performance
+                            if (!(vehicle.peekNextRouteSection().getLane(0).getMaxInsertionIndex() >= 0)) {
+                                continue;
                         }
-                        maxPrioVehicles.add(v);
                     }
+
+                    // if priority is truly greater than current max => remove all current vehicles of max priority
+                    if (maxPrio < vehicle.getPriorityCounter()) {
+                        maxPrioVehicles.clear();
+                        maxPrio = vehicle.getPriorityCounter();
+                    }
+                    maxPrioVehicles.add(vehicle);
                 }
             }
 
             if (!maxPrioVehicles.isEmpty()) {
                 // case #1: maxPrio == assessedVehicles.size() - 1
-                // => all vehicles are beaten
+                // => all vehicles are beaten (otherwise: deadlock between vehicles if more than one has priority)
+                boolean allOthersBeaten = maxPrio == assessedVehicles.size() - 1;
                 // XOR
-                // boolean deadlock = maxPrio < assessedVehicles.size() - 1;
-                // boolean tooManyVehicles = config.onlyOneVehicleDrivesAtNode && maxPrioVehicles.size() > 1;
                 // case #2: deadlock OR tooManyVehicles
                 // => choose random vehicle
-                if (maxPrio < assessedVehicles.size() - 1
-                    || (config.crossingLogic.isOnlyOneVehicleEnabled() && maxPrioVehicles.size() > 1)) {
+                boolean tooManyVehicles = config.crossingLogic.isOnlyOneVehicleEnabled() && maxPrioVehicles.size() > 1;
+                if (!allOthersBeaten || tooManyVehicles) {
                     Iterator<AbstractVehicle> bla = maxPrioVehicles.iterator();
-                    for (int i = 0; i < random.nextInt(maxPrioVehicles.size()); i++) {
+                    for (int i = 0; i < random.nextInt(maxPrioVehicles.size()); i++)
                         bla.next();
-                    }
-                    AbstractVehicle v = bla.next();
+                    AbstractVehicle prioritizedVehicle = bla.next();
                     maxPrioVehicles.clear();
-                    maxPrioVehicles.add(v);
+                    maxPrioVehicles.add(prioritizedVehicle);
                 }
             }
         }
+
+        /*
+        |=======|
+        | reset |
+        |=======|
+        */
         anyChangeSinceUpdate = false;
     }
 
@@ -238,75 +313,32 @@ public class Node implements ShortestPathNode {
      */
     public synchronized void registerVehicle(AbstractVehicle newVehicle) {
 
-        if (!assessedVehicles.contains(newVehicle)) {
-            // calculate priority counter
-            newVehicle.resetPriorityCounter();
-            for (AbstractVehicle assessedVehicle : assessedVehicles) {
-
-                int cmp = crossingLogic.compare(newVehicle, assessedVehicle);
-                if (cmp > 0) {
-                    newVehicle.incPriorityCounter();
-                    assessedVehicle.decPriorityCounter();
-                } else if (cmp < 0) {
-                    newVehicle.decPriorityCounter();
-                    assessedVehicle.incPriorityCounter();
-                } else {
-                    newVehicle.incPriorityCounter();
-                    assessedVehicle.incPriorityCounter();
-                }
-            }
-            assessedVehicles.add(newVehicle);
-            anyChangeSinceUpdate = true;
-        }
+        anyChangeSinceUpdate |= newRegisteredVehicles.add(newVehicle);
+        newVehicle.resetPriorityCounter();
     }
 
     public synchronized void deregisterVehicle(AbstractVehicle vehicle) {
-        // TODO register läuft über crossingLogic.compare(...)
-        // TODO aber deregister noch nicht!
-        if (assessedVehicles.remove(vehicle)) {
-            for (AbstractVehicle assessedVehicle : assessedVehicles) {
-                if (vehicle.getState() != VehicleState.SPAWNED) {
-                    if (assessedVehicle.getState() != VehicleState.SPAWNED) {
-                        // if vehicle and assessedVehicle are not spawned, the older one was prefered
-                        // => the older one has a higher priority counter
-                        if (vehicle.getPriorityCounter() > assessedVehicle.getPriorityCounter())
-                            assessedVehicle.incPriorityCounter();
-                        else
-                            assessedVehicle.decPriorityCounter();
-                    } else {
-                        // assessedVehicle has been the winner, but because vehicle is not
-                        // spawned yet, there can not exist a assessedVehicle
-                        // => else should not be possible
-                        assessedVehicle.decPriorityCounter();
-                    }
-                } else {
-                    if (assessedVehicle.getState() != VehicleState.SPAWNED) {
-                        assessedVehicle.incPriorityCounter();
-                    } else {
-                        int cmp = crossingLogic.compare(vehicle, assessedVehicle);
-                        if (cmp > 0) {
-                            assessedVehicle.incPriorityCounter();
-                        } else if (cmp < 0) {
-                            assessedVehicle.decPriorityCounter();
-                        } else {
-                            assessedVehicle.decPriorityCounter();
-                        }
-                    }
-                }
-            }
-            vehicle.resetPriorityCounter();
-            anyChangeSinceUpdate = true;
-        }
+
+        anyChangeSinceUpdate |= trashVehicles.add(vehicle);
     }
 
+    /**
+     * <p>
+     * This method is synchronized because its return value depends on {@link #registerVehicle(AbstractVehicle)},
+     * {@link #deregisterVehicle(AbstractVehicle)} and {@link #update()}, which can be called concurrently.
+     *
+     * @param vehicle This vehicle asks whether it has permission to cross or not
+     * @return true if the vehicle has permission to cross, false otherwise
+     */
     public synchronized boolean permissionToCross(AbstractVehicle vehicle) {
         return maxPrioVehicles.contains(vehicle);
     }
 
-    // |===========================|
-    // | add edges (preprocessing) |
-    // |===========================|
-
+    /*
+    |===========================|
+    | add edges (preprocessing) |
+    |===========================|
+    */
     /**
      * This method adds one turning lane. Not every lane is connected to any
      * other lane.
@@ -316,7 +348,8 @@ public class Node implements ShortestPathNode {
      * @param direction UNUSED
      */
     public void addConnector(Lane incoming, Lane leaving, Direction direction) {
-        if (!restrictions.containsKey(incoming)) { restrictions.put(incoming, new ArrayList<>()); }
+        if (!restrictions.containsKey(incoming))
+            restrictions.put(incoming, new ArrayList<>());
         restrictions.get(incoming).add(leaving);
     }
 
@@ -325,11 +358,10 @@ public class Node implements ShortestPathNode {
      * calculating crossing order is set to -1.
      */
     public void addEdge(DirectedEdge edge) {
-        if (edge.getOrigin() == this) {
+        if (edge.getOrigin() == this)
             leavingEdges.put(edge, (byte) -1);
-        } else if (edge.getDestination() == this) {
+        else if (edge.getDestination() == this)
             incomingEdges.put(edge, (byte) -1);
-        }
     }
 
     /**

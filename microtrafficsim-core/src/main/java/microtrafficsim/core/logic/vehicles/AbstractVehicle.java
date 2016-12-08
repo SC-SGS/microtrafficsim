@@ -105,6 +105,9 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
         if (dawdleFactor < 0) throw new Exception("Dawdle factor has to be positive.");
     }
 
+    /**
+     * @return hashcode depending only on ID
+     */
     @Override
     public int hashCode() {
         return new FNVHashBuilder().add(ID).getHash();
@@ -145,7 +148,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
         return age - spawnDelay;
     }
 
-    public Route getRoute() {
+    public Route<Node> getRoute() {
         return route;
     }
 
@@ -250,22 +253,11 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     }
 
     /**
-     * This method registers the vehicle in the start node of the vehicle's
-     * route. If the route is empty, the vehicle does not register itself and
-     * despawns instantly.
-     *
-     * @return True, if spawning was successful; False if despawned.
+     * This method registers the vehicle in the start node of the vehicle's route independant of whether the route is
+     * empty or not. The route must have a start being not null.
      */
-    public boolean registerInGraph() {
-        if (!route.isEmpty()) {
-            route.getStart().registerVehicle(this);
-            return true;
-        } else {
-            try {
-                despawn();
-            } catch (Exception e) { e.printStackTrace(); }
-            return false;
-        }
+    public void registerInGraph() {
+        route.getStart().registerVehicle(this);
     }
 
     /**
