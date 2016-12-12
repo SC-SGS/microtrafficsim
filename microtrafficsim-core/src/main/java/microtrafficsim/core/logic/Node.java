@@ -30,9 +30,10 @@ public class Node implements ShortestPathNode {
     private HashMap<Lane, ArrayList<Lane>> restrictions;
 
     // crossing logic
-    private HashSet<AbstractVehicle>    maxPrioVehicles, assessedVehicles, newRegisteredVehicles, trashVehicles;
-    private Comparator<AbstractVehicle> crossingLogic;
-    private boolean                     anyChangeSinceUpdate;
+    private HashSet<AbstractVehicle>                             maxPrioVehicles;
+    private HashMap<AbstractVehicle, Set<AbstractVehicle>>       assessedVehicles;
+    private Comparator<AbstractVehicle>                          crossingLogic;
+    private boolean                                              anyChangeSinceUpdate;
 
     // edges
     private HashMap<DirectedEdge, Byte> leavingEdges;    // edge, index(for crossing logic)
@@ -50,10 +51,8 @@ public class Node implements ShortestPathNode {
         this.coordinate = coordinate;
 
         // crossing logic
-        assessedVehicles      = new HashSet<>();
+        assessedVehicles      = new HashMap<>();
         maxPrioVehicles       = new HashSet<>();
-        newRegisteredVehicles = new HashSet<>();
-        trashVehicles         = new HashSet<>();
         crossingLogic         = generateCrossingLogic();
         anyChangeSinceUpdate  = false;
 
@@ -148,8 +147,8 @@ public class Node implements ShortestPathNode {
                             if (leftmostMatchingIdx == origin2) return -1;
                             return 0;
                         } else {
-                            // random
-                            return random.nextInt(3) - 1;
+                            // random out of {-1, 1}
+                            return random.nextInt(2) * 2 - 1;
                         }
                     }
                 }
@@ -169,13 +168,13 @@ public class Node implements ShortestPathNode {
         // crossing logic
         assessedVehicles.clear();
         maxPrioVehicles.clear();
-        newRegisteredVehicles.clear();
-        trashVehicles.clear();
         anyChangeSinceUpdate = false;
     }
 
     /**
-     *
+     * <p>
+     * If any vehicle has unregistered since the last call of {@code update}, all vehicles are compared to each other
+     * for getting the highest priority. This needs O(n^2) comparisons due to the Gauss sum. This cannot be done
      */
     public synchronized void update() {
 
@@ -197,35 +196,6 @@ public class Node implements ShortestPathNode {
 
             assessedVehicles.clear();
             trashVehicles.clear();
-        }
-
-        /*
-        |===========|
-        | assertion |
-        |===========|
-        */
-        // if there are new vehicles => assess them
-        if (!newRegisteredVehicles.isEmpty()) {
-            for (AbstractVehicle newVehicle : newRegisteredVehicles) {
-                // invariant: every vehicle in newRegisteredVehicles has a reset priority counter
-                for (AbstractVehicle assessedVehicle : assessedVehicles) {
-
-                    int cmp = crossingLogic.compare(newVehicle, assessedVehicle);
-                    if (cmp > 0) {
-                        newVehicle.incPriorityCounter();
-                        assessedVehicle.decPriorityCounter();
-                    } else if (cmp < 0) {
-                        newVehicle.decPriorityCounter();
-                        assessedVehicle.incPriorityCounter();
-                    } else {
-                        newVehicle.incPriorityCounter();
-                        assessedVehicle.incPriorityCounter();
-                    }
-                }
-                assessedVehicles.add(newVehicle);
-            }
-
-            newRegisteredVehicles.clear();
         }
 
         // TODO hier hab ich aufgehört; möglicherweise kann das aber genau so bleiben.
@@ -313,11 +283,39 @@ public class Node implements ShortestPathNode {
      */
     public synchronized void registerVehicle(AbstractVehicle newVehicle) {
 
-        anyChangeSinceUpdate |= newRegisteredVehicles.add(newVehicle);
+        // check if already registered
+        if (assessedVehicles.containsKey(newVehicle))
+            return;
+        // init new entry in assessed vehicles for new vehicle and the set of defeated vehicles used for unregistration
+        Set<AbstractVehicle> newSetDefeated = new HashSet<>();
+        assessedVehicles.put(newVehicle, newSetDefeated);
+
         newVehicle.resetPriorityCounter();
+
+        // compare new vehicle to each already assessed vehicle and save the loser in the winner's defeated list
+        for (AbstractVehicle assessedVehicle : assessedVehicles.keySet()) {
+
+            int cmp = crossingLogic.compare(newVehicle, assessedVehicle);
+
+            if (cmp > 0) { // new vehicle has won
+                newVehicle.incPriorityCounter();
+                assessedVehicle.decPriorityCounter();
+                newSetDefeated.add(assessedVehicle);
+            } else if (cmp < 0) { // assessed vehicle has won
+                newVehicle.decPriorityCounter();
+                assessedVehicle.incPriorityCounter();
+                assessedVehicles.get(assessedVehicle).add(newVehicle);
+            } else { // they don't intersect
+                newVehicle.incPriorityCounter();
+                assessedVehicle.incPriorityCounter();
+                newSetDefeated.add(assessedVehicle);
+                assessedVehicles.get(assessedVehicle).add(newVehicle);
+            }
+        }
+        anyChangeSinceUpdate = true;
     }
 
-    public synchronized void deregisterVehicle(AbstractVehicle vehicle) {
+    public synchronized void unregisterVehicle(AbstractVehicle vehicle) {
 
         anyChangeSinceUpdate |= trashVehicles.add(vehicle);
     }
@@ -325,7 +323,7 @@ public class Node implements ShortestPathNode {
     /**
      * <p>
      * This method is synchronized because its return value depends on {@link #registerVehicle(AbstractVehicle)},
-     * {@link #deregisterVehicle(AbstractVehicle)} and {@link #update()}, which can be called concurrently.
+     * {@link #unregisterVehicle(AbstractVehicle)} and {@link #update()}, which can be called concurrently.
      *
      * @param vehicle This vehicle asks whether it has permission to cross or not
      * @return true if the vehicle has permission to cross, false otherwise

@@ -275,7 +275,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
                         velocity = 0;
                     } else {
                         velocity = 1;
-                        route.getStart().deregisterVehicle(this);
+                        route.getStart().unregisterVehicle(this);
                         enterNextRoad();
                         setState(VehicleState.SPAWNED);
                     }
@@ -479,7 +479,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     |===============|
     */
     private void leaveCurrentRoad() {
-        lane.getAssociatedEdge().getDestination().deregisterVehicle(this);
+        lane.getAssociatedEdge().getDestination().unregisterVehicle(this);
         synchronized (lane.lock) {
             lane.removeVehicle(this);
             removeVehicleInBack();
