@@ -3,6 +3,7 @@ package microtrafficsim.core.simulation.stepexecutors.impl;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.stepexecutors.VehicleStepExecutor;
+import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
 
 import java.util.Iterator;
 
@@ -19,7 +20,11 @@ public class SingleThreadedVehicleStepExecutor implements VehicleStepExecutor {
         iteratorSpawned.forEachRemaining((AbstractVehicle vehicle) -> {
             vehicle.accelerate();
             vehicle.dash();
-            vehicle.brake();
+            try {
+                vehicle.brake();
+            } catch (NagelSchreckenbergException e) {
+                e.printStackTrace();
+            }
             vehicle.dawdle();
         });
     }
