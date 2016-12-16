@@ -79,7 +79,6 @@ public abstract class BasicScenario implements Scenario {
      */
     @Override
     public void setODMatrix(ODMatrix matrix) {
-
     }
 
     /**

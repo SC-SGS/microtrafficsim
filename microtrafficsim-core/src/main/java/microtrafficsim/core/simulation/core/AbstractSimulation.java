@@ -8,7 +8,6 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.core.stepexecutors.impl.MultiThreadedVehicleStepExecutor;
-import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
 import microtrafficsim.core.simulation.core.stepexecutors.impl.SingleThreadedVehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.containers.impl.BasicVehicleContainer;
 import microtrafficsim.core.vis.opengl.utils.Color;

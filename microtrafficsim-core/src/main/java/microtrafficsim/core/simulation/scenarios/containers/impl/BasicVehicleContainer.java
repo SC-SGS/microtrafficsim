@@ -40,11 +40,6 @@ public class BasicVehicleContainer implements VehicleContainer {
     |======================|
     */
     @Override
-    public Supplier<VisualizationVehicleEntity> getVehicleFactory() {
-        return vehicleFactory;
-    }
-
-    @Override
     public void addVehicle(AbstractVehicle vehicle) {
         notSpawnedVehicles.add(vehicle);
         vehicles.add(vehicle);

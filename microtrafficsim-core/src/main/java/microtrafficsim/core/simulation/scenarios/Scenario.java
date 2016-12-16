@@ -24,6 +24,10 @@ import java.util.function.Supplier;
  * The scenario defines vehicle routes, the simulation config etc. and is
  * executed by the simulation after a builder prepared it.
  *
+ * <p>
+ * It is important to call {@link #setODMatrixBuilt(boolean)} setting the value to true, if you define the
+ * origin-destination matrix itself and not
+ *
  * @author Dominic Parga Cacheiro
  */
 public interface Scenario {
