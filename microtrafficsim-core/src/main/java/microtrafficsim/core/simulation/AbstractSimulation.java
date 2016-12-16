@@ -1,23 +1,25 @@
 package microtrafficsim.core.simulation;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.containers.VehicleContainer;
-import microtrafficsim.core.simulation.stepexecutors.impl.MultiThreadedVehicleStepExecutor;
-import microtrafficsim.core.simulation.containers.impl.ConcurrentVehicleContainer;
-import microtrafficsim.core.simulation.stepexecutors.impl.SingleThreadedVehicleStepExecutor;
 import microtrafficsim.core.simulation.containers.impl.BasicVehicleContainer;
+import microtrafficsim.core.simulation.containers.impl.ConcurrentVehicleContainer;
+import microtrafficsim.core.simulation.stepexecutors.VehicleStepExecutor;
+import microtrafficsim.core.simulation.stepexecutors.impl.MultiThreadedVehicleStepExecutor;
+import microtrafficsim.core.simulation.stepexecutors.impl.SingleThreadedVehicleStepExecutor;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.utils.StringUtils;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.function.Supplier;
 
 
@@ -32,7 +34,7 @@ import java.util.function.Supplier;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public abstract class AbstractSimulation implements Simulation {
-    private Logger logger = LoggerFactory.getLogger(AbstractSimulation.class); // TODO marker!
+    private Logger logger = new EasyMarkableLogger(AbstractSimulation.class);
 
     protected final StreetGraph graph;
     private final SimulationConfig config;

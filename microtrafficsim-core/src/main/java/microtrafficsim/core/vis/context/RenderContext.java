@@ -9,8 +9,8 @@ import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
 import microtrafficsim.core.vis.context.state.*;
 import microtrafficsim.core.vis.context.tasks.FutureRenderTask;
 import microtrafficsim.core.vis.context.tasks.RenderTask;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -25,7 +25,7 @@ import static microtrafficsim.build.BuildSetup.DEBUG_CORE_VIS;
  * @author Maximilian Luz
  */
 public class RenderContext implements GLEventListener {
-    private static final Logger logger = LoggerFactory.getLogger(RenderContext.class);
+    private static final Logger logger = new EasyMarkableLogger(RenderContext.class);
 
     /**
      * Execution budget per frame in nanoseconds for render-tasks.

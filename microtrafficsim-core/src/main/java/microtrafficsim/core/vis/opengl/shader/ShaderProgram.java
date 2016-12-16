@@ -6,8 +6,8 @@ import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.opengl.DataType;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttribute;
 import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -20,7 +20,7 @@ import static microtrafficsim.build.BuildSetup.DEBUG_CORE_VIS;
  * @author Maximilian Luz
  */
 public class ShaderProgram {
-    protected static final Logger logger = LoggerFactory.getLogger(ShaderProgram.class);
+    protected static final Logger logger = new EasyMarkableLogger(ShaderProgram.class);
 
     protected final RenderContext context;
 

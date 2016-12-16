@@ -10,6 +10,8 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.core.simulation.Simulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
@@ -30,13 +32,11 @@ import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 import microtrafficsim.osm.primitives.Way;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +49,7 @@ import java.util.function.Supplier;
 
 
 public class Main {
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final Logger logger = new EasyMarkableLogger(Main.class);
 
     private static final int INITIAL_WINDOW_WIDTH  = 1600;
     private static final int INITIAL_WINDOW_HEIGHT =  900;

@@ -13,8 +13,8 @@ import microtrafficsim.core.vis.mesh.MeshPool;
 import microtrafficsim.core.vis.mesh.style.FeatureStyle;
 import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +26,7 @@ import java.util.HashSet;
  * @author Maximilian Luz
  */
 public class FeatureTileLayerGenerator implements TileLayerGenerator {
-    private static final Logger logger = LoggerFactory.getLogger(FeatureTileLayerGenerator.class);
+    private static final Logger logger = new EasyMarkableLogger(FeatureTileLayerGenerator.class);
 
     private static final Rect2d MESH_TARGET = new Rect2d(-1.0, -1.0, 1.0, 1.0);
 

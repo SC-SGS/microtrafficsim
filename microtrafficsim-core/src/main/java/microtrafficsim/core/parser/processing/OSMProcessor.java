@@ -2,27 +2,27 @@ package microtrafficsim.core.parser.processing;
 
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.osm.parser.features.FeatureDependency;
-import microtrafficsim.osm.parser.features.FeatureGenerator;
-import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
+import microtrafficsim.core.parser.processing.Ways.MergePoint;
+import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
+import microtrafficsim.core.parser.processing.sanitizer.OSMStreetGraphSanitizer;
 import microtrafficsim.osm.parser.Parser;
+import microtrafficsim.osm.parser.Processor;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
+import microtrafficsim.osm.parser.features.FeatureDependency;
+import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.FeatureSystem;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
-import microtrafficsim.osm.parser.Processor;
-import microtrafficsim.core.parser.processing.Ways.MergePoint;
-import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
-import microtrafficsim.core.parser.processing.sanitizer.OSMStreetGraphSanitizer;
+import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelation;
 import microtrafficsim.osm.primitives.Primitive;
 import microtrafficsim.utils.collections.ArrayUtils;
 import microtrafficsim.utils.id.BasicLongIDGenerator;
 import microtrafficsim.utils.id.LongIDGenerator;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -36,7 +36,7 @@ import java.util.function.BiFunction;
  * @author Maximilian Luz
  */
 public class OSMProcessor implements Processor {
-    private static Logger logger = LoggerFactory.getLogger(OSMProcessor.class);
+    private static Logger logger = new EasyMarkableLogger(OSMProcessor.class);
 
     /**
      * The placeholder used both in dependencies and the list of feature-definitions to indicate the way-clipping

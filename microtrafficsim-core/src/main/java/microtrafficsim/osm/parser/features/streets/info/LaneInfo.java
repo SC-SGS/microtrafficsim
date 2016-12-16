@@ -2,8 +2,8 @@ package microtrafficsim.osm.parser.features.streets.info;
 
 import microtrafficsim.osm.parser.features.streets.ReverseEquals;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -14,7 +14,7 @@ import java.util.Map;
  * @author Maximilian Luz
  */
 public class LaneInfo implements ReverseEquals {
-    private static Logger logger = LoggerFactory.getLogger(LaneInfo.class);
+    private static Logger logger = new EasyMarkableLogger(LaneInfo.class);
 
     public static final int UNGIVEN = -1;
 

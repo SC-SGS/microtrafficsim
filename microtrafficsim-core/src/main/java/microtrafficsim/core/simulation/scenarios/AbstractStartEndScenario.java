@@ -1,7 +1,6 @@
 package microtrafficsim.core.simulation.scenarios;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.StreetGraph;
@@ -10,12 +9,11 @@ import microtrafficsim.core.map.area.Area;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.AbstractSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.containers.VehicleContainer;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.Distribution;
 import microtrafficsim.utils.StringUtils;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -42,7 +40,7 @@ import java.util.function.Supplier;
  */
 public abstract class AbstractStartEndScenario extends AbstractSimulation {
 
-    private Logger logger = LoggerFactory.getLogger(AbstractStartEndScenario.class);
+    private Logger logger = new EasyMarkableLogger(AbstractStartEndScenario.class);
 
     protected final SimulationConfig config;
     private final Supplier<ShortestPathAlgorithm> scoutFactory;
