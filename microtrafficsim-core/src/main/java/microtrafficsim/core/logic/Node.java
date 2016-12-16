@@ -12,7 +12,6 @@ import microtrafficsim.math.Vec2f;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -69,7 +68,7 @@ public class Node implements ShortestPathNode {
 
     @Override
     public String toString() {
-        String output = "Node name = " + ID + " at " + coordinate.toString();
+        String output = "Node ID = " + ID + " at " + coordinate.toString();
 
         //		for (Lane start : restrictions.keySet())
         //			for (Lane end : restrictions.get(start))
@@ -385,7 +384,7 @@ public class Node implements ShortestPathNode {
      * calculates the order of the edges that is needed for crossing logic
      * calculation.
      */
-    public void calculateEdgeIndices() {
+    void calculateEdgeIndices() {
 
         // set zero vector
         Vec2f zero = null;
@@ -439,11 +438,8 @@ public class Node implements ShortestPathNode {
                 ArrayList<Lane> restrictedLeavingLanes = restrictions.get(incomingLane);
                 // if there exist restrictions
                 if (restrictedLeavingLanes != null)
-                    returnEdges.addAll(
-                            restrictedLeavingLanes.stream().map(Lane::getAssociatedEdge).collect(Collectors.toList()));
-                    // before: (wtf Intellij is so awesome)
-                    // for (Lane leavingLane : restrictedLeavingLanes)
-                    // returnEdges.add(leavingLane.getAssociatedEdge());
+                    for (Lane leavingLane : restrictedLeavingLanes)
+                        returnEdges.add(leavingLane.getAssociatedEdge());
                 else
                     returnEdges.addAll(leavingEdges.keySet());
             }
