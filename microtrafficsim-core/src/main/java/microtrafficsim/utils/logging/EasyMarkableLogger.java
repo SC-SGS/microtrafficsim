@@ -1,6 +1,5 @@
 package microtrafficsim.utils.logging;
 
-import microtrafficsim.build.BuildSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -19,8 +18,7 @@ import org.slf4j.Marker;
 public class EasyMarkableLogger implements Logger{
 
     private Logger logger;
-    public static boolean
-            TRACE_ENABLED = true;
+    public static boolean TRACE_ENABLED = true;
     public static boolean DEBUG_ENABLED = true;
     public static boolean INFO_ENABLED = true;
     public static boolean WARN_ENABLED = true;
