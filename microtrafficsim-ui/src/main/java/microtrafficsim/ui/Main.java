@@ -1,5 +1,6 @@
 package microtrafficsim.ui;
 
+import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.simulation.scenarios.oldimpl.RandomRouteScenario;
 import microtrafficsim.ui.gui.GUIController;
 import microtrafficsim.ui.gui.GUIEvent;
@@ -16,6 +17,8 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args) throws Exception {
+
+        BuildSetup.init();
 
         /* handle input arguments */
         final File file;

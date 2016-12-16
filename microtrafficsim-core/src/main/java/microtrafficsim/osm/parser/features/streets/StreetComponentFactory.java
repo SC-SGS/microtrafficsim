@@ -1,16 +1,16 @@
 package microtrafficsim.osm.parser.features.streets;
 
-import microtrafficsim.osm.parser.features.streets.info.LaneInfo;
-import microtrafficsim.osm.parser.features.streets.info.MaxspeedInfo;
-import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
-import microtrafficsim.osm.parser.features.streets.info.StreetType;
 import microtrafficsim.osm.parser.ecs.ComponentFactory;
 import microtrafficsim.osm.parser.ecs.Entity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
+import microtrafficsim.osm.parser.features.streets.info.LaneInfo;
+import microtrafficsim.osm.parser.features.streets.info.MaxspeedInfo;
+import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
+import microtrafficsim.osm.parser.features.streets.info.StreetType;
 import microtrafficsim.osm.primitives.Way;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +22,7 @@ import java.util.Set;
  * @author Maximilian Luz
  */
 public class StreetComponentFactory implements ComponentFactory<StreetComponent, Way> {
-    private static Logger logger = LoggerFactory.getLogger(StreetComponentFactory.class);
+    private static Logger logger = new EasyMarkableLogger(StreetComponentFactory.class);
 
     /**
      * Creates a component from the specified source-element and its set of

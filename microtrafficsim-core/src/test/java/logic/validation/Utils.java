@@ -5,8 +5,8 @@ import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
 import microtrafficsim.core.vis.opengl.shader.ShaderCompileException;
 import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.utils.FramebufferUtils;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -16,7 +16,7 @@ import java.io.PrintStream;
 
 
 class Utils {
-    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
+    private static final Logger logger = new EasyMarkableLogger(Utils.class);
 
     static void asyncScreenshot(RenderContext context) {
         new Thread(() -> {

@@ -14,8 +14,8 @@ import microtrafficsim.math.Distribution;
 import microtrafficsim.math.random.distributions.BasicWheelOfFortune;
 import microtrafficsim.math.random.distributions.WheelOfFortune;
 import microtrafficsim.utils.StringUtils;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -42,7 +42,7 @@ import java.util.function.Supplier;
  */
 public abstract class AbstractStartEndScenario extends AbstractSimulation {
 
-    private Logger logger = LoggerFactory.getLogger(AbstractStartEndScenario.class);
+    private Logger logger = new EasyMarkableLogger(AbstractStartEndScenario.class);
 
     protected final SimulationConfig config;
     private final Supplier<ShortestPathAlgorithm> scoutFactory;

@@ -1,19 +1,19 @@
 package microtrafficsim.core.parser.processing.sanitizer;
 
-import microtrafficsim.osm.parser.features.streets.ReverseEquals;
+import microtrafficsim.core.parser.processing.GraphNodeComponent;
+import microtrafficsim.core.parser.processing.OSMProcessor;
+import microtrafficsim.core.parser.processing.Ways;
 import microtrafficsim.osm.parser.Parser;
+import microtrafficsim.osm.parser.Processor;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
-import microtrafficsim.osm.parser.Processor;
-import microtrafficsim.core.parser.processing.GraphNodeComponent;
-import microtrafficsim.core.parser.processing.OSMProcessor;
-import microtrafficsim.core.parser.processing.Ways;
+import microtrafficsim.osm.parser.features.streets.ReverseEquals;
 import microtrafficsim.utils.collections.ArrayUtils;
 import microtrafficsim.utils.id.LongGenerator;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +28,7 @@ import java.util.Set;
  * @author Maximilian Luz
  */
 public class OSMStreetGraphSanitizer implements Processor {
-    private static Logger logger = LoggerFactory.getLogger(OSMStreetGraphSanitizer.class);
+    private static Logger logger = new EasyMarkableLogger(OSMStreetGraphSanitizer.class);
 
     private FeatureDefinition streetgraph;
     private LongGenerator idgen;

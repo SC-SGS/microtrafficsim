@@ -14,11 +14,11 @@ import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Vec2f;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Stack;
 
@@ -35,7 +35,7 @@ import static org.junit.Assert.assertTrue;
  * @author Dominic Parga Cacheiro
  */
 public class TestShortestPathAlgorithms {
-    private static final Logger logger = LoggerFactory.getLogger(TestShortestPathAlgorithms.class);
+    private static final Logger logger = new EasyMarkableLogger(TestShortestPathAlgorithms.class);
 
     private static SimulationConfig     config;
     private static ShortestPathAlgorithm shortestPathAlgorithm;

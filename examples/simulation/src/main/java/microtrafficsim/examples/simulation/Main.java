@@ -9,8 +9,10 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
-import microtrafficsim.core.simulation.core.OldSimulation;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.core.OldSimulation;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.VisualizerConfig;
@@ -29,12 +31,10 @@ import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 import microtrafficsim.osm.primitives.Way;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -51,7 +51,7 @@ import java.util.function.Predicate;
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public class Main {
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final Logger logger = new EasyMarkableLogger(Main.class);
 
     /* -- window parameters -------------------------------------------------------------------- */
 

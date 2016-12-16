@@ -2,8 +2,8 @@ package microtrafficsim.osm.parser.features.streets.info;
 
 
 import microtrafficsim.osm.parser.features.streets.ReverseEquals;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
@@ -19,7 +19,7 @@ public enum OnewayInfo implements ReverseEquals {
     BACKWARD,
     REVERSIBLE;
 
-    private static Logger logger = LoggerFactory.getLogger(OnewayInfo.class);
+    private static Logger logger = new EasyMarkableLogger(OnewayInfo.class);
 
     @Override
     public boolean reverseEquals(Object obj) {

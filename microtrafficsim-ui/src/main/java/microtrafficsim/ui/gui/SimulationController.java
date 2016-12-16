@@ -14,8 +14,8 @@ import microtrafficsim.ui.preferences.PrefElement;
 import microtrafficsim.ui.preferences.impl.PreferencesFrame;
 import microtrafficsim.ui.vis.MapViewer;
 import microtrafficsim.ui.vis.TileBasedMapViewer;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -33,7 +33,7 @@ import java.util.function.Supplier;
  * @author Dominic Parga Cacheiro
  */
 public class SimulationController implements GUIController {
-    private static Logger logger = LoggerFactory.getLogger(SimulationController.class);
+    private static Logger logger = new EasyMarkableLogger(SimulationController.class);
 
     // logic
     private final SimulationConfig config;

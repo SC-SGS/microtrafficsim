@@ -1,22 +1,22 @@
 package microtrafficsim.core.parser.processing.sanitizer;
 
+import microtrafficsim.osm.parser.Parser;
+import microtrafficsim.osm.parser.Processor;
+import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
+import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
+import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.info.LaneInfo;
 import microtrafficsim.osm.parser.features.streets.info.MaxspeedInfo;
 import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.osm.parser.features.streets.info.StreetType;
-import microtrafficsim.osm.parser.Parser;
-import microtrafficsim.osm.parser.base.DataSet;
-import microtrafficsim.osm.parser.ecs.entities.WayEntity;
-import microtrafficsim.osm.parser.features.streets.StreetComponent;
-import microtrafficsim.osm.parser.Processor;
 import microtrafficsim.osm.parser.relations.RelationBase;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelation;
 import microtrafficsim.osm.primitives.Primitive;
 import microtrafficsim.utils.collections.ArrayUtils;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +31,7 @@ import java.util.Collection;
  * @author Maximilian Luz
  */
 public class OSMDataSetSanitizer implements Processor {
-    private static Logger logger = LoggerFactory.getLogger(OSMDataSetSanitizer.class);
+    private static Logger logger = new EasyMarkableLogger(OSMDataSetSanitizer.class);
 
     private OSMSanitizerValues          values;
     private FeatureGenerator.Properties genprops;
