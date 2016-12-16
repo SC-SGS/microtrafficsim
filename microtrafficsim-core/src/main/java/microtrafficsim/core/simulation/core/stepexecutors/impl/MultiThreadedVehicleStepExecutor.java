@@ -4,6 +4,7 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
 import microtrafficsim.utils.concurrency.delegation.DynamicThreadDelegator;
 import microtrafficsim.utils.concurrency.delegation.StaticThreadDelegator;
 import microtrafficsim.utils.concurrency.delegation.ThreadDelegator;
@@ -36,7 +37,11 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
                 (AbstractVehicle v) -> {
                     v.accelerate();
                     v.dash();
-                    v.brake();
+                    try {
+                        v.brake();
+                    } catch (NagelSchreckenbergException e) {
+                        e.printStackTrace();
+                    }
                 },
                 scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
                 scenario.getConfig().multiThreading.vehiclesPerRunnable

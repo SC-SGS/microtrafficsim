@@ -7,6 +7,7 @@ import microtrafficsim.core.logic.Lane;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
@@ -283,10 +284,8 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
             } else {    // route is empty
                 velocity = 0;
 
-                try {
-                    despawn();
-                    return;
-                } catch (Exception e) { e.printStackTrace(); }
+                despawn();
+                return;
             }
         }
         didOneSimulationStep();
@@ -297,7 +296,6 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     | simulation |
     |============|
     */
-
     private void despawn() {
         lane = null;
         setState(VehicleState.DESPAWNED);
@@ -314,7 +312,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
         }
     }
 
-    public void brake() {
+    public void brake() throws NagelSchreckenbergException {
         if (state == VehicleState.SPAWNED) {
             if (vehicleInFront != null) {
                 // brake for front vehicle
@@ -350,9 +348,8 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
             //                velocity = Math.min(velocity, lane.getAssociatedEdge().getMaxVelocity());
         }
 
-        if (velocity < 0) try {
-                throw new Exception("velocity after brake < 0");
-            } catch (Exception e) { e.printStackTrace(); }
+        if (velocity < 0)
+            throw NagelSchreckenbergException.velocityLessThanZero(NagelSchreckenbergException.Step.brake, velocity);
     }
 
     public void dawdle() {
@@ -383,9 +380,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
                     enterNextRoad();
                 } else {
                     leaveCurrentRoad();
-                    try {
-                        despawn();
-                    } catch (Exception e) { e.printStackTrace(); }
+                    despawn();
                 }
             else {
                 // if standing at the end of the road
@@ -393,9 +388,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
                 // => despawn
                 if (velocity == 0 && distance == 1 && route.isEmpty()) {
                     leaveCurrentRoad();
-                    try {
-                        despawn();
-                    } catch (Exception e) { e.printStackTrace(); }
+                    despawn();
                 } else {
                     drive();
                 }
