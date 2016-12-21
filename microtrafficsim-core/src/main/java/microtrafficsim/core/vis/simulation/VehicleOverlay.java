@@ -1,7 +1,6 @@
 package microtrafficsim.core.vis.simulation;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.simulation.core.OldSimulation;
 import microtrafficsim.core.vis.Overlay;
 
 import java.util.function.Supplier;

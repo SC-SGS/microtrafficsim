@@ -11,18 +11,36 @@ import microtrafficsim.utils.collections.Triple;
  */
 public interface ODMatrix extends Iterable<Triple<Node, Node, Integer>> {
 
+    /**
+     * Increments the value for the given origin/destination pair.
+     *
+     * @param origin Route's origin
+     * @param destination Route's destination
+     */
     void inc(Node origin, Node destination);
 
     /**
-     * This method decrements the value for the given origin/destination pair. It should check whether the value gets
+     * Decrements the value for the given origin/destination pair. It should check whether the value gets
      * 0 to save memory in this case.
      *
-     * @param origin
-     * @param destination
+     * @param origin Route's origin
+     * @param destination Route's destination
      */
     void dec(Node origin, Node destination);
 
+    /**
+     * Sets the value for the given origin/destination pair to the given count. If count <= 0, nothing should be done.
+     *
+     * @param count The new value for the given origin/destination pair; should be > 0
+     * @param origin Route's origin
+     * @param destination Route's destination
+     */
     void set(int count, Node origin, Node destination);
 
+    /**
+     * @param origin Route's origin
+     * @param destination Route's destination
+     * @return Number of routes with this origin and this destination
+     */
     int get(Node origin, Node destination);
 }

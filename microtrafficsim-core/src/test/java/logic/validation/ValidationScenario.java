@@ -10,7 +10,6 @@ import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
-import microtrafficsim.core.simulation.core.AbstractSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.opengl.utils.Color;
 

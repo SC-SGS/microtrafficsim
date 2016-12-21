@@ -12,12 +12,12 @@ import java.util.function.Supplier;
 
 
 /**
- * This implementation of {@link VehicleContainer} uses a few sets for managing the vehicles. The used sets are
- * concurrent so they can be edited while iterated.
+ * This implementation of {@code VehicleContainer} uses a few sets for managing the vehicles. The used sets are
+ * concurrent ({@link ConcurrentHashMap#newKeySet()}) so they can be edited while iterated.
  *
  * @author Dominic Parga Cacheiro
  */
-public class BasicVehicleContainer implements VehicleContainer {
+public class ConcurrentVehicleContainer implements VehicleContainer {
 
     protected Supplier<VisualizationVehicleEntity> vehicleFactory;
     protected Set<AbstractVehicle>                 spawnedVehicles, notSpawnedVehicles, vehicles;
@@ -27,7 +27,7 @@ public class BasicVehicleContainer implements VehicleContainer {
      *
      * @param vehicleFactory This factory is needed to create the vehicles' visualization components.
      */
-    public BasicVehicleContainer(Supplier<VisualizationVehicleEntity> vehicleFactory) {
+    public ConcurrentVehicleContainer(Supplier<VisualizationVehicleEntity> vehicleFactory) {
         spawnedVehicles     = ConcurrentHashMap.newKeySet();
         notSpawnedVehicles  = ConcurrentHashMap.newKeySet();
         vehicles            = ConcurrentHashMap.newKeySet();

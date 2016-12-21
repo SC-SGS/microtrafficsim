@@ -16,15 +16,11 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 /**
- * <p>
- * Defines one origin and one destination field around the whole graph using its latitude and longitude borders.
  *
- * <p>
- * {@link #getScoutFactory()} returns a bidirectional A-star algorithm.
  *
  * @author Dominic Parga Cacheiro
  */
-public class RandomRouteScenario extends BasicScenario {
+public class EndOfTheWorldScenario extends BasicScenario {
 
     private final Area startArea, destinationArea;
     // scout factory
@@ -36,7 +32,7 @@ public class RandomRouteScenario extends BasicScenario {
      * Default constructor. Defines one origin and one destination field around the whole graph using its latitude
      * and longitude borders.
      */
-    public RandomRouteScenario(SimulationConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
+    public EndOfTheWorldScenario(SimulationConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
         super(config, graph, vehicleContainer);
 
         startArea = new RectangleArea(graph.minLat, graph.minLon, graph.maxLat, graph.maxLon);
@@ -57,8 +53,8 @@ public class RandomRouteScenario extends BasicScenario {
     public Supplier<ShortestPathAlgorithm> getScoutFactory() {
         return () ->
                 (random.nextFloat() < fastestWayProbability)
-                ? fastestWayBidirectionalAStar
-                : linearDistanceBidirectionalAStar;
+                        ? fastestWayBidirectionalAStar
+                        : linearDistanceBidirectionalAStar;
     }
 
     @Override

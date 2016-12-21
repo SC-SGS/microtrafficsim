@@ -19,6 +19,7 @@ import microtrafficsim.math.Distribution;
 import microtrafficsim.utils.StringUtils;
 import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.concurrency.delegation.DynamicThreadDelegator;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ import java.util.function.Supplier;
  */
 public class VehicleSimulationBuilder implements Builder {
 
-    private Logger logger = LoggerFactory.getLogger(VehicleSimulationBuilder.class);
+    private Logger logger = new EasyMarkableLogger(VehicleSimulationBuilder.class);
 
     private long seed;
     private Random random;
@@ -64,6 +65,7 @@ public class VehicleSimulationBuilder implements Builder {
         this.random = new Random(seed);
 
         this.vehicleFactory = vehicleFactory;
+
     }
 
     /**
@@ -75,18 +77,22 @@ public class VehicleSimulationBuilder implements Builder {
         logger.info("PREPARING SCENARIO started");
         long time_preparation = System.nanoTime();
 
-        // ---------- ---------- ---------- ---------- --
-        // reset all
-        // ---------- ---------- ---------- ---------- --
+        /*
+        |===========|
+        | reset all |
+        |===========|
+        */
         logger.info("RESETTING SCENARIO started");
         scenario.setPrepared(false);
         scenario.getVehicleContainer().clearAll();
         scenario.getGraph().reset();
         logger.info("RESETTING SCENARIO finished");
 
-        // ---------- ---------- ---------- ---------- --
-        // check if odmatrix has to be built
-        // ---------- ---------- ---------- ---------- --
+        /*
+        |===================================|
+        | check if odmatrix has to be built |
+        |===================================|
+        */
         if (!scenario.isODMatrixBuilt()) {
             logger.info("BUILDING ODMatrix started");
 
@@ -94,9 +100,11 @@ public class VehicleSimulationBuilder implements Builder {
                     origins = new ArrayList<>(),
                     destinations = new ArrayList<>();
 
-            // ---------- ---------- ---------- ---------- --
-            // for each graph node, check its location relative to the origin/destination fields
-            // ---------- ---------- ---------- ---------- --
+            /*
+            |===================================================================================|
+            | for each graph node, check its location relative to the origin/destination fields |
+            |===================================================================================|
+            */
             Iterator<Node> nodes = scenario.getGraph().getNodeIterator();
             while (nodes.hasNext()) {
                 Node node = nodes.next();
@@ -116,9 +124,11 @@ public class VehicleSimulationBuilder implements Builder {
                     }
             }
 
-            // ---------- ---------- ---------- ---------- --
-            // build matrix
-            // ---------- ---------- ---------- ---------- --
+            /*
+            |==============|
+            | build matrix |
+            |==============|
+            */
             ODMatrix odmatrix = new SparseODMatrix();
             for (int i = 0; i < scenario.getConfig().maxVehicleCount; i++) {
                 int rdmOrig = random.nextInt(origins.size());
@@ -126,17 +136,21 @@ public class VehicleSimulationBuilder implements Builder {
                 odmatrix.inc(origins.get(rdmOrig), destinations.get(rdmDest));
             }
 
-            // ---------- ---------- ---------- ---------- --
-            // finish creating ODMatrix
-            // ---------- ---------- ---------- ---------- --
+            /*
+            |==========================|
+            | finish creating ODMatrix |
+            |==========================|
+            */
             scenario.setODMatrix(odmatrix);
             scenario.setODMatrixBuilt(true);
             logger.info("BUILDING ODMatrix finished");
         }
 
-        // ---------- ---------- ---------- ---------- --
-        // create vehicle routes
-        // ---------- ---------- ---------- ---------- --
+        /*
+        |=======================|
+        | create vehicle routes |
+        |=======================|
+        */
         ODMatrix odmatrix = scenario.getODMatrix();
         logger.info("CREATING VEHICLES started");
         long time_routes = System.nanoTime();
@@ -153,9 +167,11 @@ public class VehicleSimulationBuilder implements Builder {
                 "ns"
         ).toString());
 
-        // ---------- ---------- ---------- ---------- --
-        // finish building scenario
-        // ---------- ---------- ---------- ---------- --
+        /*
+        |==========================|
+        | finish building scenario |
+        |==========================|
+        */
         scenario.setPrepared(true);
         time_preparation = System.nanoTime() - time_preparation;
         logger.info(StringUtils.buildTimeString(

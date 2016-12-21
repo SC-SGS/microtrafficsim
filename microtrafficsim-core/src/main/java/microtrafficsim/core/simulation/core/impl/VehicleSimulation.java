@@ -7,6 +7,7 @@ import microtrafficsim.core.simulation.core.stepexecutors.impl.MultiThreadedVehi
 import microtrafficsim.core.simulation.core.stepexecutors.impl.SingleThreadedVehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.utils.StringUtils;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ import java.util.TimerTask;
  * @author Dominic Parga Cacheiro
  */
 public class VehicleSimulation implements Simulation {
-    private Logger logger = LoggerFactory.getLogger(VehicleSimulation.class);
+    private Logger logger = new EasyMarkableLogger(VehicleSimulation.class);
 
     private Scenario scenario;
     private VehicleStepExecutor vehicleStepExecutor;

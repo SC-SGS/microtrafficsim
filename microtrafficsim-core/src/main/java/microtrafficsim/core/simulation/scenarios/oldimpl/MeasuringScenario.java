@@ -2,8 +2,8 @@ package microtrafficsim.core.simulation.scenarios.oldimpl;
 
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
-import microtrafficsim.core.simulation.core.OldSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.interesting.progressable.ProgressListener;
@@ -22,10 +22,10 @@ import java.util.*;
  *
  * @author Dominic Parga Cacheiro
  */
-public class MeasuringScenario implements OldSimulation {
+public class MeasuringScenario implements Simulation {
 
     private SimulationConfig config;
-    private OldSimulation simulation;
+    private Simulation simulation;
     private Timer            timer;
     private boolean          paused;
     private DataCollector    dataCollector;

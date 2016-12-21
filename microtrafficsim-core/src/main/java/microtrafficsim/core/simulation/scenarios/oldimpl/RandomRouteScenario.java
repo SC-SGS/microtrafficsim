@@ -49,17 +49,11 @@ public class RandomRouteScenario extends AbstractStartEndScenario {
 
     @Override
     protected Supplier<ShortestPathAlgorithm> createScoutFactory() {
-        return new Supplier<ShortestPathAlgorithm>() {
-            private Random random = config.rndGenGenerator.next();
-
-            @Override
-            public ShortestPathAlgorithm get() {
-                if (random.nextFloat() < 1.0f) {
-                    return new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);
-                } else {
-                    return new LinearDistanceBidirectionalAStar(config.metersPerCell);
-                }
-            }
+        return () -> {
+            if (new Random(config.seedGenerator.next()).nextFloat() < 1.0f)
+                return new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);
+            else
+                return new LinearDistanceBidirectionalAStar(config.metersPerCell);
         };
     }
 }

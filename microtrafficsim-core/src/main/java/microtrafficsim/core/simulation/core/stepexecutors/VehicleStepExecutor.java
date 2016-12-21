@@ -25,21 +25,21 @@ public interface VehicleStepExecutor {
     /**
      * This method moves all spawned vehicles.
      *
-     * @param iteratorSpawned An iterator over all spawned vehicles getting moved.
+     * @param scenario The scenario holding an iterator over all spawned vehicles getting prepared for moving.
      */
     void moveAll(final Scenario scenario);
 
     /**
      * After moving all spawned vehicles, some calculations has to be done, e.g. registration at crossroads.
      *
-     * @param iteratorSpawned An iterator over all spawned vehicles getting told that they moved.
+     * @param scenario The scenario holding an iterator over all spawned vehicles getting prepared for moving.
      */
     void didMoveAll(final Scenario scenario);
 
     /**
      * After executing tasks for spawned vehicles, there is space for not spawned ones => spawn them.
      *
-     * @param iteratorNotSpawned An iterator over all not spawned vehicles getting told that they are allowed to spawn.
+     * @param scenario The scenario holding an iterator over all not-spawned vehicles getting prepared for moving.
      */
     void spawnAll(final Scenario scenario);
 
@@ -47,7 +47,7 @@ public interface VehicleStepExecutor {
      * After executing all vehicle tasks, the nodes has to update their priority lists and other logical stuff (e.g.
      * traffic lights if implemented).
      *
-     * @param iter An iterator over all nodes.
+     * @param scenario The scenario holding the {@code StreetGraph} and {@code SimulationConfig}
      */
     void updateNodes(final Scenario scenario);
 }

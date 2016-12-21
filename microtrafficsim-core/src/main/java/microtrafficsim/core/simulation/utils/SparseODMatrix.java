@@ -71,6 +71,9 @@ public class SparseODMatrix implements ODMatrix {
     @Override
     public void set(int count, Node origin, Node destination) {
 
+        if (count <= 0)
+            return;
+
         HashMap<Node, Integer> tmp = matrix.get(origin);
 
         if (tmp == null) {
@@ -122,7 +125,7 @@ public class SparseODMatrix implements ODMatrix {
             @Override
             public Triple<Node, Node, Integer> next() {
 
-                // if and not while, because this class guarantees that every entry has children
+                // "if" instead of "while", because this class guarantees that every entry has children
                 if (current_destinations == null || !current_destinations.hasNext()) {
                     origin = origins.next();
                     current_destinations = matrix.get(origin).keySet().iterator();

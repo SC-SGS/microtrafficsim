@@ -7,7 +7,6 @@ import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.map.area.Area;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.simulation.core.AbstractSimulation;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.Distribution;
@@ -71,9 +70,9 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
         // used for creating vehicles and routes etc.
         startFields = new HashMap<>();
         endFields   = new HashMap<>();
-        startWheel  = new BasicWheelOfFortune(config.rndGenGenerator.next());
-        endWheel    = new BasicWheelOfFortune(config.rndGenGenerator.next());
-        random      = config.rndGenGenerator.next();
+        startWheel  = new BasicWheelOfFortune(config.seedGenerator.next());
+        endWheel    = new BasicWheelOfFortune(config.seedGenerator.next());
+        random      = new Random(config.seedGenerator.next());
         // used for printing vehicle creation process
         lastPercentage  = 0;
         percentageDelta = 5;    // > 0 !!!
@@ -162,7 +161,11 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
             // has permission to create vehicle
             if (!route.isEmpty()) {
                 // add route to vehicle and vehicle to graph
-                createAndAddVehicle(new Car(config, this, route));
+                createAndAddVehicle(
+                        new Car(config.longIDGenerator.next(),
+                                config.seedGenerator.next(),
+                                this,
+                                route));
                 successfullyAdded++;
             }
 
@@ -220,7 +223,11 @@ public abstract class AbstractStartEndScenario extends AbstractSimulation {
                     // has permission to create vehicle
                     if (!route.isEmpty()) {
                         // add route to vehicle and vehicle to graph
-                        createAndAddVehicle(new Car(config, this, route));
+                        createAndAddVehicle(
+                                new Car(config.longIDGenerator.next(),
+                                        config.seedGenerator.next(),
+                                        this,
+                                        route));
                         successfullyAdded++;
                         addedVehicles[0]++;
                     }

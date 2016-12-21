@@ -2,6 +2,7 @@ package microtrafficsim.core.simulation.core;
 
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.simulation.builder.Builder;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
 import java.util.Timer;
@@ -17,7 +18,7 @@ import java.util.Timer;
  *
  * <p>
  * The simulation serves methods to execute a scenario after a builder
- * prepared it.
+ * prepared it. It serves methods for starting and pausing the simulation.
  *
  * @author Dominic Parga Cacheiro
  */
