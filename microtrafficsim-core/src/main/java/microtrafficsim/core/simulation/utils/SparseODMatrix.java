@@ -6,6 +6,7 @@ import microtrafficsim.utils.datacollection.Bundle;
 import microtrafficsim.utils.datacollection.Data;
 import microtrafficsim.utils.datacollection.Tag;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -180,5 +181,13 @@ public class SparseODMatrix implements ODMatrix {
                 return new Triple<>(origin, dest, matrix.get(origin).get(dest));
             }
         };
+    }
+
+    /**
+     * Re-initializes the internal {@code HashMap} to ensure, the memory usage is minimal.
+     */
+    @Override
+    public void clear() {
+        matrix = new HashMap<>();
     }
 }

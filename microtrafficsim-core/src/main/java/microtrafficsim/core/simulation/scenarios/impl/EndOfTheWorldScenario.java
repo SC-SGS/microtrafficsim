@@ -8,6 +8,7 @@ import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
+import microtrafficsim.core.simulation.utils.ODMatrix;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -16,7 +17,7 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 /**
- *
+ * TODO this class is not finished yet
  *
  * @author Dominic Parga Cacheiro
  */
@@ -50,24 +51,20 @@ public class EndOfTheWorldScenario extends BasicScenario {
     |==============|
     */
     @Override
+    public void setODMatrix(ODMatrix odMatrix) {
+
+    }
+
+    @Override
+    public ODMatrix getODMatrix() {
+        return null;
+    }
+
+    @Override
     public Supplier<ShortestPathAlgorithm> getScoutFactory() {
         return () ->
                 (random.nextFloat() < fastestWayProbability)
                         ? fastestWayBidirectionalAStar
                         : linearDistanceBidirectionalAStar;
-    }
-
-    @Override
-    public Collection<Area> getOriginFields() {
-        List<Area> list = new LinkedList<>();
-        list.add(startArea);
-        return list;
-    }
-
-    @Override
-    public Collection<Area> getDestinationFields() {
-        List<Area> list = new LinkedList<>();
-        list.add(destinationArea);
-        return list;
     }
 }

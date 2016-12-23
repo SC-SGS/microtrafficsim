@@ -68,9 +68,9 @@ public interface Scenario {
     |===========================|
     */
     /**
-     * @param matrix the matrix of this scenario gets set to this value and determines the routes of this scenario
+     * @param odMatrix the matrix of this scenario gets set to this value and determines the routes of this scenario
      */
-    void setODMatrix(ODMatrix matrix);
+    void setODMatrix(ODMatrix odMatrix);
 
     /**
      * @return the matrix used in this scenario determining the routes of this scenario

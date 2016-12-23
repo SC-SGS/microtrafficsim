@@ -50,10 +50,7 @@ public class SingleThreadedVehicleStepExecutor implements VehicleStepExecutor {
 
     @Override
     public void updateNodes(final Scenario scenario) {
-        Iterator<Node> iterator = scenario.getGraph().getNodeIterator();
-        while (iterator.hasNext()) {
-            Node node = iterator.next();
+        for (Node node : scenario.getGraph().getNodes())
             node.update();
-        }
     }
 }

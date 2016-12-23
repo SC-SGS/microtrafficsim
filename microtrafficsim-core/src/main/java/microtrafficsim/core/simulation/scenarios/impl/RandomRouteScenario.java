@@ -2,8 +2,6 @@ package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.map.area.Area;
-import microtrafficsim.core.map.area.RectangleArea;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
@@ -11,8 +9,12 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
+import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
+import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Random;
 import java.util.function.Supplier;
 
 /**
@@ -25,78 +27,48 @@ import java.util.function.Supplier;
  * @author Dominic Parga Cacheiro
  */
 public class RandomRouteScenario extends BasicScenario {
+    private static Logger logger = new EasyMarkableLogger(RandomRouteScenario.class);
 
-    private final Area startArea, destinationArea;
-    // scout factory
+    private ODMatrix odMatrix;
     private Random random;
+    // scout factory
     private final float fastestWayProbability = 1.0f;
     private final ShortestPathAlgorithm fastestWayBidirectionalAStar, linearDistanceBidirectionalAStar;
 
     /**
-     * Default constructor. Defines one origin and one destination field around the whole graph using its latitude
-     * and longitude borders.
+     * Calls {@link #next()} to initialize the origin-destination-matrix.
      */
     public RandomRouteScenario(SimulationConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
         super(config, graph, vehicleContainer);
 
-        startArea = new RectangleArea(graph.minLat, graph.minLon, graph.maxLat, graph.maxLon);
-        destinationArea = new RectangleArea(graph.minLat, graph.minLon, graph.maxLat, graph.maxLon);
+        odMatrix = new SparseODMatrix();
+        random = new Random(config.seedGenerator.next()); // TODO reset
 
         // scout factory
-        random = new Random(config.seedGenerator.next()); // TODO reset
         fastestWayBidirectionalAStar = new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);
         linearDistanceBidirectionalAStar = new LinearDistanceBidirectionalAStar(config.metersPerCell);
+
+        // init
+        next();
     }
 
+    /**
+     * Referring to {@code Random.nextAnything()}, this method calculates the next origin-destination-matrix based on
+     * the seed of this class.
+     */
     public void next() {
         logger.info("BUILDING ODMatrix started");
 
-        ArrayList<Node>
-                origins = new ArrayList<>(),
-                destinations = new ArrayList<>();
+        ArrayList<Node> nodes = new ArrayList<>(getGraph().getNodes());
+        odMatrix.clear();
 
-        /*
-        |===================================================================================|
-        | for each graph node, check its location relative to the origin/destination fields |
-        |===================================================================================|
-        */
-        Iterator<Node> nodes = getGraph().getNodeIterator();
-        while (nodes.hasNext()) {
-            Node node = nodes.next();
-
-            // for each node being in an origin field => add it
-            for (Area area : getOriginFields())
-                if (area.contains(node)) {
-                    origins.add(node);
-                    break;
-                }
-
-            // for each node being in a destination field => add it
-            for (Area area : getDestinationFields())
-                if (area.contains(node)) {
-                    destinations.add(node);
-                    break;
-                }
-        }
-
-        /*
-        |==============|
-        | build matrix |
-        |==============|
-        */
-        ODMatrix odmatrix = new SparseODMatrix();
+        // TODO can the runtime be improved by mathematical magic?
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
-            int rdmOrig = random.nextInt(origins.size());
-            int rdmDest = random.nextInt(destinations.size());
-            odmatrix.inc(origins.get(rdmOrig), destinations.get(rdmDest));
+            int rdmOrig = random.nextInt(nodes.size());
+            int rdmDest = random.nextInt(nodes.size());
+            odMatrix.inc(nodes.get(rdmOrig), nodes.get(rdmDest));
         }
 
-        /*
-        |==========================|
-        | finish creating ODMatrix |
-        |==========================|
-        */
-        setODMatrix(odmatrix);
         logger.info("BUILDING ODMatrix finished");
     }
 
@@ -106,13 +78,13 @@ public class RandomRouteScenario extends BasicScenario {
     |==============|
     */
     @Override
-    public void setODMatrix(ODMatrix matrix) {
-
+    public void setODMatrix(ODMatrix odMatrix) {
+        this.odMatrix = odMatrix;
     }
 
     @Override
     public ODMatrix getODMatrix() {
-        return null;
+        return new UnmodifiableODMatrix(odMatrix);
     }
 
     @Override

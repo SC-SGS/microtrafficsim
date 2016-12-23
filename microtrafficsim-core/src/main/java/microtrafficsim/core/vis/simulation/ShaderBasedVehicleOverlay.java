@@ -1,9 +1,10 @@
 package microtrafficsim.core.vis.simulation;
 
 import com.jogamp.opengl.GL3;
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.opengl.BufferStorage;
@@ -58,7 +59,7 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
 
     private final Supplier<VisualizationVehicleEntity> vehicleFactory;
 
-    private OldSimulation simulation;
+    private Simulation simulation;
     private Projection       projection;
     private OrthographicView view;
 
@@ -224,7 +225,7 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
 
         // update vehicle list
         Collection<? extends LogicVehicleEntity>
-                vehicles = new ArrayList<>(simulation.getVehicleContainer().getSpawnedVehicles());
+                vehicles = new ArrayList<>(simulation.getScenario().getVehicleContainer().getSpawnedVehicles());
         int                                      len      = vehicles.size();
         if (len == 0) return;
 
@@ -290,12 +291,12 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
      *
      * @return the simulation displayed in this overlay.
      */
-    public OldSimulation getSimulation() {
+    public Simulation getSimulation() {
         return simulation;
     }
 
     @Override
-    public void setSimulation(OldSimulation simulation) {
+    public void setSimulation(Simulation simulation) {
         this.simulation = simulation;
     }
 

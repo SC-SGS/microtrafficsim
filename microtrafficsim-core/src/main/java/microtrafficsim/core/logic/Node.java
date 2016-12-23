@@ -46,14 +46,10 @@ public class Node implements ShortestPathNode {
     public Node(SimulationConfig config, Coordinate coordinate) {
         this.config     = config;
         ID              = config.longIDGenerator.next();
-        random          = new Random(config.seedGenerator.next()); // TODO determinism => remember seed
         this.coordinate = coordinate;
 
         // crossing logic
-        assessedVehicles     = new HashMap<>();
-        maxPrioVehicles      = new HashSet<>();
-        newRegisteredVehicles = new PriorityQueue<>((v1, v2) -> Long.compare(v1.ID, v2.ID));
-        anyChangeSinceUpdate = false;
+        reset();
 
         // edges
         restrictions  = new HashMap<>();
@@ -161,13 +157,11 @@ public class Node implements ShortestPathNode {
      * guaranteed, that it will be identical.
      */
     synchronized void reset() {
-        random = new Random(config.seedGenerator.next()); // TODO determinism => remember seed
-
-        // crossing logic
-        assessedVehicles.clear();
-        maxPrioVehicles.clear();
-        newRegisteredVehicles.clear();
-        anyChangeSinceUpdate = false;
+        random                = new Random(config.seedGenerator.next()); // TODO determinism => remember seed
+        assessedVehicles      = new HashMap<>();
+        maxPrioVehicles       = new HashSet<>();
+        newRegisteredVehicles = new PriorityQueue<>((v1, v2) -> Long.compare(v1.ID, v2.ID));
+        anyChangeSinceUpdate  = false;
     }
 
     /**

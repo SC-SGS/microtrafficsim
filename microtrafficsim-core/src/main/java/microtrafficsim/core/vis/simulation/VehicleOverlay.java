@@ -1,6 +1,7 @@
 package microtrafficsim.core.vis.simulation;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
+import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.Overlay;
 
 import java.util.function.Supplier;
@@ -18,7 +19,7 @@ public interface VehicleOverlay extends Overlay {
      *
      * @param simulation the simulation to be displayed.
      */
-    void setSimulation(OldSimulation simulation);
+    void setSimulation(Simulation simulation);
 
     /**
      * Returns the factory used to create new, default-initialized visualization-components for vehicles.

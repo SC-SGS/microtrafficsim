@@ -76,7 +76,7 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
     public void updateNodes(final Scenario scenario) {
         delegator.doTask(
                 Node::update,
-                scenario.getGraph().getNodeIterator(),
+                scenario.getGraph().getNodes().iterator(),
                 scenario.getConfig().multiThreading.nodesPerThread);
     }
 }

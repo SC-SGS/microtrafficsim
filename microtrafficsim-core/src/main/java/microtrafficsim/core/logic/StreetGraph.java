@@ -1,9 +1,8 @@
 package microtrafficsim.core.logic;
 
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Set;
 
 
 /**
@@ -31,15 +30,11 @@ public class StreetGraph {
         edges       = new HashSet<>();
     }
 
-    public int getNumberOfNodes() {
-        return nodes.size();
-    }
-
     /**
-     * @return Iterator over all nodes
+     * @return instance of {@link java.util.Collections.UnmodifiableSet} of the nodes in this graph
      */
-    public Iterator<Node> getNodeIterator() {
-        return nodes.iterator();
+    public Set<Node> getNodes() {
+        return Collections.unmodifiableSet(nodes);
     }
 
     // |==================|

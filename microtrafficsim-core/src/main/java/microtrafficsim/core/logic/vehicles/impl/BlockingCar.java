@@ -15,13 +15,15 @@ public class BlockingCar extends Car {
 
     private boolean blocking;
 
-    public BlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route) {
-        super(config, stateListener, route);
+    public BlockingCar(long ID, long seed, VehicleStateListener stateListener,
+                       Route<Node> route) {
+        super(ID, seed, stateListener, route);
         blocking = false;
     }
 
-    public BlockingCar(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route, int spawnDelay) {
-        super(config, stateListener, route, spawnDelay);
+    public BlockingCar(long ID, long seed, VehicleStateListener stateListener,
+                       Route<Node> route, int spawnDelay) {
+        super(ID, seed, stateListener, route, spawnDelay);
         blocking = false;
     }
 

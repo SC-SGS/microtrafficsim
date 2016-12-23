@@ -3,6 +3,8 @@ package microtrafficsim.core.simulation.utils;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.utils.collections.Triple;
 
+import java.util.Iterator;
+
 /**
  * This interface represents an Origin-Destination-Matrix containing all start nodes as key and all destination
  * nodes as values. In addition to the destination nodes, the number of routes with this start/end node is saved.
@@ -55,6 +57,12 @@ public interface ODMatrix extends Iterable<Triple<Node, Node, Integer>> {
     int get(Node origin, Node destination);
 
     /**
+     * @return An iterator with triples of (origin, destination, # of occurrence)
+     */
+    @Override
+    Iterator<Triple<Node, Node, Integer>> iterator();
+
+    /**
      * @return A matrix containing the (very) same data as this one
      */
     ODMatrix shallowcopy();
@@ -71,4 +79,9 @@ public interface ODMatrix extends Iterable<Triple<Node, Node, Integer>> {
      * @return The result matrix, so this and the given matrix aren't changed
      */
     ODMatrix add(ODMatrix matrix);
+
+    /**
+     * Removes all data from this matrix
+     */
+    void clear();
 }

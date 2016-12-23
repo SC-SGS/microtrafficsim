@@ -28,9 +28,7 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
      * @param vehicleFactory This factory is needed to create the vehicles' visualization components.
      */
     public ConcurrentVehicleContainer(Supplier<VisualizationVehicleEntity> vehicleFactory) {
-        spawnedVehicles     = ConcurrentHashMap.newKeySet();
-        notSpawnedVehicles  = ConcurrentHashMap.newKeySet();
-        vehicles            = ConcurrentHashMap.newKeySet();
+        clearAll();
         this.vehicleFactory = vehicleFactory;
     }
 
@@ -47,9 +45,9 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
 
     @Override
     public void clearAll() {
-        notSpawnedVehicles.clear();
-        spawnedVehicles.clear();
-        vehicles.clear();
+        spawnedVehicles     = ConcurrentHashMap.newKeySet();
+        notSpawnedVehicles  = ConcurrentHashMap.newKeySet();
+        vehicles            = ConcurrentHashMap.newKeySet();
     }
 
     @Override
