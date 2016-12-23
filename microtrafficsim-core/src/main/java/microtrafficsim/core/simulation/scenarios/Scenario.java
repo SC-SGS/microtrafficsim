@@ -68,16 +68,6 @@ public interface Scenario {
     |===========================|
     */
     /**
-     * @param isBuilt should be true if ODMatrix has been set by {@link #setODMatrix(ODMatrix)} correctly (<=> not null)
-     */
-    void setODMatrixBuilt(boolean isBuilt);
-
-    /**
-     * @return whether the matrix has been built or not
-     */
-    boolean isODMatrixBuilt();
-
-    /**
      * @param matrix the matrix of this scenario gets set to this value and determines the routes of this scenario
      */
     void setODMatrix(ODMatrix matrix);
@@ -92,16 +82,6 @@ public interface Scenario {
     | route creation |
     |================|
     */
-    /**
-     * @return a predefined collection of origin-areas for creating the {@link ODMatrix} in a {@link Builder}
-     */
-    Collection<Area> getOriginFields();
-
-    /**
-     * @return a predefined collection of destination-areas for creating the {@link ODMatrix} in a {@link Builder}
-     */
-    Collection<Area> getDestinationFields();
-
     /**
      * @return A scout factory serving a ready shortest path algorithm for vehicle route calculation
      */

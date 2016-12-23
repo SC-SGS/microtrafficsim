@@ -25,12 +25,20 @@ public class SparseODMatrix implements ODMatrix {
         this.matrix = new HashMap<>();
     }
 
+    private void remove(Node origin, Node destination) {
+        HashMap<Node, Integer> tmp = matrix.get(origin);
+        if (tmp != null) {
+            tmp.remove(destination);
+            if (tmp.isEmpty())
+                matrix.remove(origin);
+        }
+    }
+
     /*
     |==============|
     | (i) ODMatrix |
     |==============|
     */
-
     @Override
     public void inc(Node origin, Node destination) {
 
@@ -59,28 +67,44 @@ public class SparseODMatrix implements ODMatrix {
             Integer count = tmp.get(destination);
             // if destination is unknown for this origin => do nothing
             if (count != null)
-                if (count <= 1) {
-                    tmp.remove(destination);
-                    if (tmp.isEmpty())
-                        matrix.remove(origin);
-                } else
+                if (count <= 1)
+                    remove(origin, destination);
+                else
                     tmp.put(destination, count - 1);
         }
     }
 
+    /**
+     * If count == 0, the entry is removed from the internal used {@code HashMap}.
+     */
     @Override
     public void set(int count, Node origin, Node destination) {
 
-        if (count <= 0)
+        if (count < 0)
+            throw new IllegalArgumentException("Given count has to be greater than or equal to 0.");
+
+        if (count == 0) {
+            remove(origin, destination);
             return;
+        }
 
         HashMap<Node, Integer> tmp = matrix.get(origin);
-
         if (tmp == null) {
             tmp = new HashMap<>();
             matrix.put(origin, tmp);
         }
         tmp.put(destination, count);
+    }
+
+    @Override
+    public void add(int count, Node origin, Node destination) {
+        HashMap<Node, Integer> tmp = matrix.get(origin);
+        if (tmp != null) {
+            Integer oldCount = tmp.get(destination);
+            if (oldCount != null)
+                count += oldCount;
+        }
+        set(count, origin, destination);
     }
 
     @Override
@@ -96,6 +120,27 @@ public class SparseODMatrix implements ODMatrix {
             return 0;
 
         return count;
+    }
+
+    @Override
+    public SparseODMatrix shallowcopy() {
+        SparseODMatrix copy = new SparseODMatrix();
+        copy.matrix = new HashMap<>(matrix);
+        return copy;
+    }
+
+    @Override
+    public SparseODMatrix add(ODMatrix odMatrix) {
+        SparseODMatrix result = shallowcopy();
+
+        for (Triple<Node, Node, Integer> triple : odMatrix) {
+            Node origin = triple.obj0;
+            Node destination = triple.obj1;
+            int count = triple.obj2;
+            result.add(count, origin, destination);
+        }
+
+        return result;
     }
 
     /**

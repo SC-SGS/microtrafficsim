@@ -29,13 +29,23 @@ public interface ODMatrix extends Iterable<Triple<Node, Node, Integer>> {
     void dec(Node origin, Node destination);
 
     /**
-     * Sets the value for the given origin/destination pair to the given count. If count <= 0, nothing should be done.
+     * Sets the value for the given origin/destination pair to the given count.
      *
-     * @param count The new value for the given origin/destination pair; should be > 0
-     * @param origin Route's origin
-     * @param destination Route's destination
+     * @param count the new value for the given origin/destination pair; should be > 0
+     * @param origin route's origin
+     * @param destination route's destination
+     * @throws IllegalArgumentException if count < 0
      */
     void set(int count, Node origin, Node destination);
+
+    /**
+     * Adds the given count to the count for the given origin/destination pair. If result <= 0, exception is thrown.
+     *
+     * @param count this is added to the count for the given origin/destination pair
+     * @param origin route's origin
+     * @param destination route's destination
+     */
+    void add(int count, Node origin, Node destination);
 
     /**
      * @param origin Route's origin
@@ -43,4 +53,22 @@ public interface ODMatrix extends Iterable<Triple<Node, Node, Integer>> {
      * @return Number of routes with this origin and this destination
      */
     int get(Node origin, Node destination);
+
+    /**
+     * @return A matrix containing the (very) same data as this one
+     */
+    ODMatrix shallowcopy();
+
+    /**
+     * <p>
+     * Two matrices should be added by adding the count of same elements. This helps by creating mixed
+     * origin-destination-definitions. <br>
+     * This means: <br>
+     * &bull This method is commutative usable.
+     * &bull If one matrix contains an element, which is not in the other matrix,
+     *
+     * @param matrix that should be added to this one
+     * @return The result matrix, so this and the given matrix aren't changed
+     */
+    ODMatrix add(ODMatrix matrix);
 }

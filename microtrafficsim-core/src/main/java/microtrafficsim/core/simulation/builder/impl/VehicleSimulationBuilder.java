@@ -89,69 +89,10 @@ public class VehicleSimulationBuilder implements Builder {
         logger.info("RESETTING SCENARIO finished");
 
         /*
-        |===================================|
-        | check if odmatrix has to be built |
-        |===================================|
-        */
-        if (!scenario.isODMatrixBuilt()) {
-            logger.info("BUILDING ODMatrix started");
-
-            ArrayList<Node>
-                    origins = new ArrayList<>(),
-                    destinations = new ArrayList<>();
-
-            /*
-            |===================================================================================|
-            | for each graph node, check its location relative to the origin/destination fields |
-            |===================================================================================|
-            */
-            Iterator<Node> nodes = scenario.getGraph().getNodeIterator();
-            while (nodes.hasNext()) {
-                Node node = nodes.next();
-
-                // for each node being in an origin field => add it
-                for (Area area : scenario.getOriginFields())
-                    if (area.contains(node)) {
-                        origins.add(node);
-                        break;
-                    }
-
-                // for each node being in a destination field => add it
-                for (Area area : scenario.getDestinationFields())
-                    if (area.contains(node)) {
-                        destinations.add(node);
-                        break;
-                    }
-            }
-
-            /*
-            |==============|
-            | build matrix |
-            |==============|
-            */
-            ODMatrix odmatrix = new SparseODMatrix();
-            for (int i = 0; i < scenario.getConfig().maxVehicleCount; i++) {
-                int rdmOrig = random.nextInt(origins.size());
-                int rdmDest = random.nextInt(destinations.size());
-                odmatrix.inc(origins.get(rdmOrig), destinations.get(rdmDest));
-            }
-
-            /*
-            |==========================|
-            | finish creating ODMatrix |
-            |==========================|
-            */
-            scenario.setODMatrix(odmatrix);
-            scenario.setODMatrixBuilt(true);
-            logger.info("BUILDING ODMatrix finished");
-        }
-
-        /*
         |=======================|
         | create vehicle routes |
         |=======================|
         */
-        ODMatrix odmatrix = scenario.getODMatrix();
         logger.info("CREATING VEHICLES started");
         long time_routes = System.nanoTime();
 
