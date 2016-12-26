@@ -1,4 +1,6 @@
-package microtrafficsim.math.random.distributions;
+package microtrafficsim.math.random.distributions.impl;
+
+import microtrafficsim.math.random.distributions.WheelOfFortune;
 
 import java.util.HashMap;
 import java.util.Iterator;

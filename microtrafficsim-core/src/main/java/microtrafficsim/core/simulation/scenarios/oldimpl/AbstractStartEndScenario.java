@@ -10,7 +10,7 @@ import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.Distribution;
-import microtrafficsim.math.random.distributions.BasicWheelOfFortune;
+import microtrafficsim.math.random.distributions.impl.BasicWheelOfFortune;
 import microtrafficsim.math.random.distributions.WheelOfFortune;
 import microtrafficsim.utils.StringUtils;
 import microtrafficsim.utils.logging.EasyMarkableLogger;

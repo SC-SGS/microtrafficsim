@@ -29,7 +29,6 @@ import java.util.function.Supplier;
 public class RandomRouteScenario extends BasicScenario {
     private static Logger logger = new EasyMarkableLogger(RandomRouteScenario.class);
 
-    private ODMatrix odMatrix;
     private Random random;
     // scout factory
     private final float fastestWayProbability = 1.0f;
@@ -41,7 +40,6 @@ public class RandomRouteScenario extends BasicScenario {
     public RandomRouteScenario(SimulationConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
         super(config, graph, vehicleContainer);
 
-        odMatrix = new SparseODMatrix();
         random = new Random(config.seedGenerator.next()); // TODO reset
 
         // scout factory
@@ -77,16 +75,6 @@ public class RandomRouteScenario extends BasicScenario {
     | (i) Scenario |
     |==============|
     */
-    @Override
-    public void setODMatrix(ODMatrix odMatrix) {
-        this.odMatrix = odMatrix;
-    }
-
-    @Override
-    public ODMatrix getODMatrix() {
-        return new UnmodifiableODMatrix(odMatrix);
-    }
-
     @Override
     public Supplier<ShortestPathAlgorithm> getScoutFactory() {
         return () ->

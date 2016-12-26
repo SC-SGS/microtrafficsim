@@ -5,6 +5,8 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.utils.ODMatrix;
+import microtrafficsim.core.simulation.utils.SparseODMatrix;
+import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
 
 /**
  * This class should only implement the basic stuff for children classes.
@@ -17,6 +19,7 @@ public abstract class BasicScenario implements Scenario {
     private final StreetGraph graph;
     private final VehicleContainer vehicleContainer;
     private boolean isPrepared;
+    protected ODMatrix odMatrix;
 
     /**
      * Default constructor
@@ -27,6 +30,8 @@ public abstract class BasicScenario implements Scenario {
         this.config = config;
         this.graph = graph;
         this.vehicleContainer = vehicleContainer;
+
+        this.odMatrix = new SparseODMatrix();
     }
 
     @Override
@@ -52,5 +57,15 @@ public abstract class BasicScenario implements Scenario {
     @Override
     public final boolean isPrepared() {
         return isPrepared;
+    }
+
+    @Override
+    public void setODMatrix(ODMatrix odMatrix) {
+        this.odMatrix = odMatrix;
+    }
+
+    @Override
+    public UnmodifiableODMatrix getODMatrix() {
+        return new UnmodifiableODMatrix(odMatrix);
     }
 }
