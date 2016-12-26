@@ -116,6 +116,22 @@ public class Rect2d {
     }
 
 
+    /**
+     * Projects the given point from the given source rectangle to the given target rectangle.
+     *
+     * @param from the rectangle indicating the source coordinate system.
+     * @param to   the rectangle indicating the target coordinate system.
+     * @param p    the point to project.
+     * @return     {@code p} projected from {@code from} to {@code to}.
+     */
+    public static Vec2d project(Rect2d from, Rect2d to, Vec2d p) {
+        return new Vec2d(
+            to.xmin + (p.x - from.xmin) / (from.xmax - from.xmin) * (to.xmax - to.xmin),
+            to.ymin + (p.y - from.ymin) / (from.ymax - from.ymin) * (to.ymax - to.ymin)
+        );
+    }
+
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Rect2d)) return false;
