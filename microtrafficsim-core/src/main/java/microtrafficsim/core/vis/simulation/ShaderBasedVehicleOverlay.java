@@ -202,6 +202,7 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
     @Override
     public void display(RenderContext context, MapBuffer map) {
         if (!enabled || simulation == null) return;
+        if (simulation.getScenario() == null) return;
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         // NOTE: assumes z-axis top-down orthographic projection

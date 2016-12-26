@@ -1,5 +1,6 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
@@ -7,6 +8,7 @@ import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
+import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
 import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
@@ -35,6 +37,16 @@ public class RandomRouteScenario extends BasicScenario {
     private final ShortestPathAlgorithm fastestWayBidirectionalAStar, linearDistanceBidirectionalAStar;
 
     /**
+     * Default constructor calling {@link #RandomRouteScenario(SimulationConfig, StreetGraph, VehicleContainer)} using
+     * {@link ConcurrentVehicleContainer} as {@code VehicleContainer}
+     */
+    public RandomRouteScenario(SimulationConfig config,
+                                  StreetGraph graph,
+                                  Supplier<VisualizationVehicleEntity> vehicleFactory) {
+        this(config, graph, new ConcurrentVehicleContainer(vehicleFactory));
+    }
+
+    /**
      * Calls {@link #next()} to initialize the origin-destination-matrix.
      */
     public RandomRouteScenario(SimulationConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
@@ -51,8 +63,15 @@ public class RandomRouteScenario extends BasicScenario {
     }
 
     /**
+     * <p>
      * Referring to {@code Random.nextAnything()}, this method calculates the next origin-destination-matrix based on
      * the seed of this class.
+     *
+     * <p>
+     * Until enough vehicles (defined in {@link SimulationConfig}) are created, this method is doing this:<br>
+     * &bull get random origin <br>
+     * &bull get random destination <br>
+     * &bull increase the route count for the found origin-destination-pair
      */
     public void next() {
         logger.info("BUILDING ODMatrix started");

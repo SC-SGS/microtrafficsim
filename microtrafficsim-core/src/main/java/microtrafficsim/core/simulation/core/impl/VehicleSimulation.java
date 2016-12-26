@@ -9,9 +9,7 @@ import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.utils.StringUtils;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -37,12 +35,20 @@ public class VehicleSimulation implements Simulation {
     private long time;
 
     /**
-     * Default constructor. Adopts the given scenario by calling {@link #initScenario(Scenario)}.
+     * Default constructor. Before this simulation can be used, it needs a scenario!
+     */
+    public VehicleSimulation() {
+        this(null);
+    }
+
+    /**
+     * Default constructor. Adopts the given scenario by calling {@link #setAndInitScenario(Scenario)}.
      *
      * @param scenario This scenario is executed later.
      */
     public VehicleSimulation(Scenario scenario) {
-        initScenario(scenario);
+        paused = true;
+        setAndInitScenario(scenario);
         timer = new Timer();
     }
 
@@ -57,12 +63,17 @@ public class VehicleSimulation implements Simulation {
     }
 
     @Override
-    public void initScenario(Scenario scenario) {
+    public void setAndInitScenario(Scenario scenario) {
         if (!isPaused())
             throw new RuntimeException("The simulation sets a new scenario but is not paused.");
 
-        this.scenario = scenario;
+        if (scenario == null) {
+            age = -1;
+            return;
+        }
+
         age = 0;
+        this.scenario = scenario;
         int nThreads = scenario.getConfig().multiThreading.nThreads;
         vehicleStepExecutor =
                 nThreads > 1 ?

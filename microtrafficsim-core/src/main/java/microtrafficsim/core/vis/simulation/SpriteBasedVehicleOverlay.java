@@ -222,6 +222,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
     @Override
     public void display(RenderContext context, MapBuffer map) {
         if (!enabled || simulation == null) return;
+        if (simulation.getScenario() == null) return;
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         // get direction of lane offset

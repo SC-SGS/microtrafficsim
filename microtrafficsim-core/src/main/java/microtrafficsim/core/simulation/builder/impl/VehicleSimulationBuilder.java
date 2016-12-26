@@ -6,39 +6,28 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.impl.Car;
-import microtrafficsim.core.map.area.Area;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.simulation.builder.Builder;
+import microtrafficsim.core.simulation.builder.SimulationBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
-import microtrafficsim.core.simulation.utils.ODMatrix;
-import microtrafficsim.core.simulation.utils.SparseODMatrix;
 import microtrafficsim.interesting.progressable.ProgressListener;
-import microtrafficsim.math.Distribution;
 import microtrafficsim.utils.StringUtils;
 import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.concurrency.delegation.DynamicThreadDelegator;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
- * This class is an implementation of {@link Builder} for {@link AbstractVehicle}s.
+ * This class is an implementation of {@link SimulationBuilder} for {@link AbstractVehicle}s.
  *
  * @author Dominic Parga Cacheiro
  */
-public class VehicleSimulationBuilder implements Builder {
+public class VehicleSimulationBuilder implements SimulationBuilder {
 
     private Logger logger = new EasyMarkableLogger(VehicleSimulationBuilder.class);
 
@@ -76,6 +65,8 @@ public class VehicleSimulationBuilder implements Builder {
     public Scenario prepare(final Scenario scenario, final ProgressListener listener) {
         logger.info("PREPARING SCENARIO started");
         long time_preparation = System.nanoTime();
+
+        // TODO Dominic: buggy if this is called twice for the same scenario with different vehicle count
 
         /*
         |===========|

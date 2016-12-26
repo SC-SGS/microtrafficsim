@@ -1,8 +1,6 @@
 package microtrafficsim.core.simulation.core;
 
-import microtrafficsim.core.logic.vehicles.VehicleStateListener;
-import microtrafficsim.core.simulation.builder.Builder;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.builder.SimulationBuilder;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
 import java.util.Timer;
@@ -13,7 +11,7 @@ import java.util.Timer;
  * A simulation setup consists of three major parts: <br>
  * &bull {@link Simulation}: the executor of simulation steps <br>
  * &bull {@link Scenario}: the definition of routes etc. <br>
- * &bull {@link Builder}: the scenario builder; e.g. pre-calculating routes by a
+ * &bull {@link SimulationBuilder}: the scenario builder; e.g. pre-calculating routes by a
  * given scenario
  *
  * <p>
@@ -40,7 +38,7 @@ public interface Simulation {
      *
      * @param scenario This scenario is being executed
      */
-    void initScenario(Scenario scenario);
+    void setAndInitScenario(Scenario scenario);
 
     /*
     |======================|

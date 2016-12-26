@@ -1,7 +1,7 @@
 package microtrafficsim.ui;
 
 import microtrafficsim.build.BuildSetup;
-import microtrafficsim.core.simulation.scenarios.oldimpl.RandomRouteScenario;
+import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.ui.gui.GUIController;
 import microtrafficsim.ui.gui.GUIEvent;
 import microtrafficsim.ui.gui.SimulationController;

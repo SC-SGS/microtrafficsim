@@ -11,7 +11,13 @@ import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefini
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
+import microtrafficsim.core.simulation.builder.SimulationBuilder;
+import microtrafficsim.core.simulation.builder.impl.VehicleSimulationBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.core.Simulation;
+import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.VisualizerConfig;
@@ -25,7 +31,6 @@ import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
-import microtrafficsim.examples.simulation.scenarios.Scenario;
 import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
@@ -152,7 +157,9 @@ public class Main {
         SpriteBasedVehicleOverlay vehicleOverlay  = new SpriteBasedVehicleOverlay(PROJECTION);
 
         /* create the simulation */
-        OldSimulation sim = new Scenario(config, result.streetgraph, vehicleOverlay.getVehicleFactory());
+        Scenario scenario =
+                new EndOfTheWorldScenario(config, result.streetgraph, vehicleOverlay.getVehicleFactory());
+        Simulation sim = new VehicleSimulation(scenario);
         vehicleOverlay.setSimulation(sim);
 
         /* create and display the frame */
@@ -199,7 +206,8 @@ public class Main {
         });
 
         /* initialize the simulation */
-        sim.prepare();
+        SimulationBuilder simbuilder = new VehicleSimulationBuilder(config.seed, vehicleOverlay.getVehicleFactory());
+        simbuilder.prepare(scenario);
         sim.runOneStep();
     }
 
@@ -229,7 +237,7 @@ public class Main {
      * @param provider the provider providing the tiles to be displayed
      * @return the created visualization object
      */
-    private static TileBasedVisualization createVisualization(TileProvider provider, OldSimulation sim) {
+    private static TileBasedVisualization createVisualization(TileProvider provider, Simulation sim) {
         /* create a new visualization object */
         TileBasedVisualization vis
                 = new TileBasedVisualization(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, provider, NUM_TILE_WORKERS);

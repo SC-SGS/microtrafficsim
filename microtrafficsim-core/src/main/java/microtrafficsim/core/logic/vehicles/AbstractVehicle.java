@@ -258,7 +258,8 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
      * empty or not. The route must have a start being not null.
      */
     public void registerInGraph() {
-        route.getStart().registerVehicle(this);
+        if (!route.isEmpty())
+            route.getStart().registerVehicle(this);
     }
 
     /**
