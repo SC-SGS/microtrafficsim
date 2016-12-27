@@ -1,8 +1,8 @@
 package microtrafficsim.ui.preferences.impl;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.ui.gui.GUIController;
-import microtrafficsim.ui.gui.GUIEvent;
+import microtrafficsim.ui.gui.statemachine.GUIController;
+import microtrafficsim.ui.gui.statemachine.impl.GUIEvent;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
 import microtrafficsim.ui.preferences.Preferences;

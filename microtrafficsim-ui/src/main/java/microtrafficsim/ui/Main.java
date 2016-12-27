@@ -2,9 +2,9 @@ package microtrafficsim.ui;
 
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
-import microtrafficsim.ui.gui.GUIController;
-import microtrafficsim.ui.gui.GUIEvent;
-import microtrafficsim.ui.gui.SimulationController;
+import microtrafficsim.ui.gui.statemachine.GUIController;
+import microtrafficsim.ui.gui.statemachine.impl.GUIEvent;
+import microtrafficsim.ui.gui.statemachine.impl.SimulationController;
 import microtrafficsim.ui.vis.TileBasedMapViewer;
 
 import javax.swing.*;
@@ -12,7 +12,9 @@ import java.io.File;
 
 
 /**
- * @author Dominic Parga Cacheiro
+ * Just contains the main-method starting an instance of {@link SimulationController}.
+ *
+ * @author Maximilian Luz, Dominic Parga Cacheiro
  */
 public class Main {
 
@@ -36,6 +38,9 @@ public class Main {
             file = null;
 
         /*
+        --------------
+        | UI options
+        --------------
         // General
         PrefElement.sliderSpeedup.setEnabled(true);
         PrefElement.ageForPause.setEnabled(false);

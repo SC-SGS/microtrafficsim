@@ -1,4 +1,4 @@
-package microtrafficsim.ui.gui;
+package microtrafficsim.ui.gui.menues;
 
 import javax.swing.JMenuBar;
 
@@ -7,8 +7,8 @@ import javax.swing.JMenuBar;
  * @author Dominic Parga Cacheiro
  */
 public class MTSMenuBar extends JMenuBar {
-    final MTSMenuMap   menuMap;
-    final MTSMenuLogic menuLogic;
+    public final MTSMenuMap   menuMap;
+    public final MTSMenuLogic menuLogic;
 
     public MTSMenuBar() {
         menuMap = new MTSMenuMap();
