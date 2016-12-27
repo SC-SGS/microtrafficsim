@@ -5,8 +5,6 @@ import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
-import microtrafficsim.utils.id.ConcurrentSeedGenerator;
 
 import java.util.function.Supplier;
 

@@ -1,4 +1,4 @@
-package microtrafficsim.ui.utils;
+package microtrafficsim.core.mapviewer.utils;
 
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;

@@ -2,6 +2,8 @@ package microtrafficsim.ui.gui;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.mapviewer.MapViewer;
+import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.SimulationBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleSimulationBuilder;
@@ -9,7 +11,6 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
@@ -17,8 +18,6 @@ import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
 import microtrafficsim.ui.preferences.impl.PreferencesFrame;
-import microtrafficsim.ui.vis.MapViewer;
-import microtrafficsim.ui.vis.TileBasedMapViewer;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
@@ -80,7 +79,7 @@ public class SimulationController implements GUIController {
 
         // visualization
         this.mapviewer   = mapviewer;
-        overlay          = new SpriteBasedVehicleOverlay(TileBasedMapViewer.PROJECTION);
+        overlay          = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
         currentDirectory = new File(System.getProperty("user.dir"));
 
         // frame/gui
@@ -332,7 +331,7 @@ public class SimulationController implements GUIController {
         //            toolbar.add(new MTSMenuBar(this).create());
         //            addToTopBar(toolbar);
         frame.add(menubar, BorderLayout.NORTH);
-        frame.setSize(TileBasedMapViewer.INITIAL_WINDOW_WIDTH, TileBasedMapViewer.INITIAL_WINDOW_HEIGHT);
+        frame.setSize(mapviewer.getInitialWindowWidth(), mapviewer.getInitialWindowHeight());
         frame.add(mapviewer.getVisualizationPanel());
 
         /*

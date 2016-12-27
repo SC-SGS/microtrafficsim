@@ -2,23 +2,15 @@ package logic.validation;
 
 import logic.validation.scenarios.ValidationScenario;
 import logic.validation.scenarios.impl.TCrossroadScenario;
-import microtrafficsim.build.BuildSetup;
-import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.style.impl.LightStyleSheet;
-import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
+import microtrafficsim.core.mapviewer.MapViewer;
+import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
-import microtrafficsim.core.vis.VisualizationPanel;
-import microtrafficsim.core.vis.map.tiles.PreRenderedTileProvider;
-import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
-import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
-import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
+import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.id.ConcurrentSeedGenerator;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -31,8 +23,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.function.Supplier;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -44,11 +34,17 @@ public class Main {
     public static void main(String[] args) {
 
         /* build setup */
-        BuildSetup.init();
-        ValidationScenario scenario = new TCrossroadScenario();
-        SimulationConfig config = scenario.getConfig();
-        StyleSheet style = new LightStyleSheet();
+        EasyMarkableLogger.TRACE_ENABLED = false;
+        EasyMarkableLogger.DEBUG_ENABLED = false;
+        EasyMarkableLogger.INFO_ENABLED = true;
+        EasyMarkableLogger.WARN_ENABLED = true;
+        EasyMarkableLogger.ERROR_ENABLED = true;
+        ValidationScenario scenario = new TCrossroadScenario(); // change this for another scenario
+        SimulationConfig config     = scenario.getConfig();
+        MapViewer mapviewer         = new TileBasedMapViewer(new LightStyleSheet());
+        VehicleOverlay overlay      = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
 
+        /* get file */
         File file;
         try {
             file = new PackagedResource(Main.class, scenario.OSM_FILENAME).asTemporaryFile();
@@ -65,80 +61,63 @@ public class Main {
         config.multiThreading.nThreads = 1;
         logger.debug("using '" + Long.toHexString(config.seed) + "' as seed");
 
-        /* set up layer and tile provider */
-        TileLayerProvider layerProvider    = createLayerProvider(style.getLayers());
-        PreRenderedTileProvider provider   = new PreRenderedTileProvider(layerProvider);
-
-        /* parse the OSM file */
-        OSMParser parser = getParser(scencfg);
-        OSMParser.Result result = parser.parse(file);
-
-        /* store the geometry on a grid to later generate tiles */
-        QuadTreeTiledMapSegment tiled = new QuadTreeTiledMapSegment.Generator()
-                .generate(result.segment, TILING_SCHEME, TILE_GRID_LEVEL);
-
-        /* update the feature sources, so that they will use the created provider */
-        for (LayerDefinition def : style.getLayers()) {
-            LayerSource src = def.getSource();
-
-            if (src instanceof FeatureTileLayerSource)
-                ((FeatureTileLayerSource) src).setFeatureProvider(tiled);
-        }
-
-        /* create the visualization overlay */
-        SpriteBasedVehicleOverlay overlay = new SpriteBasedVehicleOverlay(projection);
-
-        /* create the simulation */
-        Simulation sim = simClazz.getConstructor(scencfg.getClass(), StreetGraph.class, Supplier.class)
-                .newInstance(scencfg, result.streetgraph, overlay.getVehicleFactory());
-        overlay.setSimulation(sim);
-
-        /* create and display the frame */
         SwingUtilities.invokeLater(() -> {
-
-            /* create the actual visualizer */
-            TileBasedVisualization visualization = createVisualization(provider, sim);
-            visualization.putOverlay(0, overlay);
-
-            VisualizationPanel vpanel;
+            /* visualization */
             try {
-                vpanel = createVisualizationPanel(visualization);
+                mapviewer.create(config);
             } catch (UnsupportedFeatureException e) {
                 e.printStackTrace();
-                Runtime.getRuntime().halt(0);
-                return;
             }
+            mapviewer.addOverlay(0, overlay);
 
-            /* create and initialize the JFrame */
+            /* setup JFrame */
+            // todo toolbar for icons for run etc.
+                    //            JToolBar toolbar = new JToolBar("Menu");
+                    //            toolbar.add(new MTSMenuBar(this).create());
+                    //            addToTopBar(toolbar);
             JFrame frame = new JFrame("MicroTrafficSim - Validation Scenario");
-            frame.setSize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
-            frame.add(vpanel);
+            frame.setSize(mapviewer.getInitialWindowWidth(), mapviewer.getInitialWindowHeight());
+            frame.add(mapviewer.getVisualizationPanel());
 
             /*
-             * Note: JOGL automatically calls glViewport, we need to make
-             * sure that this function is not called with a height or width
-             * of 0! Otherwise the program crashes.
+             * Note: JOGL automatically calls glViewport, we need to make sure that this
+             * function is not called with a height or width of 0! Otherwise the program
+             * crashes.
              */
             frame.setMinimumSize(new Dimension(100, 100));
 
-            // on close: stop the visualization and exit
+            /* on close: stop the visualization and exit */
             frame.addWindowListener(new WindowAdapter() {
                 public void windowClosing(WindowEvent e) {
-                    vpanel.stop();
+                    mapviewer.stop();
                     System.exit(0);
                 }
             });
 
-            /* show the frame and start the render-loop */
+            /* show */
+            frame.setLocationRelativeTo(null);    // center on screen; close to setVisible
             frame.setVisible(true);
-            vpanel.start();
+            mapviewer.show();
 
-            if (PRINT_FRAME_STATS)
-                visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
+            /* parse osm map */
+            String oldTitle = frame.getTitle();
+            frame.setTitle("Parsing new map, please wait...");
+
+            try {
+                /* parse file and create tiled provider */
+                OSMParser.Result result = mapviewer.parse(file);
+
+                mapviewer.changeMap(result);
+                frame.setTitle("MicroTrafficSim - " + file.getName());
+            } catch (Exception e) {
+                frame.setTitle(oldTitle);
+                e.printStackTrace();
+                Runtime.getRuntime().halt(1);
+            }
         });
 
         /* initialize the simulation */
-        sim.prepare();
-        sim.runOneStep();
+//        sim.prepare();
+//        sim.runOneStep();
     }
 }
