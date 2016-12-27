@@ -68,14 +68,14 @@ has been our supervisor for the first 6 months and he is still helping us in mon
 is part of our team since beginning. He has written the OSM parser and is our visualization guy.
 
 **Dominic Parga Cacheiro**  
-is part of our team since beginning. His job is managing organizational work, he developes and improves the vehicle/traffic logic and implements the user interface.
+is part of our team since beginning. As well as managing organizational work, he developes and improves the vehicle/traffic logic and shortest path algorithms. He also implements the user interface.
 
 
 ## Former contributors
 Some people have worked on this project, but there is no right place to name them. Thus we name them here.
 
 **Jan-Oliver Schmidt**  
-has been part of our team in the very first 6 months. He worked at the single-laned traffic logic and our first paper.
+has been part of our team in the very first 6 months. He worked at the single-laned traffic logic, the shortest path algorithms (especially A-star) and our first paper.
 
 
 ## Papers
