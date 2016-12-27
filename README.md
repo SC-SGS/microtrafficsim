@@ -7,8 +7,7 @@ with OpenStreetMap data.
 We are cleaning up the existing project. This includes detailed Javadocs,
 removing quick fixes or creating branches for them.
 
-In addition to that, the simulation package is being redesigned for better
-maintenance and more flexible code/scenario addition. 
+The simulation package is redesigned! The next step is making it deterministic.
 
 
 ## Demonstration and Examples
