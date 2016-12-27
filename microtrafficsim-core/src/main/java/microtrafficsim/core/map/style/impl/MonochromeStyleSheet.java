@@ -1,4 +1,4 @@
-package microtrafficsim.ui.vis;
+package microtrafficsim.core.map.style.impl;
 
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
@@ -27,7 +27,7 @@ import java.util.function.Predicate;
  *
  * @author Maximilian Luz
  */
-class MonochromeStyleSheet implements StyleSheet {
+public class MonochromeStyleSheet implements StyleSheet {
 
     private static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
 

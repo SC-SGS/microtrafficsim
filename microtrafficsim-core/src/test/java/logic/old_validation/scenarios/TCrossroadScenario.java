@@ -1,8 +1,7 @@
-package logic.validation.scenarios;
+package logic.old_validation.scenarios;
 
-import logic.validation.Main;
-import logic.validation.ValidationScenario;
-import logic.validation.cars.ValidationCar;
+import logic.old_validation.Main;
+import logic.old_validation.ValidationScenario;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
@@ -28,13 +27,12 @@ import java.util.function.Supplier;
  *
  * @author Dominic Parga Cacheiro, Jan-Oliver Schmidt
  */
-public class MotorwaySlipRoadScenario extends ValidationScenario {
+public class TCrossroadScenario extends ValidationScenario {
 
-    private static final String OSM_FILENAME   = "motorway_slip-road.osm";
-    private Node bottomMotorway = null;
-    private Node interception   = null;
-    private Node topMotorway    = null;
-    private Node bottomRight    = null;
+    private static final String OSM_FILENAME = "T_crossroad.osm";
+    private Node bottom       = null;
+    private Node topRight     = null;
+    private Node topLeft      = null;
     private NextScenarioState   nextScenarioState;
 
     /**
@@ -44,26 +42,25 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
      * @param graph          The streetgraph used for this scenarios.
      * @param vehicleFactory This creates vehicles.
      */
-    public MotorwaySlipRoadScenario(SimulationConfig config, StreetGraph graph,
-                                    Supplier<VisualizationVehicleEntity> vehicleFactory) {
+    public TCrossroadScenario(SimulationConfig config, StreetGraph graph,
+                              Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
-        nextScenarioState = NextScenarioState.PRIORITY_TO_THE_MOTORWAY;
+        nextScenarioState = NextScenarioState.PRIORITY_TO_THE_RIGHT;
     }
 
     private static void setupConfig(SimulationConfig config) {
 
         // super attributes
-        config.longIDGenerator                            = new ConcurrentLongIDGenerator();
-        config.speedup                                    = 5;
-        config.maxVehicleCount                            = 3;
-        config.crossingLogic.drivingOnTheRight            = true;
-        config.crossingLogic.edgePriorityEnabled          = true;
-        config.crossingLogic.priorityToTheRightEnabled    = true;
-        config.crossingLogic.friendlyStandingInJamEnabled = false;
+        config.longIDGenerator                         = new ConcurrentLongIDGenerator();
+        config.speedup                                 = 5;
+        config.maxVehicleCount                         = 3;
+        config.crossingLogic.drivingOnTheRight         = true;
+        config.crossingLogic.edgePriorityEnabled       = true;
+        config.crossingLogic.priorityToTheRightEnabled = true;
         config.crossingLogic.setOnlyOneVehicle(false);
+        config.crossingLogic.friendlyStandingInJamEnabled = false;
         // own attributes
-        config.ageForPause        = -1;
-        ValidationCar.maxVelocity = 1;
+        config.ageForPause = -1;
     }
 
     public static void main(String[] args) throws Exception {
@@ -71,7 +68,7 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
 
         SimulationConfig config = new SimulationConfig();
         setupConfig(config);
-        Main.show(config.visualization.projection, file, config, MotorwaySlipRoadScenario.class);
+        Main.show(config.visualization.projection, file, config, TCrossroadScenario.class);
     }
 
     @Override
@@ -80,16 +77,29 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
 
         if (vehicleState == VehicleState.DESPAWNED && getVehicleContainer().getVehicleCount() == 0) {
             switch (nextScenarioState) {
-            case PRIORITY_TO_THE_MOTORWAY:
-                createAndAddCar(bottomMotorway, topMotorway, 0,                    Color.fromRGB(0xCC4C1A));
-                createAndAddCar(bottomRight,    topMotorway, 2 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
+            case PRIORITY_TO_THE_RIGHT:
+                createAndAddCar(topRight, topLeft, 0,                    Color.fromRGB(0xCC4C1A));
+                createAndAddCar(bottom,   topLeft, 1 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
+                nextScenarioState = NextScenarioState.NO_INTERCEPTION;
+                break;
+
+            case NO_INTERCEPTION:
+                createAndAddCar(topRight, topLeft,  0,                    Color.fromRGB(0xCC4C1A));
+                createAndAddCar(bottom,   topRight, 1 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
+                nextScenarioState = NextScenarioState.DEADLOCK;
+                break;
+
+            case DEADLOCK:
+                createAndAddCar(topRight, topLeft,  0,                    Color.fromRGB(0xCC4C1A));
+                createAndAddCar(topLeft,  topRight, 1 + updateGraphDelay, Color.fromRGB(0x3EAAAB));
+                createAndAddCar(bottom,   topLeft,  1 + updateGraphDelay, Color.fromRGB(0x88B03F));
+                nextScenarioState = NextScenarioState.PRIORITY_TO_THE_RIGHT;
             }
         }
     }
 
     @Override
     protected void createAndAddVehicles(ProgressListener listener) {
-
         /* sort by lon */
         Iterator<Node>  iter        = graph.getNodeIterator();
         ArrayList<Node> sortedNodes = new ArrayList<>(4);
@@ -98,14 +108,13 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
 
         sortedNodes.sort((n1, n2) -> n1.getCoordinate().lon > n2.getCoordinate().lon ? 1 : -1);
 
-        bottomMotorway = sortedNodes.get(0);
-        interception   = sortedNodes.get(1);
-        topMotorway    = sortedNodes.get(2);
-        bottomRight    = sortedNodes.get(3);
+        topLeft  = sortedNodes.get(0);
+        bottom   = sortedNodes.get(2);
+        topRight = sortedNodes.get(3);
 
         updateScenarioState(VehicleState.DESPAWNED);
         justInitialized = false;
     }
 
-    private enum NextScenarioState { PRIORITY_TO_THE_MOTORWAY; }
+    private enum NextScenarioState { PRIORITY_TO_THE_RIGHT, NO_INTERCEPTION, DEADLOCK }
 }

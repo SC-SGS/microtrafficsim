@@ -1,7 +1,7 @@
-package logic.validation.scenarios;
+package logic.old_validation.scenarios;
 
-import logic.validation.Main;
-import logic.validation.ValidationScenario;
+import logic.old_validation.Main;
+import logic.old_validation.ValidationScenario;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;

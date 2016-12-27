@@ -32,11 +32,10 @@ import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 import microtrafficsim.osm.primitives.Way;
+import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.ui.utils.Utils;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Predicate;
 

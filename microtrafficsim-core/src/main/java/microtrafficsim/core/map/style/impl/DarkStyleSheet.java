@@ -1,4 +1,4 @@
-package microtrafficsim.ui.vis;
+package microtrafficsim.core.map.style.impl;
 
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
@@ -22,11 +22,11 @@ import java.util.function.Predicate;
 
 
 /**
- * A light style-sheet for the MapViewer.
+ * A dark style-sheet for the MapViewer.
  *
- * @author Maximilian Luz
+ * @author Dominic Parga Cacheiro, Maximilian Luz
  */
-class LightStyleSheet implements StyleSheet {
+public class DarkStyleSheet implements StyleSheet {
 
     private static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
 
@@ -36,20 +36,20 @@ class LightStyleSheet implements StyleSheet {
 
     {
         /* color definitions */
-        colorBackground = Color.fromRGB(0xFFFFFF);
+        colorBackground = Color.fromRGB(0);
 
-        Color inlineColor = Color.fromRGB(0xFDFDFD);
+        Color inlineColor = Color.fromRGB(0xFFFFFF - 0xFDFDFD);
 
         Color[] colors = {
-                Color.fromRGB(0xFF6F69),      // motorway
-                Color.fromRGB(0x659118),      // trunk
-                Color.fromRGB(0xDB9E36),      // primary
-                Color.fromRGB(0x105B63),      // secondary
-                Color.from(177, 98, 134),     // tertiary
-                Color.from(104, 157, 106),    // unclassified
-                Color.from(124, 111, 100),    // residential
-                Color.from(146, 131, 116),    // road
-                Color.from(146, 131, 116),    // living-street
+                Color.fromRGB(0xFFFFFF - 0xFF6F69),             // motorway
+                Color.fromRGB(0xFFFFFF - 0x659118),             // trunk
+                Color.fromRGB(0xFFFFFF - 0xDB9E36),             // primary
+                Color.fromRGB(0xFFFFFF - 0x105B63),             // secondary
+                Color.from(255 - 177, 255 - 98, 255 - 134),     // tertiary
+                Color.from(255 - 104, 255 - 157, 255 - 106),    // unclassified
+                Color.from(255 - 124, 255 - 111, 255 - 100),    // residential
+                Color.from(255 - 146, 255 - 131, 255 - 116),    // road
+                Color.from(255 - 146, 255 - 131, 255 - 116),    // living-street
         };
 
 
@@ -211,9 +211,9 @@ class LightStyleSheet implements StyleSheet {
      * @return the created shader-sources.
      */
     private ShaderProgramSource getStreetShader() {
-        Resource vert = new PackagedResource(LightStyleSheet.class, "/shaders/features/streets/streets.vs");
-        Resource frag = new PackagedResource(LightStyleSheet.class, "/shaders/features/streets/streets.fs");
-        Resource geom = new PackagedResource(LightStyleSheet.class, "/shaders/features/streets/streets_round.gs");
+        Resource vert = new PackagedResource(DarkStyleSheet.class, "/shaders/features/streets/streets.vs");
+        Resource frag = new PackagedResource(DarkStyleSheet.class, "/shaders/features/streets/streets.fs");
+        Resource geom = new PackagedResource(DarkStyleSheet.class, "/shaders/features/streets/streets_round.gs");
 
         ShaderProgramSource prog = new ShaderProgramSource("streets");
         prog.addSource(GL3.GL_VERTEX_SHADER, vert);

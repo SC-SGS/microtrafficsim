@@ -1,4 +1,4 @@
-package logic.validation.cars;
+package logic.old_validation.cars;
 
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
@@ -13,13 +13,14 @@ import java.util.function.Function;
  * @author Dominic Parga Cacheiro
  */
 public class ValidationCar extends Car {
-    public ValidationCar(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route) {
-        super(config, stateListener, route);
+    public ValidationCar(long ID, long seed, VehicleStateListener stateListener, Route<Node>
+            route) {
+        super(ID, seed, stateListener, route);
     }
 
-    public ValidationCar(SimulationConfig config, VehicleStateListener stateListener, Route<Node> route, int
+    public ValidationCar(long ID, long seed, VehicleStateListener stateListener, Route<Node> route, int
             spawnDelay) {
-        super(config, stateListener, route, spawnDelay);
+        super(ID, seed, stateListener, route, spawnDelay);
     }
 
     /*

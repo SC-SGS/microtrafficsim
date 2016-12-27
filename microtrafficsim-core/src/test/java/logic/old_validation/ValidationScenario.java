@@ -1,7 +1,7 @@
-package logic.validation;
+package logic.old_validation;
 
-import logic.validation.cars.ValidationBlockingCar;
-import logic.validation.cars.ValidationCar;
+import logic.old_validation.cars.ValidationCar;
+import logic.old_validation.cars.ValidationBlockingCar;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
