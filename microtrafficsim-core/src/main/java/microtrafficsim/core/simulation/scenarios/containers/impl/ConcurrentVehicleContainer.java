@@ -6,14 +6,15 @@ import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 
 /**
- * This implementation of {@code VehicleContainer} uses a few sets for managing the vehicles. The used sets are
- * concurrent ({@link ConcurrentHashMap#newKeySet()}) so they can be edited while iterated.
+ * This implementation of {@code VehicleContainer} uses a few sets for managing the vehicles. All methods are
+ * synchronized.
  *
  * @author Dominic Parga Cacheiro
  */
@@ -28,7 +29,9 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
      * @param vehicleFactory This factory is needed to create the vehicles' visualization components.
      */
     public ConcurrentVehicleContainer(Supplier<VisualizationVehicleEntity> vehicleFactory) {
-        clearAll();
+        spawnedVehicles     = new HashSet<>();
+        notSpawnedVehicles  = new HashSet<>();
+        vehicles            = new HashSet<>();
         this.vehicleFactory = vehicleFactory;
     }
 
@@ -38,46 +41,55 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
     |======================|
     */
     @Override
-    public void addVehicle(AbstractVehicle vehicle) {
+    public synchronized void addVehicle(AbstractVehicle vehicle) {
         notSpawnedVehicles.add(vehicle);
         vehicles.add(vehicle);
     }
 
     @Override
-    public void clearAll() {
-        spawnedVehicles     = ConcurrentHashMap.newKeySet();
-        notSpawnedVehicles  = ConcurrentHashMap.newKeySet();
-        vehicles            = ConcurrentHashMap.newKeySet();
+    public synchronized void clearAll() {
+        spawnedVehicles.clear();
+        notSpawnedVehicles.clear();
+        vehicles.clear();
     }
 
     @Override
-    public int getVehicleCount() {
+    public synchronized int getVehicleCount() {
         return vehicles.size();
     }
 
     @Override
-    public int getSpawnedCount() {
+    public synchronized int getSpawnedCount() {
         return spawnedVehicles.size();
     }
 
     @Override
-    public int getNotSpawnedCount() {
+    public synchronized int getNotSpawnedCount() {
         return notSpawnedVehicles.size();
     }
 
+    /**
+     * Addition to superclass: Due to concurrency, this method returns a shallow copy created synchronized.
+     */
     @Override
-    public Set<AbstractVehicle> getVehicles() {
-        return Collections.unmodifiableSet(vehicles);
+    public synchronized Set<AbstractVehicle> getVehicles() {
+        return new HashSet<>(vehicles);
     }
 
+    /**
+     * Addition to superclass: Due to concurrency, this method returns a shallow copy created synchronized.
+     */
     @Override
-    public Set<AbstractVehicle> getSpawnedVehicles() {
-        return Collections.unmodifiableSet(spawnedVehicles);
+    public synchronized Set<AbstractVehicle> getSpawnedVehicles() {
+        return new HashSet<>(vehicles);
     }
 
+    /**
+     * Addition to superclass: Due to concurrency, this method returns a shallow copy created synchronized.
+     */
     @Override
-    public Set<AbstractVehicle> getNotSpawnedVehicles() {
-        return Collections.unmodifiableSet(notSpawnedVehicles);
+    public synchronized Set<AbstractVehicle> getNotSpawnedVehicles() {
+        return new HashSet<>(vehicles);
     }
 
     /*
@@ -86,7 +98,7 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
     |==========================|
     */
     @Override
-    public void stateChanged(AbstractVehicle vehicle) {
+    public synchronized void stateChanged(AbstractVehicle vehicle) {
         if (vehicle.getState() == VehicleState.DESPAWNED) {
             spawnedVehicles.remove(vehicle);
             notSpawnedVehicles.remove(vehicle);

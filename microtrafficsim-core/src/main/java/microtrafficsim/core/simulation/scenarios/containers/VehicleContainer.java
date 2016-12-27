@@ -34,8 +34,7 @@ public interface VehicleContainer extends VehicleStateListener {
     void addVehicle(AbstractVehicle vehicle);
 
     /**
-     * Clears this container, so after this call it is empty.<br>
-     * Re-initializes all internal data structures to ensure better performance and memory usage.
+     * Clears this container, so after this call it is empty.
      */
     void clearAll();
 

@@ -260,7 +260,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         // update vehicle list
         Collection<? extends LogicVehicleEntity>
                 vehicles = new ArrayList<>(simulation.getScenario().getVehicleContainer().getSpawnedVehicles());
-        int                                      len      = vehicles.size();
+        int len          = vehicles.size();
         if (len == 0) return;
 
         // orphan last buffer and load it to a new one

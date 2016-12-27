@@ -23,8 +23,7 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
     private final ThreadDelegator delegator;
 
     public MultiThreadedVehicleStepExecutor(int nThreads) {
-//        this(new StaticThreadDelegator(nThreads));
-        this(new DynamicThreadDelegator(nThreads));
+        this(new StaticThreadDelegator(nThreads));
     }
 
     public MultiThreadedVehicleStepExecutor(ThreadDelegator delegator) {

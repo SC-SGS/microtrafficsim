@@ -17,6 +17,8 @@ import java.util.function.Consumer;
  * The other way is implemented in {@link StaticThreadDelegator}. This ThreadDelegator is called static, because it
  * creates lists of elements until no element is left, only then it starts working the tasks off.
  *
+ * @deprecated {@link #doTask(Consumer, Iterator, int)} does not guarantee, that every element of this iterator is
+ * taken exactly once
  * @author Dominic Parga Cacheiro
  */
 public class DynamicThreadDelegator implements ThreadDelegator {
@@ -40,11 +42,15 @@ public class DynamicThreadDelegator implements ThreadDelegator {
      * <p>
      * This method executes the given task on every element in this iterator using a thread pool. Every thread
      * takes a certain number of elements (<=> {@code packageCount} and executes the task on them.
+     *
+     * @deprecated This method does not guarantee, that every element of this iterator is taken exactly once
      */
     @Override
+    @Deprecated
     public <T> void doTask(Consumer<T> elementTask, Iterator<T> iter, int elementCount) {
 
         ArrayList<Callable<Object>> tasks = new ArrayList<>(pool.nThreads);
+        final Object sync = new Object();
 
         // add this task for every thread
         for (int c = 0; c < pool.nThreads; c++)
@@ -52,7 +58,7 @@ public class DynamicThreadDelegator implements ThreadDelegator {
                 ArrayList<T> list = new ArrayList<>(elementCount);
                 do {
                     for (int i = 0; i < elementCount; i++)
-                        synchronized (iter) {
+                        synchronized (sync) {
                             if (!iter.hasNext())
                                 break;
                             list.add(iter.next());

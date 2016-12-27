@@ -15,10 +15,11 @@ import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.utils.StringUtils;
 import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.concurrency.delegation.DynamicThreadDelegator;
+import microtrafficsim.utils.concurrency.delegation.StaticThreadDelegator;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -65,8 +66,6 @@ public class VehicleSimulationBuilder implements SimulationBuilder {
     public Scenario prepare(final Scenario scenario, final ProgressListener listener) {
         logger.info("PREPARING SCENARIO started");
         long time_preparation = System.nanoTime();
-
-        // TODO Dominic: buggy if this is called twice for the same scenario with different vehicle count
 
         /*
         |===========|
@@ -138,7 +137,7 @@ public class VehicleSimulationBuilder implements SimulationBuilder {
         }
 
         // calculate routes multithreaded
-        new DynamicThreadDelegator(config.multiThreading.nThreads).doTask(
+        new StaticThreadDelegator(config.multiThreading.nThreads).doTask(
                 vehicle -> {
                     ShortestPathAlgorithm scout = scenario.getScoutFactory().get();
                     Route<Node> route = vehicle.getRoute();

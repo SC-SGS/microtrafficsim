@@ -18,6 +18,8 @@ public class UnmodifiableODMatrix implements ODMatrix {
      * Default constructor
      */
     public UnmodifiableODMatrix(ODMatrix odMatrix) {
+        if (odMatrix == null)
+            throw new NullPointerException();
         this.odMatrix = odMatrix;
     }
 
