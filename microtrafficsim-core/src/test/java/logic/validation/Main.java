@@ -2,12 +2,15 @@ package logic.validation;
 
 import logic.validation.scenarios.ValidationScenario;
 import logic.validation.scenarios.impl.TCrossroadScenario;
-import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.style.impl.LightStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.simulation.builder.SimulationBuilder;
+import microtrafficsim.core.simulation.builder.impl.VehicleSimulationBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.core.Simulation;
+import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
@@ -33,18 +36,27 @@ public class Main {
 
     public static void main(String[] args) {
 
-        /* build setup */
+        /* build setup: logging */
         EasyMarkableLogger.TRACE_ENABLED = false;
         EasyMarkableLogger.DEBUG_ENABLED = false;
-        EasyMarkableLogger.INFO_ENABLED = true;
-        EasyMarkableLogger.WARN_ENABLED = true;
+        EasyMarkableLogger.INFO_ENABLED  = true;
+        EasyMarkableLogger.WARN_ENABLED  = true;
         EasyMarkableLogger.ERROR_ENABLED = true;
-        ValidationScenario scenario = new TCrossroadScenario(); // change this for another scenario
-        SimulationConfig config     = scenario.getConfig();
+
+        /* build setup: visualization */
         MapViewer mapviewer         = new TileBasedMapViewer(new LightStyleSheet());
         VehicleOverlay overlay      = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
 
-        /* get file */
+        /* build setup: logic */
+        ValidationScenario scenario  = new TCrossroadScenario(); // change this for another scenario
+        SimulationConfig config      = scenario.getConfig();
+        SimulationBuilder simbuilder = new VehicleSimulationBuilder(
+                config.seedGenerator.next(),
+                overlay.getVehicleFactory()
+        );
+        Simulation sim               = new VehicleSimulation();
+
+        /* get map file */
         File file;
         try {
             file = new PackagedResource(Main.class, scenario.OSM_FILENAME).asTemporaryFile();
@@ -71,10 +83,6 @@ public class Main {
             mapviewer.addOverlay(0, overlay);
 
             /* setup JFrame */
-            // todo toolbar for icons for run etc.
-                    //            JToolBar toolbar = new JToolBar("Menu");
-                    //            toolbar.add(new MTSMenuBar(this).create());
-                    //            addToTopBar(toolbar);
             JFrame frame = new JFrame("MicroTrafficSim - Validation Scenario");
             frame.setSize(mapviewer.getInitialWindowWidth(), mapviewer.getInitialWindowHeight());
             frame.add(mapviewer.getVisualizationPanel());
@@ -117,7 +125,7 @@ public class Main {
         });
 
         /* initialize the simulation */
-//        sim.prepare();
-//        sim.runOneStep();
+        sim.setAndInitScenario(simbuilder.prepare(scenario));
+        sim.runOneStep();
     }
 }

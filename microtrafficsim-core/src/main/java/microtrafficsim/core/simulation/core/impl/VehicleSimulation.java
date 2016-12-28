@@ -72,6 +72,9 @@ public class VehicleSimulation implements Simulation {
             return;
         }
 
+        if (!scenario.isPrepared())
+            throw new RuntimeException("The simulation sets a new scenario but the scenario is not prepared.");
+
         age = 0;
         this.scenario = scenario;
         int nThreads = scenario.getConfig().multiThreading.nThreads;

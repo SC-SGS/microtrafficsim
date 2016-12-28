@@ -34,7 +34,7 @@ public interface Simulation {
 
     /**
      * Sets the scenario being executed. The simulation should be paused for this call. The scenario is initialized
-     * by updating all graph nodes.
+     * by updating all graph nodes, so the scenario has to be prepared for this.
      *
      * @param scenario This scenario is being executed
      */

@@ -11,6 +11,9 @@ import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
 
@@ -36,13 +39,13 @@ import java.util.function.Function;
 public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
 
     // general
-    public final long             ID;
-    private final int             spawnDelay;
-    private final Object          lock_priorityCounter = new Object();
-    private Random                random;
-    private VehicleEntity         entity;
-    private VehicleState          state;
-    private VehicleStateListener  stateListener;
+    public final long                  ID;
+    private final int                  spawnDelay;
+    private final Object               lock_priorityCounter = new Object();
+    private Random                     random;
+    private VehicleEntity              entity;
+    private VehicleState               state;
+    private List<VehicleStateListener> stateListeners;
 
     // routing
     private Route<Node> route;
@@ -64,21 +67,33 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     private boolean lastVelocityWasZero;
 
 
-    public AbstractVehicle(long ID, long seed, VehicleStateListener stateListener, Route<Node> route) {
-
-        this(ID, seed, stateListener, route,0);
+    /**
+     * Calls {@code AbstractVehicle(ID, seed, route, 0)}
+     *
+     * @see #AbstractVehicle(long, long, Route, int)
+     */
+    public AbstractVehicle(long ID, long seed, Route<Node> route) {
+        this(ID, seed, route, 0);
     }
 
-    public AbstractVehicle(long ID, long seed, VehicleStateListener stateListener, Route<Node> route, int
-            spawnDelay) {
-        this.ID            = ID;
-        this.random        = new Random(seed);
-        this.stateListener = stateListener;
-        setState(VehicleState.NOT_SPAWNED);
+    /**
+     * Default constructor, but calls {@link #validateDashAndDawdleFactors(float, float)} after initializing all
+     * variables.
+     *
+     * @param ID should be unique
+     * @param seed used for dashing/dawdling
+     * @param route this vehicle drives on this route
+     * @param spawnDelay after this number of simulation steps, this vehicle spawns
+     */
+    public AbstractVehicle(long ID, long seed, Route<Node> route, int spawnDelay) {
+        this.ID             = ID;
+        this.random         = new Random(seed);
+        this.stateListeners = new LinkedList<>();
+        state = VehicleState.NOT_SPAWNED;
 
         // routing
-        this.route      = route;
-        age             = 0;
+        this.route = route;
+        age        = 0;
         this.spawnDelay = spawnDelay;
         resetPriorityCounter();
 
@@ -98,6 +113,54 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
         try {
             validateDashAndDawdleFactors(getDashFactor(), getDawdleFactor());
         } catch (Exception e) { e.printStackTrace(); }
+    }
+
+    /**
+     * @param stateListener adds this listener to this class by calling {@link #addStateListener(VehicleStateListener)}
+     *
+     * @see #AbstractVehicle(long, long, Route, int)
+     */
+    public AbstractVehicle(long ID, long seed, Route<Node> route, VehicleStateListener stateListener) {
+        this(ID, seed, route);
+        addStateListener(stateListener);
+    }
+
+    /**
+     * @param stateListener adds this listener to this class by calling {@link #addStateListener(VehicleStateListener)}
+     *
+     * @see #AbstractVehicle(long, long, Route, int)
+     */
+    public AbstractVehicle(long ID, long seed, Route<Node> route, int spawnDelay, VehicleStateListener stateListener) {
+        this(ID, seed, route, spawnDelay);
+        addStateListener(stateListener);
+    }
+
+    /**
+     * @param stateListeners adds these listeners to this class by calling
+     * {@link #addStateListener(VehicleStateListener)}
+     *
+     * @see #AbstractVehicle(long, long, Route)
+     */
+    public AbstractVehicle(long ID, long seed, Route<Node> route, Collection<VehicleStateListener> stateListeners) {
+        this(ID, seed, route);
+        for (VehicleStateListener stateListener : stateListeners)
+            addStateListener(stateListener);
+    }
+
+    /**
+     * @param stateListeners adds these listeners to this class by calling
+     * {@link #addStateListener(VehicleStateListener)}
+     *
+     * @see #AbstractVehicle(long, long, Route, int)
+     */
+    public AbstractVehicle(long ID,
+                           long seed,
+                           Route<Node> route,
+                           int spawnDelay,
+                           Collection<VehicleStateListener> stateListeners) {
+        this(ID, seed, route, spawnDelay);
+        for (VehicleStateListener stateListener : stateListeners)
+            addStateListener(stateListener);
     }
 
     protected static void validateDashAndDawdleFactors(float dashFactor, float dawdleFactor) throws Exception {
@@ -153,8 +216,16 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
         return route;
     }
 
-    public void setStateListener(VehicleStateListener listener) {
-        if (listener != null) this.stateListener = listener;
+    /**
+     * The internal collection used to store listeners is a {@link LinkedList} for easy iterating. Due to its
+     * runtime in O(n) for checking whether an Object is contained or not, this method {@code addStateListener} DOES
+     * NOT check for duplicates. Thus if you add a listener twice, it is called twice.
+     *
+     * @param listener This listener gets informed about state changes of this vehicle. If it's null, it won't be added.
+     */
+    public void addStateListener(VehicleStateListener listener) {
+        if (listener != null)
+            stateListeners.add(listener);
     }
 
     public VehicleState getState() {
@@ -163,7 +234,8 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
 
     private void setState(VehicleState state) {
         this.state = state;
-        stateListener.stateChanged(this);
+        for (VehicleStateListener listener : stateListeners)
+            listener.stateChanged(this);
     }
 
     public DirectedEdge peekNextRouteSection() {
