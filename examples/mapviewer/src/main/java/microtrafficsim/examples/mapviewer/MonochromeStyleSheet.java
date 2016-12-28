@@ -173,9 +173,9 @@ class MonochromeStyleSheet implements StyleSheet {
 
         int index = 0;
 
-        layers.add(genLayer("ply:water",     index++,  0, 19, "water",     genPolygonStyle(polygons, Color.fromRGB(0x5555FF))));
-        layers.add(genLayer("ply:landuse",   index++, 12, 19, "landuse",   genPolygonStyle(polygons, Color.fromRGB(0x909090))));
-        layers.add(genLayer("ply:buildings", index++, 12, 19, "buildings", genPolygonStyle(polygons, Color.fromRGB(0xFF0000))));
+        layers.add(genLayer("ply:water",     index++,  0, 19, "water",     genPolygonStyle(polygons, Color.fromRGBA(0x2D4747A0))));
+        layers.add(genLayer("ply:landuse",   index++, 12, 19, "landuse",   genPolygonStyle(polygons, Color.fromRGB(0x1D1D1D))));
+        layers.add(genLayer("ply:buildings", index++, 12, 19, "buildings", genPolygonStyle(polygons, Color.fromRGB(0x382629))));
 
         for (int zoom = 19; zoom >= 0; zoom--) {
             for (int i = names.length - 1; i >= 0; i--) {
