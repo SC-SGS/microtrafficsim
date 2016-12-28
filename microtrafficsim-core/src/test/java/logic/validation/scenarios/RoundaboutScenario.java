@@ -2,7 +2,7 @@ package logic.validation.scenarios;
 
 import logic.validation.Main;
 import logic.validation.ValidationScenario;
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.VehicleState;
@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 public class RoundaboutScenario extends ValidationScenario {
 
     private static final String OSM_FILENAME = "roundabout.osm";
-    private Node                topRight, topLeft, left, bottom, right;
+    private Node topRight, topLeft, left, bottom, right;
     // left is no start point!
     private NextScenarioState nextScenarioState;
 
@@ -41,7 +41,7 @@ public class RoundaboutScenario extends ValidationScenario {
      * @param vehicleFactory This creates vehicles.
      */
     public RoundaboutScenario(SimulationConfig config, StreetGraph graph,
-                              Supplier<IVisualizationVehicle> vehicleFactory) {
+                              Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
         nextScenarioState = NextScenarioState.TOP_RIGHT;
     }
@@ -71,7 +71,7 @@ public class RoundaboutScenario extends ValidationScenario {
     protected final void updateScenarioState(VehicleState vehicleState) {
         int updateGraphDelay = justInitialized ? 0 : 1;
 
-        if (vehicleState == VehicleState.DESPAWNED && getVehiclesCount() == 0) {
+        if (vehicleState == VehicleState.DESPAWNED && getVehicleContainer().getVehicleCount() == 0) {
             switch (nextScenarioState) {
             case TOP_RIGHT:
                 createAndAddCar(topRight, right, 0,                     Color.fromRGB(0xCC4C1A));

@@ -2,11 +2,11 @@ package microtrafficsim.core.vis.simulation;
 
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.entities.street.StreetEntity;
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.simulation.Simulation;
+import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.opengl.BufferStorage;
@@ -29,6 +29,7 @@ import microtrafficsim.utils.resources.Resource;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Supplier;
 
@@ -56,9 +57,9 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
     private static final Resource SHADER_FRAG = new PackagedResource(
             ShaderBasedVehicleOverlay.class, "/shaders/overlay/vehicle/spritebased/vehicle_overlay.fs");
 
-    private final Supplier<IVisualizationVehicle> vehicleFactory;
+    private final Supplier<VisualizationVehicleEntity> vehicleFactory;
 
-    private Simulation       simulation;
+    private Simulation simulation;
     private Projection       projection;
     private OrthographicView view;
 
@@ -221,10 +222,11 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
     @Override
     public void display(RenderContext context, MapBuffer map) {
         if (!enabled || simulation == null) return;
+        if (simulation.getScenario() == null) return;
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         // get direction of lane offset
-        int laneOffsetSign = simulation.getConfig().crossingLogic.drivingOnTheRight ? 1 : -1;
+        int laneOffsetSign = simulation.getScenario().getConfig().crossingLogic.drivingOnTheRight ? 1 : -1;
 
         // disable depth test
         context.DepthTest.disable(gl);
@@ -256,8 +258,9 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         double top    = viewpos.y + vy;
 
         // update vehicle list
-        Collection<? extends LogicVehicleEntity> vehicles = simulation.getSpawnedVehicles();
-        int                                      len      = vehicles.size();
+        Collection<? extends LogicVehicleEntity>
+                vehicles = new ArrayList<>(simulation.getScenario().getVehicleContainer().getSpawnedVehicles());
+        int len          = vehicles.size();
         if (len == 0) return;
 
         // orphan last buffer and load it to a new one
@@ -346,7 +349,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         this.simulation = simulation;
     }
 
-    public Supplier<IVisualizationVehicle> getVehicleFactory() {
+    public Supplier<VisualizationVehicleEntity> getVehicleFactory() {
         return vehicleFactory;
     }
 }

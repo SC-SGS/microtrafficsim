@@ -2,6 +2,8 @@ package microtrafficsim.interesting.progressable;
 
 
 /**
+ * This interface helps getting updates if progress is done.
+ *
  * @author Dominic Parga Cacheiro
  */
 public interface ProgressListener {

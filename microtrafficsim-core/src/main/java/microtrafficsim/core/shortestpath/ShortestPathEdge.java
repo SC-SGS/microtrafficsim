@@ -11,21 +11,16 @@ package microtrafficsim.core.shortestpath;
 public interface ShortestPathEdge {
 
     /**
-     * @return Length of this edge in cells.
+     * @return Length of this edge in a certain unit.
      */
     int getLength();
-
-    /**
-     * @return Current usage, e.g. current_number_of_vehicles/{@link #getLength()}
-     */
-    float getCurrentUsage();
 
     /**
      * This method is for weights using time instead of length (in milliseconds). E.g. a motorway
      * could be passed faster than a shorter road, where you have to drive more
      * slowly.
      *
-     * @return Time to pass this edge.
+     * @return Time to pass this edge in milliseconds
      */
     float getTimeCostMillis();
 

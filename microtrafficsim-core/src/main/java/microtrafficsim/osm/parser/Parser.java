@@ -8,8 +8,8 @@ import microtrafficsim.osm.parser.ecs.entities.WayEntityManager;
 import microtrafficsim.osm.parser.features.FeatureSystem;
 import microtrafficsim.osm.parser.relations.RelationBase;
 import microtrafficsim.osm.parser.relations.RelationManager;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -28,7 +28,7 @@ import java.io.IOException;
  * @author Maximilian Luz
  */
 public class Parser {
-    private static Logger logger = LoggerFactory.getLogger(Parser.class);
+    private static Logger logger = new EasyMarkableLogger(Parser.class);
 
     private FeatureSystem features;
 

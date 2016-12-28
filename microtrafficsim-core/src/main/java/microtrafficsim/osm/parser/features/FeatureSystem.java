@@ -2,8 +2,8 @@ package microtrafficsim.osm.parser.features;
 
 import microtrafficsim.osm.primitives.Node;
 import microtrafficsim.osm.primitives.Way;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * @author Maximilian Luz
  */
 public class FeatureSystem implements FeatureMatcher {
-    private static final Logger logger = LoggerFactory.getLogger(FeatureSystem.class);
+    private static final Logger logger = new EasyMarkableLogger(FeatureSystem.class);
 
     private HashMap<String, FeatureDefinition> features;
 

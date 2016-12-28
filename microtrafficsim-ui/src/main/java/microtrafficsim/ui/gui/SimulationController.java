@@ -1,10 +1,15 @@
 package microtrafficsim.ui.gui;
 
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.simulation.Simulation;
+import microtrafficsim.core.simulation.builder.SimulationBuilder;
+import microtrafficsim.core.simulation.builder.impl.VehicleSimulationBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.core.Simulation;
+import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
@@ -14,19 +19,17 @@ import microtrafficsim.ui.preferences.PrefElement;
 import microtrafficsim.ui.preferences.impl.PreferencesFrame;
 import microtrafficsim.ui.vis.MapViewer;
 import microtrafficsim.ui.vis.TileBasedMapViewer;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import javax.xml.stream.XMLStreamException;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
@@ -35,11 +38,11 @@ import java.util.function.Supplier;
  * @author Dominic Parga Cacheiro
  */
 public class SimulationController implements GUIController {
-    private static Logger logger = LoggerFactory.getLogger(SimulationController.class);
+    private static Logger logger = new EasyMarkableLogger(SimulationController.class);
 
     // logic
     private final SimulationConfig config;
-    private final SimulationConstructor simulationConstructor;
+    private final ScenarioConstructor scenarioConstructor;
 
     // frame/gui
     private final JFrame frame;
@@ -49,7 +52,8 @@ public class SimulationController implements GUIController {
     // general
     private GUIState    state, previousState;
     private StreetGraph streetgraph;
-    private Simulation  simulation;
+    private Simulation simulation;
+    private SimulationBuilder simbuilder;
 
     // visualization
     private MapViewer      mapviewer;
@@ -59,26 +63,35 @@ public class SimulationController implements GUIController {
     // preferences
     private PreferencesFrame preferences;
 
-    public SimulationController(SimulationConstructor simulationConstructor, MapViewer mapviewer) {
-        this(simulationConstructor, mapviewer, "MicroTrafficSim - GUI Example");
+    public SimulationController(ScenarioConstructor scenarioConstructor, MapViewer mapviewer) {
+        this(scenarioConstructor, mapviewer, "MicroTrafficSim - GUI Example");
     }
 
-    public SimulationController(SimulationConstructor simulationConstructor, MapViewer mapviewer, String title) {
+    public SimulationController(ScenarioConstructor scenarioConstructor, MapViewer mapviewer, String title) {
         super();
+
         // general
         state         = GUIState.RAW;
         previousState = null;
+
         // logic
-        config                     = new SimulationConfig();
-        this.simulationConstructor = simulationConstructor;
+        config                   = new SimulationConfig();
+        this.scenarioConstructor = scenarioConstructor;
+
         // visualization
         this.mapviewer   = mapviewer;
         overlay          = new SpriteBasedVehicleOverlay(TileBasedMapViewer.PROJECTION);
         currentDirectory = new File(System.getProperty("user.dir"));
+
         // frame/gui
         frame    = new JFrame(title);
         menubar  = new MTSMenuBar();
         lock_gui = new ReentrantLock();
+
+        // simulation
+        simbuilder = new VehicleSimulationBuilder(config.seedGenerator.next(), overlay.getVehicleFactory());
+        simulation = new VehicleSimulation();
+        overlay.setSimulation(simulation);
     }
 
     private void setState(GUIState state) {
@@ -118,7 +131,7 @@ public class SimulationController implements GUIController {
             case SIM_RUN: pauseSim(); setState(GUIState.SIM_PAUSE);
             case SIM_PAUSE:
             case INIT:
-            case MAP: {
+            case MAP:
                 // Load map without file? => have to ask user
                 if (file == null && event == GUIEvent.LOAD_MAP) { file = askForMapFile(); }
                 // if user don't want to load a file => stop here
@@ -130,7 +143,6 @@ public class SimulationController implements GUIController {
                     }
                     asyncParseAndShow(file);
                 }
-            }
             }
             updateMenuBar();
             break;
@@ -373,20 +385,24 @@ public class SimulationController implements GUIController {
         String oldTitle = frame.getTitle();
         frame.setTitle("Calculating vehicle routes 0%");
 
-        /* create the simulation */
-        simulation = simulationConstructor.instantiate(config, streetgraph, overlay.getVehicleFactory());
-        overlay.setSimulation(simulation);
-
-        /* initialize the simulation */
-        simulation.prepare(currentInPercent -> frame.setTitle("Calculating vehicle routes " + currentInPercent + "%"));
+        /* create the scenario */
+        Scenario scenario = scenarioConstructor.instantiate(config, streetgraph, overlay.getVehicleFactory());
+        simbuilder.prepare(
+                scenario,
+                currentInPercent -> frame.setTitle("Calculating vehicle routes " + currentInPercent + "%"));
+        /* initialize the scenario */
+        simulation.setAndInitScenario(scenario);
         simulation.runOneStep();
         frame.setTitle(oldTitle);
     }
 
+    /**
+     * You can call this method to cleanup the simulation, which means resetting the streetgraph and removing all
+     * scenario data.
+     */
     private void cleanupSimulation() {
         if (streetgraph != null) streetgraph.reset();
-        overlay.setSimulation(null);
-        simulation = null;
+        simulation.setAndInitScenario(null);
         menubar.menuLogic.simIsPaused(true);
     }
 
@@ -419,8 +435,8 @@ public class SimulationController implements GUIController {
                 if (extension == null) return false;
 
                 switch (extension) {
-                case "osm": return true;
-                default:    return false;
+                    case "osm": return true;
+                    default:    return false;
                 }
             }
         });
@@ -428,7 +444,9 @@ public class SimulationController implements GUIController {
         int action = chooser.showOpenDialog(null);
 
         currentDirectory = chooser.getCurrentDirectory();
-        if (action == JFileChooser.APPROVE_OPTION) return chooser.getSelectedFile();
+        if (action == JFileChooser.APPROVE_OPTION) {
+            return chooser.getSelectedFile();
+        }
 
         return null;
     }
@@ -518,14 +536,14 @@ public class SimulationController implements GUIController {
     | stuff |
     |=======|
     */
-
     /**
      * This interface gives the opportunity to call the constructor of {@link SimulationController} with a parameter,
      * that
      * is the constructor of the used Simulation.
      */
-    public interface SimulationConstructor {
-        Simulation
-        instantiate(SimulationConfig config, StreetGraph streetgraph, Supplier<IVisualizationVehicle> vehicleFactory);
+    public interface ScenarioConstructor {
+        Scenario instantiate(SimulationConfig config,
+                    StreetGraph streetgraph,
+                    Supplier<VisualizationVehicleEntity> vehicleFactory);
     }
 }

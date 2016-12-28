@@ -425,18 +425,7 @@ public class TileBasedVisualizer implements Visualizer {
         Rect2d bounds = manager.getProjectedBounds();
         if (bounds == null) return;
 
-        // center view
-        Vec2d center = Vec2d.add(bounds.min(), bounds.max()).mul(0.5f);
-        view.setPosition(center);
-
-        // set zoom based on window width
-        Vec2d dbounds = Vec2d.sub(bounds.max(), bounds.min());
-        Vec2d dscreen = new Vec2d(view.getSize());
-
-        double sx = (dscreen.x * 0.90f) / dbounds.x;
-        double sy = (dscreen.y * 0.90f) / dbounds.y;
-
-        view.setScale(Math.min(sx, sy));
+        view.show(bounds, 0.9f);
     }
 
 

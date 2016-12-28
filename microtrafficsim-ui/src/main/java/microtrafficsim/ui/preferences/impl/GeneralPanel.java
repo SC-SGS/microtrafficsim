@@ -1,6 +1,8 @@
 package microtrafficsim.ui.preferences.impl;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
+import microtrafficsim.utils.id.ConcurrentSeedGenerator;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
 
@@ -129,6 +131,7 @@ public class GeneralPanel extends PreferencesPanel {
         }
         try {
             config.seed = Long.parseLong(tfSeed.getText());
+            config.seedGenerator = new ConcurrentSeedGenerator(config.seed);
         } catch (NumberFormatException e) {
             exception.appendToMessage("\"Seed\" should be a long.\n");
             exceptionOccured = true;

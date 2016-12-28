@@ -9,8 +9,15 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
-import microtrafficsim.core.simulation.Simulation;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
+import microtrafficsim.core.simulation.builder.SimulationBuilder;
+import microtrafficsim.core.simulation.builder.impl.VehicleSimulationBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.core.Simulation;
+import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.VisualizerConfig;
@@ -24,17 +31,14 @@ import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
-import microtrafficsim.examples.simulation.scenarios.Scenario;
 import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 import microtrafficsim.osm.primitives.Way;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -51,7 +55,7 @@ import java.util.function.Predicate;
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public class Main {
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final Logger logger = new EasyMarkableLogger(Main.class);
 
     /* -- window parameters -------------------------------------------------------------------- */
 
@@ -153,7 +157,9 @@ public class Main {
         SpriteBasedVehicleOverlay vehicleOverlay  = new SpriteBasedVehicleOverlay(PROJECTION);
 
         /* create the simulation */
-        Simulation sim = new Scenario(config, result.streetgraph, vehicleOverlay.getVehicleFactory());
+        Scenario scenario =
+                new EndOfTheWorldScenario(config, result.streetgraph, vehicleOverlay.getVehicleFactory());
+        Simulation sim = new VehicleSimulation(scenario);
         vehicleOverlay.setSimulation(sim);
 
         /* create and display the frame */
@@ -200,7 +206,8 @@ public class Main {
         });
 
         /* initialize the simulation */
-        sim.prepare();
+        SimulationBuilder simbuilder = new VehicleSimulationBuilder(config.seed, vehicleOverlay.getVehicleFactory());
+        simbuilder.prepare(scenario);
         sim.runOneStep();
     }
 
@@ -219,7 +226,6 @@ public class Main {
         config.crossingLogic.priorityToTheRightEnabled    = true;
         config.crossingLogic.friendlyStandingInJamEnabled = true;
         config.crossingLogic.setOnlyOneVehicle(false);
-        config.logger.enabled                             = false;
 
         logger.debug("using '" + Long.toHexString(config.seed) + "' as seed");
     }

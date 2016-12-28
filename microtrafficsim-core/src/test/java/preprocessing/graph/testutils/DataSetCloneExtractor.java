@@ -1,6 +1,7 @@
 package preprocessing.graph.testutils;
 
 import microtrafficsim.core.map.Bounds;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
@@ -8,10 +9,9 @@ import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelation;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,7 +23,7 @@ import java.util.Set;
  * @author Maximilian Luz
  */
 class DataSetCloneExtractor implements FeatureGenerator {
-    private static final Logger logger = LoggerFactory.getLogger(DataSetCloneExtractor.class);
+    private static final Logger logger = new EasyMarkableLogger(DataSetCloneExtractor.class);
 
     private String name;
     private DataSet dataset;

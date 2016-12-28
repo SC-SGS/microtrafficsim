@@ -11,14 +11,14 @@ public class IndicesCalculator {
      * This method assumes to get two strings containing sorted indices like
      * they appear in traffic logic ({@link DirectedEdge}) to calculate two
      * vehicles' priorities at a crossroad.
-     * </p>
+     *
      * <p>
      * Because the indices are sorted in an ascending order, there is only one
      * unique or no matching. Therefore, this algorithm just go through the
      * strings from left to right repeatedly and returns the first found
      * matching char. IT DOES NOT DETECT ANY DIFFERENCE FROM THIS, so you have
      * to know whether the indices are sorted.
-     * </p>
+     *
      * <p>
      * Runtime (circa):<br>
      * The runtime of worst case is O(n^2), but n is the count of all indices in
@@ -32,7 +32,7 @@ public class IndicesCalculator {
      * Example:<br>
      * len1 = 4 = len2; n = 8; INIT_TIME = 8; WORST_CASE = 8 + 28 = 36;
      * BEST_CASE := 9
-     * </p>
+     *
      *
      * @param s1 String indices of vehicle 1, sorted in an ascending order
      * @param s2 String indices of vehicle 2, sorted in an ascending order
@@ -88,11 +88,11 @@ public class IndicesCalculator {
                                              byte indicesPerNode) {
         int i = origin1;
 
-        // DFA: A := start1,end1; B := start2,end2
-        // state 0: A -A-> false
-        // state 1: A -B-> AB
-        // state 2: AB -B-> false
-        // state 3: AB -A-> true
+        // DFA: A out of {start1,end1}; B out of {start2,end2}
+        // edge 0: A -A-> false
+        // edge 1: A -B-> AB
+        // edge 2: AB -B-> false
+        // edge 3: AB -A-> true
         // => 2 states => boolean
         // if common destination: true should be returned => order of the if-statements is relevant
         boolean stateA            = true;
@@ -111,7 +111,6 @@ public class IndicesCalculator {
                     return false;                                         // ABB
             }
         }
-        return false;    // should never be reached if method parameters are
-        // correct
+        return false;    // should never be reached if method parameters are correct
     }
 }

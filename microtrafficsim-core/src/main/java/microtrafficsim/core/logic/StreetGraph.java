@@ -1,15 +1,14 @@
 package microtrafficsim.core.logic;
 
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Set;
 
 
 /**
- * This graph just saves all @Node#s and all @DirectedEdge#s in a @HashSet. All
+ * This graph just saves all {@link Node}s and all {@link DirectedEdge}s in a {@link HashSet}. All
  * dependencies between nodes and edges are saved in these classes, not in this
- * graph.
+ * graph. This class is just a container for them with some functions for interaction.
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
@@ -31,15 +30,11 @@ public class StreetGraph {
         edges       = new HashSet<>();
     }
 
-    public int getNumberOfNodes() {
-        return nodes.size();
-    }
-
     /**
-     * @return Iterator over all nodes
+     * @return instance of {@link java.util.Collections.UnmodifiableSet} of the nodes in this graph
      */
-    public Iterator<Node> getNodeIterator() {
-        return nodes.iterator();
+    public Set<Node> getNodes() {
+        return Collections.unmodifiableSet(nodes);
     }
 
     // |==================|
@@ -91,16 +86,9 @@ public class StreetGraph {
     }
 
     /**
-     * This method just calls "vehicle.spawn()". For more information, see
-     * {@link AbstractVehicle}.{@link AbstractVehicle#spawn spawn()}.
-     *
-     * @param vehicle This vehicle should be added to the StreetGraph.
-     * @return True, if spawning was successful; False if despawned.
+     * This method resets the nodes and edges of the streetgraph. The "new" streetgraph will NOT be identical to the
+     * previous one (e.g. random numbers will be different).
      */
-    public boolean addVehicle(AbstractVehicle vehicle) {
-        return vehicle.register();
-    }
-
     public void reset() {
         nodes.forEach(Node::reset);
         edges.forEach(DirectedEdge::reset);

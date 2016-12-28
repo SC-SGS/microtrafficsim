@@ -2,27 +2,27 @@ package microtrafficsim.core.parser.processing;
 
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.osm.parser.features.FeatureDependency;
-import microtrafficsim.osm.parser.features.FeatureGenerator;
-import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
+import microtrafficsim.core.parser.processing.Ways.MergePoint;
+import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
+import microtrafficsim.core.parser.processing.sanitizer.OSMStreetGraphSanitizer;
 import microtrafficsim.osm.parser.Parser;
+import microtrafficsim.osm.parser.Processor;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
+import microtrafficsim.osm.parser.features.FeatureDependency;
+import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.FeatureSystem;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
-import microtrafficsim.osm.parser.Processor;
-import microtrafficsim.core.parser.processing.Ways.MergePoint;
-import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
-import microtrafficsim.core.parser.processing.sanitizer.OSMStreetGraphSanitizer;
+import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelation;
 import microtrafficsim.osm.primitives.Primitive;
 import microtrafficsim.utils.collections.ArrayUtils;
 import microtrafficsim.utils.id.BasicLongIDGenerator;
-import microtrafficsim.utils.id.LongIDGenerator;
+import microtrafficsim.utils.id.LongGenerator;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -36,7 +36,7 @@ import java.util.function.BiFunction;
  * @author Maximilian Luz
  */
 public class OSMProcessor implements Processor {
-    private static Logger logger = LoggerFactory.getLogger(OSMProcessor.class);
+    private static Logger logger = new EasyMarkableLogger(OSMProcessor.class);
 
     /**
      * The placeholder used both in dependencies and the list of feature-definitions to indicate the way-clipping
@@ -56,8 +56,8 @@ public class OSMProcessor implements Processor {
                                                             new FeatureDependency(PLACEHOLDER_WAY_CLIPPING, null));
 
     private FeatureDefinition streetgraph;
-    private LongIDGenerator idgenClipWay;
-    private LongIDGenerator idgenUnifyWay;
+    private LongGenerator idgenClipWay;
+    private LongGenerator idgenUnifyWay;
 
     private FeatureGenerator.Properties genprops;
 
@@ -69,7 +69,7 @@ public class OSMProcessor implements Processor {
      * Creates a new {@code OSMProcessor}.
      * <p>
      * This call is similar to {@link
-     * OSMProcessor#OSMProcessor(FeatureGenerator.Properties, FeatureDefinition, LongIDGenerator, LongIDGenerator)
+     * OSMProcessor#OSMProcessor(FeatureGenerator.Properties, FeatureDefinition, LongGenerator, LongGenerator)
      * OSMProcessor(bounds, streetgraph, new BasicLongIDGenerator())
      * }
      * </p>
@@ -87,7 +87,7 @@ public class OSMProcessor implements Processor {
      * Creates a new {@code OSMProcessor}.
      * <p>
      * This call is similar to {@link
-     * OSMProcessor#OSMProcessor(FeatureGenerator.Properties, FeatureDefinition, LongIDGenerator, LongIDGenerator,
+     * OSMProcessor#OSMProcessor(FeatureGenerator.Properties, FeatureDefinition, LongGenerator, LongGenerator,
      * Processor, Processor)
      * OSMProcessor(streetgraph, idgenWayUnify, new OSMDataSetSanizier(),
      * new OSMStreetGraphSanitizer(idxStreetGraph, idgenWayUnify))
@@ -102,7 +102,7 @@ public class OSMProcessor implements Processor {
      * @param idgenUnifyWay  the ID-generator used during the unification-step for new way-IDs.
      */
     public OSMProcessor(FeatureGenerator.Properties genprops, FeatureDefinition streetgraph,
-                        LongIDGenerator idgenClipWay, LongIDGenerator idgenUnifyWay) {
+                        LongGenerator idgenClipWay, LongGenerator idgenUnifyWay) {
         this(genprops, streetgraph, idgenClipWay, idgenUnifyWay, new OSMDataSetSanitizer(genprops),
                 new OSMStreetGraphSanitizer(streetgraph, idgenUnifyWay));
     }
@@ -125,7 +125,7 @@ public class OSMProcessor implements Processor {
      *                             street-graph during the unification-process.
      */
     public OSMProcessor(FeatureGenerator.Properties genprops, FeatureDefinition streetgraph,
-                        LongIDGenerator idgenClipWay, LongIDGenerator idgenUnifyWay,
+                        LongGenerator idgenClipWay, LongGenerator idgenUnifyWay,
                         Processor datasetSanitizer, Processor streetgraphSanitizer) {
         this.genprops             = genprops;
         this.streetgraph          = streetgraph;
@@ -422,7 +422,7 @@ public class OSMProcessor implements Processor {
     private void clipWays(DataSet dataset, FeatureGenerator.Properties properties) {
         if (properties.bounds != FeatureGenerator.Properties.BoundaryManagement.CLIP) return;
 
-        LongIDGenerator nodeIdGen = new NodeIdGen(dataset);
+        LongGenerator nodeIdGen = new NodeIdGen(dataset);
         BiFunction<Coordinate, WayEntity, NodeEntity> nodeFactory = (c, way) -> {
             NodeEntity node = new NodeEntity(nodeIdGen.next(), c.lat, c.lon, new HashSet<>());
 
@@ -501,7 +501,7 @@ public class OSMProcessor implements Processor {
     /**
      * ID-generator for nodes, filters out already used IDs.
      */
-    private static class NodeIdGen implements LongIDGenerator {
+    private static class NodeIdGen implements LongGenerator {
         private long    next;
         private DataSet dataset;
 

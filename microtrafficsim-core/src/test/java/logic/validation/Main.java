@@ -10,7 +10,8 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
-import microtrafficsim.core.simulation.Simulation;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
@@ -29,13 +30,12 @@ import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 import microtrafficsim.osm.primitives.Way;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
+import microtrafficsim.utils.id.ConcurrentSeedGenerator;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -48,7 +48,7 @@ import java.util.function.Supplier;
 
 
 public class Main {
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+    private static final Logger logger = new EasyMarkableLogger(Main.class);
 
     private static final int INITIAL_WINDOW_WIDTH  = 1600;
     private static final int INITIAL_WINDOW_HEIGHT =  900;
@@ -74,8 +74,8 @@ public class Main {
         config.metersPerCell           = 7.5f;
         config.longIDGenerator         = new ConcurrentLongIDGenerator();
         config.seed                    = 1455374755807L;
+        config.rndGenGenerator         = new ConcurrentSeedGenerator(config.seed);
         config.multiThreading.nThreads = 1;
-        config.logger.enabled          = false;
 
         logger.debug("using '" + Long.toHexString(config.seed) + "' as seed");
     }
@@ -86,7 +86,7 @@ public class Main {
      * @param provider the provider providing the tiles to be displayed
      * @return the created visualization object
      */
-    private static TileBasedVisualization createVisualization(TileProvider provider, Simulation sim) {
+    private static TileBasedVisualization createVisualization(TileProvider provider, OldSimulation sim) {
         /* create a new visualization object */
         TileBasedVisualization vis
                 = new TileBasedVisualization(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, provider, NUM_TILE_WORKERS);
@@ -226,7 +226,7 @@ public class Main {
     }
 
     public static void show(Projection projection, File file, SimulationConfig scencfg,
-                            Class<? extends Simulation> simClazz) throws Exception {
+                            Class<? extends OldSimulation> simClazz) throws Exception {
 
         /* create configuration for scenarios */
         initSimulationConfig(scencfg);
@@ -256,7 +256,7 @@ public class Main {
         SpriteBasedVehicleOverlay overlay = new SpriteBasedVehicleOverlay(projection);
 
         /* create the simulation */
-        Simulation sim = simClazz.getConstructor(scencfg.getClass(), StreetGraph.class, Supplier.class)
+        OldSimulation sim = simClazz.getConstructor(scencfg.getClass(), StreetGraph.class, Supplier.class)
                                  .newInstance(scencfg, result.streetgraph, overlay.getVehicleFactory());
         overlay.setSimulation(sim);
 

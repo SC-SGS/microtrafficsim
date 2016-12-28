@@ -6,8 +6,8 @@ import microtrafficsim.core.map.features.Point;
 import microtrafficsim.core.map.features.Polygon;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.math.Rect2d;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -202,7 +202,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
      * Generator to construct a {@code QuadTreeTiledMapSegment} from a map-segment ({@code SegmentFeatureProvider}).
      */
     public static class Generator {
-        private static Logger logger = LoggerFactory.getLogger(Generator.class);
+        private static Logger logger = new EasyMarkableLogger(Generator.class);
 
         private HashMap<Class<? extends FeaturePrimitive>, TileIntersector<? extends FeaturePrimitive>> intersectors;
 

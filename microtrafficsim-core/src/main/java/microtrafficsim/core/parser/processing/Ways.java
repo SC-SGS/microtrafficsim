@@ -12,7 +12,7 @@ import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.utils.collections.ArrayUtils;
-import microtrafficsim.utils.id.LongIDGenerator;
+import microtrafficsim.utils.id.LongGenerator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -324,7 +324,7 @@ public class Ways {
      *                    WayEnities}.
      * @return an Array containing all splits.
      */
-    public static WayEntity[] split(DataSet dataset, WayEntity way, int[] splitpoints, LongIDGenerator idgen) {
+    public static WayEntity[] split(DataSet dataset, WayEntity way, int[] splitpoints, LongGenerator idgen) {
         // append last node-index to split-indices
         int[] indices = new int[splitpoints.length + 1];
         System.arraycopy(splitpoints, 0, indices, 0, splitpoints.length);
@@ -351,7 +351,7 @@ public class Ways {
         return splits;
     }
 
-    public static WayEntity[] clip(DataSet dataset, WayEntity way, LongIDGenerator wayIdGen,
+    public static WayEntity[] clip(DataSet dataset, WayEntity way, LongGenerator wayIdGen,
                                    BiFunction<Coordinate, WayEntity, NodeEntity> nodeFactory) {
         ArrayList<Boolean> accept      = new ArrayList<>();
         ArrayList<Integer> splitpoints = new ArrayList<>();

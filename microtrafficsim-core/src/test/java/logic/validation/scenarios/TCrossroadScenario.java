@@ -2,7 +2,7 @@ package logic.validation.scenarios;
 
 import logic.validation.Main;
 import logic.validation.ValidationScenario;
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.VehicleState;
@@ -30,9 +30,9 @@ import java.util.function.Supplier;
 public class TCrossroadScenario extends ValidationScenario {
 
     private static final String OSM_FILENAME = "T_crossroad.osm";
-    private Node                bottom       = null;
-    private Node                topRight     = null;
-    private Node                topLeft      = null;
+    private Node bottom       = null;
+    private Node topRight     = null;
+    private Node topLeft      = null;
     private NextScenarioState   nextScenarioState;
 
     /**
@@ -43,7 +43,7 @@ public class TCrossroadScenario extends ValidationScenario {
      * @param vehicleFactory This creates vehicles.
      */
     public TCrossroadScenario(SimulationConfig config, StreetGraph graph,
-                              Supplier<IVisualizationVehicle> vehicleFactory) {
+                              Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
         nextScenarioState = NextScenarioState.PRIORITY_TO_THE_RIGHT;
     }
@@ -75,7 +75,7 @@ public class TCrossroadScenario extends ValidationScenario {
     protected void updateScenarioState(VehicleState vehicleState) {
         int updateGraphDelay = justInitialized ? 0 : 1;
 
-        if (vehicleState == VehicleState.DESPAWNED && getVehiclesCount() == 0) {
+        if (vehicleState == VehicleState.DESPAWNED && getVehicleContainer().getVehicleCount() == 0) {
             switch (nextScenarioState) {
             case PRIORITY_TO_THE_RIGHT:
                 createAndAddCar(topRight, topLeft, 0,                    Color.fromRGB(0xCC4C1A));

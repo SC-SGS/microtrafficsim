@@ -5,7 +5,8 @@ import microtrafficsim.core.map.Mappable;
 
 
 /**
- * TODO
+ * This interface represents an area, which should serve basic methods for area interaction like
+ * {@link #contains(Coordinate)}.
  *
  * @author Dominic Parga Cacheiro
  */

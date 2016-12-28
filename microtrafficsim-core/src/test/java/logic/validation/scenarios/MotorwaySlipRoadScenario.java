@@ -3,7 +3,7 @@ package logic.validation.scenarios;
 import logic.validation.Main;
 import logic.validation.ValidationScenario;
 import logic.validation.cars.ValidationCar;
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.VehicleState;
@@ -31,10 +31,10 @@ import java.util.function.Supplier;
 public class MotorwaySlipRoadScenario extends ValidationScenario {
 
     private static final String OSM_FILENAME   = "motorway_slip-road.osm";
-    private Node                bottomMotorway = null;
-    private Node                interception   = null;
-    private Node                topMotorway    = null;
-    private Node                bottomRight    = null;
+    private Node bottomMotorway = null;
+    private Node interception   = null;
+    private Node topMotorway    = null;
+    private Node bottomRight    = null;
     private NextScenarioState   nextScenarioState;
 
     /**
@@ -45,7 +45,7 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
      * @param vehicleFactory This creates vehicles.
      */
     public MotorwaySlipRoadScenario(SimulationConfig config, StreetGraph graph,
-                                    Supplier<IVisualizationVehicle> vehicleFactory) {
+                                    Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
         nextScenarioState = NextScenarioState.PRIORITY_TO_THE_MOTORWAY;
     }
@@ -78,7 +78,7 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
     protected void updateScenarioState(VehicleState vehicleState) {
         int updateGraphDelay = justInitialized ? 0 : 1;
 
-        if (vehicleState == VehicleState.DESPAWNED && getVehiclesCount() == 0) {
+        if (vehicleState == VehicleState.DESPAWNED && getVehicleContainer().getVehicleCount() == 0) {
             switch (nextScenarioState) {
             case PRIORITY_TO_THE_MOTORWAY:
                 createAndAddCar(bottomMotorway, topMotorway, 0,                    Color.fromRGB(0xCC4C1A));

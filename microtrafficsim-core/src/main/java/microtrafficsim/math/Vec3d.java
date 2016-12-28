@@ -38,7 +38,7 @@ public class Vec3d {
      * @param xy the {@code x}- and {@code y}-components.
      * @param z the {@code z}-components.
      */
-    public Vec3d(Vec2f xy, double z) {
+    public Vec3d(Vec2d xy, double z) {
         this(xy.x, xy.y, z);
     }
 

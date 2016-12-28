@@ -5,8 +5,9 @@ import microtrafficsim.core.logic.Direction;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
-import microtrafficsim.osm.parser.features.streets.info.StreetType;
+import microtrafficsim.core.parser.processing.Connector;
+import microtrafficsim.core.parser.processing.GraphWayComponent;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.DistanceCalculator;
 import microtrafficsim.math.Geometry;
@@ -19,11 +20,10 @@ import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
-import microtrafficsim.core.parser.processing.Connector;
-import microtrafficsim.core.parser.processing.GraphWayComponent;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
+import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
+import microtrafficsim.osm.parser.features.streets.info.StreetType;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,7 +35,7 @@ import java.util.Set;
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public class StreetGraphGenerator implements FeatureGenerator {
-    private static Logger logger = LoggerFactory.getLogger(StreetGraphGenerator.class);
+    private static Logger logger = new EasyMarkableLogger(StreetGraphGenerator.class);
 
     private StreetGraph        graph;
     private SimulationConfig   config;
@@ -144,8 +144,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
         NodeEntity      node1          = dataset.nodes.get(way.nodes[1]);
         NodeEntity      secondLastNode = dataset.nodes.get(way.nodes[way.nodes.length - 2]);
         NodeEntity      lastNode       = dataset.nodes.get(way.nodes[way.nodes.length - 1]);
-        Node            start          = getNode(node0);
-        Node            end            = getNode(lastNode);
+        Node start          = getNode(node0);
+        Node end            = getNode(lastNode);
         StreetComponent streetinfo     = way.get(StreetComponent.class);
 
         // generate edges

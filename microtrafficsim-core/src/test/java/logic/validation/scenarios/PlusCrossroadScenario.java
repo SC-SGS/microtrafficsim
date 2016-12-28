@@ -3,7 +3,7 @@ package logic.validation.scenarios;
 import logic.validation.Main;
 import logic.validation.ValidationScenario;
 import logic.validation.cars.ValidationBlockingCar;
-import microtrafficsim.core.entities.vehicle.IVisualizationVehicle;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
@@ -32,7 +32,7 @@ import java.util.function.Supplier;
 public class PlusCrossroadScenario extends ValidationScenario {
 
     private static final String OSM_FILENAME = "plus_crossroad.osm";
-    private Node                mid = null, bottomLeft = null, bottomRight = null, topLeft = null, topRight = null;
+    private Node mid = null, bottomLeft = null, bottomRight = null, topLeft = null, topRight = null;
     private NextScenarioState   nextScenarioState;
 
     /**
@@ -43,7 +43,7 @@ public class PlusCrossroadScenario extends ValidationScenario {
      * @param vehicleFactory This creates vehicles.
      */
     public PlusCrossroadScenario(SimulationConfig config, StreetGraph graph,
-                                 Supplier<IVisualizationVehicle> vehicleFactory) {
+                                 Supplier<VisualizationVehicleEntity> vehicleFactory) {
         super(config, graph, vehicleFactory);
         nextScenarioState = NextScenarioState.PRIORITY_TO_THE_RIGHT;
     }
@@ -76,7 +76,7 @@ public class PlusCrossroadScenario extends ValidationScenario {
         int updateGraphDelay = justInitialized ? 0 : 1;
 
         if (vehicleState == VehicleState.DESPAWNED) {
-            if (getVehiclesCount() == 0) {
+            if (getVehicleContainer().getVehicleCount() == 0) {
                 switch (nextScenarioState) {
                 case PRIORITY_TO_THE_RIGHT:
                     createAndAddCar(topRight, bottomRight, 0,                    Color.fromRGB(0xCC4C1A));
@@ -111,9 +111,9 @@ public class PlusCrossroadScenario extends ValidationScenario {
                     nextScenarioState = NextScenarioState.PRIORITY_TO_THE_RIGHT;
                     break;
                 }
-            } else if (getVehiclesCount() == 2) {
+            } else if (getVehicleContainer().getVehicleCount() == 2) {
                 if (nextScenarioState == NextScenarioState.PRIORITY_TO_THE_RIGHT) {
-                    getSpawnedVehicles().forEach((LogicVehicleEntity v) -> {
+                    getVehicleContainer().getSpawnedVehicles().forEach((LogicVehicleEntity v) -> {
                         if (v instanceof ValidationBlockingCar)
                             ((ValidationBlockingCar) v).toggleBlockMode();
                     });
