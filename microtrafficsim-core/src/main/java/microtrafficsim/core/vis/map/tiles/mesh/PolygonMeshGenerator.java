@@ -14,6 +14,8 @@ import microtrafficsim.core.vis.mesh.impl.Pos3IndexedMesh;
 import microtrafficsim.core.vis.mesh.utils.Polygons;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.math.geometry.polygons.SweepLineTriangulator;
+import microtrafficsim.math.geometry.polygons.Triangulator;
 import microtrafficsim.utils.collections.ArrayUtils;
 
 import java.nio.FloatBuffer;
@@ -23,6 +25,9 @@ import java.util.HashMap;
 
 
 public class PolygonMeshGenerator implements FeatureMeshGenerator {
+
+    private Triangulator triangulator = new SweepLineTriangulator();
+
 
     @Override
     public FeatureMeshKey getKey(RenderContext context, FeatureTileLayerSource source, TileId tile, Rect2d target) {
@@ -50,7 +55,7 @@ public class PolygonMeshGenerator implements FeatureMeshGenerator {
         ArrayList<Integer> indices  = new ArrayList<>();
 
         try {
-            generateMesh(context, feature, src, tile, target, vertices, indices);
+            generateMesh(feature, src, tile, target, vertices, indices);
         } finally {
             src.getFeatureProvider().release(feature);
         }
@@ -80,49 +85,33 @@ public class PolygonMeshGenerator implements FeatureMeshGenerator {
         return mesh;
     }
 
-    private void generateMesh(RenderContext context, TileFeature<? extends Polygon> feature, FeatureTileLayerSource src,
-                              TileId tile, Rect2d target, ArrayList<Vec2d> vertices, ArrayList<Integer> indices)
+    private void generateMesh(TileFeature<? extends Polygon> feature, FeatureTileLayerSource src, TileId tile,
+                              Rect2d target, ArrayList<Vec2d> vertices, ArrayList<Integer> indices)
             throws InterruptedException {
 
         TilingScheme scheme     = src.getTilingScheme();
         Projection   projection = scheme.getProjection();
         Rect2d       bounds     = scheme.getBounds(getFeatureBounds(src, tile));
 
-        int restart = context.PrimitiveRestart.getIndex();
-
         // TODO: replace triangulation-method
         // NOTE: outline has start-node == end-node
 
         int counter = 0;
-        HashMap<Vec2d, Integer> indexmap = new HashMap<>();
-
         for (Polygon polygon : feature.getData()) {
             if (Thread.interrupted()) throw new InterruptedException();
 
-            Vec2d[] outline     = project(projection, bounds, target, polygon.outline, 0, polygon.outline.length - 1);
-            int[]   polyindices = Polygons.triangulate(outline);
-            if (polyindices == null) {
+            Vec2d outline[] = project(projection, bounds, target, polygon.outline, polygon.outline.length - 1);
+            Triangulator.Result result = triangulator.triangulate(new microtrafficsim.math.geometry.polygons.Polygon(outline).normalize());
+            if (result == null) {
                 System.err.println("Failed to triangulate polygon (around coordinate " + polygon.outline[0].toString() + ").");
                 continue;
             }
 
-            for (int i : polyindices) {
-                Vec2d vertex = outline[i];
+            vertices.addAll(result.vertices);
+            for (int i : result.indices)
+                indices.add(counter + i);
 
-                int     index;
-                Integer indexobj = indexmap.get(vertex);
-                if (indexobj != null) {
-                    index = indexobj;
-                } else {
-                    index = counter++;
-                    vertices.add(vertex);
-                    indexmap.put(vertex, index);
-                }
-
-                indices.add(index);
-            }
-
-            indices.add(restart);
+            counter += result.vertices.size();
         }
     }
 
@@ -136,11 +125,11 @@ public class PolygonMeshGenerator implements FeatureMeshGenerator {
      * @param c          the coordinate to project.
      * @return the projected coordinate as vector.
      */
-    private static Vec2d[] project(Projection projection, Rect2d from, Rect2d to, Coordinate[] c, int start, int len) {
+    private static Vec2d[] project(Projection projection, Rect2d from, Rect2d to, Coordinate[] c, int len) {
         Vec2d[] result = new Vec2d[len];
 
         for (int i = 0; i < len; i++)
-            result[i] = project(projection, from, to, c[i + start]);
+            result[i] = project(projection, from, to, c[i]);
 
         return result;
     }
