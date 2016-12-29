@@ -4,8 +4,7 @@ import microtrafficsim.core.logic.DirectedEdge;
 
 
 /**
- * This interface represents the logic part of a vehicle entity serving all methods used by other parts of this vehicle
- * entity.
+ * Serves methods of a vehicle entity used by other parts of this vehicle entity.
  *
  * @author Dominic Parga Cacheiro
  */

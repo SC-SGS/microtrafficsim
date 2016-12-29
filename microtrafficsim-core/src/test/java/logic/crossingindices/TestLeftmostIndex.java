@@ -8,8 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 
 /**
- * This class tests the method
- * mictrotrafficsim.logic.StringMatcher.leftmostCharInMatching(...).
+ * This class tests {@link IndicesCalculator#leftmostIndexInMatching(byte, byte, byte, byte, byte)}
  *
  * @author Dominic Parga Cacheiro
  */

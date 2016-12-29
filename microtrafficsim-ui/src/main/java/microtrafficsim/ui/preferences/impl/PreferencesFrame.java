@@ -1,8 +1,8 @@
 package microtrafficsim.ui.preferences.impl;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.ui.gui.GUIController;
-import microtrafficsim.ui.gui.GUIEvent;
+import microtrafficsim.ui.gui.statemachine.GUIController;
+import microtrafficsim.ui.gui.statemachine.impl.GUIEvent;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
 import microtrafficsim.ui.preferences.Preferences;
@@ -238,7 +238,6 @@ public class PreferencesFrame extends JFrame implements Preferences {
         switch (id) {
         // General
         case sliderSpeedup:
-        case ageForPause:
         case maxVehicleCount:
         case seed:
         case metersPerCell:
@@ -246,9 +245,6 @@ public class PreferencesFrame extends JFrame implements Preferences {
             break;
 
         // Visualization
-        case projection:
-            visualizationPanel.setEnabled(id, enabled);
-            break;
 
         // concurrency
         case nThreads:

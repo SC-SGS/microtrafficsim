@@ -1,4 +1,4 @@
-package microtrafficsim.examples.mapviewer;
+package microtrafficsim.core.mapviewer.utils;
 
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.context.exceptions.UncaughtExceptionHandler;
@@ -16,11 +16,11 @@ import java.io.PrintStream;
 
 
 /**
- * Utility class for the Examples.
+ * Utility class for the MapViewer.
  *
  * @author Maximilian Luz
  */
-class Utils {
+public class Utils {
     private static final Logger logger = new EasyMarkableLogger(Utils.class);
 
     /**
@@ -28,7 +28,7 @@ class Utils {
      *
      * @param context the context of which the screenshot should be created.
      */
-    static void asyncScreenshot(RenderContext context) {
+    public static void asyncScreenshot(RenderContext context) {
         new Thread(() -> {
             JFileChooser chooser = new JFileChooser();
             chooser.setFileFilter(new FileFilter() {
@@ -95,11 +95,10 @@ class Utils {
         }).start();
     }
 
-
     /**
      * The debug-exception-handler used to handle all uncaught exceptions on the render-context
      */
-    static class DebugExceptionHandler implements UncaughtExceptionHandler {
+    public static class DebugExceptionHandler implements UncaughtExceptionHandler {
 
         @Override
         public void uncaughtException(RenderContext context, Throwable exception) {
@@ -133,4 +132,3 @@ class Utils {
         }
     }
 }
-

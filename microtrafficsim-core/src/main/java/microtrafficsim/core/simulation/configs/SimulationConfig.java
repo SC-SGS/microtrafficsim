@@ -19,7 +19,6 @@ import java.util.function.Function;
  * the real speedup could be less) <br>
  * &bull {@link #seed} this seed should be used for random variables and similar tasks; {@link #seedGenerator} also depends on
  * it per default <br>
- * &bull {@link #ageForPause} This attribute can be used to pause a simulation after a certain number of steps <br>
  * &bull {@link #visualization} This configuration object contains attributes relevant for the visualization <br>
  * &bull {@link #crossingLogic} This configuration object contains attributes relevant for the crossing logic <br>
  * &bull {@link #maxVehicleCount} The initial number of vehicles on the streetgraph <br>
@@ -37,7 +36,6 @@ public final class SimulationConfig {
     // todo private int cellNumberScale; (depending on meters per cell!)
     public int            speedup;
     public long           seed;// TODO
-    public int            ageForPause;
 
     // visualization
     public VisualizationConfig visualization;
@@ -46,7 +44,7 @@ public final class SimulationConfig {
     public CrossingLogicConfig crossingLogic;
 
     // vehicles
-    public int     maxVehicleCount;
+    public int maxVehicleCount;
 
     // street type priorities
     public Function<StreetType, Byte> streetPriorityLevel;
@@ -76,7 +74,6 @@ public final class SimulationConfig {
         globalMaxVelocity = 6;
         speedup           = 1;
         seed              = new Random().nextLong();
-        ageForPause       = -1;
         // visualization
         visualization.reset();
         // crossing logic
@@ -129,7 +126,6 @@ public final class SimulationConfig {
         globalMaxVelocity = config.globalMaxVelocity;
         speedup           = config.speedup;
         seed              = config.seed;
-        ageForPause       = config.ageForPause;
         // visualization
         visualization.update(config.visualization);
         // crossing logic

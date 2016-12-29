@@ -41,9 +41,8 @@ public class RandomRouteScenario extends BasicScenario {
      * {@link ConcurrentVehicleContainer} as {@code VehicleContainer}
      */
     public RandomRouteScenario(SimulationConfig config,
-                                  StreetGraph graph,
-                                  Supplier<VisualizationVehicleEntity> vehicleFactory) {
-        this(config, graph, new ConcurrentVehicleContainer(vehicleFactory));
+                                  StreetGraph graph) {
+        this(config, graph, new ConcurrentVehicleContainer());
     }
 
     /**

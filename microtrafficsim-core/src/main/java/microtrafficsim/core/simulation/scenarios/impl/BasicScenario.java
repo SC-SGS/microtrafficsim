@@ -27,6 +27,10 @@ public abstract class BasicScenario implements Scenario {
 
     /**
      * Default constructor
+     *
+     * @param config this config is used for internal settings and should be set already
+     * @param graph used for route definitions etc.
+     * @param vehicleContainer stores and manages vehicles running in this scenario
      */
     protected BasicScenario(SimulationConfig config,
                             StreetGraph graph,
@@ -39,33 +43,32 @@ public abstract class BasicScenario implements Scenario {
     }
 
     protected BasicScenario(SimulationConfig config,
-                            StreetGraph graph,
-                            Supplier<VisualizationVehicleEntity> vehicleFactory) {
-        this(config, graph, new ConcurrentVehicleContainer(vehicleFactory));
+                            StreetGraph graph) {
+        this(config, graph, new ConcurrentVehicleContainer());
     }
 
     @Override
-    public final SimulationConfig getConfig() {
+    public SimulationConfig getConfig() {
         return config;
     }
 
     @Override
-    public final StreetGraph getGraph() {
+    public StreetGraph getGraph() {
         return graph;
     }
 
     @Override
-    public final VehicleContainer getVehicleContainer() {
+    public VehicleContainer getVehicleContainer() {
         return vehicleContainer;
     }
 
     @Override
-    public final void setPrepared(boolean isPrepared) {
+    public void setPrepared(boolean isPrepared) {
         this.isPrepared = isPrepared;
     }
 
     @Override
-    public final boolean isPrepared() {
+    public boolean isPrepared() {
         return isPrepared;
     }
 

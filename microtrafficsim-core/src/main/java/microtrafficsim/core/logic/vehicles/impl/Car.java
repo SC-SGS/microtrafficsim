@@ -35,16 +35,14 @@ public class Car extends AbstractVehicle {
     private int          anger;
     private int          totalAnger;
 
-    public Car(long ID, long seed, VehicleStateListener stateListener,
-               Route<Node> route) {
-        super(ID, seed, stateListener, route);
+    public Car(long ID, long seed, Route<Node> route, VehicleStateListener stateListener) {
+        super(ID, seed, route, stateListener);
         anger      = 0;
         totalAnger = 0;
     }
 
-    public Car(long ID, long seed, VehicleStateListener stateListener,
-               Route<Node> route, int spawnDelay) {
-        super(ID, seed, stateListener, route, spawnDelay);
+    public Car(long ID, long seed, Route<Node> route, int spawnDelay, VehicleStateListener stateListener) {
+        super(ID, seed, route, spawnDelay, stateListener);
         anger      = 0;
         totalAnger = 0;
     }

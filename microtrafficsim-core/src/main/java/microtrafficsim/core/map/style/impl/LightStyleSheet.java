@@ -1,4 +1,4 @@
-package microtrafficsim.examples.mapviewer;
+package microtrafficsim.core.map.style.impl;
 
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
@@ -22,11 +22,11 @@ import java.util.function.Predicate;
 
 
 /**
- * A light style sheet used for the visualization.
+ * A light style-sheet for the MapViewer.
  *
  * @author Maximilian Luz
  */
-class LightStyleSheet implements StyleSheet {
+public class LightStyleSheet implements StyleSheet {
 
     private static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
 
@@ -38,6 +38,8 @@ class LightStyleSheet implements StyleSheet {
         /* color definitions */
         colorBackground = Color.fromRGB(0xFFFFFF);
 
+        Color inlineColor = Color.fromRGB(0xFDFDFD);
+
         Color[] colors = {
                 Color.fromRGB(0xFF6F69),      // motorway
                 Color.fromRGB(0x659118),      // trunk
@@ -48,7 +50,6 @@ class LightStyleSheet implements StyleSheet {
                 Color.from(124, 111, 100),    // residential
                 Color.from(146, 131, 116),    // road
                 Color.from(146, 131, 116),    // living-street
-                Color.from(189, 174, 147),    // track
         };
 
 
@@ -62,7 +63,6 @@ class LightStyleSheet implements StyleSheet {
         Predicate<Way> prResidential  = new MinorStreetBasePredicate("residential");
         Predicate<Way> prRoad         = new MinorStreetBasePredicate("road");
         Predicate<Way> prLivingStreet = new MinorStreetBasePredicate("living_street");
-        Predicate<Way> prTrack        = new MinorStreetBasePredicate("track");
 
         /* define and add the features */
         MapFeatureGenerator<Street> generator = new StreetFeatureGenerator();
@@ -77,7 +77,6 @@ class LightStyleSheet implements StyleSheet {
         features.add(genStreetFeatureDef("streets:residential",   generator, prResidential));
         features.add(genStreetFeatureDef("streets:road",          generator, prRoad));
         features.add(genStreetFeatureDef("streets:living_street", generator, prLivingStreet));
-        features.add(genStreetFeatureDef("streets:track",         generator, prTrack));
 
         /* styles */
         ShaderProgramSource streets = getStreetShader();
@@ -91,18 +90,16 @@ class LightStyleSheet implements StyleSheet {
         Style sResidentialOutline    = genStyle(streets, colors[6], 40.f, SCALE_MAXLEVEL);
         Style sRoadOutline           = genStyle(streets, colors[7], 40.f, SCALE_MAXLEVEL);
         Style sLivingStreetOutline   = genStyle(streets, colors[8], 32.f, SCALE_MAXLEVEL);
-        Style sTrackOutline          = genStyle(streets, colors[9], 26.f, SCALE_MAXLEVEL);
 
-        Style sMotorwayInline        = genStyle(streets, Color.fromRGB(0xFDFDFD), 48.f, SCALE_MAXLEVEL);
-        Style sTrunkInline           = genStyle(streets, Color.fromRGB(0xFDFDFD), 48.f, SCALE_MAXLEVEL);
-        Style sPrimaryInline         = genStyle(streets, Color.fromRGB(0xFDFDFD), 40.f, SCALE_MAXLEVEL);
-        Style sSecondaryInline       = genStyle(streets, Color.fromRGB(0xFDFDFD), 40.f, SCALE_MAXLEVEL);
-        Style sTertiaryInline        = genStyle(streets, Color.fromRGB(0xFDFDFD), 40.f, SCALE_MAXLEVEL);
-        Style sUnclassifiedInline    = genStyle(streets, Color.fromRGB(0xFDFDFD), 30.f, SCALE_MAXLEVEL);
-        Style sResidentialInline     = genStyle(streets, Color.fromRGB(0xFDFDFD), 30.f, SCALE_MAXLEVEL);
-        Style sRoadInline            = genStyle(streets, Color.fromRGB(0xFDFDFD), 30.f, SCALE_MAXLEVEL);
-        Style sLivingStreetInline    = genStyle(streets, Color.fromRGB(0xFDFDFD), 24.f, SCALE_MAXLEVEL);
-        Style sTrackInline           = genStyle(streets, Color.fromRGB(0xFDFDFD), 18.f, SCALE_MAXLEVEL);
+        Style sMotorwayInline        = genStyle(streets, inlineColor, 48.f, SCALE_MAXLEVEL);
+        Style sTrunkInline           = genStyle(streets, inlineColor, 48.f, SCALE_MAXLEVEL);
+        Style sPrimaryInline         = genStyle(streets, inlineColor, 40.f, SCALE_MAXLEVEL);
+        Style sSecondaryInline       = genStyle(streets, inlineColor, 40.f, SCALE_MAXLEVEL);
+        Style sTertiaryInline        = genStyle(streets, inlineColor, 40.f, SCALE_MAXLEVEL);
+        Style sUnclassifiedInline    = genStyle(streets, inlineColor, 30.f, SCALE_MAXLEVEL);
+        Style sResidentialInline     = genStyle(streets, inlineColor, 30.f, SCALE_MAXLEVEL);
+        Style sRoadInline            = genStyle(streets, inlineColor, 30.f, SCALE_MAXLEVEL);
+        Style sLivingStreetInline    = genStyle(streets, inlineColor, 24.f, SCALE_MAXLEVEL);
 
         Style sMotorwayOutlineL      = genStyle(streets, colors[0], 80.f, SCALE_MAXLEVEL);
         Style sTrunkOutlineL         = genStyle(streets, colors[1], 80.f, SCALE_MAXLEVEL);
@@ -113,7 +110,6 @@ class LightStyleSheet implements StyleSheet {
         Style sResidentialOutlineL   = genStyle(streets, colors[6], 60.f, SCALE_MAXLEVEL);
         Style sRoadOutlineL          = genStyle(streets, colors[7], 60.f, SCALE_MAXLEVEL);
         Style sLivingStreetOutlineL  = genStyle(streets, colors[8], 45.f, SCALE_MAXLEVEL);
-        Style sTrackOutlineL         = genStyle(streets, colors[9], 35.f, SCALE_MAXLEVEL);
 
         Style sMotorwayOutlineXL     = genStyle(streets, colors[0], 95.f, SCALE_MAXLEVEL);
         Style sTrunkOutlineXL        = genStyle(streets, colors[1], 95.f, SCALE_MAXLEVEL);
@@ -124,12 +120,10 @@ class LightStyleSheet implements StyleSheet {
         Style sResidentialOutlineXL  = genStyle(streets, colors[6], 75.f, SCALE_MAXLEVEL);
         Style sRoadOutlineXL         = genStyle(streets, colors[7], 75.f, SCALE_MAXLEVEL);
         Style sLivingStreetOutlineXL = genStyle(streets, colors[8], 60.f, SCALE_MAXLEVEL);
-        Style sTrackOutlineXL        = genStyle(streets, colors[9], 50.f, SCALE_MAXLEVEL);
 
         /* layers */
         int index = 0;
         layers    = new ArrayList<>();
-        layers.add(genLayer("streets:track:outline",            index++, 17, 19, "streets:track",         sTrackOutline));
         layers.add(genLayer("streets:living_street:outline",    index++, 16, 19, "streets:living_street", sLivingStreetOutline));
         layers.add(genLayer("streets:road:outline",             index++, 17, 19, "streets:road",          sRoadOutline));
         layers.add(genLayer("streets:residential:outline",      index++, 16, 19, "streets:residential",   sResidentialOutline));
@@ -140,7 +134,6 @@ class LightStyleSheet implements StyleSheet {
         layers.add(genLayer("streets:trunk:outline",            index++, 16, 19, "streets:trunk",         sTrunkOutline));
         layers.add(genLayer("streets:motorway:outline",         index++, 16, 19, "streets:motorway",      sMotorwayOutline));
 
-        layers.add(genLayer("streets:track:inline",             index++, 17, 19, "streets:track",         sTrackInline));
         layers.add(genLayer("streets:living_street:inline",     index++, 16, 19, "streets:living_street", sLivingStreetInline));
         layers.add(genLayer("streets:road:inline",              index++, 17, 19, "streets:road",          sRoadInline));
         layers.add(genLayer("streets:residential:inline",       index++, 16, 19, "streets:residential",   sResidentialInline));
@@ -151,7 +144,6 @@ class LightStyleSheet implements StyleSheet {
         layers.add(genLayer("streets:trunk:inline",             index++, 16, 19, "streets:trunk",         sTrunkInline));
         layers.add(genLayer("streets:motorway:inline",          index++, 16, 19, "streets:motorway",      sMotorwayInline));
 
-        layers.add(genLayer("streets:track:outline:l",          index++, 14, 16, "streets:track",         sTrackOutlineL));
         layers.add(genLayer("streets:living_street:outline:l",  index++, 14, 15, "streets:living_street", sLivingStreetOutlineL));
         layers.add(genLayer("streets:road:outline:l",           index++, 14, 16, "streets:road",          sRoadOutlineL));
         layers.add(genLayer("streets:residential:outline:l",    index++, 14, 15, "streets:residential",   sResidentialOutlineL));
@@ -162,7 +154,6 @@ class LightStyleSheet implements StyleSheet {
         layers.add(genLayer("streets:trunk:outline:l",          index++, 14, 15, "streets:trunk",         sTrunkOutlineL));
         layers.add(genLayer("streets:motorway:outline:l",       index++, 14, 15, "streets:motorway",      sMotorwayOutlineL));
 
-        layers.add(genLayer("streets:track:outline:xl",         index++, 13, 13, "streets:track",         sTrackOutlineXL));
         layers.add(genLayer("streets:living_street:outline:xl", index++, 13, 13, "streets:living_street", sLivingStreetOutlineXL));
         layers.add(genLayer("streets:road:outline:xl",          index++, 13, 13, "streets:road",          sRoadOutlineXL));
         layers.add(genLayer("streets:residential:outline:xl",   index++, 12, 13, "streets:residential",   sResidentialOutlineXL));
@@ -215,9 +206,9 @@ class LightStyleSheet implements StyleSheet {
     }
 
     /**
-     * Create the shader-sources used for street-rendering.
+     * Return the source of the shader used for street-rendering.
      *
-     * @return the created shader.
+     * @return the created shader-sources.
      */
     private ShaderProgramSource getStreetShader() {
         Resource vert = new PackagedResource(LightStyleSheet.class, "/shaders/features/streets/streets.vs");
@@ -233,13 +224,13 @@ class LightStyleSheet implements StyleSheet {
     }
 
     /**
-     * Generate a street-style based on the given properties.
+     * Generate a style for streets based on the specific properties.
      *
-     * @param shader    the shader to be used.
-     * @param color     the color to be used.
-     * @param linewidth the line-width of the line.
-     * @param scalenorm the scale-normal.
-     * @return the created style.
+     * @param shader    the shader to be used in the generated style.
+     * @param color     the color to be used in generated style.
+     * @param linewidth the line-width of the generated style.
+     * @param scalenorm the scale-normal of the generated style.
+     * @return the generated style.
      */
     private Style genStyle(ShaderProgramSource shader, Color color, float linewidth, float scalenorm) {
         Style style = new Style(shader);
@@ -252,15 +243,15 @@ class LightStyleSheet implements StyleSheet {
     }
 
     /**
-     * Generate a layer-definition based on the given properties.
+     * Generate a LayerDefinition for features, based on the specific properties.
      *
-     * @param name    the name of the definition.
-     * @param index   the index of the layer.
-     * @param min     the minimum zoom level at which the layer should be activated.
-     * @param max     the maximum zoom level at which the layer should be activated.
-     * @param feature the feature name of the feature displayed in this layer.
-     * @param style   the style used for displaying this layer.
-     * @return the generated layer.
+     * @param name    the name of the generated layer.
+     * @param index   the index of the  generated layer.
+     * @param min     the minimum zoom-level at which the generated layer is visible.
+     * @param max     the maximum zoom-level at which the generated layer is visible.
+     * @param feature the feature-name of the feature on which the layer is based on.
+     * @param style   the style to be used for rendering.
+     * @return the generated LayerDefinition.
      */
     private LayerDefinition genLayer(String name, int index, int min, int max, String feature, Style style) {
         return new LayerDefinition(name, index, min, max, new FeatureTileLayerSource(feature, style));

@@ -1,4 +1,4 @@
-package microtrafficsim.ui.vis;
+package microtrafficsim.core.mapviewer;
 
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.OSMParser;
@@ -7,13 +7,12 @@ import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.input.KeyCommand;
+import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.tiles.TileProvider;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 
 
@@ -21,7 +20,23 @@ import java.util.Collection;
  * @author Dominic Parga Cacheiro
  */
 public interface MapViewer {
+
     VisualizationPanel getVisualizationPanel();
+
+    /**
+     * @return the projection used in this map viewer
+     */
+    Projection getProjection();
+
+    /**
+     * @return initial window width
+     */
+    int getInitialWindowWidth();
+
+    /**
+     * @return initial window width
+     */
+    int getInitialWindowHeight();
 
     void addOverlay(int index, Overlay overlay);
 

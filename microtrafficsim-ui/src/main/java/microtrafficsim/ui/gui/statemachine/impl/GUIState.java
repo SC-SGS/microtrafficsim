@@ -1,4 +1,4 @@
-package microtrafficsim.ui.gui;
+package microtrafficsim.ui.gui.statemachine.impl;
 
 
 /**
