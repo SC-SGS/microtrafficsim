@@ -1,11 +1,11 @@
 package microtrafficsim.ui;
 
 import microtrafficsim.build.BuildSetup;
+import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.ui.gui.GUIController;
 import microtrafficsim.ui.gui.GUIEvent;
 import microtrafficsim.ui.gui.SimulationController;
-import microtrafficsim.ui.vis.TileBasedMapViewer;
 
 import javax.swing.*;
 import java.io.File;

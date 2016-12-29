@@ -2,14 +2,14 @@ package microtrafficsim.ui.gui;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.simulation.builder.SimulationBuilder;
-import microtrafficsim.core.simulation.builder.impl.VehicleSimulationBuilder;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
+import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
@@ -17,8 +17,6 @@ import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
 import microtrafficsim.ui.preferences.impl.PreferencesFrame;
-import microtrafficsim.ui.vis.MapViewer;
-import microtrafficsim.ui.vis.TileBasedMapViewer;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
@@ -53,7 +51,7 @@ public class SimulationController implements GUIController {
     private GUIState    state, previousState;
     private StreetGraph streetgraph;
     private Simulation simulation;
-    private SimulationBuilder simbuilder;
+    private ScenarioBuilder simbuilder;
 
     // visualization
     private MapViewer      mapviewer;
@@ -80,7 +78,7 @@ public class SimulationController implements GUIController {
 
         // visualization
         this.mapviewer   = mapviewer;
-        overlay          = new SpriteBasedVehicleOverlay(TileBasedMapViewer.PROJECTION);
+        overlay          = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
         currentDirectory = new File(System.getProperty("user.dir"));
 
         // frame/gui
@@ -89,7 +87,7 @@ public class SimulationController implements GUIController {
         lock_gui = new ReentrantLock();
 
         // simulation
-        simbuilder = new VehicleSimulationBuilder(config.seedGenerator.next(), overlay.getVehicleFactory());
+        simbuilder = new VehicleScenarioBuilder(config.seedGenerator.next(), overlay.getVehicleFactory());
         simulation = new VehicleSimulation();
         overlay.setSimulation(simulation);
     }
@@ -332,7 +330,7 @@ public class SimulationController implements GUIController {
         //            toolbar.add(new MTSMenuBar(this).create());
         //            addToTopBar(toolbar);
         frame.add(menubar, BorderLayout.NORTH);
-        frame.setSize(TileBasedMapViewer.INITIAL_WINDOW_WIDTH, TileBasedMapViewer.INITIAL_WINDOW_HEIGHT);
+        frame.setSize(mapviewer.getInitialWindowWidth(), mapviewer.getInitialWindowHeight());
         frame.add(mapviewer.getVisualizationPanel());
 
         /*
@@ -386,7 +384,7 @@ public class SimulationController implements GUIController {
         frame.setTitle("Calculating vehicle routes 0%");
 
         /* create the scenario */
-        Scenario scenario = scenarioConstructor.instantiate(config, streetgraph, overlay.getVehicleFactory());
+        Scenario scenario = scenarioConstructor.instantiate(config, streetgraph);
         simbuilder.prepare(
                 scenario,
                 currentInPercent -> frame.setTitle("Calculating vehicle routes " + currentInPercent + "%"));
@@ -542,8 +540,6 @@ public class SimulationController implements GUIController {
      * is the constructor of the used Simulation.
      */
     public interface ScenarioConstructor {
-        Scenario instantiate(SimulationConfig config,
-                    StreetGraph streetgraph,
-                    Supplier<VisualizationVehicleEntity> vehicleFactory);
+        Scenario instantiate(SimulationConfig config, StreetGraph streetgraph);
     }
 }

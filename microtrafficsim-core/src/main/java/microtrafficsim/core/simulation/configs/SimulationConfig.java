@@ -46,7 +46,7 @@ public final class SimulationConfig {
     public CrossingLogicConfig crossingLogic;
 
     // vehicles
-    public int     maxVehicleCount;
+    public int maxVehicleCount;
 
     // street type priorities
     public Function<StreetType, Byte> streetPriorityLevel;
