@@ -3,10 +3,9 @@ package microtrafficsim.ui.gui;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.mapviewer.MapViewer;
-import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.simulation.builder.SimulationBuilder;
-import microtrafficsim.core.simulation.builder.impl.VehicleSimulationBuilder;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
+import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
@@ -52,7 +51,7 @@ public class SimulationController implements GUIController {
     private GUIState    state, previousState;
     private StreetGraph streetgraph;
     private Simulation simulation;
-    private SimulationBuilder simbuilder;
+    private ScenarioBuilder simbuilder;
 
     // visualization
     private MapViewer      mapviewer;
@@ -88,7 +87,7 @@ public class SimulationController implements GUIController {
         lock_gui = new ReentrantLock();
 
         // simulation
-        simbuilder = new VehicleSimulationBuilder(config.seedGenerator.next(), overlay.getVehicleFactory());
+        simbuilder = new VehicleScenarioBuilder(config.seedGenerator.next(), overlay.getVehicleFactory());
         simulation = new VehicleSimulation();
         overlay.setSimulation(simulation);
     }

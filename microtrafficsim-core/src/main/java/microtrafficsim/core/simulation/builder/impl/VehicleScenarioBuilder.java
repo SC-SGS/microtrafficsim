@@ -7,30 +7,29 @@ import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.simulation.builder.SimulationBuilder;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.utils.StringUtils;
 import microtrafficsim.utils.collections.Triple;
-import microtrafficsim.utils.concurrency.delegation.DynamicThreadDelegator;
 import microtrafficsim.utils.concurrency.delegation.StaticThreadDelegator;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
- * This class is an implementation of {@link SimulationBuilder} for {@link AbstractVehicle}s.
+ * This class is an implementation of {@link ScenarioBuilder} for {@link AbstractVehicle}s.
  *
  * @author Dominic Parga Cacheiro
  */
-public class VehicleSimulationBuilder implements SimulationBuilder {
+public class VehicleScenarioBuilder implements ScenarioBuilder {
 
-    private Logger logger = new EasyMarkableLogger(VehicleSimulationBuilder.class);
+    private Logger logger = new EasyMarkableLogger(VehicleScenarioBuilder.class);
 
     private long seed;
     private Random random;
@@ -38,16 +37,64 @@ public class VehicleSimulationBuilder implements SimulationBuilder {
     private int           lastPercentage;
     private final Integer percentageDelta; // > 0 !!!
     // used for vehicle creation
-    private final Supplier<VisualizationVehicleEntity> vehicleFactory;
+    private final BiFunction<Scenario, Route<Node>, AbstractVehicle> vehicleFactory;
 
     /**
-     * Default constructor
+     * Calls {@code VehicleSimulationBuilder(seed, visVehicleFactory, logicVehicleFactory}, where the factory for
+     * logic vehicles is returning an instance of {@link Car}.
+     *
+     * @see #VehicleScenarioBuilder(long, Supplier, BiFunction)
+     */
+    public VehicleScenarioBuilder(long seed, Supplier<VisualizationVehicleEntity> visVehicleFactory) {
+        this(seed, visVehicleFactory, (scenario, route) -> {
+            SimulationConfig config = scenario.getConfig();
+            long ID                 = config.longIDGenerator.next();
+            long vehicleSeed        = config.seedGenerator.next();
+            return new Car(ID, vehicleSeed, route, scenario.getVehicleContainer());
+        });
+    }
+
+    /**
+     * Calls {@code VehicleSimulationBuilder(seed, vehicleFactory}, where the factory for vehicles is using the given
+     * "sub"-factories for visualization/logic part of a vehicle entity. These parts are getting linked to the entity.
+     *
+     * @param visVehicleFactory Creates the visualization part of the vehicle entity
+     * @param logicVehicleFactory Creates the logic part of the vehicle entity
+     */
+    public VehicleScenarioBuilder(long seed,
+                                  Supplier<VisualizationVehicleEntity> visVehicleFactory,
+                                  BiFunction<Scenario, Route<Node>, AbstractVehicle> logicVehicleFactory) {
+        this(seed, (scenario, route) -> {
+            // create vehicle components
+            AbstractVehicle logicVehicle;
+            synchronized (logicVehicleFactory) {
+                logicVehicle = logicVehicleFactory.apply(scenario, route);
+            }
+            VisualizationVehicleEntity visVehicle;
+            synchronized (visVehicleFactory) {
+                visVehicle = visVehicleFactory.get();
+            }
+
+            // create vehicle entity
+            VehicleEntity entity = new VehicleEntity(logicVehicle, visVehicle);
+            logicVehicle.setEntity(entity);
+            visVehicle.setEntity(entity);
+
+            return logicVehicle;
+        });
+    }
+
+    /**
+     * Default constructor.
      *
      * @param seed This seed is used for an instance of {@link Random} used for the creation of the
      *             origin-destination-matrix in {@link #prepare(Scenario, ProgressListener)}
-     * @param vehicleFactory is used for creating the visualized component of a vehicle
+     * @param vehicleFactory is used for creating the vehicle. It is important to link the logic part of the vehicle
+     *                       ({@code AbstractVehicle}) with the visualization part using a {@link VehicleEntity}. If
+     *                       you are not sure about this, use
+     *                       {@link #VehicleScenarioBuilder(long, Supplier, BiFunction)} without linking.
      */
-    public VehicleSimulationBuilder(final long seed, final Supplier<VisualizationVehicleEntity> vehicleFactory) {
+    public VehicleScenarioBuilder(long seed, BiFunction<Scenario, Route<Node>, AbstractVehicle> vehicleFactory) {
 
         lastPercentage  = 0;
         percentageDelta = 5;
@@ -55,7 +102,6 @@ public class VehicleSimulationBuilder implements SimulationBuilder {
         this.random = new Random(seed);
 
         this.vehicleFactory = vehicleFactory;
-
     }
 
     /**
@@ -131,7 +177,7 @@ public class VehicleSimulationBuilder implements SimulationBuilder {
                 long id = config.longIDGenerator.next();
                 long seed = config.seedGenerator.next();
                 Route<Node> route = new Route<>(start, end);
-                AbstractVehicle vehicle = createVehicle(id, seed, route, scenario);
+                AbstractVehicle vehicle = vehicleFactory.apply(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
             }
         }
@@ -164,7 +210,7 @@ public class VehicleSimulationBuilder implements SimulationBuilder {
                 long id = scenario.getConfig().longIDGenerator.next();
                 long seed = scenario.getConfig().seedGenerator.next();
                 Route<Node> route = new Route<>(start, end);
-                AbstractVehicle vehicle = createVehicle(id, seed, route, scenario);
+                AbstractVehicle vehicle = vehicleFactory.apply(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
                 scenario.getScoutFactory().get().findShortestPath(start, end, route);
                 vehicle.registerInGraph();
@@ -173,26 +219,6 @@ public class VehicleSimulationBuilder implements SimulationBuilder {
 
             vehicleCount += routeCount;
         }
-    }
-
-    private AbstractVehicle createVehicle(final long id, final long seed, Route<Node> route, Scenario scenario) {
-
-        // init stuff
-        VehicleContainer vehicleContainer = scenario.getVehicleContainer();
-
-        // create vehicle components
-        AbstractVehicle vehicle = new Car(id, seed, vehicleContainer, route);
-        VisualizationVehicleEntity visCar;
-        synchronized (vehicleFactory) {
-            visCar = vehicleFactory.get();
-        }
-
-        // create vehicle entity
-        VehicleEntity entity = new VehicleEntity(vehicle, visCar);
-        vehicle.setEntity(entity);
-        visCar.setEntity(entity);
-
-        return vehicle;
     }
 
     private synchronized void logProgress(int finished, int total, ProgressListener listener) {

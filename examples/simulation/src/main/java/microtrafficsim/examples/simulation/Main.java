@@ -11,8 +11,8 @@ import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefini
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
-import microtrafficsim.core.simulation.builder.SimulationBuilder;
-import microtrafficsim.core.simulation.builder.impl.VehicleSimulationBuilder;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
+import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
@@ -206,7 +206,7 @@ public class Main {
         });
 
         /* initialize the simulation */
-        SimulationBuilder simbuilder = new VehicleSimulationBuilder(config.seed, vehicleOverlay.getVehicleFactory());
+        ScenarioBuilder simbuilder = new VehicleScenarioBuilder(config.seed, vehicleOverlay.getVehicleFactory());
         simbuilder.prepare(scenario);
         sim.runOneStep();
     }

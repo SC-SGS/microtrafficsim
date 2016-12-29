@@ -20,19 +20,15 @@ import java.util.function.Supplier;
  */
 public class ConcurrentVehicleContainer implements VehicleContainer {
 
-    protected Supplier<VisualizationVehicleEntity> vehicleFactory;
-    protected Set<AbstractVehicle>                 spawnedVehicles, notSpawnedVehicles, vehicles;
+    protected Set<AbstractVehicle> spawnedVehicles, notSpawnedVehicles, vehicles;
 
     /**
      * Default constructor. It initializes the used sets as concurrent ones, so they can be edited while iterated.
-     *
-     * @param vehicleFactory This factory is needed to create the vehicles' visualization components.
      */
-    public ConcurrentVehicleContainer(Supplier<VisualizationVehicleEntity> vehicleFactory) {
+    public ConcurrentVehicleContainer() {
         spawnedVehicles     = new HashSet<>();
         notSpawnedVehicles  = new HashSet<>();
         vehicles            = new HashSet<>();
-        this.vehicleFactory = vehicleFactory;
     }
 
     /*

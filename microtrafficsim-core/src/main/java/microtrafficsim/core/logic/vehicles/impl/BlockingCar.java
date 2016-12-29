@@ -17,13 +17,13 @@ public class BlockingCar extends Car {
 
     public BlockingCar(long ID, long seed, VehicleStateListener stateListener,
                        Route<Node> route) {
-        super(ID, seed, stateListener, route);
+        super(ID, seed, route, stateListener);
         blocking = false;
     }
 
     public BlockingCar(long ID, long seed, VehicleStateListener stateListener,
                        Route<Node> route, int spawnDelay) {
-        super(ID, seed, stateListener, route, spawnDelay);
+        super(ID, seed, route, spawnDelay, stateListener);
         blocking = false;
     }
 

@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.core;
 
-import microtrafficsim.core.simulation.builder.SimulationBuilder;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
 import java.util.Timer;
@@ -11,7 +11,7 @@ import java.util.Timer;
  * A simulation setup consists of three major parts: <br>
  * &bull {@link Simulation}: the executor of simulation steps <br>
  * &bull {@link Scenario}: the definition of routes etc. <br>
- * &bull {@link SimulationBuilder}: the scenario builder; e.g. pre-calculating routes by a
+ * &bull {@link ScenarioBuilder}: the scenario builder; e.g. pre-calculating routes by a
  * given scenario
  *
  * <p>
@@ -45,6 +45,11 @@ public interface Simulation {
     | simulation execution |
     |======================|
     */
+    /**
+     * @param stepListener This listener gets informed when this simulation has done a complete simulation step
+     */
+    void addStepListener(StepListener stepListener);
+
     /**
      * @return Number of finished simulation steps.
      */

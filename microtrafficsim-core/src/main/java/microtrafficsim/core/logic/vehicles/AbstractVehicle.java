@@ -320,7 +320,6 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     | world/node interaction |
     |========================|
     */
-
     public int getPriorityCounter() {
         return priorityCounter;
     }
@@ -364,16 +363,16 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
         didOneSimulationStep();
     }
 
-    /*
-    |============|
-    | simulation |
-    |============|
-    */
     private void despawn() {
         lane = null;
         setState(VehicleState.DESPAWNED);
     }
 
+    /*
+    |============|
+    | simulation |
+    |============|
+    */
     public void accelerate() {
         if (velocity < getMaxVelocity()) velocity = Math.min(getMaxVelocity(), accelerate.apply(velocity));
     }

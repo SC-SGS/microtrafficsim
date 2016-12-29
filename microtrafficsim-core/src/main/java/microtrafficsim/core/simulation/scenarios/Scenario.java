@@ -2,9 +2,10 @@ package microtrafficsim.core.simulation.scenarios;
 
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.simulation.builder.SimulationBuilder;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
+import microtrafficsim.core.simulation.core.StepListener;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 
@@ -15,7 +16,7 @@ import java.util.function.Supplier;
  * A simulation setup consists of three major parts: <br>
  * &bull {@link Simulation}: the executor of simulation steps <br>
  * &bull {@link Scenario}: the definition of routes etc. <br>
- * &bull {@link SimulationBuilder}: the scenario builder; e.g. pre-calculating routes by a
+ * &bull {@link ScenarioBuilder}: the scenario builder; e.g. pre-calculating routes by a
  * given scenario
  *
  * <p>
@@ -52,7 +53,7 @@ public interface Scenario {
     void setPrepared(boolean isPrepared);
 
     /**
-     * @return whether this scenario has already been prepared by a {@link SimulationBuilder}
+     * @return whether this scenario has already been prepared by a {@link ScenarioBuilder}
      */
     boolean isPrepared();
     

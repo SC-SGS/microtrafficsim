@@ -1,19 +1,48 @@
 package logic.validation.scenarios;
 
-import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
+import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
+import microtrafficsim.core.simulation.scenarios.impl.BasicScenario;
 import microtrafficsim.core.simulation.utils.ODMatrix;
+import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
+import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
+import microtrafficsim.utils.id.ConcurrentSeedGenerator;
+
+import java.util.function.Supplier;
 
 /**
  * @author Dominic Parga Cacheiro
  */
-public abstract class ValidationScenario implements Scenario {
+public abstract class ValidationScenario extends BasicScenario {
 
-    public final String OSM_FILENAME;
+    private ShortestPathAlgorithm scout;
 
-    public ValidationScenario(String OSM_FILENAME) {
-        this.OSM_FILENAME = OSM_FILENAME;
+    protected ValidationScenario(SimulationConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
+        super(config, graph, vehicleContainer);
+        scout = new LinearDistanceBidirectionalAStar(config.metersPerCell);
     }
+
+    protected ValidationScenario(SimulationConfig config, StreetGraph graph) {
+        super(config, graph);
+        scout = new LinearDistanceBidirectionalAStar(config.metersPerCell);
+    }
+
+    public static SimulationConfig setupConfig(SimulationConfig config) {
+
+        config.metersPerCell           = 7.5f;
+        config.longIDGenerator         = new ConcurrentLongIDGenerator();
+        config.seed                    = 1455374755807L;
+        config.seedGenerator           = new ConcurrentSeedGenerator(config.seed);
+        config.multiThreading.nThreads = 1;
+
+        return config;
+    }
+
+    public abstract void prepare();
 
     /*
     |==============|
@@ -21,27 +50,7 @@ public abstract class ValidationScenario implements Scenario {
     |==============|
     */
     @Override
-    public VehicleContainer getVehicleContainer() {
-        return null;
-    }
-
-    @Override
-    public void setPrepared(boolean isPrepared) {
-
-    }
-
-    @Override
-    public boolean isPrepared() {
-        return false;
-    }
-
-    @Override
-    public void setODMatrix(ODMatrix odMatrix) {
-
-    }
-
-    @Override
-    public ODMatrix getODMatrix() {
-        return null;
+    public Supplier<ShortestPathAlgorithm> getScoutFactory() {
+        return () -> scout;
     }
 }
