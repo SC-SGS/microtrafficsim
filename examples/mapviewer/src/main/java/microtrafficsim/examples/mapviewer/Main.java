@@ -22,6 +22,7 @@ import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerGenerator;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
+import microtrafficsim.core.vis.scenario.ScenarioOverlay;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
@@ -66,6 +67,8 @@ public class Main {
         MapViewer viewer = new TileBasedMapViewer(STYLE);
         viewer.create();
 
+        viewer.addOverlay(0, new ScenarioOverlay(viewer.getProjection()));
+
         /* parse the OSM file asynchronously and update the sources */
         asyncParse(viewer, file);
 
@@ -99,12 +102,8 @@ public class Main {
      * Asynchronously parses the given file with the given parser, updates
      * the specified layers and resets the view of the visualizer.
      *
-     * @param parser the parser with which to parse the file
      * @param file   the file to be parsed
-     * @param layers the layers of the visualization, the sources of these
      *               layers are set to the parsed result
-     * @param vis    the visualizer which is used to draw the parsed segment
-     *               and which's view should be reset
      */
     private static void asyncParse(MapViewer viewer, File file) {
         new Thread(() -> {
