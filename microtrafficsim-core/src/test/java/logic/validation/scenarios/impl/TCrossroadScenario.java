@@ -11,9 +11,11 @@ import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.StepListener;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
+import microtrafficsim.core.vis.opengl.utils.Color;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
@@ -23,9 +25,11 @@ import java.util.function.Supplier;
  */
 public class TCrossroadScenario extends ValidationScenario {
 
-    private Node topLeft, bottom, topRight;
-    private ScenarioBuilder scenarioBuilder;
-    private ODMatrix spawnDelayMatrix;
+    private Node              topLeft;
+    private Node              bottom;
+    private Node              topRight;
+    private ScenarioBuilder   scenarioBuilder;
+    private NextScenarioState state;
 
     public TCrossroadScenario(SimulationConfig config,
                               StreetGraph graph,
@@ -39,16 +43,6 @@ public class TCrossroadScenario extends ValidationScenario {
         bottom   = sortedNodes.get(2);
         topRight = sortedNodes.get(3);
 
-        /* prepare origin-destination-matrix for route count */
-        odMatrix = new SparseODMatrix();
-        odMatrix.add(1, topRight, topLeft);
-        odMatrix.add(1, bottom, topLeft);
-
-        /* prepare origin-destination-matrix for spawn delays */
-        spawnDelayMatrix = new SparseODMatrix();
-        spawnDelayMatrix.add(0, topRight, topLeft);
-        spawnDelayMatrix.add(1, bottom, topLeft);
-
         /* build scenario */
         scenarioBuilder = new VehicleScenarioBuilder(
                 config.seedGenerator.next(),
@@ -60,6 +54,8 @@ public class TCrossroadScenario extends ValidationScenario {
                     return new Car(ID, seed, route, spawnDelay, getVehicleContainer());
                 }
         );
+
+        state = NextScenarioState.PRIORITY_TO_THE_RIGHT;
     }
 
     /**
@@ -70,19 +66,13 @@ public class TCrossroadScenario extends ValidationScenario {
 
         ValidationScenario.setupConfig(config);
 
-        config.speedup                                 = 5;
         config.maxVehicleCount                         = 3;
-        config.crossingLogic.drivingOnTheRight         = true;
-        config.crossingLogic.edgePriorityEnabled       = true;
-        config.crossingLogic.priorityToTheRightEnabled = true;
-        config.crossingLogic.setOnlyOneVehicle(false);
         config.crossingLogic.friendlyStandingInJamEnabled = false;
-        config.ageForPause = -1;
-
-        Car.setDashAndDawdleFactor(0, 0);
 
         return config;
     }
+
+    private enum NextScenarioState { PRIORITY_TO_THE_RIGHT, NO_INTERCEPTION, DEADLOCK }
 
     /*
     |========================|
@@ -91,6 +81,43 @@ public class TCrossroadScenario extends ValidationScenario {
     */
     @Override
     public void prepare() {
+
+        odMatrix.clear();
+        spawnDelayMatrix.clear();
+
+        switch (state) {
+            case PRIORITY_TO_THE_RIGHT:
+                odMatrix.add(1, topRight, topLeft);
+                odMatrix.add(1, bottom, topLeft);
+
+                spawnDelayMatrix.add(0, topRight, topLeft);
+                spawnDelayMatrix.add(1, bottom, topLeft);
+
+                state = NextScenarioState.NO_INTERCEPTION;
+                break;
+            case NO_INTERCEPTION:
+                odMatrix.add(1, topRight, topLeft);
+                odMatrix.add(1, bottom, topRight);
+
+                spawnDelayMatrix.add(0, topRight, topLeft);
+                spawnDelayMatrix.add(1, bottom, topRight);
+
+                state = NextScenarioState.DEADLOCK;
+                break;
+            case DEADLOCK:
+                odMatrix.add(1, topRight, topLeft);
+                odMatrix.add(1, topLeft, topRight);
+                odMatrix.add(1, bottom, topLeft);
+
+                spawnDelayMatrix.add(0, topRight, topLeft);
+                spawnDelayMatrix.add(1, topLeft, topRight);
+                spawnDelayMatrix.add(1, bottom, topLeft);
+
+                state = NextScenarioState.PRIORITY_TO_THE_RIGHT;
+                break;
+        }
+
         scenarioBuilder.prepare(this);
     }
+
 }

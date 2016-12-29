@@ -1,7 +1,6 @@
 package microtrafficsim.core.simulation.core.impl;
 
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.StepListener;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
@@ -81,8 +80,12 @@ public class VehicleSimulation implements Simulation {
         if (!scenario.isPrepared())
             throw new RuntimeException("The simulation sets a new scenario but the scenario is not prepared.");
 
+        /* remove old scenario */
+        while(stepListeners.contains(this.scenario))
+            stepListeners.remove(this.scenario);
         age = 0;
         this.scenario = scenario;
+        addStepListener(scenario);
         int nThreads = scenario.getConfig().multiThreading.nThreads;
         vehicleStepExecutor =
                 nThreads > 1 ?
@@ -197,7 +200,7 @@ public class VehicleSimulation implements Simulation {
             cancel();
 
         for (StepListener stepListener : stepListeners)
-            stepListener.didOneStep();
+            stepListener.didOneStep(this);
 
         logger.debug(StringUtils.buildTimeString(
                 "time for this step = ",

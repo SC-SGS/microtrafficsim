@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface Scenario {
+public interface Scenario extends StepListener {
 
     /*
     |=========|
@@ -81,4 +81,14 @@ public interface Scenario {
      * @return A scout factory serving a ready shortest path algorithm for vehicle route calculation
      */
     Supplier<ShortestPathAlgorithm> getScoutFactory();
+    
+    /*
+    |==================|
+    | (i) StepListener |
+    |==================|
+    */
+    @Override
+    default void didOneStep(Simulation simulation) {
+
+    }
 }

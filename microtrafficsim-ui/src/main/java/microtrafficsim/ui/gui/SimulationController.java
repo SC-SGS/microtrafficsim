@@ -384,7 +384,7 @@ public class SimulationController implements GUIController {
         frame.setTitle("Calculating vehicle routes 0%");
 
         /* create the scenario */
-        Scenario scenario = scenarioConstructor.instantiate(config, streetgraph, overlay.getVehicleFactory());
+        Scenario scenario = scenarioConstructor.instantiate(config, streetgraph);
         simbuilder.prepare(
                 scenario,
                 currentInPercent -> frame.setTitle("Calculating vehicle routes " + currentInPercent + "%"));
@@ -540,8 +540,6 @@ public class SimulationController implements GUIController {
      * is the constructor of the used Simulation.
      */
     public interface ScenarioConstructor {
-        Scenario instantiate(SimulationConfig config,
-                    StreetGraph streetgraph,
-                    Supplier<VisualizationVehicleEntity> vehicleFactory);
+        Scenario instantiate(SimulationConfig config, StreetGraph streetgraph);
     }
 }

@@ -1,5 +1,8 @@
 package logic.validation;
 
+import logic.validation.scenarios.impl.MotorwaySlipRoadScenario;
+import logic.validation.scenarios.impl.PlusCrossroadScenario;
+import logic.validation.scenarios.impl.RoundaboutScenario;
 import logic.validation.scenarios.impl.TCrossroadScenario;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 
@@ -10,9 +13,9 @@ import java.util.function.Function;
  */
 public enum ScenarioType {
     T_CROSSROAD("T_crossroad.osm", TCrossroadScenario::setupConfig),
-    ROUNDABOUT("", null),
-    PLUS_CROSSROAD("", null),
-    MOTORWAY_SLIP_ROAD("", null);
+    ROUNDABOUT("roundabout.osm", RoundaboutScenario::setupConfig),
+    PLUS_CROSSROAD("plus_crossroad.osm", PlusCrossroadScenario::setupConfig),
+    MOTORWAY_SLIP_ROAD("motorway_slip-road.osm", MotorwaySlipRoadScenario::setupConfig);
 
     private String osmFilename;
     private Function<SimulationConfig, SimulationConfig> configSetup;

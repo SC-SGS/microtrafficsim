@@ -157,8 +157,7 @@ public class Main {
         SpriteBasedVehicleOverlay vehicleOverlay  = new SpriteBasedVehicleOverlay(PROJECTION);
 
         /* create the simulation */
-        Scenario scenario =
-                new EndOfTheWorldScenario(config, result.streetgraph, vehicleOverlay.getVehicleFactory());
+        Scenario scenario = new EndOfTheWorldScenario(config, result.streetgraph);
         Simulation sim = new VehicleSimulation(scenario);
         vehicleOverlay.setSimulation(sim);
 

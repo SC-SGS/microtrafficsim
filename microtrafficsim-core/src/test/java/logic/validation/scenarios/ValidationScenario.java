@@ -1,13 +1,17 @@
 package logic.validation.scenarios;
 
 import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.core.Simulation;
+import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.impl.BasicScenario;
 import microtrafficsim.core.simulation.utils.ODMatrix;
+import microtrafficsim.core.simulation.utils.SparseODMatrix;
 import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.id.ConcurrentSeedGenerator;
@@ -20,15 +24,18 @@ import java.util.function.Supplier;
 public abstract class ValidationScenario extends BasicScenario {
 
     private ShortestPathAlgorithm scout;
+    protected ODMatrix spawnDelayMatrix;
 
     protected ValidationScenario(SimulationConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
         super(config, graph, vehicleContainer);
-        scout = new LinearDistanceBidirectionalAStar(config.metersPerCell);
+        scout            = new LinearDistanceBidirectionalAStar(config.metersPerCell);
+        spawnDelayMatrix = new SparseODMatrix();
     }
 
     protected ValidationScenario(SimulationConfig config, StreetGraph graph) {
         super(config, graph);
-        scout = new LinearDistanceBidirectionalAStar(config.metersPerCell);
+        scout            = new LinearDistanceBidirectionalAStar(config.metersPerCell);
+        spawnDelayMatrix = new SparseODMatrix();
     }
 
     public static SimulationConfig setupConfig(SimulationConfig config) {
@@ -39,10 +46,37 @@ public abstract class ValidationScenario extends BasicScenario {
         config.seedGenerator           = new ConcurrentSeedGenerator(config.seed);
         config.multiThreading.nThreads = 1;
 
+        config.speedup                                 = 5;
+        config.crossingLogic.drivingOnTheRight         = true;
+        config.crossingLogic.edgePriorityEnabled       = true;
+        config.crossingLogic.priorityToTheRightEnabled = true;
+        config.crossingLogic.setOnlyOneVehicle(false);
+        config.ageForPause = -1;
+        Car.setDashAndDawdleFactor(0, 0);
+
         return config;
     }
 
     public abstract void prepare();
+
+    /*
+    |==================|
+    | (i) StepListener |
+    |==================|
+    */
+    @Override
+    public void didOneStep(Simulation simulation) {
+        if (getVehicleContainer().getVehicleCount() == 0) {
+            boolean isPaused = simulation.isPaused();
+            simulation.cancel();
+            prepare();
+            simulation.setAndInitScenario(this);
+            if (isPaused)
+                simulation.runOneStep();
+            else
+                simulation.run();
+        }
+    }
 
     /*
     |==============|

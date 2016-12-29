@@ -2,25 +2,24 @@ package logic.validation;
 
 import com.jogamp.newt.event.KeyEvent;
 import logic.validation.scenarios.ValidationScenario;
+import logic.validation.scenarios.impl.MotorwaySlipRoadScenario;
+import logic.validation.scenarios.impl.PlusCrossroadScenario;
+import logic.validation.scenarios.impl.RoundaboutScenario;
 import logic.validation.scenarios.impl.TCrossroadScenario;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.logic.vehicles.impl.Car;
+import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.style.impl.LightStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
-import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.resources.PackagedResource;
-import org.slf4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,10 +33,11 @@ import java.io.IOException;
  */
 public class Main {
 
-    private static final Logger logger = new EasyMarkableLogger(Main.class);
-    private static final ScenarioType scenarioType = ScenarioType.T_CROSSROAD;
-
     public static void main(String[] args) {
+
+        /* build setup: scenario and style */
+        ScenarioType scenarioType = ScenarioType.PLUS_CROSSROAD;
+        StyleSheet styleSheet     = new LightStyleSheet();
 
         /* build setup: logging */
         EasyMarkableLogger.TRACE_ENABLED = false;
@@ -45,6 +45,9 @@ public class Main {
         EasyMarkableLogger.INFO_ENABLED  = true;
         EasyMarkableLogger.WARN_ENABLED  = true;
         EasyMarkableLogger.ERROR_ENABLED = true;
+
+
+
 
         /* get map file */
         File file;
@@ -63,7 +66,7 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
 
             /* visualization */
-            MapViewer mapviewer    = new TileBasedMapViewer(new LightStyleSheet());
+            MapViewer mapviewer    = new TileBasedMapViewer(styleSheet);
             VehicleOverlay overlay = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
             try {
                 mapviewer.create(config);
@@ -122,10 +125,13 @@ public class Main {
             ValidationScenario scenario = null;
             switch (scenarioType) {
                 case MOTORWAY_SLIP_ROAD:
+                    scenario = new MotorwaySlipRoadScenario(config, graph, overlay.getVehicleFactory());
                     break;
                 case PLUS_CROSSROAD:
+                    scenario = new PlusCrossroadScenario(config, graph, overlay.getVehicleFactory());
                     break;
                 case ROUNDABOUT:
+                    scenario = new RoundaboutScenario(config, graph, overlay.getVehicleFactory());
                     break;
                 case T_CROSSROAD:
                     scenario = new TCrossroadScenario(config, graph, overlay.getVehicleFactory());
@@ -134,15 +140,6 @@ public class Main {
 
             Simulation sim = new VehicleSimulation();
             overlay.setSimulation(sim);
-            ValidationScenario finalScenario = scenario;
-            sim.addStepListener(() -> {
-                if (finalScenario.getVehicleContainer().getVehicleCount() == 0) {
-                    sim.cancel();
-                    finalScenario.prepare();
-                    sim.setAndInitScenario(finalScenario);
-                    sim.run();
-                }
-            });
             scenario.prepare();
             sim.setAndInitScenario(scenario);
             sim.runOneStep();
@@ -152,20 +149,18 @@ public class Main {
             mapviewer.addKeyCommand(KeyEvent.EVENT_KEY_RELEASED,
                     KeyEvent.VK_SPACE,
                     e -> {
-                        if (sim.isPaused()) {
+                        if (sim.isPaused())
                             sim.run();
-                        } else {
+                        else
                             sim.cancel();
-                        }
                     }
             );
 
             mapviewer.addKeyCommand(KeyEvent.EVENT_KEY_RELEASED,
                     KeyEvent.VK_RIGHT,
                     e -> {
-                        if (!sim.isPaused()) {
+                        if (!sim.isPaused())
                             sim.cancel();
-                        }
                         sim.runOneStep();
                     }
             );
