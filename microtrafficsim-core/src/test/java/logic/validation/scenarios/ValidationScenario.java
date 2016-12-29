@@ -32,6 +32,10 @@ public abstract class ValidationScenario extends BasicScenario {
         spawnDelayMatrix = new SparseODMatrix();
     }
 
+    /**
+     *
+     * @see BasicScenario#BasicScenario(SimulationConfig, StreetGraph)
+     */
     protected ValidationScenario(SimulationConfig config, StreetGraph graph) {
         super(config, graph);
         scout            = new LinearDistanceBidirectionalAStar(config.metersPerCell);
@@ -51,7 +55,6 @@ public abstract class ValidationScenario extends BasicScenario {
         config.crossingLogic.edgePriorityEnabled       = true;
         config.crossingLogic.priorityToTheRightEnabled = true;
         config.crossingLogic.setOnlyOneVehicle(false);
-        config.ageForPause = -1;
         Car.setDashAndDawdleFactor(0, 0);
 
         return config;

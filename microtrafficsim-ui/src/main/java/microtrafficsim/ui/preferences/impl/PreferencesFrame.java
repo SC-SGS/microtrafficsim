@@ -238,7 +238,6 @@ public class PreferencesFrame extends JFrame implements Preferences {
         switch (id) {
         // General
         case sliderSpeedup:
-        case ageForPause:
         case maxVehicleCount:
         case seed:
         case metersPerCell:
@@ -246,9 +245,6 @@ public class PreferencesFrame extends JFrame implements Preferences {
             break;
 
         // Visualization
-        case projection:
-            visualizationPanel.setEnabled(id, enabled);
-            break;
 
         // concurrency
         case nThreads:

@@ -7,12 +7,10 @@ package microtrafficsim.ui.preferences;
 public enum PrefElement {
     // General
     sliderSpeedup(true),
-    ageForPause(true),
     maxVehicleCount(true),
     seed(true),
     metersPerCell(false),
     // Visualization
-    projection(false),
     // crossing logic
     edgePriority(true),
     priorityToThe(true),

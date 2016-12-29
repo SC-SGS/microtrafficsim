@@ -14,45 +14,21 @@ import java.util.*;
 public class Geometry {
 
     /**
-     * This method calculates the direction of the curve starting in p, passing
-     * q and ending in r. In special cases it returns null (e.g. if all vectors
-     * together contains more than one infinity value).
+     * Calls {@code calcCurveDirection(p.x, p.y, q.x, q.y, r.x, r.y)}
      *
-     * @param p start of the curve
-     * @param q middle point of the curve
-     * @param r last point of the curve
-     * @return Direction.LEFT if p->q->r describes a left turn; Direction.RIGHT
-     * if p->q->r describes a right turn; Direction.COLLINEAR if p->q->r
-     * are collinear (= on the same line)
+     * @see #calcCurveDirection(float, float, float, float, float, float)
      */
     public static Direction calcCurveDirection(Vec2f p, Vec2f q, Vec2f r) {
-        float vp = Vec2f.sub(q, p).cross(Vec2f.sub(r, p));
-
-        if (vp == 0f) return Direction.COLLINEAR;
-        if (vp < 0f)  return Direction.RIGHT;
-        if (vp > 0f)  return Direction.LEFT;
-        return null;
+        return calcCurveDirection(p.x, p.y, q.x, q.y, r.x, r.y);
     }
 
     /**
-     * This method calculates the direction of the curve starting in p, passing
-     * q and ending in r. In special cases it returns null (e.g. if all vectors
-     * together contains more than one infinity value).
+     * Calls {@code calcCurveDirection(p.x, p.y, q.x, q.y, r.x, r.y)}
      *
-     * @param p start of the curve
-     * @param q middle point of the curve
-     * @param r last point of the curve
-     * @return Direction.LEFT if p->q->r describes a left turn; Direction.RIGHT
-     * if p->q->r describes a right turn; Direction.COLLINEAR if p->q->r
-     * are collinear (= on the same line)
+     * @see #calcCurveDirection(double, double, double, double, double, double)
      */
     public static Direction calcCurveDirection(Coordinate p, Coordinate q, Coordinate r) {
-        double vp = ((q.lon - p.lon) * (r.lat - p.lat) - (r.lon - p.lon) * (q.lat - p.lat));
-
-        if (vp == 0f) return Direction.COLLINEAR;
-        if (vp < 0f)  return Direction.RIGHT;
-        if (vp > 0f)  return Direction.LEFT;
-        return null;
+        return calcCurveDirection(p.lon, p.lat, q.lon, q.lat, r.lon, r.lat);
     }
 
     /**
@@ -71,7 +47,21 @@ public class Geometry {
      * are collinear (= on the same line)
      */
     public static Direction calcCurveDirection(float px, float py, float qx, float qy, float rx, float ry) {
+        // float vp = Vec2f.sub(q, p).cross(Vec2f.sub(r, p));
         float vp = ((qx - px) * (ry - py) - (rx - px) * (qy - py));
+
+        if (vp == 0f) return Direction.COLLINEAR;
+        if (vp < 0f)  return Direction.RIGHT;
+        if (vp > 0f)  return Direction.LEFT;
+        return null;
+    }
+
+    /**
+     * Same as {@link #calcCurveDirection(float, float, float, float, float, float)} using doubles.
+     */
+    public static Direction calcCurveDirection(double px, double py, double qx, double qy, double rx, double ry) {
+        // double vp = Vec2f.sub(q, p).cross(Vec2f.sub(r, p));
+        double vp = ((qx - px) * (ry - py) - (rx - px) * (qy - py));
 
         if (vp == 0f) return Direction.COLLINEAR;
         if (vp < 0f)  return Direction.RIGHT;

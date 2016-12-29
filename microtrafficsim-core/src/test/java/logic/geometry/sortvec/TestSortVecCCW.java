@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Queue;
 
@@ -13,8 +14,7 @@ import static org.junit.Assert.assertEquals;
 
 
 /**
- * This class tests the method
- * mictrotrafficsim.math.Geometry.sortClockwiseAsc(...).
+ * This class tests {@link Geometry#sortClockwiseAsc(Vec2f, Collection, boolean)}
  *
  * @author Dominic Parga Cacheiro
  */

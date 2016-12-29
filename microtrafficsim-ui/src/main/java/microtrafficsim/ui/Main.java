@@ -43,7 +43,6 @@ public class Main {
         --------------
         // General
         PrefElement.sliderSpeedup.setEnabled(true);
-        PrefElement.ageForPause.setEnabled(false);
         PrefElement.maxVehicleCount.setEnabled(false);
         PrefElement.seed.setEnabled(true);
         PrefElement.metersPerCell.setEnabled(false);

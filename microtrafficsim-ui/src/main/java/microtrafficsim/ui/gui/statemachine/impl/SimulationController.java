@@ -30,7 +30,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 
 
 /**
@@ -43,12 +42,12 @@ public class SimulationController implements GUIController {
     private static Logger logger = new EasyMarkableLogger(SimulationController.class);
 
     // logic
-    private final SimulationConfig config;
+    private final SimulationConfig    config;
     private final ScenarioConstructor scenarioConstructor;
 
     // frame/gui
     private final JFrame        frame;
-    private final MTSMenuBar menubar;
+    private final MTSMenuBar    menubar;
     private final ReentrantLock lock_gui;
 
     // general
@@ -488,7 +487,6 @@ public class SimulationController implements GUIController {
         /* set enabled */
         // general
         preferences.setEnabled(PrefElement.sliderSpeedup, PrefElement.sliderSpeedup.isEnabled());
-        preferences.setEnabled(PrefElement.ageForPause, PrefElement.ageForPause.isEnabled());
         preferences.setEnabled(PrefElement.maxVehicleCount, newSim && PrefElement.maxVehicleCount.isEnabled());
         preferences.setEnabled(PrefElement.seed, newSim && PrefElement.seed.isEnabled());
         preferences.setEnabled(PrefElement.metersPerCell, newSim && PrefElement.metersPerCell.isEnabled());
@@ -499,7 +497,6 @@ public class SimulationController implements GUIController {
         preferences.setEnabled(PrefElement.friendlyStandingInJam,
                                newSim && PrefElement.friendlyStandingInJam.isEnabled());
         // visualization
-        preferences.setEnabled(PrefElement.projection, PrefElement.projection.isEnabled());
         // concurrency
         preferences.setEnabled(PrefElement.nThreads, newSim && PrefElement.nThreads.isEnabled());
         preferences.setEnabled(PrefElement.vehiclesPerRunnable, PrefElement.vehiclesPerRunnable.isEnabled());

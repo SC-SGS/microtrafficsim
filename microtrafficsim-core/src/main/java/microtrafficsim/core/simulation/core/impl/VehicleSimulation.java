@@ -196,9 +196,6 @@ public class VehicleSimulation implements Simulation {
 
     @Override
     public void didRunOneStep() {
-        if (scenario.getConfig().ageForPause == getAge())
-            cancel();
-
         for (StepListener stepListener : stepListeners)
             stepListener.didOneStep(this);
 

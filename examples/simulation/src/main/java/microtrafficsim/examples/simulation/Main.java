@@ -1,221 +1,132 @@
 package microtrafficsim.examples.simulation;
 
 import com.jogamp.newt.event.KeyEvent;
-import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.map.layers.LayerSource;
-import microtrafficsim.core.map.style.StyleSheet;
-import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
-import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
+import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.map.style.impl.DarkStyleSheet;
+import microtrafficsim.core.map.style.impl.LightStyleSheet;
+import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
+import microtrafficsim.core.mapviewer.MapViewer;
+import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
-import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
+import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
-import microtrafficsim.core.vis.VisualizationPanel;
-import microtrafficsim.core.vis.VisualizerConfig;
-import microtrafficsim.core.vis.map.projections.MercatorProjection;
-import microtrafficsim.core.vis.map.projections.Projection;
-import microtrafficsim.core.vis.map.tiles.PreRenderedTileProvider;
-import microtrafficsim.core.vis.map.tiles.TileProvider;
-import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerGenerator;
-import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
-import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
-import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
-import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
-import microtrafficsim.osm.parser.features.FeatureDependency;
-import microtrafficsim.osm.parser.features.FeatureGenerator;
-import microtrafficsim.osm.parser.features.streets.StreetComponent;
-import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
-import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
-import microtrafficsim.osm.primitives.Way;
+import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
-import org.slf4j.Logger;
+import oracle.jvm.hotspot.jfr.JFR;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.util.Collection;
-import java.util.function.Predicate;
-
 
 /**
- * Simulation example. The map to be simulated/displayed can be specified via the command-line options.
+ * This class can be used as introduction for own simulation implementations, e.g. own GUIs
  *
- * @author Dominic Parga Cacheiro, Maximilian Luz
+ * @author Dominic Parga Cacheiro
  */
 public class Main {
-    private static final Logger logger = new EasyMarkableLogger(Main.class);
 
-    /* -- window parameters -------------------------------------------------------------------- */
-
-    /**
-     * The initial window width.
-     */
-    private static final int INITIAL_WINDOW_WIDTH = 1600;
-
-    /**
-     * The initial window height.
-     */
-    private static final int INITIAL_WINDOW_HEIGHT = 900;
-
-
-    /* -- style parameters --------------------------------------------------------------------- */
-
-    /**
-     * The projection used to transform the spherical world coordinates to plane coordinates.
-     * The resulting tile size is dependent on the scale of this projection (2x scale). For this
-     * example, the tile size will be 512x512 pixel.
-     */
-    private static final Projection PROJECTION = new MercatorProjection(256);
-
-    /**
-     * The tiling scheme used to create the tiles.
-     */
-    private static final QuadTreeTilingScheme TILING_SCHEME = new QuadTreeTilingScheme(PROJECTION, 0, 19);
-
-    /**
-     * The used style sheet, defining style and content of the visualization.
-     */
-    private static final StyleSheet STYLE = new LightStyleSheet();
-
-    /* -- internal settings -------------------------------------------------------------------- */
-
-    /**
-     * When using a {@code QuadTreeTiledMapSegment}, this describes the zoom level at which
-     * the geometry will be stored in a grid. To reduce memory requirements, geometry is not
-     * stored for each layer but just for this one.
-     */
-    private static final int TILE_GRID_LEVEL = 12;
-
-    /**
-     * The number of worker threads loading tiles and their geometry in parallel, during
-     * the visualization.
-     */
-    private static final int NUM_TILE_WORKERS = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
-
-    /**
-     * Whether to print frame statistics or not.
-     */
-    private static final boolean PRINT_FRAME_STATS = false;
-
-    /**
-     * Enable n-times multi-sample anti aliasing with the specified number of samples, if it is greater than one.
-     */
-    private static final int MSAA = 0;
-
-
-    /**
-     * Set up this example. Layer definitions describe the visual layers
-     * to be rendered and are used to create a layer provider. With this
-     * provider a tile provider is created, capable of returning drawable
-     * tiles. These tiles are rendered using the visualization object. A
-     * parser is created to parse the specified file (asynchronously) and
-     * update the layers (respectively their sources).
-     *
-     * @param file the file to parse
-     * @throws UnsupportedFeatureException if not all required OpenGL features are available
-     */
-    private static void show(File file) throws Exception {
-
-        /* create configuration for scenarios */
-        SimulationConfig config = new SimulationConfig();
-        initSimulationConfig(config);
-
-        /* set up layer and tile provider */
-        Collection<LayerDefinition> layers        = STYLE.getLayers();
-        TileLayerProvider               layerProvider = createLayerProvider(layers);
-        PreRenderedTileProvider         provider      = new PreRenderedTileProvider(layerProvider);
-
-        /* parse the OSM file */
-        OSMParser        parser = createParser(config);
-        OSMParser.Result result = parser.parse(file);
-
-        /* store the geometry on a grid to later generate tiles */
-        QuadTreeTiledMapSegment tiled = new QuadTreeTiledMapSegment.Generator()
-                .generate(result.segment, TILING_SCHEME, TILE_GRID_LEVEL);
-
-        /* update the feature sources, so that they will use the created provider */
-        for (LayerDefinition def : layers) {
-            LayerSource src = def.getSource();
-
-            if (src instanceof FeatureTileLayerSource)
-                ((FeatureTileLayerSource) src).setFeatureProvider(tiled);
-        }
-
-        /* create the visualization overlay */
-        SpriteBasedVehicleOverlay vehicleOverlay  = new SpriteBasedVehicleOverlay(PROJECTION);
-
-        /* create the simulation */
-        Scenario scenario = new EndOfTheWorldScenario(config, result.streetgraph);
-        Simulation sim = new VehicleSimulation(scenario);
-        vehicleOverlay.setSimulation(sim);
-
-        /* create and display the frame */
-        SwingUtilities.invokeLater(() -> {
-
-            /* create the actual visualizer */
-            TileBasedVisualization visualization = createVisualization(provider, sim);
-            visualization.putOverlay(0, vehicleOverlay);
-
-            VisualizationPanel vpanel;
-            try {
-                vpanel = createVisualizationPanel(visualization);
-            } catch (UnsupportedFeatureException e) {
-                e.printStackTrace();
-                Runtime.getRuntime().halt(0);
-                return;
-            }
-
-            /* create and initialize the JFrame */
-            JFrame frame = new JFrame("MicroTrafficSim - Simulation Example");
-            frame.setSize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
-            frame.add(vpanel);
-
-            /*
-             * Note: JOGL automatically calls glViewport, we need to make
-             * sure that this function is not called with a height or width
-             * of 0! Otherwise the program crashes.
-             */
-            frame.setMinimumSize(new Dimension(100, 100));
-
-            // on close: stop the visualization and exit
-            frame.addWindowListener(new WindowAdapter() {
-                public void windowClosing(WindowEvent e) {
-                    vpanel.stop();
-                    System.exit(0);
-                }
-            });
-
-            /* show the frame and start the render-loop */
-            frame.setVisible(true);
-            vpanel.start();
-
-            if (PRINT_FRAME_STATS) visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
-        });
-
-        /* initialize the simulation */
-        ScenarioBuilder simbuilder = new VehicleScenarioBuilder(config.seed, vehicleOverlay.getVehicleFactory());
-        simbuilder.prepare(scenario);
-        sim.runOneStep();
+    private static void printUsage() {
+        System.out.println("MicroTrafficSim - Simulation Example");
+        System.out.println("");
+        System.out.println("Usage:");
+        System.out.println("  simulation <file>         Run this example with the specified map-file");
+        System.out.println("  simulation --help | -h    Show this help message.");
+        System.out.println("");
     }
 
-    /**
-     * Initialize the given {@code SimulationConfig}.
-     *
-     * @param config the configuration to initialize
-     */
-    private static void initSimulationConfig(SimulationConfig config) {
+    public static void main(String[] args) {
+
+        File file = analyseInputArguments(args);
+        if (file == null)
+            return;
+
+
+        /* create configuration for scenarios */
+        SimulationConfig config = createConfig();
+        /* build setup: logging */
+        EasyMarkableLogger.TRACE_ENABLED = false;
+        EasyMarkableLogger.DEBUG_ENABLED = false;
+        EasyMarkableLogger.INFO_ENABLED  = true;
+        EasyMarkableLogger.WARN_ENABLED  = true;
+        EasyMarkableLogger.ERROR_ENABLED = true;
+
+
+        SwingUtilities.invokeLater(() -> {
+
+            /* create map viewer and vehicle overlay */
+            MapViewer mapviewer    = new TileBasedMapViewer(new DarkStyleSheet());
+            VehicleOverlay overlay = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
+            try {
+                mapviewer.create(config);
+            } catch (UnsupportedFeatureException e) {
+                e.printStackTrace();
+            }
+            mapviewer.addOverlay(0, overlay);
+
+            JFrame frame = setupFrameAndShow(mapviewer);
+
+
+            /* parse osm map */
+            String oldTitle = frame.getTitle();
+            frame.setTitle("Parsing new map, please wait...");
+            StreetGraph graph = null;
+            try {
+            /* parse file and create tiled provider */
+                OSMParser.Result result = mapviewer.parse(file);
+                graph = result.streetgraph;
+
+                mapviewer.changeMap(result);
+                frame.setTitle(oldTitle);
+            } catch (Exception e) {
+                frame.setTitle(oldTitle);
+                e.printStackTrace();
+                Runtime.getRuntime().halt(1);
+            }
+
+
+            /* create simulation */
+            Simulation simulation = createAndInitSimulation(config, graph, overlay);
+
+
+            /* add shortcuts */
+            addShortcuts(mapviewer, simulation);
+        });
+    }
+
+    /*
+    |============|
+    | impl stuff |
+    |============|
+    */
+    private static File analyseInputArguments(String[] args) {
+        if (args.length != 1) {
+            System.out.println("INFO: Exit without correct input map.");
+            return null;
+        }
+        /* interpret argument input */
+        switch (args[0]) {
+            case "-h":
+            case "--help":
+                printUsage();
+                return null;
+
+            default:
+                return new File(args[0]);
+        }
+    }
+
+    private static SimulationConfig createConfig() {
+        SimulationConfig config = new SimulationConfig();
+
         config.maxVehicleCount                            = 1000;
         config.speedup                                    = 5;
         config.seed                                       = 1455374755807L;
@@ -226,205 +137,77 @@ public class Main {
         config.crossingLogic.friendlyStandingInJamEnabled = true;
         config.crossingLogic.setOnlyOneVehicle(false);
 
-        logger.debug("using '" + Long.toHexString(config.seed) + "' as seed");
+        return config;
     }
 
-    /**
-     * Create the (tile-based) visualization object. The visualization object is
-     * used to bind input and display structures together.
-     *
-     * @param provider the provider providing the tiles to be displayed
-     * @return the created visualization object
-     */
-    private static TileBasedVisualization createVisualization(TileProvider provider, Simulation sim) {
-        /* create a new visualization object */
-        TileBasedVisualization vis
-                = new TileBasedVisualization(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, provider, NUM_TILE_WORKERS);
+    private static JFrame setupFrameAndShow(MapViewer mapviewer) {
+        /* setup JFrame */
+        JFrame frame = new JFrame("MicroTrafficSim - Validation Scenario");;
+        frame.setSize(mapviewer.getInitialWindowWidth(), mapviewer.getInitialWindowHeight());
+        frame.add(mapviewer.getVisualizationPanel());
 
-        /* apply the style (background color) */
-        vis.apply(STYLE);
+            /*
+             * Note: JOGL automatically calls glViewport, we need to make sure that this
+             * function is not called with a height or width of 0! Otherwise the program
+             * crashes.
+             */
+        frame.setMinimumSize(new Dimension(100, 100));
 
-        /* add some key commands */
-        vis.getKeyController().addKeyCommand(
-                KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_F12, e -> Utils.asyncScreenshot(vis.getRenderContext()));
-
-        vis.getKeyController().addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_SPACE, e -> {
-            if (sim.isPaused())
-                sim.run();
-            else
-                sim.cancel();
-        });
-
-        vis.getKeyController().addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_RIGHT, e -> {
-            sim.cancel();
-            sim.runOneStep();
-        });
-
-        vis.getKeyController().addKeyCommand(
-                KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_ESCAPE, e -> Runtime.getRuntime().halt(0));
-
-        /* set an exception handler, catching all unhandled exceptions on the render thread (for debugging purposes) */
-        vis.getRenderContext().setUncaughtExceptionHandler(new Utils.DebugExceptionHandler());
-
-        /* add an overlay (the TileGridOverlay is used to display tile borders, so mainly for debugging) */
-        // vis.putOverlay(0, new TileGridOverlay(provider.getTilingScheme()));
-
-        return vis;
-    }
-
-    /**
-     * Create a visualization panel. The visualization panel is the interface
-     * between the Java UI toolkit (Swing) and the OpenGL-based visualization.
-     * Thus it is used to display the visualization.
-     *
-     * @param vis the visualization to show on the panel
-     * @return the created visualization panel
-     * @throws UnsupportedFeatureException if not all required OpenGL features are available
-     */
-    @SuppressWarnings("ConstantConditions")
-    private static VisualizationPanel createVisualizationPanel(TileBasedVisualization vis)
-            throws UnsupportedFeatureException {
-
-        /* get the default configuration for the visualization */
-        VisualizerConfig config = vis.getDefaultConfig();
-
-        /* enable multi-sample anti-aliasing if specified */
-        if (MSAA > 1) {
-            config.glcapabilities.setSampleBuffers(true);
-            config.glcapabilities.setNumSamples(MSAA);
-        }
-
-        /* create and return a new visualization panel */
-        return new VisualizationPanel(vis, config);
-    }
-
-    /**
-     * Creates and sets up the parser used to parse OSM files. The parser
-     * processes the file in two major steps: first a simple extraction,
-     * based on the feature set requested (using {@code putMapFeatureDefinition},
-     * and second a transformation of the extracted data to the final
-     * representation, using the {@code FeatureGenerator}s associated with
-     * the feature definition. {@code FeatureGenerator}s may require the
-     * presence of certain components for ways and nodes (such as the
-     * {@code StreetComponent}), or factories to initialize relations
-     * (such as the {@code RestrictionRelationFactory}). The in this example
-     * provided components and initializers are enough for most use-cases.
-     *
-     * @param simconfig the simulation configuration to use for the stree-graph.
-     * @return the created parser
-     */
-    private static OSMParser createParser(SimulationConfig simconfig) {
-        /* predicate to match/select the streets that belong to the simulated graph */
-        Predicate<Way> streetgraphMatcher = w -> {
-            if (!w.visible) return false;
-            if (w.tags.get("highway") == null) return false;
-            if (w.tags.get("area") != null && !w.tags.get("area").equals("no")) return false;
-
-            switch (w.tags.get("highway")) {
-            case "motorway":      return true;
-            case "trunk":         return true;
-            case "primary":       return true;
-            case "secondary":     return true;
-            case "tertiary":      return true;
-            case "unclassified":  return true;
-            case "residential":   return true;
-
-            case "motorway_link": return true;
-            case "trunk_link":    return true;
-            case "primary_link":  return true;
-            case "tertiary_link": return true;
-
-            case "living_street": return true;
-            case "track":         return true;
-            case "road":          return true;
+            /* on close: stop the visualization and exit */
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                mapviewer.stop();
+                System.exit(0);
             }
+        });
 
-            return false;
-        };
 
-        /* create the feature definition for the simulated graph */
-        StreetGraphFeatureDefinition streetgraph = new StreetGraphFeatureDefinition(
-                "streetgraph",
-                new FeatureDependency(OSMParser.PLACEHOLDER_UNIFICATION, null),
-                new StreetGraphGenerator(simconfig),
-                n -> false,
-                streetgraphMatcher
+            /* show */
+        frame.setLocationRelativeTo(null);    // center on screen; close to setVisible
+        frame.setVisible(true);
+        mapviewer.show();
+
+        return frame;
+    }
+
+    private static Simulation createAndInitSimulation(
+            SimulationConfig config,
+            StreetGraph graph,
+            VehicleOverlay overlay) {
+
+        /* initialize the simulation */
+        Scenario scenario = new RandomRouteScenario(config, graph);
+        Simulation simulation = new VehicleSimulation();
+        ScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(
+                config.seedGenerator.next(),
+                overlay.getVehicleFactory()
         );
 
-        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_WAY_CLIPPING, OSMParser.PLACEHOLDER_UNIFICATION,
-                                            streetgraph);
+        overlay.setSimulation(simulation);
+        scenarioBuilder.prepare(scenario);
+        simulation.setAndInitScenario(scenario);
+        simulation.runOneStep();
 
-        /* global properties for (all) generators */
-        FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
-        genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.CLIP;
-
-        /* create a configuration, add factories for parsed components */
-        OSMParser.Config config = new OSMParser.Config()
-                .setGeneratorProperties(genprops)
-                .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
-                .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
-                .putRelationInitializer("restriction", new RestrictionRelationFactory())
-                .setStreetGraphFeatureDefinition(streetgraph);
-
-        /* add the features defined in the style to the parser */
-        STYLE.getFeatureDefinitions().forEach(config::putMapFeatureDefinition);
-
-        /* create and return the parser */
-        return config.createParser();
+        return simulation;
     }
 
-    /**
-     * Creates a {@code TileLayerProvider} from the given layer definitions.
-     * The {@code TileLayerProvider} is used to provide map-layers and their
-     * style to the visualization. {@code LayerDefinition}s describe such
-     * a layer in dependence of a source object. {@code TileLayerGenerator}s
-     * are used to generate a renderable {@code TileLayer} from a specified
-     * source.
-     *
-     * @param layers the layer definitions for the provider
-     * @return the created layer provider
-     */
-    private static TileLayerProvider createLayerProvider(Collection<LayerDefinition> layers) {
-        /* create the layer provider */
-        LayeredTileMap provider = new LayeredTileMap(TILING_SCHEME);
+    private static void addShortcuts(MapViewer mapviewer, Simulation simulation) {
+        mapviewer.addKeyCommand(KeyEvent.EVENT_KEY_RELEASED,
+                KeyEvent.VK_SPACE,
+                e -> {
+                    if (simulation.isPaused())
+                        simulation.run();
+                    else
+                        simulation.cancel();
+                }
+        );
 
-        /* add a generator to support feature layers */
-        FeatureTileLayerGenerator generator = new FeatureTileLayerGenerator();
-        provider.putGenerator(FeatureTileLayerSource.class, generator);
-
-        /* add the leyer definitions */
-        layers.forEach(provider::addLayer);
-
-        return provider;
-    }
-
-
-    public static void main(String[] args) throws Exception {
-        File file;
-
-        if (args.length == 1) {
-            switch (args[0]) {
-            case "-h":
-            case "--help":
-                printUsage();
-                return;
-
-            default:
-                file = new File(args[0]);
-            }
-
-            show(file);
-        } else {
-            System.out.println("INFO: Exit without correct input map.");
-        }
-    }
-
-    private static void printUsage() {
-        System.out.println("MicroTrafficSim - Simulation Example");
-        System.out.println("");
-        System.out.println("Usage:");
-        System.out.println("  simulation <file>         Run this example with the specified map-file");
-        System.out.println("  simulation --help | -h    Show this help message.");
-        System.out.println("");
+        mapviewer.addKeyCommand(KeyEvent.EVENT_KEY_RELEASED,
+                KeyEvent.VK_RIGHT,
+                e -> {
+                    simulation.cancel();
+                    simulation.runOneStep();
+                }
+        );
     }
 }

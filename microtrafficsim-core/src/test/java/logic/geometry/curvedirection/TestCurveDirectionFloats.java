@@ -10,9 +10,7 @@ import static org.junit.Assert.assertEquals;
 
 
 /**
- * This class tests the method
- * mictrotrafficsim.math.Geometry.calcCurveDirection(float p.x, float p.y, float q.x,
- * float q.y, float r.x, float r.y).
+ * This class tests {@link Geometry#calcCurveDirection(float, float, float, float, float, float)}
  *
  * @author Dominic Parga Cacheiro
  */

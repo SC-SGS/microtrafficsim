@@ -27,6 +27,10 @@ public abstract class BasicScenario implements Scenario {
 
     /**
      * Default constructor
+     *
+     * @param config this config is used for internal settings and should be set already
+     * @param graph used for route definitions etc.
+     * @param vehicleContainer stores and manages vehicles running in this scenario
      */
     protected BasicScenario(SimulationConfig config,
                             StreetGraph graph,

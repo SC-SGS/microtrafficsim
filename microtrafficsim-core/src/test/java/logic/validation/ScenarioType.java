@@ -9,6 +9,8 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 import java.util.function.Function;
 
 /**
+ * Just a collection of important information, so the programmer has only to choose an enum value.
+ *
  * @author Dominic Parga Cacheiro
  */
 public enum ScenarioType {
