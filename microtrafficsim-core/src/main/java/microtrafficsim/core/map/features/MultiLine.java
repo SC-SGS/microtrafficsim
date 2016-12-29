@@ -10,6 +10,7 @@ import microtrafficsim.core.map.FeaturePrimitive;
  * @author Maximilian Luz
  */
 public class MultiLine extends FeaturePrimitive {
+
     public Coordinate[] coordinates;
 
     /**

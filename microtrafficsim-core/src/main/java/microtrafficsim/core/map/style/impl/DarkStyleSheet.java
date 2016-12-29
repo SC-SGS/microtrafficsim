@@ -1,4 +1,4 @@
-package microtrafficsim.ui.vis;
+package microtrafficsim.core.map.style.impl;
 
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
@@ -26,7 +26,7 @@ import java.util.function.Predicate;
  *
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
-class DarkStyleSheet implements StyleSheet {
+public class DarkStyleSheet implements StyleSheet {
 
     private static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
 

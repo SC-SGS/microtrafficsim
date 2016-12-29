@@ -15,15 +15,13 @@ public class BlockingCar extends Car {
 
     private boolean blocking;
 
-    public BlockingCar(long ID, long seed, VehicleStateListener stateListener,
-                       Route<Node> route) {
-        super(ID, seed, stateListener, route);
+    public BlockingCar(long ID, long seed, Route<Node> route, VehicleStateListener stateListener) {
+        super(ID, seed, route, stateListener);
         blocking = false;
     }
 
-    public BlockingCar(long ID, long seed, VehicleStateListener stateListener,
-                       Route<Node> route, int spawnDelay) {
-        super(ID, seed, stateListener, route, spawnDelay);
+    public BlockingCar(long ID, long seed, Route<Node> route, int spawnDelay, VehicleStateListener stateListener) {
+        super(ID, seed, route, spawnDelay, stateListener);
         blocking = false;
     }
 
@@ -33,6 +31,10 @@ public class BlockingCar extends Car {
 
     public void setBlockMode(boolean value) {
         blocking = value;
+    }
+
+    public boolean isBlocking() {
+        return blocking;
     }
 
     @Override

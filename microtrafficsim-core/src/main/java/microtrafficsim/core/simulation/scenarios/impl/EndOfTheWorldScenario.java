@@ -43,9 +43,8 @@ public class EndOfTheWorldScenario extends BasicScenario {
      * {@link ConcurrentVehicleContainer} as {@code VehicleContainer}
      */
     public EndOfTheWorldScenario(SimulationConfig config,
-                                 StreetGraph graph,
-                                 Supplier<VisualizationVehicleEntity> vehicleFactory) {
-        this(config, graph, new ConcurrentVehicleContainer(vehicleFactory));
+                                 StreetGraph graph) {
+        this(config, graph, new ConcurrentVehicleContainer());
     }
 
     /**

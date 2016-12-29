@@ -260,7 +260,7 @@ public class TileBasedVisualizer implements Visualizer {
 
         UniformSampler2D uFboColorSampler = (UniformSampler2D) fboCopyShader.getUniform("u_color_sampler");
         UniformSampler2D uFboDepthSampler = (UniformSampler2D) fboCopyShader.getUniform("u_depth_sampler");
-        //uFboColorSampler.set(FBO_COLOR_TEXUNIT);
+        uFboColorSampler.set(FBO_COLOR_TEXUNIT);
         uFboDepthSampler.set(FBO_DEPTH_TEXUNIT);
 
         // create backbuffer

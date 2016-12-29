@@ -88,7 +88,7 @@ public class FeatureDependency {
      * @param def the dependency to be added.
      * @return {@code true} if the underlying collection of dependencies has changed.
      */
-    public boolean addRequiredBy(FeatureDefinition def) {
+    public boolean addBefore(FeatureDefinition def) {
         return requiredBy.add(def);
     }
 

@@ -3,6 +3,7 @@ package microtrafficsim.core.map.tiles;
 import microtrafficsim.core.map.*;
 import microtrafficsim.core.map.features.MultiLine;
 import microtrafficsim.core.map.features.Point;
+import microtrafficsim.core.map.features.Polygon;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -228,6 +229,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
                 intersectors.put(Point.class, (TileIntersector<Point>) TileIntersectors::intersect);
                 intersectors.put(MultiLine.class, (TileIntersector<MultiLine>) TileIntersectors::intersect);
                 intersectors.put(Street.class, (TileIntersector<MultiLine>) TileIntersectors::intersect);
+                intersectors.put(Polygon.class, (TileIntersector<Polygon>) TileIntersectors::intersect);
             }
         }
 

@@ -185,6 +185,24 @@ public class ArrayUtils {
 
 
     /**
+     * Reverses the given array in place.
+     *
+     * @param array the array to reverse
+     * @param <T> the type of the array.
+     * @return the input, {@code array}, reversed.
+     */
+    public static <T> T[] reverseInPlace(T[] array) {
+        for (int i = 0, j = (array.length - 1); i < j; i++, j--) {
+            T tmp = array[i];
+            array[i] = array[j];
+            array[j] = tmp;
+        }
+
+        return array;
+    }
+
+
+    /**
      * Computes the longest common substring of both arrays.
      *
      * @param a the first array.

@@ -2,6 +2,7 @@ package microtrafficsim.core.simulation.core.impl;
 
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.core.Simulation;
+import microtrafficsim.core.simulation.core.StepListener;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.core.stepexecutors.impl.MultiThreadedVehicleStepExecutor;
 import microtrafficsim.core.simulation.core.stepexecutors.impl.SingleThreadedVehicleStepExecutor;
@@ -10,6 +11,8 @@ import microtrafficsim.utils.StringUtils;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -26,10 +29,11 @@ public class VehicleSimulation implements Simulation {
     private VehicleStepExecutor vehicleStepExecutor;
 
     // simulation steps
-    private boolean   paused;
-    private Timer     timer;
-    private TimerTask timerTask;
-    private int       age;
+    private boolean            paused;
+    private Timer              timer;
+    private TimerTask          timerTask;
+    private int                age;
+    private List<StepListener> stepListeners;
 
     // logging
     private long time;
@@ -50,6 +54,7 @@ public class VehicleSimulation implements Simulation {
         paused = true;
         setAndInitScenario(scenario);
         timer = new Timer();
+        this.stepListeners = new LinkedList<>();
     }
 
     /*
@@ -72,8 +77,15 @@ public class VehicleSimulation implements Simulation {
             return;
         }
 
+        if (!scenario.isPrepared())
+            throw new RuntimeException("The simulation sets a new scenario but the scenario is not prepared.");
+
+        /* remove old scenario */
+        while(stepListeners.contains(this.scenario))
+            stepListeners.remove(this.scenario);
         age = 0;
         this.scenario = scenario;
+        addStepListener(scenario);
         int nThreads = scenario.getConfig().multiThreading.nThreads;
         vehicleStepExecutor =
                 nThreads > 1 ?
@@ -81,6 +93,17 @@ public class VehicleSimulation implements Simulation {
                         new SingleThreadedVehicleStepExecutor();
 
         vehicleStepExecutor.updateNodes(this.scenario);
+    }
+
+    /**
+     * The internal collection used to store listeners is a {@link LinkedList} for easy iterating. Due to its
+     * runtime in O(n) for checking whether an Object is contained or not, this method {@code addStepListener} DOES
+     * NOT check for duplicates. Thus if you add a listener twice, it is called twice.
+     */
+    @Override
+    public void addStepListener(StepListener stepListener) {
+        if (stepListener != null)
+            stepListeners.add(stepListener);
     }
 
     @Override
@@ -176,14 +199,14 @@ public class VehicleSimulation implements Simulation {
         if (scenario.getConfig().ageForPause == getAge())
             cancel();
 
-        if (logger.isDebugEnabled()) {
-            if (scenario.isPrepared()) {
-                logger.debug(
-                        StringUtils.buildTimeString("time for this step = ", System.nanoTime() - time, "ns").toString()
-                );
-            }
-            logger.debug("number of vehicles after run = " + scenario.getVehicleContainer().getVehicleCount());
-        }
+        for (StepListener stepListener : stepListeners)
+            stepListener.didOneStep(this);
+
+        logger.debug(StringUtils.buildTimeString(
+                "time for this step = ",
+                System.nanoTime() - time, "ns").toString()
+        );
+        logger.debug("number of vehicles after run = " + scenario.getVehicleContainer().getVehicleCount());
     }
 
     @Override

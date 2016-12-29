@@ -1,14 +1,18 @@
-package microtrafficsim.ui.vis;
+package microtrafficsim.core.mapviewer;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.map.style.StyleSheet;
+import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
+import microtrafficsim.core.mapviewer.utils.Utils;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
+import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
@@ -28,15 +32,10 @@ import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
 import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 import microtrafficsim.osm.primitives.Way;
-import microtrafficsim.ui.utils.Utils;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.function.Predicate;
 
@@ -51,12 +50,12 @@ public class TileBasedMapViewer implements MapViewer {
     /**
      * The initial window width.
      */
-    public static final int INITIAL_WINDOW_WIDTH = 1600;
+    public final int INITIAL_WINDOW_WIDTH;
 
     /**
      * The initial window height.
      */
-    public static final int INITIAL_WINDOW_HEIGHT = 900;
+    public final int INITIAL_WINDOW_HEIGHT;
 
 
     /* -- style parameters --------------------------------------------------------------------- */
@@ -66,17 +65,17 @@ public class TileBasedMapViewer implements MapViewer {
      * The resulting tile size is dependent on the scale of this projection (2x scale). For this
      * example, the tile size will be 512x512 pixel.
      */
-    public static final Projection PROJECTION = new MercatorProjection(256);
+    public final Projection PROJECTION;
 
     /**
      * The tiling scheme used to create the tiles.
      */
-    private static final QuadTreeTilingScheme TILING_SCHEME = new QuadTreeTilingScheme(PROJECTION, 0, 19);
+    private final QuadTreeTilingScheme TILING_SCHEME;
 
     /**
      * The used style sheet, defining style and content of the visualization.
      */
-    private static final StyleSheet STYLE = new MonochromeStyleSheet();
+    private final StyleSheet STYLE;
 
     /* -- internal settings -------------------------------------------------------------------- */
 
@@ -85,29 +84,93 @@ public class TileBasedMapViewer implements MapViewer {
      * the geometry will be stored in a grid. To reduce memory requirements, geometry is not
      * stored for each layer but just for this one.
      */
-    private static final int TILE_GRID_LEVEL = 12;
+    private final int TILE_GRID_LEVEL;
 
     /**
      * The number of worker threads loading tiles and their geometry in parallel, during
      * the visualization.
      */
-    private static final int NUM_TILE_WORKERS = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
+    private final int NUM_TILE_WORKERS;
 
     /**
      * Whether to print frame statistics or not.
      */
-    private static final boolean PRINT_FRAME_STATS = false;
+    private final boolean PRINT_FRAME_STATS;
 
     /**
      * Enable n-times multi-sample anti aliasing with the specified number of samples, if it is greater than one.
      */
-    private static final int MSAA = 0;
+    private final int MSAA;
 
 
     private VisualizationPanel          vpanel;
     private TileBasedVisualization      visualization;
     private OSMParser                   parser;
     private Collection<LayerDefinition> layers;
+
+    /**
+     * Default constructor using {@link MonochromeStyleSheet} as default style sheet.
+     *
+     * @see #TileBasedMapViewer(StyleSheet)
+     */
+    public TileBasedMapViewer() {
+        this(new MonochromeStyleSheet());
+    }
+
+    /**
+     * <p>
+     * Default constructor initializing basic configurations: <br>
+     * &bull {@code INITIAL_WINDOW_WIDTH}  = 1600 <br>
+     * &bull {@code INITIAL_WINDOW_HEIGHT} = 900 <br>
+     * <br>
+     * &bull {@code PROJECTION} = new {@link MercatorProjection}(256)<br>
+     * &bull {@code TILING_SCHEME} = new {@link QuadTreeTilingScheme}(PROJECTION, 0, 19) <br>
+     * &bull {@code STYLE} = {@code style} (given as parameter) <br>
+     * <br>
+     * &bull {@code TILE_GRID_LEVEL} = 12 <br>
+     * &bull {@code NUM_TILE_WORKERS} = at least 2 <br>
+     * &bull {@code PRINT_FRAME_STATS} = false <br>
+     * &bull {@code MSAA} = 0
+     *
+     * @param style This style sheet is used for the map style
+     */
+    public TileBasedMapViewer(StyleSheet style) {
+
+        /* window parameters */
+        INITIAL_WINDOW_WIDTH  = 1600;
+        INITIAL_WINDOW_HEIGHT = 900;
+
+        /* style parameters */
+        PROJECTION    = new MercatorProjection(256);
+        TILING_SCHEME = new QuadTreeTilingScheme(PROJECTION, 0, 19);
+        STYLE = style;
+
+        /* internal settings */
+        TILE_GRID_LEVEL = 12;
+        NUM_TILE_WORKERS = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
+        PRINT_FRAME_STATS = false;
+        MSAA = 0;
+    }
+
+    /*
+    |===============|
+    | (i) MapViewer |
+    |===============|
+    */
+    @Override
+    public Projection getProjection() {
+        return PROJECTION;
+    }
+
+    @Override
+    public int getInitialWindowWidth() {
+        return INITIAL_WINDOW_WIDTH;
+    }
+
+    @Override
+    public int getInitialWindowHeight() {
+        return INITIAL_WINDOW_HEIGHT;
+    }
 
     @Override
     public VisualizationPanel getVisualizationPanel() {
