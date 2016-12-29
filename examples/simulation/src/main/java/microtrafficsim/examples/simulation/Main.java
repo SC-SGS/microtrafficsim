@@ -3,8 +3,6 @@ package microtrafficsim.examples.simulation;
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
-import microtrafficsim.core.map.style.impl.LightStyleSheet;
-import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
@@ -19,7 +17,6 @@ import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
-import oracle.jvm.hotspot.jfr.JFR;
 
 import javax.swing.*;
 import java.awt.*;
