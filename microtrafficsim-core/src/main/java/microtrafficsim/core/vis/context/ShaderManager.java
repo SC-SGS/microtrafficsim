@@ -1,13 +1,15 @@
 package microtrafficsim.core.vis.context;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.jogamp.opengl.GL2ES2;
 
-import microtrafficsim.core.vis.opengl.shader.ManagedShader;
-import microtrafficsim.core.vis.opengl.shader.ManagedShaderProgram;
-import microtrafficsim.core.vis.opengl.shader.Shader;
-import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
+import com.jogamp.opengl.GL3;
+import microtrafficsim.core.vis.opengl.shader.*;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
 
 
@@ -18,6 +20,7 @@ import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
  */
 public class ShaderManager {
 
+    private RenderContext context;
     private HashMap<String, ManagedShader>        shaders;
     private HashMap<String, ManagedShaderProgram> programs;
 
@@ -39,9 +42,47 @@ public class ShaderManager {
     /**
      * Constructs a new (empty) {@code ShaderManager}.
      */
-    public ShaderManager() {
+    public ShaderManager(RenderContext context) {
+        this.context = context;
         this.shaders  = new HashMap<>();
         this.programs = new HashMap<>();
+    }
+
+
+    public ManagedShaderProgram load(ShaderProgramSource source) throws IOException, ShaderCompileException, ShaderLinkException {
+        ManagedShaderProgram program = getProgram(source.getName());
+        if (program != null) return program;
+
+        program = ManagedShaderProgram.create(context, source.getName());
+
+        GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
+
+        for (ShaderSource src : source.getSources()) {
+            Shader shader = load(src);
+            program.attach(gl, shader);
+        }
+
+        program.link(gl);
+
+        /* NOTE:
+         * 	Shaders are not detached to keep them in memory and avoid re-compilation.
+         */
+
+        putProgram(source.getName(), program);
+        return program;
+    }
+
+    public ManagedShader load(ShaderSource source) throws IOException, ShaderCompileException {
+        ManagedShader shader = getShader(source.resource.getUniqueName());
+        if (shader != null) return shader;
+
+        GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
+        shader = ManagedShader.create(gl, source.type, source.resource.getUniqueName())
+                .loadFromResource(source.resource)
+                .compile(gl);
+
+        putShader(source.resource.getUniqueName(), shader);
+        return shader;
     }
 
 

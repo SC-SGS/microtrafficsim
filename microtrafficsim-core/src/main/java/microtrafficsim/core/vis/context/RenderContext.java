@@ -78,7 +78,7 @@ public class RenderContext implements GLEventListener {
         this.drawable = null;
         this.exhdlr   = null;
 
-        this.shaders    = new ShaderManager();
+        this.shaders    = new ShaderManager(this);
         this.uniforms   = new UniformManager();
         this.attributes = new VertexAttributeManager();
     }

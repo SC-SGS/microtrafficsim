@@ -15,6 +15,8 @@ import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.Uniform1f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec2f;
 import microtrafficsim.core.vis.opengl.utils.Color;
@@ -48,14 +50,15 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
     private static final float VEHICLE_SCALE_NORM         = 1.f / (1 << 18);
     private static final int   VIEWPORT_CULLING_EXPANSION = 20;
 
-    private static final Resource SHADER_VERT = new PackagedResource(
-            ShaderBasedVehicleOverlay.class, "/shaders/overlay/vehicle/shaderbased/vehicle_overlay.vs");
-
-    private static final Resource SHADER_GEOM = new PackagedResource(
-            ShaderBasedVehicleOverlay.class, "/shaders/overlay/vehicle/shaderbased/vehicle_overlay.gs");
-
-    private static final Resource SHADER_FRAG = new PackagedResource(
-            ShaderBasedVehicleOverlay.class, "/shaders/overlay/vehicle/shaderbased/vehicle_overlay.fs");
+    private static final ShaderProgramSource SHADER_PROG_SRC = new ShaderProgramSource(
+            "/shaders/overlay/vehicle/shaderbased/vehicle_overlay",
+            new ShaderSource(GL3.GL_VERTEX_SHADER, new PackagedResource(ShaderBasedVehicleOverlay.class,
+                    "/shaders/overlay/vehicle/shaderbased/vehicle_overlay.vs")),
+            new ShaderSource(GL3.GL_GEOMETRY_SHADER, new PackagedResource(ShaderBasedVehicleOverlay.class,
+                    "/shaders/overlay/vehicle/shaderbased/vehicle_overlay.gs")),
+            new ShaderSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(ShaderBasedVehicleOverlay.class,
+                    "/shaders/overlay/vehicle/shaderbased/vehicle_overlay.fs"))
+    );
 
     private final Supplier<VisualizationVehicleEntity> vehicleFactory;
 
@@ -122,27 +125,7 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
     public void init(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
-        // load shader
-        Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "shaderbased.vehicle_overlay.vs")
-                .loadFromResource(SHADER_VERT)
-                .compile(gl);
-
-        Shader gs = Shader.create(gl, GL3.GL_GEOMETRY_SHADER, "shaderbased.vehicle_overlay.gs")
-                .loadFromResource(SHADER_GEOM)
-                .compile(gl);
-
-        Shader fs = Shader.create(gl, GL3.GL_FRAGMENT_SHADER, "shaderbased.vehicle_overlay.fs")
-                .loadFromResource(SHADER_FRAG)
-                .compile(gl);
-
-        prog = ShaderProgram.create(context, "shaderbased.vehicle_overlay")
-                .attach(gl, vs, gs, fs)
-                .link(gl)
-                .detach(gl, vs, gs, fs);
-
-        vs.dispose(gl);
-        gs.dispose(gl);
-        fs.dispose(gl);
+        prog = context.getShaderManager().load(SHADER_PROG_SRC);
 
         uVehicleSize  = (UniformVec2f) prog.getUniform("u_vehicle_size");
         uVehicleScale = (Uniform1f) prog.getUniform("u_vehicle_scale");

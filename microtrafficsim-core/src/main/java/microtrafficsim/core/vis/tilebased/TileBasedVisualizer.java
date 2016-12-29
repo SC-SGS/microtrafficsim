@@ -16,11 +16,11 @@ import microtrafficsim.core.vis.context.VertexAttributeManager;
 import microtrafficsim.core.vis.map.tiles.TileManager;
 import microtrafficsim.core.vis.map.tiles.TileProvider;
 import microtrafficsim.core.vis.opengl.DataTypes;
-import microtrafficsim.core.vis.opengl.shader.Shader;
-import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformMat4f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
@@ -30,7 +30,6 @@ import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.core.vis.view.View;
 import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
-import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
@@ -54,11 +53,13 @@ public class TileBasedVisualizer implements Visualizer {
     private static final int DEFAULT_FPS   = 60;
     private static final String GL_PROFILE = GLProfile.GL3;
 
-    private static final Resource FBO_COLOR_DEPTH_COPY_VS = new PackagedResource(TileBasedVisualizer.class,
-                                                                                 "/shaders/fbo_color_depth_copy.vs");
-    private static final Resource FBO_COLOR_DEPTH_COPY_FS = new PackagedResource(TileBasedVisualizer.class,
-                                                                                 "/shaders/fbo_color_depth_copy.fs");
-
+    private static final ShaderProgramSource FBO_COLOR_DEPTH_COPY_SRC = new ShaderProgramSource(
+            "/shaders/fbo_color_depth_copy",
+            new ShaderSource(GL3.GL_VERTEX_SHADER, new PackagedResource(TileBasedVisualizer.class,
+                    "/shaders/fbo_color_depth_copy.vs")),
+            new ShaderSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(TileBasedVisualizer.class,
+                    "/shaders/fbo_color_depth_copy.fs"))
+    );
     private static final int FBO_COLOR_TEXUNIT = 0;
     private static final int FBO_DEPTH_TEXUNIT = 1;
 
@@ -245,18 +246,7 @@ public class TileBasedVisualizer implements Visualizer {
         empty.unbind(gl);
 
         // create shader for buffer-copying
-        Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "fbo_color_depth_copy.vs")
-                .loadFromResource(FBO_COLOR_DEPTH_COPY_VS)
-                .compile(gl);
-
-        Shader fs = Shader.create(gl, GL3.GL_FRAGMENT_SHADER, "fbo_color_depth_copy.fs")
-                .loadFromResource(FBO_COLOR_DEPTH_COPY_FS)
-                .compile(gl);
-
-        fboCopyShader = ShaderProgram.create(context, "fbo_color_depth_copy")
-                .attach(gl, vs, fs)
-                .link(gl)
-                .detach(gl, vs, fs);
+        fboCopyShader = context.getShaderManager().load(FBO_COLOR_DEPTH_COPY_SRC);
 
         UniformSampler2D uFboColorSampler = (UniformSampler2D) fboCopyShader.getUniform("u_color_sampler");
         UniformSampler2D uFboDepthSampler = (UniformSampler2D) fboCopyShader.getUniform("u_depth_sampler");
@@ -370,7 +360,7 @@ public class TileBasedVisualizer implements Visualizer {
 
         gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
 
-        // draw back-buffer to window-buffer
+        // draw back-buffer to window-buffer (Note: blit does not work here due to the depth component)
         context.BlendMode.enable(gl);
         context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
         context.BlendMode.setFactors(gl, GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);

@@ -14,6 +14,8 @@ import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.view.OrthographicView;
@@ -34,8 +36,13 @@ import java.nio.FloatBuffer;
  * @author Maximilian Luz
  */
 public class TileGridOverlay implements Overlay {
-    private static final Resource VERTEX_SHADER   = new PackagedResource(TileGridOverlay.class, "/shaders/basic.vs");
-    private static final Resource FRAGMENT_SHADER = new PackagedResource(TileGridOverlay.class, "/shaders/basic.fs");
+
+    private static final ShaderProgramSource SHADER_PROG_SRC = new ShaderProgramSource(
+            "/shaders/basic",
+            new ShaderSource(GL3.GL_VERTEX_SHADER, new PackagedResource(TileGridOverlay.class, "/shaders/basic.vs")),
+            new ShaderSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(TileGridOverlay.class, "/shaders/basic.fs"))
+    );
+
     private static final Color COLOR              = Color.fromRGB(0xFF0000);
 
     private OrthographicView view;
@@ -69,18 +76,7 @@ public class TileGridOverlay implements Overlay {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         /* load shaders */
-        Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "basic.vs")
-                .loadFromResource(VERTEX_SHADER)
-                .compile(gl);
-
-        Shader fs = Shader.create(gl, GL3.GL_FRAGMENT_SHADER, "basic.fs")
-                .loadFromResource(FRAGMENT_SHADER)
-                .compile(gl);
-
-        shader = ShaderProgram.create(context, "basic")
-                .attach(gl, vs, fs)
-                .link(gl)
-                .detach(gl);
+        shader = context.getShaderManager().load(SHADER_PROG_SRC);
 
         UniformVec4f color = (UniformVec4f) shader.getUniform("u_color");
         color.set(COLOR);
