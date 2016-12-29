@@ -8,6 +8,7 @@ import microtrafficsim.ui.gui.statemachine.impl.GUIEvent;
 import microtrafficsim.ui.gui.statemachine.impl.SimulationController;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 
 
@@ -58,6 +59,9 @@ public class Main {
         PrefElement.vehiclesPerRunnable.setEnabled(false);
         PrefElement.nodesPerThread.setEnabled(false);
         */
+
+        System.setProperty("awt.useSystemAAFontSettings","on");
+        System.setProperty("swing.aatext", "true");
 
         SwingUtilities.invokeLater(() -> {
             GUIController controller = new SimulationController(RandomRouteScenario::new, new TileBasedMapViewer());
