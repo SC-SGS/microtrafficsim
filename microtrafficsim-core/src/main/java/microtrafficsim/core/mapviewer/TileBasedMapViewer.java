@@ -45,62 +45,17 @@ import java.util.function.Predicate;
  */
 public class TileBasedMapViewer implements MapViewer {
 
-    /* -- window parameters -------------------------------------------------------------------- */
+    private final int initialWindowWidth;
+    private final int initialWindowHeight;
 
-    /**
-     * The initial window width.
-     */
-    public final int INITIAL_WINDOW_WIDTH;
+    private final StyleSheet style;
+    private final Projection projection;
+    private final QuadTreeTilingScheme tilingScheme;
 
-    /**
-     * The initial window height.
-     */
-    public final int INITIAL_WINDOW_HEIGHT;
+    private final int tileGridLevel;
+    private final int numTileWorkers;
 
-
-    /* -- style parameters --------------------------------------------------------------------- */
-
-    /**
-     * The projection used to transform the spherical world coordinates to plane coordinates.
-     * The resulting tile size is dependent on the scale of this projection (2x scale). For this
-     * example, the tile size will be 512x512 pixel.
-     */
-    public final Projection PROJECTION;
-
-    /**
-     * The tiling scheme used to create the tiles.
-     */
-    private final QuadTreeTilingScheme TILING_SCHEME;
-
-    /**
-     * The used style sheet, defining style and content of the visualization.
-     */
-    private final StyleSheet STYLE;
-
-    /* -- internal settings -------------------------------------------------------------------- */
-
-    /**
-     * When using a {@code QuadTreeTiledMapSegment}, this describes the zoom level at which
-     * the geometry will be stored in a grid. To reduce memory requirements, geometry is not
-     * stored for each layer but just for this one.
-     */
-    private final int TILE_GRID_LEVEL;
-
-    /**
-     * The number of worker threads loading tiles and their geometry in parallel, during
-     * the visualization.
-     */
-    private final int NUM_TILE_WORKERS;
-
-    /**
-     * Whether to print frame statistics or not.
-     */
-    private final boolean PRINT_FRAME_STATS;
-
-    /**
-     * Enable n-times multi-sample anti aliasing with the specified number of samples, if it is greater than one.
-     */
-    private final int MSAA;
+    private final boolean printFrameStats;
 
 
     private VisualizationPanel          vpanel;
@@ -135,21 +90,61 @@ public class TileBasedMapViewer implements MapViewer {
      * @param style This style sheet is used for the map style
      */
     public TileBasedMapViewer(StyleSheet style) {
+        this(1600, 900, style, new MercatorProjection(256));
+    }
+
+    /**
+     * Create a new map-viewer with the given properties.
+     *
+     * @param width      the (initial) width of the window.
+     * @param height     the (initial) height of the window.
+     * @param style      the style used for map-rendering.
+     * @param projection the projection used to transform the spherical world coordinates to plane coordinates.
+     *                   The resulting tile size is dependent on the scale of this projection (2x scale).
+     */
+    public TileBasedMapViewer(int width, int height, StyleSheet style, Projection projection) {
+        this(
+                width,
+                height,
+                style,
+                projection,
+                new QuadTreeTilingScheme(projection, 0, 19),
+                12,
+                Math.max(Runtime.getRuntime().availableProcessors() - 2, 2),
+                false
+        );
+    }
+
+    /**
+     * Create a new map-viewer with the given properties.
+     *
+     * @param width           the (initial) width of the window.
+     * @param height          the (initial) height of the window.
+     * @param style           the style used for map-rendering.
+     * @param projection      the projection used to transform the spherical world coordinates to plane coordinates.
+     *                        The resulting tile size is dependent on the scale of this projection (2x scale).
+     * @param tilingScheme    the tiling-scheme used of the tiles to be displayed.
+     * @param tileGridLevel   the level for which map-features should be stored in a grid.
+     * @param numTileWorkers  the number of worker-threads loading tiles in parallel in the background.
+     * @param printFrameStats set to {@code true} to write frame-statistics to stdout.
+     */
+    public TileBasedMapViewer(int width, int height, StyleSheet style, Projection projection,
+                              QuadTreeTilingScheme tilingScheme, int tileGridLevel, int numTileWorkers,
+                              boolean printFrameStats) {
 
         /* window parameters */
-        INITIAL_WINDOW_WIDTH  = 1600;
-        INITIAL_WINDOW_HEIGHT = 900;
+        this.initialWindowWidth = width;
+        this.initialWindowHeight  = height;
 
         /* style parameters */
-        PROJECTION    = new MercatorProjection(256);
-        TILING_SCHEME = new QuadTreeTilingScheme(PROJECTION, 0, 19);
-        STYLE = style;
+        this.style = style;
+        this.projection = projection;
+        this.tilingScheme = tilingScheme;
 
         /* internal settings */
-        TILE_GRID_LEVEL = 12;
-        NUM_TILE_WORKERS = Math.max(Runtime.getRuntime().availableProcessors() - 2, 2);
-        PRINT_FRAME_STATS = false;
-        MSAA = 0;
+        this.tileGridLevel = tileGridLevel;
+        this.numTileWorkers = numTileWorkers;
+        this.printFrameStats = printFrameStats;
     }
 
     /*
@@ -159,17 +154,17 @@ public class TileBasedMapViewer implements MapViewer {
     */
     @Override
     public Projection getProjection() {
-        return PROJECTION;
+        return projection;
     }
 
     @Override
     public int getInitialWindowWidth() {
-        return INITIAL_WINDOW_WIDTH;
+        return initialWindowWidth;
     }
 
     @Override
     public int getInitialWindowHeight() {
-        return INITIAL_WINDOW_HEIGHT;
+        return initialWindowHeight;
     }
 
     @Override
@@ -185,7 +180,7 @@ public class TileBasedMapViewer implements MapViewer {
     @Override
     public void create(SimulationConfig config) throws UnsupportedFeatureException {
         /* set up layer and tile provider */
-        layers                                = STYLE.getLayers();
+        layers                                = style.getLayers();
         TileLayerProvider       layerProvider = createLayerProvider(layers);
         PreRenderedTileProvider provider      = new PreRenderedTileProvider(layerProvider);
 
@@ -198,7 +193,7 @@ public class TileBasedMapViewer implements MapViewer {
         else
             parser = createParser();
 
-        /* create and initialize the VisualizationPanel and JFrame */
+        /* create and initialize the VisualizationPanel */
         vpanel = createVisualizationPanel(visualization);
     }
 
@@ -207,7 +202,7 @@ public class TileBasedMapViewer implements MapViewer {
         vpanel.start();
 
         /* if specified, print frame statistics */
-        if (PRINT_FRAME_STATS) visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
+        if (printFrameStats) visualization.getRenderContext().getAnimator().setUpdateFPSFrames(60, System.out);
     }
 
     @Override
@@ -219,10 +214,10 @@ public class TileBasedMapViewer implements MapViewer {
     public TileBasedVisualization createVisualization(TileProvider provider) {
         /* create a new visualization object */
         TileBasedVisualization vis
-                = new TileBasedVisualization(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT, provider, NUM_TILE_WORKERS);
+                = new TileBasedVisualization(initialWindowWidth, initialWindowHeight, provider, numTileWorkers);
 
         /* apply the style (background color) */
-        vis.apply(STYLE);
+        vis.apply(style);
 
         /* add some key commands */
         vis.getKeyController().addKeyCommand(
@@ -244,13 +239,6 @@ public class TileBasedMapViewer implements MapViewer {
     public VisualizationPanel createVisualizationPanel(TileBasedVisualization vis) throws UnsupportedFeatureException {
         /* get the default configuration for the visualization */
         VisualizerConfig config = vis.getDefaultConfig();
-
-        /* enable multi-sample anti-aliasing if specified */
-        //noinspection ConstantConditions
-        if (MSAA > 1) {
-            config.glcapabilities.setSampleBuffers(true);
-            config.glcapabilities.setNumSamples(MSAA);
-        }
 
         /* create and return a new visualization panel */
         return new VisualizationPanel(vis, config);
@@ -313,7 +301,7 @@ public class TileBasedMapViewer implements MapViewer {
         }
 
         /* replace the style-placeholders with the feature-definitions/placeholders used by the osm-processor */
-        STYLE.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_WAY_CLIPPING, OSMParser.PLACEHOLDER_UNIFICATION,
+        style.replaceDependencyPlaceholders(OSMParser.PLACEHOLDER_WAY_CLIPPING, OSMParser.PLACEHOLDER_UNIFICATION,
                 streetgraph);
 
         osmconfig.putWayInitializer(StreetComponent.class, new StreetComponentFactory())
@@ -321,7 +309,7 @@ public class TileBasedMapViewer implements MapViewer {
                 .putRelationInitializer("restriction", new RestrictionRelationFactory());
 
         /* add the features defined in the style to the parser */
-        STYLE.getFeatureDefinitions().forEach(osmconfig::putMapFeatureDefinition);
+        style.getFeatureDefinitions().forEach(osmconfig::putMapFeatureDefinition);
 
         /* create and return the parser */
         return osmconfig.createParser();
@@ -330,7 +318,7 @@ public class TileBasedMapViewer implements MapViewer {
     @Override
     public TileLayerProvider createLayerProvider(Collection<LayerDefinition> layers) {
         /* create the layer provider */
-        LayeredTileMap provider = new LayeredTileMap(TILING_SCHEME);
+        LayeredTileMap provider = new LayeredTileMap(tilingScheme);
 
         /* add a generator to support feature layers */
         FeatureTileLayerGenerator generator = new FeatureTileLayerGenerator();
@@ -345,7 +333,7 @@ public class TileBasedMapViewer implements MapViewer {
     @Override
     public void changeMap(OSMParser.Result result) throws InterruptedException {
         QuadTreeTiledMapSegment tiled
-                = new QuadTreeTiledMapSegment.Generator().generate(result.segment, TILING_SCHEME, TILE_GRID_LEVEL);
+                = new QuadTreeTiledMapSegment.Generator().generate(result.segment, tilingScheme, tileGridLevel);
 
         /* update the feature sources, so that they will use the created provider */
         for (LayerDefinition def : layers) {
