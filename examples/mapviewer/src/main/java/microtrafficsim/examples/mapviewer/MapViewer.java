@@ -19,6 +19,7 @@ import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerGenerator;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
 import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
+import microtrafficsim.core.vis.scenario.ScenarioOverlay;
 import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
@@ -175,6 +176,8 @@ public class MapViewer {
 
         /* add an overlay (the TileGridOverlay is used to display tile borders, so mainly for debugging) */
         // vis.putOverlay(0, new TileGridOverlay(provider.getTilingScheme()));
+
+        vis.putOverlay(0, new ScenarioOverlay(provider.getProjection()));
 
         return vis;
     }
