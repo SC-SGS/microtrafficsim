@@ -8,8 +8,6 @@ We are cleaning up the existing project. This includes detailed Javadocs,
 removing quick fixes or creating branches for them.
 
 The simulation package is redesigned! The next step is making it deterministic.
-The validation scenarios are not compiling right now (forgotten to redesign after
-simulation redesign), but this will be fixed soon!
 
 
 ## Demonstration and Examples
