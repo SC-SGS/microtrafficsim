@@ -1,7 +1,9 @@
-package microtrafficsim.ui.gui;
+package microtrafficsim.ui.gui.statemachine.impl;
 
 
 /**
+ * These events can be used as trigger for user input events.
+ *
  * @author Dominic Parga Cacheiro
  */
 public enum GUIEvent {

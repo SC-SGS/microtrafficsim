@@ -11,7 +11,6 @@ import javax.swing.*;
  * @author Dominic Parga Cacheiro
  */
 public class VisualizationPanel extends PreferencesPanel {
-    private JTextField tfProjection;
 
     public VisualizationPanel() {
         super("Visualization");
@@ -23,8 +22,6 @@ public class VisualizationPanel extends PreferencesPanel {
     |============|
     */
     private void addProjection() {
-        tfProjection = new JTextField();
-        configureAndAddJTextFieldRow("projection: ", tfProjection);
     }
 
     /*
@@ -40,7 +37,6 @@ public class VisualizationPanel extends PreferencesPanel {
 
     @Override
     public void setSettings(SimulationConfig config) {
-        tfProjection.setText(config.visualization.projection.getClass().getSimpleName());
     }
 
     @Override
@@ -50,15 +46,9 @@ public class VisualizationPanel extends PreferencesPanel {
 
     @Override
     public void setEnabled(PrefElement id, boolean enabled) {
-        switch (id) {
-        case projection:
-            tfProjection.setEnabled(enabled);
-            break;
-        }
     }
 
     @Override
     public void setAllEnabled(boolean enabled) {
-        tfProjection.setEnabled(false);
     }
 }

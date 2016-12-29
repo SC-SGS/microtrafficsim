@@ -8,7 +8,7 @@ import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.core.Simulation;
+import microtrafficsim.core.simulation.scenarios.impl.BasicScenario;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
 
@@ -16,17 +16,20 @@ import java.util.ArrayList;
 import java.util.function.Supplier;
 
 /**
- * Created by Dominic on 29.12.16.
+ * Validates the crossing logic in a scenario where a street crosses a motorway.
+ *
+ * @author Dominic Parga Cacheiro
  */
 public class MotorwaySlipRoadScenario extends ValidationScenario {
 
-    private Node            bottomMotorway;
-    private Node            interception;
-    private Node            topMotorway;
-    private Node            bottomRight;
     private ScenarioBuilder scenarioBuilder;
-    private ODMatrix secondSpawnDelayMatrix;
 
+    /**
+     * Initializes the matrices (for routes and spawn delays). For this, it has to sort the few nodes to guarantee
+     * determinism independent of complicated coordinate calculations.
+     *
+     * @see ValidationScenario#ValidationScenario(SimulationConfig, StreetGraph)
+     */
     public MotorwaySlipRoadScenario(SimulationConfig config,
                               StreetGraph graph,
                               Supplier<VisualizationVehicleEntity> visVehicleFactory) {
@@ -36,10 +39,10 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
         ArrayList<Node> sortedNodes = new ArrayList<>(graph.getNodes());
         sortedNodes.sort((n1, n2) -> n1.getCoordinate().lon > n2.getCoordinate().lon ? 1 : -1);
 
-        bottomMotorway = sortedNodes.get(0);
-        interception   = sortedNodes.get(1);
-        topMotorway    = sortedNodes.get(2);
-        bottomRight    = sortedNodes.get(3);
+        Node bottomMotorway = sortedNodes.get(0);
+        Node interception = sortedNodes.get(1);
+        Node topMotorway = sortedNodes.get(2);
+        Node bottomRight = sortedNodes.get(3);
 
         /* prepare */
         odMatrix.add(2, bottomMotorway, topMotorway);
@@ -48,7 +51,7 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
         spawnDelayMatrix.add(0, bottomMotorway, topMotorway);
         spawnDelayMatrix.add(9, bottomRight, topMotorway);
 
-        secondSpawnDelayMatrix = new SparseODMatrix();
+        ODMatrix secondSpawnDelayMatrix = new SparseODMatrix();
         secondSpawnDelayMatrix.add(5, bottomMotorway, topMotorway);
         secondSpawnDelayMatrix.add(13, bottomRight, topMotorway);
 

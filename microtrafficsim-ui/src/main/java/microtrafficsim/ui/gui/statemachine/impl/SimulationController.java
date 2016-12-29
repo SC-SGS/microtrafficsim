@@ -1,6 +1,5 @@
-package microtrafficsim.ui.gui;
+package microtrafficsim.ui.gui.statemachine.impl;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.parser.OSMParser;
@@ -14,6 +13,8 @@ import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
+import microtrafficsim.ui.gui.menues.MTSMenuBar;
+import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
 import microtrafficsim.ui.preferences.impl.PreferencesFrame;
@@ -29,28 +30,30 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 
 
 /**
+ *
+ *
  * @author Dominic Parga Cacheiro
  */
 public class SimulationController implements GUIController {
+
     private static Logger logger = new EasyMarkableLogger(SimulationController.class);
 
     // logic
-    private final SimulationConfig config;
+    private final SimulationConfig    config;
     private final ScenarioConstructor scenarioConstructor;
 
     // frame/gui
-    private final JFrame frame;
-    private final MTSMenuBar menubar;
+    private final JFrame        frame;
+    private final MTSMenuBar    menubar;
     private final ReentrantLock lock_gui;
 
     // general
-    private GUIState    state, previousState;
-    private StreetGraph streetgraph;
-    private Simulation simulation;
+    private GUIState        state, previousState;
+    private StreetGraph     streetgraph;
+    private Simulation      simulation;
     private ScenarioBuilder simbuilder;
 
     // visualization
@@ -108,14 +111,10 @@ public class SimulationController implements GUIController {
     }
 
     @Override
-    public void transiate(GUIEvent event) {
-        transiate(event, null);
-    }
-
-    @Override
     public void transiate(GUIEvent event, File file) {
         logger.debug("GUIState before transiate = GUIState." + state);
         logger.debug("GUIEvent called           = GUIEvent." + event);
+
         switch (event) {
         case CREATE:
         case LOAD_MAP:
@@ -488,7 +487,6 @@ public class SimulationController implements GUIController {
         /* set enabled */
         // general
         preferences.setEnabled(PrefElement.sliderSpeedup, PrefElement.sliderSpeedup.isEnabled());
-        preferences.setEnabled(PrefElement.ageForPause, PrefElement.ageForPause.isEnabled());
         preferences.setEnabled(PrefElement.maxVehicleCount, newSim && PrefElement.maxVehicleCount.isEnabled());
         preferences.setEnabled(PrefElement.seed, newSim && PrefElement.seed.isEnabled());
         preferences.setEnabled(PrefElement.metersPerCell, newSim && PrefElement.metersPerCell.isEnabled());
@@ -499,7 +497,6 @@ public class SimulationController implements GUIController {
         preferences.setEnabled(PrefElement.friendlyStandingInJam,
                                newSim && PrefElement.friendlyStandingInJam.isEnabled());
         // visualization
-        preferences.setEnabled(PrefElement.projection, PrefElement.projection.isEnabled());
         // concurrency
         preferences.setEnabled(PrefElement.nThreads, newSim && PrefElement.nThreads.isEnabled());
         preferences.setEnabled(PrefElement.vehiclesPerRunnable, PrefElement.vehiclesPerRunnable.isEnabled());
@@ -536,8 +533,7 @@ public class SimulationController implements GUIController {
     */
     /**
      * This interface gives the opportunity to call the constructor of {@link SimulationController} with a parameter,
-     * that
-     * is the constructor of the used Simulation.
+     * that is the constructor of the used Simulation.
      */
     public interface ScenarioConstructor {
         Scenario instantiate(SimulationConfig config, StreetGraph streetgraph);

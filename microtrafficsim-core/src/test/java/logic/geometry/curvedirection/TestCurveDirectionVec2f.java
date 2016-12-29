@@ -10,8 +10,7 @@ import static org.junit.Assert.assertEquals;
 
 
 /**
- * This class tests the method
- * mictrotrafficsim.math.Geometry.calcCurveDirection(Vec2f p, Vec2f q, Vec2f r).
+ * This class tests {@link Geometry#calcCurveDirection(Vec2f, Vec2f, Vec2f)}
  *
  * @author Dominic Parga Cacheiro
  */

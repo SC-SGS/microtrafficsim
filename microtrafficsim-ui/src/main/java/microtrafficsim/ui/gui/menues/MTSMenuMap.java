@@ -1,6 +1,8 @@
-package microtrafficsim.ui.gui;
+package microtrafficsim.ui.gui.menues;
 
 import com.jogamp.newt.event.KeyEvent;
+import microtrafficsim.ui.gui.statemachine.GUIController;
+import microtrafficsim.ui.gui.statemachine.impl.GUIEvent;
 
 import javax.swing.*;
 
@@ -8,9 +10,9 @@ import javax.swing.*;
 /**
  * @author Dominic Parga Cacheiro
  */
-class MTSMenuMap extends JMenu {
+public class MTSMenuMap extends JMenu {
 
-    final JMenuItem itemLoadMap;
+    public final JMenuItem itemLoadMap;
 
     public MTSMenuMap() {
         super("Map");
