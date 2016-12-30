@@ -59,10 +59,14 @@ public class ScenarioOverlay implements Overlay {
 
     private static final float OUTLINE_WIDTH_SELECTED = 2.f;
 
+    private static final Comparator<Area> AREA_BATCH_CMP = Comparator.comparingInt(a -> a.style.hashCode());
+
     private static final FloatBuffer EMPTY_FLOAT_BUFFER = FloatBuffer.allocate(0);
     private static final IntBuffer EMPTY_INT_BUFFER = IntBuffer.allocate(0);
 
     private boolean enabled;
+
+    private RenderContext context;
 
     private MouseListener mouseListener;
 
@@ -92,10 +96,8 @@ public class ScenarioOverlay implements Overlay {
         this.triangulator = new SweepLineTriangulator();
         this.projection = projection;
 
-        Comparator<Area> areacmp = Comparator.comparingInt(a -> a.style.hashCode());    // batch by style
-
-        this.areas = new SortedArrayList<>(areacmp);
-        this.selected = new SortedArrayList<>(areacmp);
+        this.areas = new SortedArrayList<>(AREA_BATCH_CMP);
+        this.selected = new SortedArrayList<>(AREA_BATCH_CMP);
 
         this.areaBatches = new ArrayList<>();
         this.selectedBatches = new ArrayList<>();
@@ -216,14 +218,13 @@ public class ScenarioOverlay implements Overlay {
 
         for (Polygon p : dest)
             areas.add(new Area(p, new AreaProperties(AreaType.DEST), new AreaStyle()));
-
-        selected.add(areas.get(0));
-        selected.add(areas.get(2));
     }
 
 
     @Override
     public void init(RenderContext context) throws Exception {
+        this.context = context;
+
         shaderPolygon = context.getShaderManager().load(POLYGON_FILL_SHADER);
         uPolygonColor = (UniformVec4f) shaderPolygon.getUniform("u_color");
 
@@ -699,18 +700,90 @@ public class ScenarioOverlay implements Overlay {
 
     private class MouseListenerImpl implements MouseListener {
 
+        private Vec2d pos;
+        private Area area;
+
+
         @Override
         public boolean mouseClicked(MouseEvent e) {
+            if (e.getButton() != MouseEvent.BUTTON1)
+                return false;
+
             Vec2d pos = screenToWorld(e.getX(), e.getY());
-            Coordinate coord = projection.unproject(pos);
             Area area = lookupArea(pos);
 
-            if (area != null)
-                System.out.println("Coordinate (" + coord.lat + ", " + coord.lon + ") inside " + area.polygon.toString());
-            else
-                System.out.println("Coordinate (" + coord.lat + ", " + coord.lon + ")");
+            context.addTask(c -> {
+                if (!e.isControlDown()) selected.clear();
 
-            return false;
+                if (area != null) {
+                    if (selected.contains(area))
+                        selected.remove(area);
+                    else
+                        selected.add(area);
+                }
+
+                rebatchSelected = true;
+                rebuildSelected = true;
+                return null;
+            });
+
+            return area != null;
+        }
+
+        @Override
+        public boolean mousePressed(MouseEvent e) {
+            if (e.getButton() != MouseEvent.BUTTON1)
+                return false;
+
+            if (!e.isControlDown()) {
+                this.area = null;
+                this.pos = null;
+                return false;
+            }
+
+            Vec2d pos = screenToWorld(e.getX(), e.getY());
+            Area area = lookupArea(pos);
+
+            if (area != null) {
+                this.area = area;
+                this.pos = pos;
+                return true;
+            } else {
+                this.area = null;
+                this.pos = null;
+                return false;
+            }
+        }
+
+        @Override
+        public boolean mouseDragged(MouseEvent e) {
+            if (e.getButton() != MouseEvent.BUTTON1)
+                return false;
+
+            if (pos == null)
+                return false;
+
+            Vec2d pos = screenToWorld(e.getX(), e.getY());
+            Vec2d delta = Vec2d.sub(pos, this.pos);
+
+            Area down = this.area;
+
+            context.addTask(c -> {
+                if (down != null && !selected.contains(down))
+                    selected.add(down);
+
+                for (Area area : selected) {
+                    for (Vec2d v : area.polygon.outline)
+                        v.add(delta);
+
+                    area.cached = null;
+                }
+                return null;
+            });
+
+            this.pos = pos;
+            this.area = null;
+            return true;
         }
     }
 }
