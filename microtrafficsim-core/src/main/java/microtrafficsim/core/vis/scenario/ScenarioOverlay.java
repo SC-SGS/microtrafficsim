@@ -57,7 +57,13 @@ public class ScenarioOverlay implements Overlay {
     private static final Color COLOR_DEST_FILL              = Color.fromRGBA(0xE03A5330);
     private static final Color COLOR_DEST_OUTLINE_SELECTED  = Colors.white();
 
-    private static final float OUTLINE_WIDTH_SELECTED = 2.f;
+    private static final Color COLOR_POINTS_FILL            = Colors.black();
+    private static final Color COLOR_POINTS_OUTLINE         = Colors.white();
+
+    private static final float WIDTH_OUTLINE_SELECTED       = 2.f;
+
+    private static final float SIZE_POINTS_FILL             = 5.f;
+    private static final float SIZE_POINTS_OUTLINE          = 7.f;
 
     private static final Comparator<Area> AREA_BATCH_CMP = Comparator.comparingInt(a -> a.style.hashCode());
 
@@ -259,6 +265,9 @@ public class ScenarioOverlay implements Overlay {
         updateAreas(context);
         updateSelected(context);
 
+        if (areas.isEmpty())
+            return;
+
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         // disable depth test
@@ -270,17 +279,34 @@ public class ScenarioOverlay implements Overlay {
         context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE,
                 GL3.GL_ONE_MINUS_SRC_ALPHA);
 
-        // set line style
-        context.Lines.setLineSmoothEnabled(gl, true);
-        context.Lines.setLineSmoothHint(gl, GL3.GL_NICEST);
-        context.Lines.setLineWidth(gl, OUTLINE_WIDTH_SELECTED);
-
-        // draw
+        // draw interior
         for (Batch batch : areaBatches)
             batch.display(context);
 
-        for (Batch batch : selectedBatches)
-            batch.display(context);
+        if (!selectedBatches.isEmpty()) {
+            // set line style
+            context.Lines.setLineSmoothEnabled(gl, true);
+            context.Lines.setLineSmoothHint(gl, GL3.GL_NICEST);
+            context.Lines.setLineWidth(gl, WIDTH_OUTLINE_SELECTED);
+
+            // draw outline
+            for (Batch batch : selectedBatches)
+                batch.display(context);
+
+            // set point style
+            context.Points.setPointSize(gl, SIZE_POINTS_OUTLINE);
+
+            // draw points
+            for (Batch batch : selectedBatches)
+                batch.display(context, GL3.GL_POINTS, COLOR_POINTS_OUTLINE);
+
+            // set point style
+            context.Points.setPointSize(gl, SIZE_POINTS_FILL);
+
+            // draw points
+            for (Batch batch : selectedBatches)
+                batch.display(context, GL3.GL_POINTS, COLOR_POINTS_FILL);
+        }
 
         context.ShaderState.unbind(gl);
     }
@@ -687,6 +713,14 @@ public class ScenarioOverlay implements Overlay {
             uColor.set(color);
             shader.bind(gl);
             mesh.display(context, vao);
+        }
+
+        void display(RenderContext context, int mode, Color color) {
+            GL3 gl = context.getDrawable().getGL().getGL3();
+
+            uColor.set(color);
+            shader.bind(gl);
+            mesh.display(context, vao, mode);
         }
 
         void dispose(RenderContext context) {

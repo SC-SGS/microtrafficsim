@@ -160,6 +160,11 @@ public class Pos3IndexedMesh implements Mesh {
 
     @Override
     public void display(RenderContext context, ShaderProgram shader) {
+        display(context, shader, mode);
+    }
+
+    @Override
+    public void display(RenderContext context, ShaderProgram shader, int mode) {
         GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
 
         vao.bind(gl);
@@ -176,6 +181,11 @@ public class Pos3IndexedMesh implements Mesh {
 
     @Override
     public void display(RenderContext context, VertexArrayObject vao) {
+        display(context, vao, mode);
+    }
+
+    @Override
+    public void display(RenderContext context, VertexArrayObject vao, int mode) {
         GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
 
         vao.bind(gl);

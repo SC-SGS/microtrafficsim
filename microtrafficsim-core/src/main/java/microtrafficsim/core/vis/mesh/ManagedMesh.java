@@ -94,8 +94,18 @@ public class ManagedMesh implements Mesh {
     }
 
     @Override
+    public void display(RenderContext context, ShaderProgram shader, int mode) {
+        mesh.display(context, shader, mode);
+    }
+
+    @Override
     public void display(RenderContext context, VertexArrayObject vao) {
         mesh.display(context, vao);
+    }
+
+    @Override
+    public void display(RenderContext context, VertexArrayObject vao, int mode) {
+        mesh.display(context, vao, mode);
     }
 
     /**
