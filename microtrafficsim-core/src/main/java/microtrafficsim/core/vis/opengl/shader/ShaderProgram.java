@@ -425,6 +425,9 @@ public class ShaderProgram {
         ShaderProgram current = context.ShaderState.getCurrentProgram();
         if (this == current) return;
 
+        if (current != null)
+            current.bound = null;
+
         context.ShaderState.setCurrentProgram(this);
         bound = gl;
 
@@ -445,6 +448,7 @@ public class ShaderProgram {
      * @param gl the {@code GL2ES2}-Object of the OpenGL context.
      */
     public void unbind(GL2ES2 gl) {
+        gl.glUseProgram(0);
         bound = null;
         context.ShaderState.setCurrentProgram(null);
     }

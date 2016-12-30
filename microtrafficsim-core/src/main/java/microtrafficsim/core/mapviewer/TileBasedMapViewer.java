@@ -157,6 +157,15 @@ public class TileBasedMapViewer implements MapViewer {
         return projection;
     }
 
+    /**
+     * Returns the tiling-scheme used in this map-viewer.
+     *
+     * @return the tiling-scheme used in this map-viewer.
+     */
+    public QuadTreeTilingScheme getTilingScheme() {
+        return tilingScheme;
+    }
+
     @Override
     public int getInitialWindowWidth() {
         return initialWindowWidth;

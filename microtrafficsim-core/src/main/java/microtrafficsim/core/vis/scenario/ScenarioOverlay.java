@@ -13,6 +13,7 @@ import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
+import microtrafficsim.core.vis.opengl.utils.Colors;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
@@ -30,6 +31,9 @@ import java.util.Comparator;
 import java.util.List;
 
 
+// TODO: replace pos3 with pos2 meshes
+
+
 public class ScenarioOverlay implements Overlay {
 
     private static final ShaderProgramSource POLYGON_FILL_SHADER = new ShaderProgramSource(
@@ -40,8 +44,23 @@ public class ScenarioOverlay implements Overlay {
                     "/shaders/features/polygons/polygons.fs"))
     );
 
-    private static final Color COLOR_SPAWN  = Color.fromRGBA(0x48CF9430);
-    private static final Color COLOR_DEST   = Color.fromRGBA(0xE03A5330);
+    private static final ShaderProgramSource OUTLINE_SHADER = new ShaderProgramSource(
+            "/shaders/basic",
+            new ShaderSource(GL3.GL_VERTEX_SHADER, new PackagedResource(ScenarioOverlay.class,
+                    "/shaders/basic.vs")),
+            new ShaderSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(ScenarioOverlay.class,
+                    "/shaders/basic.fs"))
+    );
+
+    private static final Color COLOR_SPAWN_FILL             = Color.fromRGBA(0x48CF9430);
+    private static final Color COLOR_SPAWN_OUTLINE_SELECTED = Colors.white();
+    private static final Color COLOR_DEST_FILL              = Color.fromRGBA(0xE03A5330);
+    private static final Color COLOR_DEST_OUTLINE_SELECTED  = Colors.white();
+
+    private static final float OUTLINE_WIDTH_SELECTED = 2.f;
+
+    private static final FloatBuffer EMPTY_FLOAT_BUFFER = FloatBuffer.allocate(0);
+    private static final IntBuffer EMPTY_INT_BUFFER = IntBuffer.allocate(0);
 
     private boolean enabled;
 
@@ -55,10 +74,16 @@ public class ScenarioOverlay implements Overlay {
     private ShaderProgram shaderPolygon;
     private UniformVec4f uPolygonColor;
 
-    private SortedArrayList<Area> areas;
-    private ArrayList<AreaBatch> batches;
+    private ShaderProgram shaderOutline;
+    private UniformVec4f uOutlineColor;
 
-    private ArrayList<Area> selected;
+    private SortedArrayList<Area> areas;
+    private ArrayList<Batch> areaBatches;
+
+    private SortedArrayList<Area> selected;
+    private ArrayList<Batch> selectedBatches;
+    private boolean rebatchSelected;
+    private boolean rebuildSelected;
 
 
     public ScenarioOverlay(Projection projection) {
@@ -66,9 +91,14 @@ public class ScenarioOverlay implements Overlay {
         this.mouseListener = new MouseListenerImpl();
         this.triangulator = new SweepLineTriangulator();
         this.projection = projection;
-        this.areas = new SortedArrayList<>(Comparator.comparingInt(x -> x.style.hashCode()));   // batch by style
-        this.batches = new ArrayList<>();
-        this.selected = new ArrayList<>();
+
+        Comparator<Area> areacmp = Comparator.comparingInt(a -> a.style.hashCode());    // batch by style
+
+        this.areas = new SortedArrayList<>(areacmp);
+        this.selected = new SortedArrayList<>(areacmp);
+
+        this.areaBatches = new ArrayList<>();
+        this.selectedBatches = new ArrayList<>();
 
         loadTokyoTestingPolygons();
     }
@@ -107,7 +137,26 @@ public class ScenarioOverlay implements Overlay {
                         projection.project(new Coordinate(35.621810108047264, 139.72426967137122)),
                         projection.project(new Coordinate(35.62294190289077, 139.7224132200883)),
                         projection.project(new Coordinate(35.623696423886855, 139.72081783226702))
-                })
+                }),
+                new Polygon(new Vec2d[]{
+                        projection.project(new Coordinate (35.63937247821449, 139.73230627569114)),
+                        projection.project(new Coordinate (35.63870966518994, 139.73208384882096)),
+                        projection.project(new Coordinate (35.63590771303082, 139.7315648527906)),
+                        projection.project(new Coordinate (35.635726938550484, 139.73301062744665)),
+                        projection.project(new Coordinate (35.63532019447478, 139.73464175782783)),
+                        projection.project(new Coordinate (35.63482306001563, 139.73577242775113)),
+                        projection.project(new Coordinate (35.634536829681956, 139.73640263721657)),
+                        projection.project(new Coordinate (35.63431085764183, 139.7368660265294)),
+                        projection.project(new Coordinate (35.63417527411111, 139.7375518427124)),
+                        projection.project(new Coordinate (35.63408488496287, 139.7379596253077)),
+                        projection.project(new Coordinate (35.63547084067009, 139.73846008576558)),
+                        projection.project(new Coordinate (35.636434969596365, 139.73883079721583)),
+                        projection.project(new Coordinate (35.637188187227544, 139.73914590194855)),
+                        projection.project(new Coordinate (35.63795646189825, 139.73946100668127)),
+                        projection.project(new Coordinate (35.63889043292365, 139.73998000271166)),
+                        projection.project(new Coordinate (35.63935741434317, 139.74022096515432))
+                }),
+
         };
 
         Polygon[] dest = {
@@ -167,8 +216,10 @@ public class ScenarioOverlay implements Overlay {
 
         for (Polygon p : dest)
             areas.add(new Area(p, new AreaProperties(AreaType.DEST), new AreaStyle()));
-    }
 
+        selected.add(areas.get(0));
+        selected.add(areas.get(2));
+    }
 
 
     @Override
@@ -176,16 +227,23 @@ public class ScenarioOverlay implements Overlay {
         shaderPolygon = context.getShaderManager().load(POLYGON_FILL_SHADER);
         uPolygonColor = (UniformVec4f) shaderPolygon.getUniform("u_color");
 
-        update(context);
+        shaderOutline = context.getShaderManager().load(OUTLINE_SHADER);
+        uOutlineColor = (UniformVec4f) shaderOutline.getUniform("u_color");
+
+        updateAreas(context);
     }
 
     @Override
     public void dispose(RenderContext context) throws Exception {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
-        for (AreaBatch batch : batches)
+        for (Batch batch : areaBatches)
             batch.dispose(context);
-        batches.clear();
+        areaBatches.clear();
+
+        for (Batch batch : selectedBatches)
+            batch.dispose(context);
+        selectedBatches.clear();
 
         shaderPolygon.dispose(gl);
     }
@@ -197,7 +255,8 @@ public class ScenarioOverlay implements Overlay {
     public void display(RenderContext context, MapBuffer map) throws Exception {
         if (!enabled) return;
 
-        update(context);
+        updateAreas(context);
+        updateSelected(context);
 
         GL3 gl = context.getDrawable().getGL().getGL3();
 
@@ -210,16 +269,47 @@ public class ScenarioOverlay implements Overlay {
         context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE,
                 GL3.GL_ONE_MINUS_SRC_ALPHA);
 
+        // set line style
+        context.Lines.setLineSmoothEnabled(gl, true);
+        context.Lines.setLineSmoothHint(gl, GL3.GL_NICEST);
+        context.Lines.setLineWidth(gl, OUTLINE_WIDTH_SELECTED);
+
         // draw
-        for (AreaBatch batch : batches)
+        for (Batch batch : areaBatches)
             batch.display(context);
 
-        // TODO: draw selection
+        for (Batch batch : selectedBatches)
+            batch.display(context);
 
         context.ShaderState.unbind(gl);
     }
 
-    private void update(RenderContext context) {
+
+    private ArrayList<List<Area>> batchByStyle(SortedArrayList<Area> from) {
+        ArrayList<List<Area>> groups = new ArrayList<>();
+
+        // group
+        int begin = 0;
+        for (int i = 0; i < from.size(); i++) {
+            AreaStyle style = from.get(i).style;
+
+            for (; i < from.size(); i++) {
+                if (!style.equals(from.get(i).style))
+                    break;
+            }
+
+            groups.add(from.subList(begin, i));
+            begin = i;
+        }
+
+        if (begin != from.size())
+            groups.add(from.subList(begin, from.size()));
+
+        return groups;
+    }
+
+
+    private void updateAreas(RenderContext context) {
         boolean rebuild = false;
         boolean rebatch = false;
 
@@ -244,60 +334,45 @@ public class ScenarioOverlay implements Overlay {
         if (rebuild || rebatch) {
             if (rebatch) areas.sort();
 
-            rebuildBatches(context);
+            rebuildAreaBatches(context);
         }
+
+        rebatchSelected |= rebatch;
+        rebuildSelected |= rebuild;
     }
 
-    private void rebuildBatches(RenderContext context) {
-        ArrayList<List<Area>> groups = new ArrayList<>();
-
-        // group
-        if (!areas.isEmpty()) {
-            int begin = 0;
-            for (int i = 0; i < areas.size(); i++) {
-                AreaStyle style = areas.get(i).style;
-
-                for (; i < areas.size(); i++) {
-                    if (!style.equals(areas.get(i).style))
-                        break;
-                }
-
-                groups.add(areas.subList(begin, i));
-                begin = i;
-            }
-            
-            groups.add(areas.subList(begin, areas.size()));
-        }
+    private void rebuildAreaBatches(RenderContext context) {
+        ArrayList<List<Area>> groups = batchByStyle(areas);
 
         // create batches
-        ArrayList<AreaBatch> batches = new ArrayList<>(groups.size());
-        batches.addAll(this.batches.subList(0, Math.min(this.batches.size(), groups.size())));
+        ArrayList<Batch> batches = new ArrayList<>(groups.size());
+        batches.addAll(this.areaBatches.subList(0, Math.min(this.areaBatches.size(), groups.size())));
 
         if (groups.size() > batches.size()) {                   // create new batches, if necessary
             int num = groups.size() - batches.size();
             for (int i = 0; i < num; i++) {
-                AreaBatch batch = new AreaBatch();
+                Batch batch = new Batch(GL3.GL_DYNAMIC_DRAW, GL3.GL_TRIANGLES, shaderPolygon, uPolygonColor);
                 batch.initalize(context);
                 batches.add(batch);
             }
 
-        } else if (groups.size() < this.batches.size()) {       // dispose batches that are not required any more
-            for (AreaBatch batch : this.batches.subList(groups.size(), this.batches.size()))
+        } else if (groups.size() < this.areaBatches.size()) {       // dispose batches that are not required any more
+            for (Batch batch : this.areaBatches.subList(groups.size(), this.areaBatches.size()))
                 batch.dispose(context);
         }
 
         // load batches
         for (int i = 0; i < groups.size(); i++) {
             List<Area> group = groups.get(i);
-            AreaBatch batch = batches.get(i);
+            Batch batch = batches.get(i);
 
-            loadGroupToBatch(context, group, batch);
+            loadAreaGroupToPolygonBatch(context, group, batch);
         }
 
-        this.batches = batches;
+        this.areaBatches = batches;
     }
 
-    private void loadGroupToBatch(RenderContext context, List<Area> src, AreaBatch dst) {
+    private void loadAreaGroupToPolygonBatch(RenderContext context, List<Area> src, Batch dst) {
         dst.color = new Color(src.get(0).style.getColor());
 
         int numIndices = 0;
@@ -331,6 +406,117 @@ public class ScenarioOverlay implements Overlay {
         dst.mesh.setVertexBuffer(vertices);
         dst.mesh.setIndexBuffer(indices);
         dst.mesh.load(context, true);
+    }
+
+
+    private void updateSelected(RenderContext context) {
+        if (!rebuildSelected && !rebatchSelected) return;
+
+        if (rebatchSelected) {
+            selected.sort();
+            rebatchSelected = false;
+        }
+
+        rebuildSelectedBatches(context);
+
+        rebuildSelected = false;
+    }
+
+    private void rebuildSelectedBatches(RenderContext context) {
+        ArrayList<List<Area>> groups = batchByStyle(selected);
+
+        // create batches
+        ArrayList<Batch> batches = new ArrayList<>(groups.size());
+        batches.addAll(this.selectedBatches.subList(0, Math.min(this.selectedBatches.size(), groups.size())));
+
+        if (groups.size() > batches.size()) {                   // create new batches, if necessary
+            int num = groups.size() - batches.size();
+            for (int i = 0; i < num; i++) {
+                Batch batch = new Batch(GL3.GL_DYNAMIC_DRAW, GL3.GL_LINE_STRIP, shaderOutline, uOutlineColor);
+                batch.initalize(context);
+                batches.add(batch);
+            }
+
+        } else if (groups.size() < this.selectedBatches.size()) {       // dispose batches that are not required any more
+            for (Batch batch : this.selectedBatches.subList(groups.size(), this.selectedBatches.size()))
+                batch.dispose(context);
+        }
+
+        // load batches
+        for (int i = 0; i < groups.size(); i++) {
+            List<Area> group = groups.get(i);
+            Batch batch = batches.get(i);
+
+            loadAreaGroupToOutlineBatch(context, group, batch);
+        }
+
+        this.selectedBatches = batches;
+    }
+
+    private void loadAreaGroupToOutlineBatch(RenderContext context, List<Area> src, Batch dst) {
+        dst.color = new Color(src.get(0).style.getSelectedColor());
+
+        int restart = context.PrimitiveRestart.getIndex();
+
+        int numIndices = 0;
+        int numVertices = 0;
+
+        for (Area area : src) {
+            numIndices += area.polygon.outline.length + 2;
+            numVertices += area.polygon.outline.length;
+        }
+
+        FloatBuffer vertices = FloatBuffer.allocate(numVertices * 3);
+        IntBuffer indices = IntBuffer.allocate(numIndices);
+
+        int base = 0;
+        for (Area area : src) {
+            for (Vec2d v : area.polygon.outline) {
+                vertices.put((float) v.x);
+                vertices.put((float) v.y);
+                vertices.put(0.0f);
+            }
+
+            for (int i = 0; i < area.polygon.outline.length; i++)
+                indices.put(base + i);
+
+            indices.put(base);
+            indices.put(restart);
+
+            base += area.polygon.outline.length;
+        }
+
+        vertices.rewind();
+        indices.rewind();
+
+        dst.mesh.setVertexBuffer(vertices);
+        dst.mesh.setIndexBuffer(indices);
+        dst.mesh.load(context, true);
+    }
+
+
+    private Vec2d screenToWorld(int x, int y) {
+        Vec2i viewport = view.getSize();
+        Rect2d bounds = view.getViewportBounds();
+
+        y = viewport.y - y;
+
+        return new Vec2d(
+                (x / (double) viewport.x) * (bounds.xmax - bounds.xmin) + bounds.xmin,
+                (y / (double) viewport.y) * (bounds.ymax - bounds.ymin) + bounds.ymin
+        );
+    }
+
+    private Area lookupArea(Vec2d p) {
+        for (int i = areas.size() - 1; i >= 0; i--) {
+            Area area = areas.get(i);
+
+            if (area.polygon.contains(p))
+                return area;
+
+        }
+
+        return null;
     }
 
 
@@ -378,10 +564,12 @@ public class ScenarioOverlay implements Overlay {
         private void onPropertiesChanged() {
             switch (properties.type) {
                 case SPAWN:
-                    style.setColor(COLOR_SPAWN);
+                    style.setColor(COLOR_SPAWN_FILL);
+                    style.setSelectedColor(COLOR_SPAWN_OUTLINE_SELECTED);
                     break;
                 case DEST:
-                    style.setColor(COLOR_DEST);
+                    style.setColor(COLOR_DEST_FILL);
+                    style.setSelectedColor(COLOR_DEST_OUTLINE_SELECTED);
             }
         }
 
@@ -414,14 +602,17 @@ public class ScenarioOverlay implements Overlay {
 
     private static class AreaStyle {
         private boolean changed;
+
         private Color color;
+        private Color selectedColor;
 
         AreaStyle() {
-            this(Color.fromRGB(0x000000));
+            this(Colors.black(), Colors.black());
         }
 
-        AreaStyle(Color color) {
+        AreaStyle(Color color, Color selectedColor) {
             this.color = color;
+            this.selectedColor = selectedColor;
             this.changed = true;
         }
 
@@ -429,10 +620,22 @@ public class ScenarioOverlay implements Overlay {
         void setColor(Color color) {
             if (color.equals(this.color)) return;
             this.color = color;
+            this.changed = true;
         }
 
         Color getColor() {
             return color;
+        }
+
+
+        void setSelectedColor(Color selectedColor) {
+            if (selectedColor.equals(this.selectedColor)) return;
+            this.selectedColor = selectedColor;
+            this.changed = true;
+        }
+
+        Color getSelectedColor() {
+            return selectedColor;
         }
 
 
@@ -451,35 +654,37 @@ public class ScenarioOverlay implements Overlay {
     }
 
 
-    private static final FloatBuffer EMPTY_F = FloatBuffer.allocate(0);
-    private static final IntBuffer EMPTY_I = IntBuffer.allocate(0);
-
-    private class AreaBatch {
+    private static class Batch {
         private Color color;
+
+        private ShaderProgram shader;
+        private UniformVec4f uColor;
         private Pos3IndexedMesh mesh;
         private VertexArrayObject vao;
 
-        AreaBatch() {
-            this(Color.fromRGB(0x000000));
+        Batch(int usage, int mode, ShaderProgram shader, UniformVec4f uColor) {
+            this(usage, mode, shader, uColor, Color.fromRGB(0x000000));
         }
 
-        AreaBatch(Color color) {
+        Batch(int usage, int mode, ShaderProgram shader, UniformVec4f uColor, Color color) {
+            this.shader = shader;
+            this.uColor = uColor;
             this.color = color;
-            this.mesh = new Pos3IndexedMesh(GL3.GL_DYNAMIC_DRAW, GL3.GL_TRIANGLES, EMPTY_F, EMPTY_I);
+            this.mesh = new Pos3IndexedMesh(usage, mode, EMPTY_FLOAT_BUFFER, EMPTY_INT_BUFFER);
             this.vao = null;
         }
 
 
         void initalize(RenderContext context) {
             mesh.initialize(context);
-            vao = mesh.createVAO(context, shaderPolygon);
+            vao = mesh.createVAO(context, shader);
         }
 
         void display(RenderContext context) {
             GL3 gl = context.getDrawable().getGL().getGL3();
 
-            uPolygonColor.set(color);
-            shaderPolygon.bind(gl);
+            uColor.set(color);
+            shader.bind(gl);
             mesh.display(context, vao);
         }
 
@@ -496,20 +701,16 @@ public class ScenarioOverlay implements Overlay {
 
         @Override
         public boolean mouseClicked(MouseEvent e) {
-            System.out.println(unporject(e.getX(), e.getY()).toString());
+            Vec2d pos = screenToWorld(e.getX(), e.getY());
+            Coordinate coord = projection.unproject(pos);
+            Area area = lookupArea(pos);
+
+            if (area != null)
+                System.out.println("Coordinate (" + coord.lat + ", " + coord.lon + ") inside " + area.polygon.toString());
+            else
+                System.out.println("Coordinate (" + coord.lat + ", " + coord.lon + ")");
+
             return false;
-        }
-
-        private Coordinate unporject(int x, int y) {
-            Vec2i viewport = view.getSize();
-            Rect2d bounds = view.getViewportBounds();
-
-            y = viewport.y - y;
-
-            return projection.unproject(new Vec2d(
-                    (x / (double) viewport.x) * (bounds.xmax - bounds.xmin) + bounds.xmin,
-                    (y / (double) viewport.y) * (bounds.ymax - bounds.ymin) + bounds.ymin
-            ));
         }
     }
 }

@@ -51,6 +51,7 @@ public class TileGridOverlay implements Overlay {
     private TilingScheme scheme;
 
     private ShaderProgram shader;
+    private UniformVec4f uColor;
 
     private BufferStorage     vbo;
     private VertexArrayObject vao;
@@ -77,9 +78,7 @@ public class TileGridOverlay implements Overlay {
 
         /* load shaders */
         shader = context.getShaderManager().load(SHADER_PROG_SRC);
-
-        UniformVec4f color = (UniformVec4f) shader.getUniform("u_color");
-        color.set(COLOR);
+        uColor = (UniformVec4f) shader.getUniform("u_color");
 
         /* create vbo */
         vbo = BufferStorage.create(gl, GL3.GL_ARRAY_BUFFER);
@@ -159,6 +158,11 @@ public class TileGridOverlay implements Overlay {
 
         gl.glUnmapBuffer(vbo.target);
         vbo.unbind(gl);
+
+        uColor.set(COLOR);
+
+        context.Lines.setLineWidth(gl, 1.f);
+        context.Lines.setLineSmoothEnabled(gl, false);
 
         /* draw */
         shader.bind(gl);

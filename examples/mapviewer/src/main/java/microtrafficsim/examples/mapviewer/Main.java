@@ -5,6 +5,7 @@ import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.scenario.ScenarioOverlay;
+import microtrafficsim.core.vis.tilebased.TileGridOverlay;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,16 +39,17 @@ public class Main {
      * @throws UnsupportedFeatureException if not all required OpenGL features are available
      */
     private static void show(File file) throws UnsupportedFeatureException {
-        MapViewer viewer = new TileBasedMapViewer(STYLE);
+        TileBasedMapViewer viewer = new TileBasedMapViewer(STYLE);
         viewer.create();
 
         viewer.addOverlay(0, new ScenarioOverlay(viewer.getProjection()));
+        // viewer.addOverlay(1, new TileGridOverlay(viewer.getTilingScheme()));
 
         /* parse the OSM file asynchronously and update the sources */
         asyncParse(viewer, file);
 
         /* create and initialize the JFrame */
-        JFrame frame = new JFrame("MicroTrafficSim - OSM Main Example");
+        JFrame frame = new JFrame("MicroTrafficSim - OSM MapViewer Example");
         frame.setSize(viewer.getInitialWindowWidth(), viewer.getInitialWindowHeight());
         frame.add(viewer.getVisualizationPanel());
 
