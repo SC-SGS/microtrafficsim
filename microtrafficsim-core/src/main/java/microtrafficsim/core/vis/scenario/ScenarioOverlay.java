@@ -62,8 +62,9 @@ public class ScenarioOverlay implements Overlay {
 
     private static final float WIDTH_OUTLINE_SELECTED       = 2.f;
 
-    private static final float SIZE_POINTS_FILL             = 5.f;
-    private static final float SIZE_POINTS_OUTLINE          = 7.f;
+    private static final float  SIZE_POINTS_FILL            = 5.f;
+    private static final float  SIZE_POINTS_OUTLINE         = 7.f;
+    private static final double SIZE_POINTS_SELECT          = 9.0;
 
     private static final Comparator<Area> AREA_BATCH_CMP = Comparator.comparingInt(a -> a.style.hashCode());
 
@@ -546,6 +547,21 @@ public class ScenarioOverlay implements Overlay {
         return null;
     }
 
+    private Anchor lookupAnchor(Vec2d p) {
+        Vec2i viewport = view.getSize();
+        Rect2d bounds = view.getViewportBounds();
+
+        double rx = (SIZE_POINTS_SELECT / 2.0) / viewport.x * (bounds.xmax - bounds.xmin);
+        double ry = (SIZE_POINTS_SELECT / 2.0) / viewport.y * (bounds.ymax - bounds.ymin);
+
+        for (Area area : selected)
+            for (Vec2d v : area.polygon.outline)
+                if (p.x >= v.x - rx && p.x <= v.x + rx && p.y >= v.y - ry && p.y <= v.y + ry)
+                    return new Anchor(area, v);
+
+        return null;
+    }
+
 
     @Override
     public void setView(OrthographicView view) {
@@ -681,6 +697,17 @@ public class ScenarioOverlay implements Overlay {
     }
 
 
+    private static class Anchor {
+        Area area;
+        Vec2d point;
+
+        Anchor(Area area, Vec2d point) {
+            this.area = area;
+            this.point = point;
+        }
+    }
+
+
     private static class Batch {
         private Color color;
 
@@ -737,12 +764,21 @@ public class ScenarioOverlay implements Overlay {
         private Vec2d pos;
         private Area area;
 
+        private Anchor anchor;
+        private Vec2d anchorpos;
+
 
         @Override
         public boolean mouseClicked(MouseEvent e) {
             if (e.getButton() != MouseEvent.BUTTON1)
                 return false;
 
+            // try to select anchor
+            anchor = lookupAnchor(screenToWorld(e.getX(), e.getY()));
+            if (anchor != null)
+                return true;
+
+            // try to select area
             Vec2d pos = screenToWorld(e.getX(), e.getY());
             Area area = lookupArea(pos);
 
@@ -769,6 +805,13 @@ public class ScenarioOverlay implements Overlay {
             if (e.getButton() != MouseEvent.BUTTON1)
                 return false;
 
+            // try to select anchor
+            anchor = lookupAnchor(screenToWorld(e.getX(), e.getY()));
+            if (anchor != null) {
+                anchorpos = screenToWorld(e.getX(), e.getY());
+                return true;
+            }
+
             if (!e.isControlDown()) {
                 this.area = null;
                 this.pos = null;
@@ -794,30 +837,45 @@ public class ScenarioOverlay implements Overlay {
             if (e.getButton() != MouseEvent.BUTTON1)
                 return false;
 
-            if (pos == null)
-                return false;
+            if (anchor != null) {
+                Vec2d pos = screenToWorld(e.getX(), e.getY());
+                Vec2d delta = Vec2d.sub(pos, this.anchorpos);
 
-            Vec2d pos = screenToWorld(e.getX(), e.getY());
-            Vec2d delta = Vec2d.sub(pos, this.pos);
+                context.addTask(c -> {
+                    anchor.point.add(delta);
+                    anchor.area.cached = null;
+                    return null;
+                });
 
-            Area down = this.area;
+                this.anchorpos = pos;
+                return true;
 
-            context.addTask(c -> {
-                if (down != null && !selected.contains(down))
-                    selected.add(down);
+            } else if (pos != null) {
+                Vec2d pos = screenToWorld(e.getX(), e.getY());
+                Vec2d delta = Vec2d.sub(pos, this.pos);
 
-                for (Area area : selected) {
-                    for (Vec2d v : area.polygon.outline)
-                        v.add(delta);
+                Area down = this.area;
 
-                    area.cached = null;
-                }
-                return null;
-            });
+                context.addTask(c -> {
+                    if (down != null && !selected.contains(down))
+                        selected.add(down);
 
-            this.pos = pos;
-            this.area = null;
-            return true;
+                    for (Area area : selected) {
+                        for (Vec2d v : area.polygon.outline)
+                            v.add(delta);
+
+                        area.cached = null;
+                    }
+                    return null;
+                });
+
+                this.pos = pos;
+                this.area = null;
+                return true;
+            }
+
+
+            return false;
         }
     }
 }
