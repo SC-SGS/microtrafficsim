@@ -145,9 +145,9 @@ public class SimulationController implements GUIController {
             break;
         case DID_PARSE:
             switch (state) {
-            case PARSING:
-            case PARSING_SIM_RUN:
-            case PARSING_SIM_PAUSE: state = GUIState.MAP;
+                case PARSING:
+                case PARSING_SIM_RUN:
+                case PARSING_SIM_PAUSE: state = GUIState.MAP;
             }
             updateMenuBar();
             break;
@@ -419,15 +419,17 @@ public class SimulationController implements GUIController {
             }
 
             @Override
-            public boolean accept(File f) {
-                if (f.isDirectory()) return true;
+            public boolean accept(File file) {
+                if (file.isDirectory()) return true;
 
                 String extension = null;
 
-                String s = f.getName();
-                int    i = s.lastIndexOf('.');
+                String filename = file.getName();
+                int    i        = filename.lastIndexOf('.');
 
-                if (i > 0 && i < s.length() - 1) extension = s.substring(i + 1).toLowerCase();
+                if (i > 0)
+                    if (i < filename.length() - 1)
+                        extension = filename.substring(i + 1).toLowerCase();
 
                 if (extension == null) return false;
 
@@ -450,29 +452,37 @@ public class SimulationController implements GUIController {
 
     private void asyncParseAndShow(File file) {
         new Thread(() -> {
-            String oldTitle = frame.getTitle();
+            String cachedTitle = frame.getTitle();
             frame.setTitle("Parsing new map, please wait...");
+
+            OSMParser.Result result = null;
 
             try {
                 /* parse file and create tiled provider */
-                OSMParser.Result result = mapviewer.parse(file);
-
-                lock_gui.lock();
-                transiate(GUIEvent.DID_PARSE);
-                lock_gui.unlock();    // todo N = new sim and resetView centers view
-                cleanupSimulation();
-                streetgraph = result.streetgraph;
-
-                mapviewer.changeMap(result);
-                frame.setTitle("MicroTrafficSim - " + file.getName());
+                result = mapviewer.parse(file);
             } catch (Exception e) {
-                lock_gui.lock();
-                transiate(GUIEvent.DID_PARSE);
-                lock_gui.unlock();
-                frame.setTitle(oldTitle);
                 e.printStackTrace();
                 Runtime.getRuntime().halt(1);
             }
+
+            if (result != null) {
+                if (result.streetgraph != null) {
+                    cleanupSimulation();
+                    streetgraph = result.streetgraph;
+
+                    try {
+                        mapviewer.changeMap(result);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    cachedTitle = "MicroTrafficSim - " + file.getName();
+                }
+            }
+
+            lock_gui.lock();
+            transiate(GUIEvent.DID_PARSE);
+            lock_gui.unlock();
+            frame.setTitle(cachedTitle);
         }).start();
     }
 
@@ -516,7 +526,10 @@ public class SimulationController implements GUIController {
             return true;
         } catch (IncorrectSettingsException e) {
             JOptionPane.showMessageDialog(
-                    null, e.getMessage(), "Error: wrong preferences values", JOptionPane.ERROR_MESSAGE);
+                    null,
+                    e.getMessage(),
+                    "Error: wrong preferences values",
+                    JOptionPane.ERROR_MESSAGE);
             return false;
         }
     }

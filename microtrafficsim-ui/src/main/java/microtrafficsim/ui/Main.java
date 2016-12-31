@@ -47,7 +47,6 @@ public class Main {
         PrefElement.seed.setEnabled(true);
         PrefElement.metersPerCell.setEnabled(false);
         // Visualization
-        PrefElement.projection.setEnabled(false);
         // crossing logic
         PrefElement.edgePriority.setEnabled(true);
         PrefElement.priorityToThe.setEnabled(true);
