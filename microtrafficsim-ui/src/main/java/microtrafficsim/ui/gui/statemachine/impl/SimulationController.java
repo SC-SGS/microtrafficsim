@@ -438,8 +438,7 @@ public class SimulationController implements GUIController {
             }
         });
 
-        int action = chooser.showOpenDialog(null);
-
+        int action = chooser.showDialog(null, "Öffnen");
         currentDirectory = chooser.getCurrentDirectory();
         if (action == JFileChooser.APPROVE_OPTION) {
             return chooser.getSelectedFile();
