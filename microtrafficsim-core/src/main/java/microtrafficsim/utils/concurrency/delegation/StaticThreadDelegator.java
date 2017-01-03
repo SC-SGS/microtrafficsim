@@ -1,11 +1,10 @@
 package microtrafficsim.utils.concurrency.delegation;
 
-import microtrafficsim.utils.concurrency.executorservices.FixedThreadPool;
+import microtrafficsim.utils.concurrency.executorservices.impl.FixedThreadPool;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

@@ -1,8 +1,6 @@
 package microtrafficsim.ui.gui.statemachine;
 
 import microtrafficsim.core.vis.input.KeyCommand;
-import microtrafficsim.ui.gui.statemachine.impl.GUIEvent;
-import microtrafficsim.ui.gui.statemachine.impl.GUIState;
 
 import java.io.File;
 

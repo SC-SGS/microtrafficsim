@@ -4,15 +4,16 @@ import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.ui.gui.statemachine.GUIController;
-import microtrafficsim.ui.gui.statemachine.impl.GUIEvent;
+import microtrafficsim.ui.gui.statemachine.GUIEvent;
 import microtrafficsim.ui.gui.statemachine.impl.SimulationController;
+import microtrafficsim.ui.gui.statemachine.impl.StateMachineSimulationController;
 
 import javax.swing.*;
 import java.io.File;
 
 
 /**
- * Just contains the main-method starting an instance of {@link SimulationController}.
+ * Just contains the main-method starting an instance of {@link StateMachineSimulationController}.
  *
  * @author Maximilian Luz, Dominic Parga Cacheiro
  */
@@ -59,7 +60,8 @@ public class Main {
         */
 
         SwingUtilities.invokeLater(() -> {
-            GUIController controller = new SimulationController(RandomRouteScenario::new, new TileBasedMapViewer());
+//            GUIController controller = new StateMachineSimulationController(RandomRouteScenario::new, new TileBasedMapViewer());
+            GUIController controller = new SimulationController();
             controller.transiate(GUIEvent.CREATE, file);
         });
     }

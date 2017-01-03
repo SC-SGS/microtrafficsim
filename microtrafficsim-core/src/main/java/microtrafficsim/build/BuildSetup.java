@@ -17,7 +17,7 @@ public abstract class BuildSetup {
      */
     public static void init() {
         EasyMarkableLogger.TRACE_ENABLED = false;
-        EasyMarkableLogger.DEBUG_ENABLED = false;
+        EasyMarkableLogger.DEBUG_ENABLED = true;
         EasyMarkableLogger.INFO_ENABLED = true;
         EasyMarkableLogger.WARN_ENABLED = true;
         EasyMarkableLogger.ERROR_ENABLED = true;
