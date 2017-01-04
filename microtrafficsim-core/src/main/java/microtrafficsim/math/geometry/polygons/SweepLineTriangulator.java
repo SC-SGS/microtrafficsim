@@ -121,9 +121,9 @@ public final class SweepLineTriangulator implements Triangulator {
     private static void addToEventQueue(PriorityQueue<Event> queue, Vec2d[] outline) {
         assert outline.length > 0: "Contract violation: zero-size outline.";
 
-        Vec2d a = outline[outline.length - 1];
+        Vec2d a = new Vec2d(outline[outline.length - 1]);
         for (int i = 0; i < outline.length; i++) {
-            Vec2d b = outline[i];
+            Vec2d b = new Vec2d(outline[i]);
 
             if (a.x != b.x || a.y != b.y) {
                 queue.add(new StartEvent(new Edge(a, b)));

@@ -4,8 +4,7 @@ import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
-import microtrafficsim.core.vis.scenario.ScenarioOverlay;
-import microtrafficsim.core.vis.tilebased.TileGridOverlay;
+import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,7 +41,7 @@ public class Main {
         TileBasedMapViewer viewer = new TileBasedMapViewer(STYLE);
         viewer.create();
 
-        viewer.addOverlay(0, new ScenarioOverlay(viewer.getProjection()));
+        viewer.addOverlay(0, new ScenarioAreaOverlay(viewer.getProjection()));
         // viewer.addOverlay(1, new TileGridOverlay(viewer.getTilingScheme()));
 
         /* parse the OSM file asynchronously and update the sources */

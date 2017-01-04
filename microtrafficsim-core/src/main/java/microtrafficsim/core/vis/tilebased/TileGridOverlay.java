@@ -73,7 +73,7 @@ public class TileGridOverlay implements Overlay {
 
 
     @Override
-    public void init(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
+    public void initialize(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         /* load shaders */
@@ -85,7 +85,7 @@ public class TileGridOverlay implements Overlay {
 
         /* create vao */
         VertexAttributePointer ptrPosition = VertexAttributePointer.
-                create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, vbo, 0, 0);
+                create(VertexAttributes.POSITION3, DataTypes.FLOAT_2, vbo, 0, 0);
 
         assert ptrPosition != null;
 
@@ -127,8 +127,8 @@ public class TileGridOverlay implements Overlay {
         int nVertices = 2 * (tx + ty);
 
         vbo.bind(gl);
-        gl.glBufferData(vbo.target, nVertices * 3 * 4L, null, GL3.GL_DYNAMIC_DRAW);
-        FloatBuffer vertices = gl.glMapBufferRange(vbo.target, 0, nVertices * 3 * 4L,
+        gl.glBufferData(vbo.target, nVertices * 2 * 4L, null, GL3.GL_DYNAMIC_DRAW);
+        FloatBuffer vertices = gl.glMapBufferRange(vbo.target, 0, nVertices * 2 * 4L,
                                                    GL3.GL_MAP_WRITE_BIT | GL3.GL_MAP_INVALIDATE_BUFFER_BIT)
                                        .asFloatBuffer();
 
@@ -138,10 +138,8 @@ public class TileGridOverlay implements Overlay {
 
             vertices.put((float) a.x);
             vertices.put((float) a.y);
-            vertices.put(0);
             vertices.put((float) b.x);
             vertices.put((float) b.y);
-            vertices.put(0);
         }
 
         for (int y = tiles.ymin; y <= tiles.ymax + 1; y++) {
@@ -150,10 +148,8 @@ public class TileGridOverlay implements Overlay {
 
             vertices.put((float) a.x);
             vertices.put((float) a.y);
-            vertices.put(0);
             vertices.put((float) b.x);
             vertices.put((float) b.y);
-            vertices.put(0);
         }
 
         gl.glUnmapBuffer(vbo.target);

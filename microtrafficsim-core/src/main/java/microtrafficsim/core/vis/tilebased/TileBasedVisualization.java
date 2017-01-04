@@ -1,6 +1,7 @@
 package microtrafficsim.core.vis.tilebased;
 
 import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.map.style.StyleSheet;
@@ -15,8 +16,8 @@ import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.utils.concurrency.interruptsafe.InterruptSafeExecutors;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -119,50 +120,48 @@ public class TileBasedVisualization extends AbstractVisualization {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            resolve(e, Overlay.MouseListener::mouseClicked, controller::mouseClicked);
+            resolve(e, MouseListener::mouseClicked, controller::mouseClicked);
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
-            resolve(e, Overlay.MouseListener::mousePressed, controller::mousePressed);
+            resolve(e, MouseListener::mousePressed, controller::mousePressed);
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            resolve(e, Overlay.MouseListener::mouseReleased, controller::mouseReleased);
+            resolve(e, MouseListener::mouseReleased, controller::mouseReleased);
         }
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            resolve(e, Overlay.MouseListener::mouseMoved, controller::mouseMoved);
+            resolve(e, MouseListener::mouseMoved, controller::mouseMoved);
         }
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            resolve(e, Overlay.MouseListener::mouseDragged, controller::mouseDragged);
+            resolve(e, MouseListener::mouseDragged, controller::mouseDragged);
         }
 
         @Override
         public void mouseWheelMoved(MouseEvent e) {
-            resolve(e, Overlay.MouseListener::mouseWheelMoved, controller::mouseWheelMoved);
+            resolve(e, MouseListener::mouseWheelMoved, controller::mouseWheelMoved);
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            resolve(e, Overlay.MouseListener::mouseEntered, controller::mouseEntered);
+            resolve(e, MouseListener::mouseEntered, controller::mouseEntered);
         }
         /**
          * Resolves the given event by distributing it to the overlays and the top-level controller. The
          * distribution-process stops as soon as any overlay fully consumes the event (i.e. the callback of this event
          * returns {@code true}) and thus blocks subsequent overlays from receiving this event.
          *
-         * @param e        the event to resolve.
-         * @param call     the call to be executed for each overlay.
-         * @param toplevel the top-level receiver of the event.
+         * @param e        the event to resolveKeyEvent.
          */
         @Override
         public void mouseExited(MouseEvent e) {
-            resolve(e, Overlay.MouseListener::mouseExited, controller::mouseExited);
+            resolve(e, MouseListener::mouseExited, controller::mouseExited);
         }
 
 
@@ -171,20 +170,21 @@ public class TileBasedVisualization extends AbstractVisualization {
          * distribution-process stops as soon as any overlay fully consumes the event (i.e. the callback of this event
          * returns {@code true}) and thus blocks subsequent overlays from receiving this event.
          *
-         * @param e        the event to resolve.
-         * @param call     the call to be executed for each overlay.
+         * @param e        the event to resolveKeyEvent.
+         * @param fn       the function to be executed for each overlay.
          * @param toplevel the top-level receiver of the event.
          */
-        private void resolve(MouseEvent e, BiPredicate<Overlay.MouseListener, MouseEvent> call,
-                             Consumer<MouseEvent> toplevel) {
-            ArrayList<Overlay.MouseListener> listeners = getAllOverlays().stream()
+        private void resolve(MouseEvent e, MouseListenerFunction fn, Consumer<MouseEvent> toplevel) {
+            ArrayList<MouseListener> listeners = getAllOverlays().stream()
                     .map(Overlay::getMouseListener)
-                    .filter(listener -> listener != null)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toCollection(ArrayList::new));
 
-            for (int i = listeners.size() - 1; i >= 0; i--)
-                if (call.test(listeners.get(i), e))
+            for (int i = listeners.size() - 1; i >= 0; i--) {
+                fn.call(listeners.get(i), e);
+                if (e.isConsumed())
                     return;
+            }
 
             toplevel.accept(e);
         }
@@ -208,12 +208,12 @@ public class TileBasedVisualization extends AbstractVisualization {
 
         @Override
         public void keyPressed(KeyEvent e) {
-            resolve(e, Overlay.KeyListener::keyPressed, controller::keyPressed);
+            resolve(e, KeyListener::keyPressed, controller::keyPressed);
         }
 
         @Override
         public void keyReleased(KeyEvent e) {
-            resolve(e, Overlay.KeyListener::keyReleased, controller::keyReleased);
+            resolve(e, KeyListener::keyReleased, controller::keyReleased);
         }
 
 
@@ -222,21 +222,32 @@ public class TileBasedVisualization extends AbstractVisualization {
          * distribution-process stops as soon as any overlay fully consumes the event (i.e. the callback of this event
          * returns {@code true}) and thus blocks subsequent overlays from receiving this event.
          *
-         * @param e        the event to resolve.
-         * @param call     the call to be executed for each overlay.
+         * @param e        the event to resolveKeyEvent.
+         * @param fn       the function to be executed for each overlay.
          * @param toplevel the top-level receiver of the event.
          */
-        private void resolve(KeyEvent e, BiPredicate<Overlay.KeyListener, KeyEvent> call, Consumer<KeyEvent> toplevel) {
-            ArrayList<Overlay.KeyListener> listeners = getAllOverlays().stream()
-                    .map(Overlay::getKeyListeners)
-                    .filter(listener -> listener != null)
+        private void resolve(KeyEvent e, KeyListenerFunction fn, Consumer<KeyEvent> toplevel) {
+            ArrayList<KeyListener> listeners = getAllOverlays().stream()
+                    .map(Overlay::getKeyListener)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toCollection(ArrayList::new));
 
-            for (int i = listeners.size() - 1; i > 0; i--)
-                if (call.test(listeners.get(i), e))
+            for (int i = listeners.size() - 1; i >= 0; i--) {
+                fn.call(listeners.get(i), e);
+                if (e.isConsumed())
                     return;
+            }
 
             toplevel.accept(e);
         }
+    }
+
+
+    private interface MouseListenerFunction {
+        void call(MouseListener listener, MouseEvent event);
+    }
+
+    private interface KeyListenerFunction {
+        void call(KeyListener listener, KeyEvent event);
     }
 }

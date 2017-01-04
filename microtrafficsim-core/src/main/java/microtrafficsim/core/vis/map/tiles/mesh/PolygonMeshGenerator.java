@@ -10,8 +10,8 @@ import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.mesh.Mesh;
-import microtrafficsim.core.vis.mesh.impl.Pos3IndexedMesh;
-import microtrafficsim.core.vis.mesh.utils.Polygons;
+import microtrafficsim.core.vis.mesh.impl.SingleFloatAttributeIndexedMesh;
+import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.geometry.polygons.SweepLineTriangulator;
@@ -21,7 +21,6 @@ import microtrafficsim.utils.collections.ArrayUtils;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 
 public class PolygonMeshGenerator implements FeatureMeshGenerator {
@@ -61,12 +60,11 @@ public class PolygonMeshGenerator implements FeatureMeshGenerator {
         }
 
         // create vertex buffer
-        FloatBuffer vb = FloatBuffer.allocate(vertices.size() * 3);
+        FloatBuffer vb = FloatBuffer.allocate(vertices.size() * 2);
         for (Vec2d v : vertices) {
             if (Thread.interrupted()) throw new InterruptedException();
             vb.put((float) v.x);
             vb.put((float) v.y);
-            vb.put(0.0f);
         }
         vb.rewind();
 
@@ -76,9 +74,10 @@ public class PolygonMeshGenerator implements FeatureMeshGenerator {
         ib.rewind();
 
         // create mesh and buckets
-        Pos3IndexedMesh mesh = new Pos3IndexedMesh(GL3.GL_STATIC_DRAW, GL3.GL_TRIANGLES, vb, ib);
+        SingleFloatAttributeIndexedMesh mesh = SingleFloatAttributeIndexedMesh.newPos2Mesh(
+                GL3.GL_STATIC_DRAW, GL3.GL_TRIANGLES, vb, ib);
 
-        ArrayList<Pos3IndexedMesh.Bucket> buckets = new ArrayList<>();
+        ArrayList<SingleFloatAttributeIndexedMesh.Bucket> buckets = new ArrayList<>();
         buckets.add(mesh.new Bucket(0, 0, indices.size()));
         mesh.setBuckets(buckets);
 

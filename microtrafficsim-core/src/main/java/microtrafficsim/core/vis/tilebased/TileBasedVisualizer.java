@@ -31,7 +31,6 @@ import microtrafficsim.core.vis.view.View;
 import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.resources.PackagedResource;
-import microtrafficsim.utils.resources.Resource;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -213,7 +212,7 @@ public class TileBasedVisualizer implements Visualizer {
 
         manager.initialize(context);
         for (Overlay overlay : overlays.values())
-            overlay.init(context);
+            overlay.initialize(context);
     }
 
     @Override

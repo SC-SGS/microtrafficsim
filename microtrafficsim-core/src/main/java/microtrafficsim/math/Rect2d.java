@@ -51,6 +51,18 @@ public class Rect2d {
         this.ymax = other.ymax;
     }
 
+
+    /**
+     * Converts the given {@code Rect2i} to a {@code Rect2d} by promoting integer to doubles.
+     *
+     * @param other the {@code Rect2i} to convert.
+     * @return the given {@code Rect2i} as {@code Rect2d}.
+     */
+    public static Rect2d from(Rect2i other) {
+        return new Rect2d(other.xmin, other.ymin, other.xmax, other.ymax);
+    }
+
+
     /**
      * Sets this rectangle according to the specified parameters.
      *
@@ -116,6 +128,11 @@ public class Rect2d {
     }
 
 
+    public boolean contains(Vec2d p) {
+        return xmin <= p.x && p.x <= xmax && ymin <= p.y && p.y <= ymax;
+    }
+
+
     /**
      * Projects the given point from the given source rectangle to the given target rectangle.
      *
@@ -156,5 +173,12 @@ public class Rect2d {
     @Override
     public String toString() {
         return this.getClass() + " {" + xmin + ", " + ymin + ", " + xmax + ", " + ymax + "}";
+    }
+
+    public static Rect2d transform(Mat3d transform, Rect2d bounds) {
+        Vec3d min = transform.mul(new Vec3d(bounds.min(), 1.0f));
+        Vec3d max = transform.mul(new Vec3d(bounds.max(), 1.0f));
+
+        return new Rect2d(min.x / min.z, min.y / min.z, max.x / max.z, max.y / max.z);
     }
 }

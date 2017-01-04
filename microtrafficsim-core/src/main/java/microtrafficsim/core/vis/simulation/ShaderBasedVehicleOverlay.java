@@ -122,7 +122,7 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
 
 
     @Override
-    public void init(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
+    public void initialize(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         prog = context.getShaderManager().load(SHADER_PROG_SRC);
