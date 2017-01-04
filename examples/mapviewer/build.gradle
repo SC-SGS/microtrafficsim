@@ -17,7 +17,7 @@ run {
 }
 
 
-mainClassName = 'microtrafficsim.examples.mapviewer.MapViewer'
+mainClassName = 'microtrafficsim.examples.mapviewer.Main'
 
 
 // set jar and distribution name

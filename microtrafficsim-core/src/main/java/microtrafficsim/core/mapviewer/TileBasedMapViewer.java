@@ -197,10 +197,7 @@ public class TileBasedMapViewer implements MapViewer {
         visualization = createVisualization(provider);
 
         /* parse the OSM file asynchronously and update the sources */
-        if (config != null)
-            parser = createParser(config);
-        else
-            parser = createParser();
+        parser = createParser(config);
 
         /* create and initialize the VisualizationPanel */
         vpanel = createVisualizationPanel(visualization);
