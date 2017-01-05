@@ -17,6 +17,7 @@ import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.opengl.utils.Colors;
+import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.*;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -48,16 +49,19 @@ public class AreaVertex extends Component {
     private static final Color COLOR_OUTER_SELECTED = Color.fromRGB(0xE29B4A);
 
 
-    Vec2d pos;
+
+    private ScenarioAreaOverlay root;
+    private Vec2d pos;
     private boolean selected;
 
-    AreaVertex(Vec2d pos) {
+    AreaVertex(ScenarioAreaOverlay root, Vec2d pos) {
         super(
                 new AreaVertexPass(COLOR_OUTER, SIZE_OUTER, v -> !v.isSelected()),
                 new AreaVertexPass(COLOR_OUTER_SELECTED, SIZE_OUTER_SELECTED, v -> v.isSelected()),
                 new AreaVertexPass(COLOR_INNER, SIZE_INNER, v -> true)
         );
 
+        this.root = root;
         this.pos = pos;
         this.selected = false;
 
@@ -65,12 +69,12 @@ public class AreaVertex extends Component {
     }
 
 
-    private void setSelected(boolean selected) {
+    public void setSelected(boolean selected) {
         this.selected = selected;
         redraw();
     }
 
-    private boolean isSelected() {
+    public boolean isSelected() {
         return selected;
     }
 
@@ -93,33 +97,63 @@ public class AreaVertex extends Component {
         return new Rect2d(pos.x - rx, pos.y - ry, pos.x + rx, pos.y + ry);
     }
 
+    public void move(Vec2d delta) {
+        pos.add(delta);
+        parent.redraw();
+        redraw();
+    }
+
 
     private class MouseListenerImpl extends MouseAdapter {
-        private Vec2d down;
+        private Vec2d down = null;
 
         @Override
         public void mouseClicked(MouseEvent e) {
             getUIManager().getContext().addTask(c -> {
-                setSelected(!isSelected());
+                if (e.isControlDown()) {
+                    if (isSelected())
+                        root.deselect(AreaVertex.this);
+                    else
+                        root.select(AreaVertex.this);
+                } else {
+                    root.clearVertexSelection();
+                    root.select(AreaVertex.this);
+                }
+
+                root.clearAreaSelection();
+                root.select((AreaComponent) parent);
+
                 return null;
             });
+
             e.setConsumed(true);
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
-            down = e.getPointer();
-            e.setConsumed(true);
+           down = e.getPointer();
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            down = null;
         }
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            setSelected(true);
+            if (down == null) return;
 
             Vec2d delta = Vec2d.sub(e.getPointer(), down);
             getUIManager().getContext().addTask(c -> {
-                pos.add(delta);
-                parent.redraw();
+                if (!e.isControlDown())
+                    root.clearVertexSelection();
+
+                root.select(AreaVertex.this);
+                root.moveSelectedVertices(delta);
+
+                root.clearAreaSelection();
+                root.select((AreaComponent) parent);
+
                 return null;
             });
 

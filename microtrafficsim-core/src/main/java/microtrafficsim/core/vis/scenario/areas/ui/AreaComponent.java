@@ -18,6 +18,7 @@ import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.opengl.utils.Colors;
+import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.math.Mat3d;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
@@ -57,6 +58,7 @@ public class AreaComponent extends Component {
 
     public enum Type { ORIGIN, DESTINATION }
 
+    private ScenarioAreaOverlay root;
     private Polygon area;
     private Triangulator.Result cached;
     private Type type;
@@ -64,9 +66,10 @@ public class AreaComponent extends Component {
     private boolean selected = false;
 
 
-    public AreaComponent(Polygon area, Type type) {
+    public AreaComponent(ScenarioAreaOverlay root, Polygon area, Type type) {
         super(RENDER_PASS_DEFAULT, RENDER_PASS_SELECTED);
 
+        this.root = root;
         this.area = area;
         this.type = type;
         this.focusable = false;
@@ -74,7 +77,7 @@ public class AreaComponent extends Component {
         addMouseListener(new MouseListenerImpl());
 
         for (Vec2d v : area.outline) {
-            AreaVertex c = new AreaVertex(v);
+            AreaVertex c = new AreaVertex(root, v);
             c.setVisible(selected);
 
             this.addComponent(c);
@@ -84,7 +87,7 @@ public class AreaComponent extends Component {
     }
 
 
-    private void setSelected(boolean selected) {
+    public void setSelected(boolean selected) {
         if (this.selected == selected) return;
 
         this.selected = selected;
@@ -94,12 +97,12 @@ public class AreaComponent extends Component {
         redraw();
     }
 
-    private boolean isSelected() {
+    public boolean isSelected() {
         return selected;
     }
 
 
-    private void move(Vec2d delta) {
+    public void move(Vec2d delta) {
         for (Vec2d v : area.outline)
             v.add(delta);
 
@@ -151,13 +154,26 @@ public class AreaComponent extends Component {
 
 
     private class MouseListenerImpl extends MouseAdapter {
-
-        private Vec2d down;
+        private Vec2d down = null;
 
         @Override
         public void mouseClicked(MouseEvent e) {
             getUIManager().getContext().addTask(c -> {
-                setSelected(!isSelected());
+                if (!isSelected() || (isSelected() && root.getSelectedAreas().size() == 1 && !e.isControlDown()))
+                    root.clearVertexSelection();
+
+                if (e.isControlDown()) {
+                    if (root.getSelectedVertices().isEmpty()) {
+                        if (isSelected())
+                            root.deselect(AreaComponent.this);
+                        else
+                            root.select(AreaComponent.this);
+                    }
+                } else {
+                    root.clearAreaSelection();
+                    root.select(AreaComponent.this);
+                }
+
                 return null;
             });
             e.setConsumed(true);
@@ -165,32 +181,31 @@ public class AreaComponent extends Component {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            down = e.getPointer();
-            e.setConsumed(true);
+            if (e.isControlDown()) {
+                down = e.getPointer();
+            }
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            down = null;
         }
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            setSelected(true);
+            if (down == null) return;
 
             Vec2d delta = Vec2d.sub(e.getPointer(), down);
             getUIManager().getContext().addTask(c -> {
-                move(delta);
+                root.select(AreaComponent.this);
+                root.moveSelectedAreas(delta);
+
+                root.clearVertexSelection();
                 return null;
             });
 
             down = e.getPointer();
             e.setConsumed(true);
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            setSelected(true);
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            setSelected(false);
         }
     }
 

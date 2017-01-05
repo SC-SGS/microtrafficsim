@@ -7,11 +7,15 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.glui.DirectBatchUIOverlay;
+import microtrafficsim.core.vis.glui.events.MouseEvent;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.scenario.areas.ui.AreaComponent;
+import microtrafficsim.core.vis.scenario.areas.ui.AreaVertex;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.geometry.polygons.Polygon;
+
+import java.util.HashSet;
 
 // TODO: pre-load shaders?
 // TODO: re-use batches?
@@ -22,9 +26,13 @@ public class ScenarioAreaOverlay implements Overlay {
     private DirectBatchUIOverlay ui;
     private Projection projection;
 
+    private HashSet<AreaComponent> selectedAreas = new HashSet<>();
+    private HashSet<AreaVertex> selectedVertices = new HashSet<>();
+
 
     public ScenarioAreaOverlay(Projection projection) {
         this.ui = new DirectBatchUIOverlay();
+        this.ui.getRootComponent().addMouseListener(new MouseListenerImpl());
         this.projection = projection;
 
         loadTokyoTestingPolygons();
@@ -140,10 +148,10 @@ public class ScenarioAreaOverlay implements Overlay {
         };
 
         for (Polygon area : spawn)
-            ui.addComponent(new AreaComponent(area, AreaComponent.Type.ORIGIN));
+            ui.addComponent(new AreaComponent(this, area, AreaComponent.Type.ORIGIN));
 
         for (Polygon area : dest)
-            ui.addComponent(new AreaComponent(area, AreaComponent.Type.DESTINATION));
+            ui.addComponent(new AreaComponent(this, area, AreaComponent.Type.DESTINATION));
     }
 
 
@@ -190,5 +198,107 @@ public class ScenarioAreaOverlay implements Overlay {
     @Override
     public MouseListener getMouseListener() {
         return ui.getMouseListener();
+    }
+
+
+    public void select(AreaComponent component) {
+        if (component.isSelected()) return;
+
+        component.setSelected(true);
+        selectedAreas.add(component);
+    }
+
+    public void deselect(AreaComponent component) {
+        if (!component.isSelected()) return;
+
+        component.setSelected(false);
+        selectedAreas.remove(component);
+    }
+
+
+    public void select(AreaVertex vertex) {
+        if (vertex.isSelected()) return;
+
+        vertex.setSelected(true);
+        selectedVertices.add(vertex);
+    }
+
+    public void deselect(AreaVertex vertex) {
+        if (!vertex.isSelected()) return;
+
+        vertex.setSelected(false);
+        selectedVertices.remove(vertex);
+    }
+
+
+    public void clearAreaSelection() {
+        for (AreaComponent c : selectedAreas) {
+            c.setSelected(false);
+        }
+        selectedAreas.clear();
+    }
+
+    public void clearVertexSelection() {
+        for (AreaVertex v : selectedVertices) {
+            v.setSelected(false);
+        }
+        selectedVertices.clear();
+    }
+
+
+    public void moveSelectedAreas(Vec2d delta) {
+        for (AreaComponent c : selectedAreas) {
+            c.move(delta);
+        }
+    }
+
+    public void moveSelectedVertices(Vec2d delta) {
+        for (AreaVertex v : selectedVertices) {
+            v.move(delta);
+        }
+    }
+
+
+    public HashSet<AreaVertex> getSelectedVertices() {
+        return selectedVertices;
+    }
+
+    public HashSet<AreaComponent> getSelectedAreas() {
+        return selectedAreas;
+    }
+
+
+    private class MouseListenerImpl extends microtrafficsim.core.vis.glui.events.MouseAdapter {
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (e.isControlDown()) return;
+
+            ui.getContext().addTask(c -> {
+                clearAreaSelection();
+                clearVertexSelection();
+                return null;
+            });
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent e) {
+
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+
+        }
     }
 }

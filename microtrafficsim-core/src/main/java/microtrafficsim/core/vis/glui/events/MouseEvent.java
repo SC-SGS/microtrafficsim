@@ -85,4 +85,13 @@ public class MouseEvent {
     public int getPointerCount() {
         return base.getPointerCount();
     }
+
+
+    public boolean isControlDown() {
+        return base.isControlDown();
+    }
+
+    public boolean isShiftDown() {
+        return base.isShiftDown();
+    }
 }
