@@ -103,6 +103,10 @@ public class AreaVertex extends Component {
         redraw();
     }
 
+    protected Vec2d getPosition() {
+        return pos;
+    }
+
 
     private class MouseListenerImpl extends MouseAdapter {
         private Vec2d down = null;

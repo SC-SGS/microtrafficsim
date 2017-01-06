@@ -1,6 +1,8 @@
 package microtrafficsim.core.vis.scenario.areas;
 
 
+import com.jogamp.newt.event.KeyAdapter;
+import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.map.Coordinate;
@@ -33,6 +35,7 @@ public class ScenarioAreaOverlay implements Overlay {
     public ScenarioAreaOverlay(Projection projection) {
         this.ui = new DirectBatchUIOverlay();
         this.ui.getRootComponent().addMouseListener(new MouseListenerImpl());
+        this.ui.getRootComponent().addKeyListener(new KeyListenerImpl());
         this.projection = projection;
 
         loadTokyoTestingPolygons();
@@ -280,25 +283,37 @@ public class ScenarioAreaOverlay implements Overlay {
                 return null;
             });
         }
+    }
+
+    private class KeyListenerImpl extends KeyAdapter {
 
         @Override
-        public void mousePressed(MouseEvent e) {
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+                ui.getContext().addTask(c -> {
+                    if (!selectedVertices.isEmpty()) {      // remove vertices (or area, if not enough vertices are left)
+                        assert selectedAreas.size() == 1;
 
-        }
+                        AreaComponent area = selectedAreas.iterator().next();
 
-        @Override
-        public void mouseReleased(MouseEvent e) {
+                        if (area.getOutline().length - selectedVertices.size() >= 3)
+                            area.removeAll(selectedVertices);
+                        else
+                            ui.removeComponent(area);
 
-        }
+                        clearVertexSelection();
 
-        @Override
-        public void mouseMoved(MouseEvent e) {
+                    } else {                                // remove areas
+                        for (AreaComponent area : selectedAreas)
+                            ui.removeComponent(area);
 
-        }
+                        selectedAreas.clear();
+                    }
 
-        @Override
-        public void mouseDragged(MouseEvent e) {
-
+                    return null;
+                });
+                e.setConsumed(true);
+            }
         }
     }
 }

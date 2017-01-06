@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 
 public class AreaComponent extends Component {
@@ -108,6 +109,27 @@ public class AreaComponent extends Component {
 
         this.cached = null;
         redraw(true);
+    }
+
+    public void removeAll(HashSet<AreaVertex> vertices) {
+        HashSet<Vec2d> rem = new HashSet<>();
+
+        for (AreaVertex vertex : vertices) {
+            removeComponent(vertex);
+            rem.add(vertex.getPosition());
+        }
+
+        Vec2d[] outline = new Vec2d[area.outline.length - rem.size()];
+        for (int i = 0, j = 0; i < area.outline.length; i++)
+            if (!rem.contains(area.outline[i]))
+                outline[j++] = area.outline[i];
+
+        area.outline = outline;
+        redraw();
+    }
+
+    public Vec2d[] getOutline() {
+        return area.outline;
     }
 
 
