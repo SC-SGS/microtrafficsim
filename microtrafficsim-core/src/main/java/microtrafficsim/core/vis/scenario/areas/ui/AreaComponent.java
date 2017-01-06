@@ -65,7 +65,12 @@ public class AreaComponent extends Component {
     private Type type;
 
     private boolean selected = false;
+    private boolean complete = false;
 
+
+    public AreaComponent(ScenarioAreaOverlay root, Type type) {
+        this(root, new Polygon(new Vec2d[0]), type);
+    }
 
     public AreaComponent(ScenarioAreaOverlay root, Polygon area, Type type) {
         super(RENDER_PASS_DEFAULT, RENDER_PASS_SELECTED);
@@ -74,6 +79,7 @@ public class AreaComponent extends Component {
         this.area = area;
         this.type = type;
         this.focusable = false;
+        this.complete = area.outline.length >= 3;
 
         addMouseListener(new MouseListenerImpl());
 
@@ -103,12 +109,47 @@ public class AreaComponent extends Component {
     }
 
 
+    public void setComplete(boolean complete) {
+        this.complete = complete;
+        redraw();
+    }
+
+    public boolean isComplete() {
+        return complete;
+    }
+
+
     public void move(Vec2d delta) {
         for (Vec2d v : area.outline)
             v.add(delta);
 
         this.cached = null;
         redraw(true);
+    }
+
+    public void addVertex(Vec2d vertex, boolean select) {
+        Vec2d v = new Vec2d(vertex);
+
+        Vec2d[] outline = new Vec2d[area.outline.length + 1];
+        System.arraycopy(area.outline, 0, outline, 0, area.outline.length);
+        outline[area.outline.length] = v;
+        area.outline = outline;
+
+        AreaVertex av = new AreaVertex(root, v);
+        if (select) root.select(av);
+        addComponent(av);
+    }
+
+    public void removeVertex(AreaVertex vertex) {
+        removeComponent(vertex);
+
+        Vec2d[] outline = new Vec2d[area.outline.length - 1];
+        for (int i = 0, j = 0; i < area.outline.length; i++)
+            if (area.outline[i] != vertex.getPosition())
+                outline[j++] = area.outline[i];
+
+        area.outline = outline;
+        redraw();
     }
 
     public void removeAll(HashSet<AreaVertex> vertices) {
@@ -128,8 +169,18 @@ public class AreaComponent extends Component {
         redraw();
     }
 
+
     public Vec2d[] getOutline() {
         return area.outline;
+    }
+
+    public ArrayList<AreaVertex> getVertices() {
+        ArrayList<AreaVertex> vertices = new ArrayList<>();
+        for (Component c : getComponents())
+            if (c instanceof AreaVertex)
+                vertices.add((AreaVertex) c);
+
+        return vertices;
     }
 
 
@@ -146,26 +197,10 @@ public class AreaComponent extends Component {
 
     @Override
     protected void updateBounds() {
-        if (!selected) {
-            Rect2d aabb = new Rect2d(Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
-
-            for (Vec2d v : area.outline) {
-                if (aabb.xmin > v.x)
-                    aabb.xmin = v.x;
-                else if (aabb.xmax < v.x)
-                    aabb.xmax = v.x;
-
-                if (aabb.ymin > v.y)
-                    aabb.ymin = v.y;
-                else if (aabb.ymax < v.y)
-                    aabb.ymax = v.y;
-            }
-
-            this.aabb = aabb;
-
-        } else {
+        if (!selected)
+            this.aabb = area.bounds();
+        else
             super.updateBounds();
-        }
     }
 
     @Override
@@ -180,6 +215,9 @@ public class AreaComponent extends Component {
 
         @Override
         public void mouseClicked(MouseEvent e) {
+            if (e.getButton() != MouseEvent.BUTTON1) return;
+            if (e.isShiftDown()) return;
+
             getUIManager().getContext().addTask(c -> {
                 if (!isSelected() || (isSelected() && root.getSelectedAreas().size() == 1 && !e.isControlDown()))
                     root.clearVertexSelection();
@@ -203,7 +241,9 @@ public class AreaComponent extends Component {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            if (e.isControlDown()) {
+            if (e.getButton() != MouseEvent.BUTTON1) return;
+
+            if (e.isControlDown() && !e.isShiftDown()) {
                 down = e.getPointer();
             }
         }
@@ -215,6 +255,7 @@ public class AreaComponent extends Component {
 
         @Override
         public void mouseDragged(MouseEvent e) {
+            if (e.getButton() != MouseEvent.BUTTON1) return;
             if (down == null) return;
 
             Vec2d delta = Vec2d.sub(e.getPointer(), down);
@@ -367,7 +408,7 @@ public class AreaComponent extends Component {
 
         @Override
         public boolean isActiveFor(Component component) {
-            return (component instanceof AreaComponent);
+            return (component instanceof AreaComponent) && ((AreaComponent) component).area.outline.length >= 3;
         }
 
         @Override
@@ -445,9 +486,16 @@ public class AreaComponent extends Component {
                     GL3.GL_ONE_MINUS_SRC_ALPHA);
 
             // set line style
-            context.Lines.setLineSmoothEnabled(gl, true);
-            context.Lines.setLineSmoothHint(gl, GL3.GL_NICEST);
-            context.Lines.setLineWidth(gl, linewidth);
+            try {
+                context.Lines.setLineSmoothEnabled(gl, true);
+                context.Lines.setLineSmoothHint(gl, GL3.GL_NICEST);
+                context.Lines.setLineWidth(gl, linewidth);
+            } catch (Throwable t) {
+                /* TODO: use proper line rendering
+                 * Will throw on implementations that do not support the specified line settings.
+                 * For now, we ignore those and use the default settings provided by the implementation.
+                 */
+            }
 
             shader.bind(gl);
             uColor.set(color);
@@ -456,8 +504,9 @@ public class AreaComponent extends Component {
 
 
         public static class Builder implements BatchBuilder {
-            private float linewidth;
             private Color color;
+            private float linewidth;
+            private ArrayList<Boolean> complete = null;
             private ShaderProgramSource shader;
             private ArrayList<Vec2d[]> outlines = new ArrayList<>();
 
@@ -477,6 +526,10 @@ public class AreaComponent extends Component {
             public BatchBuilder add(Component component, ComponentRenderPass pass, Mat3d transform) {
                 AreaComponent area = (AreaComponent) component;
 
+                if (complete == null) {
+                    complete = new ArrayList<>();
+                }
+
                 Vec2d[] outline = area.area.outline.clone();
                 for (int i = 0; i < outline.length; i++) {
                     Vec3d v = transform.mul(new Vec3d(outline[i].x, outline[i].y, 1.0));
@@ -484,6 +537,7 @@ public class AreaComponent extends Component {
                 }
 
                 outlines.add(outline);
+                complete.add(area.isComplete());
                 return this;
             }
 
@@ -503,15 +557,19 @@ public class AreaComponent extends Component {
                 IntBuffer indices = IntBuffer.allocate(numIndices);
 
                 int base = 0;
-                for (Vec2d[] outline : outlines) {
-                    for (int i = 0; i < outline.length; i++) {
-                        Vec2d v = outline[i];
+                for (int i = 0; i < outlines.size(); i++) {
+                    Vec2d[] outline = outlines.get(i);
+
+                    for (int j = 0; j < outline.length; j++) {
+                        Vec2d v = outline[j];
                         vertices.put((float) v.x);
                         vertices.put((float) v.y);
-                        indices.put(base + i);
+                        indices.put(base + j);
                     }
 
-                    indices.put(base);
+                    if (complete.get(i))
+                        indices.put(base);
+
                     indices.put(restart);
 
                     base += outline.length;

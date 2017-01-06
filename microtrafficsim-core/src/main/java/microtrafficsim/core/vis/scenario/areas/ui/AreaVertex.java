@@ -64,6 +64,7 @@ public class AreaVertex extends Component {
         this.root = root;
         this.pos = pos;
         this.selected = false;
+        this.focusable = false;
 
         addMouseListener(new MouseListenerImpl());
     }
@@ -86,6 +87,17 @@ public class AreaVertex extends Component {
 
     @Override
     public Rect2d getBounds() {
+        updateBounds();
+        return aabb;
+    }
+
+    @Override
+    protected void updateBounds() {
+        if (getUIManager() == null) {
+            aabb = new Rect2d(0, 0, 0, 0);
+            return;
+        }
+
         OrthographicView view = getUIManager().getView();
 
         Vec2i viewport = view.getSize();
@@ -94,7 +106,13 @@ public class AreaVertex extends Component {
         double rx = (SIZE_ACTIVE / 2.0) / viewport.x * (bounds.xmax - bounds.xmin);
         double ry = (SIZE_ACTIVE / 2.0) / viewport.y * (bounds.ymax - bounds.ymin);
 
-        return new Rect2d(pos.x - rx, pos.y - ry, pos.x + rx, pos.y + ry);
+        this.aabb = new Rect2d(pos.x - rx, pos.y - ry, pos.x + rx, pos.y + ry);
+    }
+
+    public void setPosition(Vec2d pos) {
+        this.pos.set(pos);
+        parent.redraw();
+        redraw();
     }
 
     public void move(Vec2d delta) {
@@ -113,29 +131,55 @@ public class AreaVertex extends Component {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            getUIManager().getContext().addTask(c -> {
-                if (e.isControlDown()) {
-                    if (isSelected())
-                        root.deselect(AreaVertex.this);
-                    else
+            if (e.getButton() != MouseEvent.BUTTON1) return;
+
+            if (e.isShiftDown()) {
+                AreaComponent construction = root.getAreaInConstruction();
+                if (AreaVertex.this.parent != construction)
+                    return;
+
+                ArrayList<AreaVertex> vertices = construction.getVertices();
+                if (vertices.size() <= 1)
+                    return;
+
+                if (AreaVertex.this != vertices.get(0))
+                    return;
+
+                getUIManager().getContext().addTask(c -> {
+                    root.completeAreaInConstruction();
+                    root.startNewAreaInConstruction();
+                    return null;
+                });
+
+            } else {
+                getUIManager().getContext().addTask(c -> {
+                    if (e.isControlDown()) {
+                        if (isSelected())
+                            root.deselect(AreaVertex.this);
+                        else
+                            root.select(AreaVertex.this);
+                    } else {
+                        root.clearVertexSelection();
                         root.select(AreaVertex.this);
-                } else {
-                    root.clearVertexSelection();
-                    root.select(AreaVertex.this);
-                }
+                    }
 
-                root.clearAreaSelection();
-                root.select((AreaComponent) parent);
+                    root.clearAreaSelection();
+                    root.select((AreaComponent) parent);
 
-                return null;
-            });
+                    return null;
+                });
+            }
 
             e.setConsumed(true);
         }
 
         @Override
         public void mousePressed(MouseEvent e) {
-           down = e.getPointer();
+            if (e.getButton() != MouseEvent.BUTTON1) return;
+
+            if (!e.isShiftDown()) {
+                down = e.getPointer();
+            }
         }
 
         @Override
@@ -145,6 +189,7 @@ public class AreaVertex extends Component {
 
         @Override
         public void mouseDragged(MouseEvent e) {
+            if (e.getButton() != MouseEvent.BUTTON1) return;
             if (down == null) return;
 
             Vec2d delta = Vec2d.sub(e.getPointer(), down);
@@ -162,6 +207,32 @@ public class AreaVertex extends Component {
             });
 
             down = e.getPointer();
+            e.setConsumed(true);
+        }
+
+
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            if (e.getButton() != MouseEvent.BUTTON1) return;
+            if (!e.isShiftDown()) return;
+
+            AreaComponent construction = root.getAreaInConstruction();
+            if (AreaVertex.this.parent != construction)
+                return;
+
+            ArrayList<AreaVertex> vertices = construction.getVertices();
+            if (vertices.size() <= 1)
+                return;
+
+            if (AreaVertex.this != vertices.get(0))
+                return;
+
+            getUIManager().getContext().addTask(c -> {
+                vertices.get(vertices.size() - 1).setPosition(getPosition());
+                return null;
+            });
+
+
             e.setConsumed(true);
         }
     }

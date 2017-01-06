@@ -1,6 +1,5 @@
 package microtrafficsim.core.vis.glui;
 
-import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.vis.Overlay;

@@ -106,7 +106,7 @@ public abstract class Component {
     protected boolean removeComponent(Component child) {
         if (children.remove(child)) {
             child.parent = null;
-            child.manager = null;
+            child.setUIManager(null);
 
             updateBounds();
             redraw();
@@ -128,15 +128,10 @@ public abstract class Component {
         for (Component c : children) {
             Rect2d cbb = Rect2d.transform(c.transform, c.getBounds());
 
-            if (aabb.xmin > cbb.xmin)
-                aabb.xmin = cbb.xmin;
-            else if (aabb.xmax < cbb.xmax)
-                aabb.xmax = cbb.xmax;
-
-            if (aabb.ymin > cbb.ymin)
-                aabb.ymin = cbb.ymin;
-            else if (aabb.ymax < cbb.ymax)
-                aabb.ymax = cbb.ymax;
+            if (aabb.xmin > cbb.xmin) aabb.xmin = cbb.xmin;
+            if (aabb.xmax < cbb.xmax) aabb.xmax = cbb.xmax;
+            if (aabb.ymin > cbb.ymin) aabb.ymin = cbb.ymin;
+            if (aabb.ymax < cbb.ymax) aabb.ymax = cbb.ymax;
         }
 
         this.aabb = aabb;

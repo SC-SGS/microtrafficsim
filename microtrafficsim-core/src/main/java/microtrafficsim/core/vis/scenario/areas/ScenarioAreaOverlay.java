@@ -17,8 +17,10 @@ import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.geometry.polygons.Polygon;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
+// TODO: proper line rendering for area outline
 // TODO: pre-load shaders?
 // TODO: re-use batches?
 
@@ -30,6 +32,8 @@ public class ScenarioAreaOverlay implements Overlay {
 
     private HashSet<AreaComponent> selectedAreas = new HashSet<>();
     private HashSet<AreaVertex> selectedVertices = new HashSet<>();
+
+    private AreaComponent construction = null;
 
 
     public ScenarioAreaOverlay(Projection projection) {
@@ -271,17 +275,86 @@ public class ScenarioAreaOverlay implements Overlay {
     }
 
 
+    public void startNewAreaInConstruction() {
+        if (construction != null) return;
+
+        construction = new AreaComponent(ScenarioAreaOverlay.this, AreaComponent.Type.ORIGIN);
+        construction.addVertex(lastmove, true);
+        ui.addComponent(construction);
+    }
+
+    public AreaComponent getAreaInConstruction() {
+        return construction;
+    }
+
+    public void completeAreaInConstruction() {
+        if (construction == null) return;
+
+        ArrayList<AreaVertex> vertices = construction.getVertices();
+        if (vertices.size() >= 4) {
+            construction.removeVertex(vertices.get(vertices.size() - 1));
+            construction.setComplete(true);
+
+            clearAreaSelection();
+            clearVertexSelection();
+            select(construction);
+        } else {
+            ui.removeComponent(construction);
+        }
+
+        construction = null;
+    }
+
+
+    private Vec2d lastmove = null;
+
     private class MouseListenerImpl extends microtrafficsim.core.vis.glui.events.MouseAdapter {
 
         @Override
         public void mouseClicked(MouseEvent e) {
+            if (e.getButton() != MouseEvent.BUTTON1) return;
             if (e.isControlDown()) return;
 
+            boolean shift = e.isShiftDown();
             ui.getContext().addTask(c -> {
                 clearAreaSelection();
                 clearVertexSelection();
+
+                if (shift) {
+                    select(construction);
+                    construction.addVertex(e.getPointer(), true);
+                }
+
                 return null;
             });
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            // TODO: selection-rectangle
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            // TODO: selection-rectangle
+        }
+
+        @Override
+        public void mouseMoved(MouseEvent e) {
+            lastmove = e.getPointer();
+            if (!e.isShiftDown()) return;
+
+            Vec2d pos = e.getPointer();
+            ui.getContext().addTask(c -> {
+                if (construction == null) return null;
+
+                ArrayList<AreaVertex> vertices = construction.getVertices();
+                vertices.get(vertices.size() - 1).setPosition(pos);
+
+                return null;
+            });
+
+            // TODO: selection-rectangle
         }
     }
 
@@ -289,19 +362,40 @@ public class ScenarioAreaOverlay implements Overlay {
 
         @Override
         public void keyPressed(KeyEvent e) {
-            if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+            if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                if (e.isAutoRepeat()) return;
+
+                ui.getContext().addTask(c -> {
+                    startNewAreaInConstruction();
+                    return null;
+                });
+
+            } else if (e.getKeyCode() == KeyEvent.VK_DELETE) {
                 ui.getContext().addTask(c -> {
                     if (!selectedVertices.isEmpty()) {      // remove vertices (or area, if not enough vertices are left)
                         assert selectedAreas.size() == 1;
 
                         AreaComponent area = selectedAreas.iterator().next();
 
-                        if (area.getOutline().length - selectedVertices.size() >= 3)
+                        if (area == construction && area.getOutline().length >= 2) {
+                            ArrayList<AreaVertex> vertices = area.getVertices();
+                            area.removeVertex(vertices.get(vertices.size() - 1));
+                            vertices.get(vertices.size() - 2).setPosition(lastmove);
+
+                        } else if (area.getOutline().length - selectedVertices.size() >= 3) {
                             area.removeAll(selectedVertices);
-                        else
+
+                        } else {
                             ui.removeComponent(area);
+                            construction = null;
+                        }
 
                         clearVertexSelection();
+
+                        if (construction != null) {
+                            ArrayList<AreaVertex> vertices = construction.getVertices();
+                            select(vertices.get(vertices.size() - 1));
+                        }
 
                     } else {                                // remove areas
                         for (AreaComponent area : selectedAreas)
@@ -313,6 +407,31 @@ public class ScenarioAreaOverlay implements Overlay {
                     return null;
                 });
                 e.setConsumed(true);
+
+            } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                if (!selectedVertices.isEmpty()) {
+                    ui.getContext().addTask(c -> {
+                        clearVertexSelection();
+                        return null;
+                    });
+                    e.setConsumed(true);
+                } else if (!selectedAreas.isEmpty()) {
+                    ui.getContext().addTask(c -> {
+                        clearAreaSelection();
+                        return null;
+                    });
+                    e.setConsumed(true);
+                }
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                ui.getContext().addTask(c -> {
+                    completeAreaInConstruction();
+                    return null;
+                });
             }
         }
     }
