@@ -308,12 +308,9 @@ public class ScenarioAreaOverlay implements Overlay {
     public void startNewAreaInConstruction() {
         if (construction != null) return;
 
-        AreaComponent.Type type = AreaComponent.Type.ORIGIN;
-        if (properties != null && properties.getSelectedType() != null)
-            type = properties.getSelectedType();
-
+        AreaComponent.Type type = properties != null ? properties.getLastSelectedType() : AreaComponent.Type.ORIGIN;
         construction = new AreaComponent(ScenarioAreaOverlay.this, type);
-        construction.addVertex(lastmove, true);
+        construction.add(lastmove, true);
         ui.addComponent(construction);
     }
 
@@ -326,7 +323,7 @@ public class ScenarioAreaOverlay implements Overlay {
 
         ArrayList<AreaVertex> vertices = construction.getVertices();
         if (vertices.size() >= 4) {
-            construction.removeVertex(vertices.get(vertices.size() - 1));
+            construction.remove(vertices.get(vertices.size() - 1));
             construction.setComplete(true);
 
             clearAreaSelection();
@@ -357,7 +354,7 @@ public class ScenarioAreaOverlay implements Overlay {
 
                 if (shift) {
                     select(construction);
-                    construction.addVertex(e.getPointer(), true);
+                    construction.add(e.getPointer(), true);
                 }
 
                 return null;
@@ -416,7 +413,7 @@ public class ScenarioAreaOverlay implements Overlay {
 
                         if (area == construction && area.getOutline().length >= 2) {
                             ArrayList<AreaVertex> vertices = area.getVertices();
-                            area.removeVertex(vertices.get(vertices.size() - 1));
+                            area.remove(vertices.get(vertices.size() - 1));
                             vertices.get(vertices.size() - 2).setPosition(lastmove);
 
                         } else if (area.getOutline().length - selectedVertices.size() >= 3) {
@@ -439,6 +436,7 @@ public class ScenarioAreaOverlay implements Overlay {
                             ui.removeComponent(area);
 
                         selectedAreas.clear();
+                        properties.setAreas(selectedAreas);
                     }
 
                     return null;

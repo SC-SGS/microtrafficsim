@@ -85,11 +85,11 @@ public class DirectBatchUIOverlay extends UIManager implements Overlay {
 
 
     public void addComponent(Component c) {
-        root.addComponent(c);
+        root.add(c);
     }
 
     public boolean removeComponent(Component c) {
-        return root.removeComponent(c);
+        return root.remove(c);
     }
 
     public ArrayList<Component> getComponents() {

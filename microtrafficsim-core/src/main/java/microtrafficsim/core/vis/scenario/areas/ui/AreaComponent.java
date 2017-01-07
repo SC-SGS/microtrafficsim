@@ -67,6 +67,8 @@ public class AreaComponent extends Component {
     private boolean selected = false;
     private boolean complete = false;
 
+    private ArrayList<AreaVertex> vertices = new ArrayList<>();
+
 
     public AreaComponent(ScenarioAreaOverlay root, Type type) {
         this(root, new Polygon(new Vec2d[0]), type);
@@ -87,7 +89,7 @@ public class AreaComponent extends Component {
             AreaVertex c = new AreaVertex(root, v);
             c.setVisible(selected);
 
-            this.addComponent(c);
+            this.add(c);
         }
 
         updateBounds();
@@ -127,7 +129,7 @@ public class AreaComponent extends Component {
         redraw(true);
     }
 
-    public void addVertex(Vec2d vertex, boolean select) {
+    public void add(Vec2d vertex, boolean select) {
         Vec2d v = new Vec2d(vertex);
 
         Vec2d[] outline = new Vec2d[area.outline.length + 1];
@@ -137,11 +139,13 @@ public class AreaComponent extends Component {
 
         AreaVertex av = new AreaVertex(root, v);
         if (select) root.select(av);
-        addComponent(av);
+        super.add(av);
+        vertices.add(av);
     }
 
-    public void removeVertex(AreaVertex vertex) {
-        removeComponent(vertex);
+    public void remove(AreaVertex vertex) {
+        vertices.remove(vertex);
+        super.remove(vertex);
 
         Vec2d[] outline = new Vec2d[area.outline.length - 1];
         for (int i = 0, j = 0; i < area.outline.length; i++)
@@ -155,8 +159,9 @@ public class AreaComponent extends Component {
     public void removeAll(HashSet<AreaVertex> vertices) {
         HashSet<Vec2d> rem = new HashSet<>();
 
+        this.vertices.removeAll(vertices);
         for (AreaVertex vertex : vertices) {
-            removeComponent(vertex);
+            super.remove(vertex);
             rem.add(vertex.getPosition());
         }
 
@@ -169,18 +174,13 @@ public class AreaComponent extends Component {
         redraw();
     }
 
+    public ArrayList<AreaVertex> getVertices() {
+        return vertices;
+    }
+
 
     public Vec2d[] getOutline() {
         return area.outline;
-    }
-
-    public ArrayList<AreaVertex> getVertices() {
-        ArrayList<AreaVertex> vertices = new ArrayList<>();
-        for (Component c : getComponents())
-            if (c instanceof AreaVertex)
-                vertices.add((AreaVertex) c);
-
-        return vertices;
     }
 
     public Type getType() {

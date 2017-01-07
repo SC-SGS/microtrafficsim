@@ -91,9 +91,9 @@ public abstract class Component {
     }
 
 
-    protected void addComponent(Component child) {
+    protected void add(Component child) {
         if (child.parent != null)
-            child.parent.removeComponent(child);
+            child.parent.remove(child);
 
         children.add(child);
         child.parent = this;
@@ -103,7 +103,7 @@ public abstract class Component {
         redraw();
     }
 
-    protected boolean removeComponent(Component child) {
+    protected boolean remove(Component child) {
         if (children.remove(child)) {
             child.parent = null;
             child.setUIManager(null);

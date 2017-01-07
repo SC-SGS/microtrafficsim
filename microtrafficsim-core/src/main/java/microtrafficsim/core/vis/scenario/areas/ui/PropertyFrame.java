@@ -15,6 +15,7 @@ public class PropertyFrame extends JFrame {
     private JPanel panel;
 
     private Collection<AreaComponent> areas = null;
+    private AreaComponent.Type lastSelectedType = AreaComponent.Type.ORIGIN;
 
 
     public PropertyFrame() {
@@ -55,6 +56,7 @@ public class PropertyFrame extends JFrame {
 
                 if (type != null) {
                     selected.get(0).getUIManager().getContext().addTask(c -> {
+                        lastSelectedType = type;
                         for (AreaComponent area : selected)
                             area.setType(type);
 
@@ -98,10 +100,12 @@ public class PropertyFrame extends JFrame {
 
             type.setEnabled(true);
 
-            if (equal)
+            if (equal) {
+                lastSelectedType = a.getType();
                 type.setSelectedItem(new TypeComboBoxEntry(a.getType(), ""));
-            else
+            } else {
                 type.setSelectedIndex(-1);
+            }
         }
     }
 
@@ -112,6 +116,10 @@ public class PropertyFrame extends JFrame {
     public AreaComponent.Type getSelectedType() {
         TypeComboBoxEntry entry = (TypeComboBoxEntry) type.getSelectedItem();
         return entry != null ? entry.type : null;
+    }
+
+    public AreaComponent.Type getLastSelectedType() {
+        return lastSelectedType;
     }
 
 
