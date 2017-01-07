@@ -183,6 +183,15 @@ public class AreaComponent extends Component {
         return vertices;
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+        redraw();
+    }
+
 
     @Override
     public boolean contains(Vec2d p) {

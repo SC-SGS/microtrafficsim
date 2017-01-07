@@ -13,14 +13,20 @@ import microtrafficsim.core.vis.glui.events.MouseEvent;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.scenario.areas.ui.AreaComponent;
 import microtrafficsim.core.vis.scenario.areas.ui.AreaVertex;
+import microtrafficsim.core.vis.scenario.areas.ui.PropertyFrame;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.geometry.polygons.Polygon;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+// TODO: properties window
+// TODO: selection by rectangle
+// TODO: edge-split-component
 // TODO: proper line rendering for area outline
+
 // TODO: pre-load shaders?
 // TODO: re-use batches?
 
@@ -34,6 +40,7 @@ public class ScenarioAreaOverlay implements Overlay {
     private HashSet<AreaVertex> selectedVertices = new HashSet<>();
 
     private AreaComponent construction = null;
+    private PropertyFrame properties = null;
 
 
     public ScenarioAreaOverlay(Projection projection) {
@@ -41,6 +48,14 @@ public class ScenarioAreaOverlay implements Overlay {
         this.ui.getRootComponent().addMouseListener(new MouseListenerImpl());
         this.ui.getRootComponent().addKeyListener(new KeyListenerImpl());
         this.projection = projection;
+
+        SwingUtilities.invokeLater(() -> {
+                properties = new PropertyFrame();
+                properties.setVisible(false);
+                properties.setResizable(false);
+                properties.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+                properties.setAlwaysOnTop(true);
+        });
 
         loadTokyoTestingPolygons();
     }
@@ -213,6 +228,16 @@ public class ScenarioAreaOverlay implements Overlay {
 
         component.setSelected(true);
         selectedAreas.add(component);
+
+        if (properties != null) {
+            if (!properties.isVisible()) {
+                properties.setFocusableWindowState(false);
+                properties.setVisible(true);
+                properties.setFocusableWindowState(true);
+            }
+
+            properties.setAreas(selectedAreas);
+        }
     }
 
     public void deselect(AreaComponent component) {
@@ -220,6 +245,9 @@ public class ScenarioAreaOverlay implements Overlay {
 
         component.setSelected(false);
         selectedAreas.remove(component);
+
+        if (properties != null)
+            properties.setAreas(selectedAreas);
     }
 
 
@@ -243,6 +271,9 @@ public class ScenarioAreaOverlay implements Overlay {
             c.setSelected(false);
         }
         selectedAreas.clear();
+
+        if (properties != null)
+            properties.setAreas(selectedAreas);
     }
 
     public void clearVertexSelection() {
@@ -278,7 +309,11 @@ public class ScenarioAreaOverlay implements Overlay {
     public void startNewAreaInConstruction() {
         if (construction != null) return;
 
-        construction = new AreaComponent(ScenarioAreaOverlay.this, AreaComponent.Type.ORIGIN);
+        AreaComponent.Type type = AreaComponent.Type.ORIGIN;
+        if (properties != null && properties.getSelectedType() != null)
+            type = properties.getSelectedType();
+
+        construction = new AreaComponent(ScenarioAreaOverlay.this, type);
         construction.addVertex(lastmove, true);
         ui.addComponent(construction);
     }

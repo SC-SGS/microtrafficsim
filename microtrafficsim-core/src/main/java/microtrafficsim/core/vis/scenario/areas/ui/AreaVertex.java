@@ -213,7 +213,6 @@ public class AreaVertex extends Component {
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            if (e.getButton() != MouseEvent.BUTTON1) return;
             if (!e.isShiftDown()) return;
 
             AreaComponent construction = root.getAreaInConstruction();
