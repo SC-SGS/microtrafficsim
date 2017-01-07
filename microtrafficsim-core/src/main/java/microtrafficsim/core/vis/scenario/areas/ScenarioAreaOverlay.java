@@ -22,7 +22,6 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-// TODO: properties window
 // TODO: selection by rectangle
 // TODO: edge-split-component
 // TODO: proper line rendering for area outline
@@ -334,6 +333,7 @@ public class ScenarioAreaOverlay implements Overlay {
             clearVertexSelection();
             select(construction);
         } else {
+            deselect(vertices.get(vertices.size() - 1));
             ui.removeComponent(construction);
         }
 
@@ -406,6 +406,8 @@ public class ScenarioAreaOverlay implements Overlay {
                 });
 
             } else if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+                if (e.isShiftDown()) return;
+
                 ui.getContext().addTask(c -> {
                     if (!selectedVertices.isEmpty()) {      // remove vertices (or area, if not enough vertices are left)
                         assert selectedAreas.size() == 1;
