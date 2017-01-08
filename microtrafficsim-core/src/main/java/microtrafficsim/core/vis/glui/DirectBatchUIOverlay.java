@@ -1,6 +1,5 @@
 package microtrafficsim.core.vis.glui;
 
-import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.vis.Overlay;
@@ -86,7 +85,11 @@ public class DirectBatchUIOverlay extends UIManager implements Overlay {
 
 
     public void addComponent(Component c) {
-        root.addComponent(c);
+        root.add(c);
+    }
+
+    public boolean removeComponent(Component c) {
+        return root.remove(c);
     }
 
     public ArrayList<Component> getComponents() {

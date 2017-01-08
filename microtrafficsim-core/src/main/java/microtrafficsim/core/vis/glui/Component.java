@@ -91,9 +91,9 @@ public abstract class Component {
     }
 
 
-    protected void addComponent(Component child) {
+    protected void add(Component child) {
         if (child.parent != null)
-            child.parent.removeComponent(child);
+            child.parent.remove(child);
 
         children.add(child);
         child.parent = this;
@@ -103,10 +103,10 @@ public abstract class Component {
         redraw();
     }
 
-    protected boolean removeComponent(Component child) {
+    protected boolean remove(Component child) {
         if (children.remove(child)) {
             child.parent = null;
-            child.manager = null;
+            child.setUIManager(null);
 
             updateBounds();
             redraw();
@@ -128,15 +128,10 @@ public abstract class Component {
         for (Component c : children) {
             Rect2d cbb = Rect2d.transform(c.transform, c.getBounds());
 
-            if (aabb.xmin > cbb.xmin)
-                aabb.xmin = cbb.xmin;
-            else if (aabb.xmax < cbb.xmax)
-                aabb.xmax = cbb.xmax;
-
-            if (aabb.ymin > cbb.ymin)
-                aabb.ymin = cbb.ymin;
-            else if (aabb.ymax < cbb.ymax)
-                aabb.ymax = cbb.ymax;
+            if (aabb.xmin > cbb.xmin) aabb.xmin = cbb.xmin;
+            if (aabb.xmax < cbb.xmax) aabb.xmax = cbb.xmax;
+            if (aabb.ymin > cbb.ymin) aabb.ymin = cbb.ymin;
+            if (aabb.ymax < cbb.ymax) aabb.ymax = cbb.ymax;
         }
 
         this.aabb = aabb;

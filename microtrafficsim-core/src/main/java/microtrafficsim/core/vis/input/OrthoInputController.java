@@ -86,6 +86,7 @@ public class OrthoInputController implements MouseListener, KeyController {
     @Override
     public void mouseWheelMoved(MouseEvent e) {
         double zoom = view.getZoomLevel();
+        zoom += e.getRotation()[0] * e.getRotationScale() * zoomFactor;
         zoom += e.getRotation()[1] * e.getRotationScale() * zoomFactor;
         view.setZoomLevel(zoom);
     }
