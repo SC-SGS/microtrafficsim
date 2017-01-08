@@ -40,10 +40,10 @@ public class AreaComponent extends Component {
     private static final Color FILL_COLOR_DESTINATION = Color.fromRGBA(0xE03A5330);
 
     private static final Color OUTLINE_COLOR = Colors.white();
-    private static final float OUTLINE_LINE_WIDTH = 2.f;
+    private static final float OUTLINE_LINE_WIDTH = 1.f;
 
     private static final ShaderProgramSource FILL_SHADER = new ShaderProgramSource("/shaders/basic",
-            new ShaderSource(GL3.GL_VERTEX_SHADER, new PackagedResource(AreaComponent.class, "/shaders/basic.vs")),
+            new ShaderSource(GL3.GL_VERTEX_SHADER, new  PackagedResource(AreaComponent.class, "/shaders/basic.vs")),
             new ShaderSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(AreaComponent.class, "/shaders/basic.fs"))
     );
 
