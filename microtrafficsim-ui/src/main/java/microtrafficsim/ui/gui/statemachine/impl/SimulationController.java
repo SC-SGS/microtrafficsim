@@ -158,7 +158,12 @@ public class SimulationController implements GUIController {
         userTasks.add(this::updateMenuBar);
     }
 
-    private void subtransiate(Runnable runnable) {
+    /**
+     *
+     * @param runnable
+     * @param locked If true, this method is called using {@link ReentrantLock#tryLock()}
+     */
+    private void subtransiate(Runnable runnable, boolean locked) {
         // prevent task spamming
         if (lock_parsing.tryLock()) {
 
