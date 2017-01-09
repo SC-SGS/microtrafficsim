@@ -6,6 +6,7 @@ import logic.validation.scenarios.impl.MotorwaySlipRoadScenario;
 import logic.validation.scenarios.impl.PlusCrossroadScenario;
 import logic.validation.scenarios.impl.RoundaboutScenario;
 import logic.validation.scenarios.impl.TCrossroadScenario;
+import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
@@ -41,11 +42,11 @@ public class Main {
         StyleSheet styleSheet     = new DarkStyleSheet();
 
         /* build setup: logging */
-        EasyMarkableLogger.TRACE_ENABLED = false;
-        EasyMarkableLogger.DEBUG_ENABLED = false;
-        EasyMarkableLogger.INFO_ENABLED  = true;
-        EasyMarkableLogger.WARN_ENABLED  = true;
-        EasyMarkableLogger.ERROR_ENABLED = true;
+        BuildSetup.TRACE_ENABLED = false;
+        BuildSetup.DEBUG_ENABLED = false;
+        BuildSetup.INFO_ENABLED  = true;
+        BuildSetup.WARN_ENABLED  = true;
+        BuildSetup.ERROR_ENABLED = true;
 
 
 

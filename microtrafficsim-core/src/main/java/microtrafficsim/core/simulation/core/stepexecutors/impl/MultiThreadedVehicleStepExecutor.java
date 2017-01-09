@@ -5,7 +5,6 @@ import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
-import microtrafficsim.utils.concurrency.delegation.DynamicThreadDelegator;
 import microtrafficsim.utils.concurrency.delegation.StaticThreadDelegator;
 import microtrafficsim.utils.concurrency.delegation.ThreadDelegator;
 

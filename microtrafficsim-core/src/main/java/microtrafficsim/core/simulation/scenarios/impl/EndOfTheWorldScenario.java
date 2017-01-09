@@ -1,6 +1,5 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
@@ -16,7 +15,9 @@ import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.function.Supplier;
 
 /**
@@ -39,8 +40,9 @@ public class EndOfTheWorldScenario extends BasicScenario {
     private final ShortestPathAlgorithm fastestWayBidirectionalAStar, linearDistanceBidirectionalAStar;
 
     /**
-     * Default constructor calling {@link #EndOfTheWorldScenario(SimulationConfig, StreetGraph, VehicleContainer)} using
-     * {@link ConcurrentVehicleContainer} as {@code VehicleContainer}
+     * Default constructor calling {@code EndOfTheWorldScenario(config, graph, new ConcurrentVehicleContainer())}
+     *
+     * @see #EndOfTheWorldScenario(SimulationConfig, StreetGraph, VehicleContainer)
      */
     public EndOfTheWorldScenario(SimulationConfig config,
                                  StreetGraph graph) {

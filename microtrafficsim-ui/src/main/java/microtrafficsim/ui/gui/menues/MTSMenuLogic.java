@@ -2,7 +2,7 @@ package microtrafficsim.ui.gui.menues;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.ui.gui.statemachine.GUIController;
-import microtrafficsim.ui.gui.statemachine.impl.GUIEvent;
+import microtrafficsim.ui.gui.statemachine.GUIEvent;
 
 import javax.swing.*;
 
