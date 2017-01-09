@@ -1,10 +1,7 @@
 package microtrafficsim.ui;
 
-import microtrafficsim.build.BuildSetup;
-import microtrafficsim.core.mapviewer.TileBasedMapViewer;
-import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.ui.gui.statemachine.GUIController;
-import microtrafficsim.ui.gui.statemachine.impl.GUIEvent;
+import microtrafficsim.ui.gui.statemachine.GUIEvent;
 import microtrafficsim.ui.gui.statemachine.impl.SimulationController;
 
 import javax.swing.*;
@@ -20,8 +17,6 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-
-        BuildSetup.init();
 
         /* handle input arguments */
         final File file;
@@ -48,7 +43,6 @@ public class Main {
         PrefElement.seed.setEnabled(true);
         PrefElement.metersPerCell.setEnabled(false);
         // Visualization
-        PrefElement.projection.setEnabled(false);
         // crossing logic
         PrefElement.edgePriority.setEnabled(true);
         PrefElement.priorityToThe.setEnabled(true);
@@ -64,7 +58,7 @@ public class Main {
         System.setProperty("swing.aatext", "true");
 
         SwingUtilities.invokeLater(() -> {
-            GUIController controller = new SimulationController(RandomRouteScenario::new, new TileBasedMapViewer());
+            GUIController controller = new SimulationController();
             controller.transiate(GUIEvent.CREATE, file);
         });
     }

@@ -118,18 +118,19 @@ public class OSMParser {
      *
      * @param file the file to parse.
      * @return the result parsed from the given file.
-     * @throws XMLStreamException for mal-formed XML documents.
-     * @throws IOException        if the file cannot be read.
-     * @throws Exception          if any other exception occurred during processing.
+     * @throws XMLStreamException   for mal-formed XML documents.
+     * @throws IOException          if the file cannot be read.
+     * @throws InterruptedException if the parsing thread has been interrupted.
+     * @throws Exception            if any other exception occurred during processing.
      */
     public Result parse(File file) throws Exception {
         parser.parse(file);
 
         // get feature set
-        HashMap<String, Feature<?>> featureset = config.features.values()
-                .stream()
-                .map(f -> f.getGenerator().getGeneratedFeatures())
-                .collect(Collector.of(HashMap::new, HashMap::putAll, (l, r) -> { l.putAll(r); return l; }));
+        HashMap<String, Feature<?>> featureset = new HashMap<>();
+        for (MapFeatureDefinition<?> def : config.features.values()) {
+            featureset.putAll(def.getGenerator().getGeneratedFeatures());
+        }
 
         // get StreetGraph
         StreetGraph streetgraph = null;

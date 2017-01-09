@@ -39,7 +39,7 @@ public class ParserBase {
      * @param in the {@code InputStream} to parse.
      * @throws XMLStreamException if the given XML-File is malformed.
      */
-    public void parse(InputStream in) throws XMLStreamException {
+    public void parse(InputStream in) throws XMLStreamException, InterruptedException {
         XMLInputFactory factory = XMLInputFactory.newInstance();
         XMLStreamReader reader  = factory.createXMLStreamReader(in);
 
@@ -47,7 +47,6 @@ public class ParserBase {
 
         while (reader.hasNext()) {
             int event = reader.next();
-
             if (event == XMLStreamReader.START_ELEMENT) {
                 String name = reader.getLocalName();
 
@@ -58,6 +57,9 @@ public class ParserBase {
                 case "relation": parseRelation(reader); break;
                 }
             }
+
+            if (Thread.interrupted())
+                throw new InterruptedException();
         }
 
         handler.onEnd();

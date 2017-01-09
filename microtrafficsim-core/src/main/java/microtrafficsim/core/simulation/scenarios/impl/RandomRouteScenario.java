@@ -1,6 +1,5 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
@@ -9,9 +8,6 @@ import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalA
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
-import microtrafficsim.core.simulation.utils.ODMatrix;
-import microtrafficsim.core.simulation.utils.SparseODMatrix;
-import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
@@ -37,8 +33,10 @@ public class RandomRouteScenario extends BasicScenario {
     private final ShortestPathAlgorithm fastestWayBidirectionalAStar, linearDistanceBidirectionalAStar;
 
     /**
-     * Default constructor calling {@link #RandomRouteScenario(SimulationConfig, StreetGraph, VehicleContainer)} using
-     * {@link ConcurrentVehicleContainer} as {@code VehicleContainer}
+     * Default constructor calling {@code RandomRouteScenario(config, graph, new ConcurrentVehicleContainer())}
+     *
+     * @see ConcurrentVehicleContainer
+     * @see #RandomRouteScenario(SimulationConfig, StreetGraph, VehicleContainer)
      */
     public RandomRouteScenario(SimulationConfig config,
                                   StreetGraph graph) {
@@ -46,12 +44,25 @@ public class RandomRouteScenario extends BasicScenario {
     }
 
     /**
-     * Calls {@link #next()} to initialize the origin-destination-matrix.
+     * Default constructor calling {@code RandomRouteScenario(config.seedGenerator.next(), config, graph,
+     * vehicleContainer)}
+     *
+     * @see #RandomRouteScenario(long, SimulationConfig, StreetGraph, VehicleContainer)
      */
     public RandomRouteScenario(SimulationConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
+        this(config.seedGenerator.next(), config, graph, vehicleContainer);
+    }
+
+    /**
+     * Default constructor calling {@link #next()} to initialize the origin-destination-matrix.
+     *
+     * @param seed Used for the used instance of {@link Random}
+     */
+    public RandomRouteScenario(long seed, SimulationConfig config, StreetGraph graph, VehicleContainer
+            vehicleContainer) {
         super(config, graph, vehicleContainer);
 
-        random = new Random(config.seedGenerator.next()); // TODO reset
+        random = new Random(seed);
 
         // scout factory
         fastestWayBidirectionalAStar = new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);

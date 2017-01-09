@@ -5,7 +5,6 @@ import microtrafficsim.utils.concurrency.executorservices.FixedThreadPool;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,12 +13,7 @@ import java.util.function.Consumer;
 /**
  * <p>
  * This ThreadDelegator is called static, because it creates lists of elements until no element is left, only then it
- * starts working the tasks off.
- *
- * <p>
- * The other way is implemented in {@link DynamicThreadDelegator}. This ThreadDelegator is called dynamic, because
- * the iterator is worked off dynamically: every task says, take a certain number of elements from the iterator and
- * work them off. After this, take the next elements and do the same.
+ * starts working the tasks off concurrently.
  *
  * @author Dominic Parga Cacheiro
  */

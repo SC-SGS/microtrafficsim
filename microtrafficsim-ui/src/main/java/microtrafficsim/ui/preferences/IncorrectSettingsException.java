@@ -2,6 +2,8 @@ package microtrafficsim.ui.preferences;
 
 
 /**
+ * Helps throwing the same exception multiple times for similar reasons.
+ *
  * @author Dominic Parga Cacheiro
  */
 public class IncorrectSettingsException extends Exception {
