@@ -1,6 +1,6 @@
 package microtrafficsim.utils.concurrency.delegation;
 
-import microtrafficsim.utils.concurrency.executorservices.impl.FixedThreadPool;
+import microtrafficsim.utils.concurrency.executorservices.FixedThreadPool;
 
 import java.util.ArrayList;
 import java.util.Iterator;
