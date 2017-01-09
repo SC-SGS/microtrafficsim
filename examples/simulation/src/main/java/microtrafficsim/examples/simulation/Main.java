@@ -1,6 +1,7 @@
 package microtrafficsim.examples.simulation;
 
 import com.jogamp.newt.event.KeyEvent;
+import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
@@ -50,11 +51,11 @@ public class Main {
         /* create configuration for scenarios */
         SimulationConfig config = createConfig();
         /* build setup: logging */
-        EasyMarkableLogger.TRACE_ENABLED = false;
-        EasyMarkableLogger.DEBUG_ENABLED = false;
-        EasyMarkableLogger.INFO_ENABLED  = true;
-        EasyMarkableLogger.WARN_ENABLED  = true;
-        EasyMarkableLogger.ERROR_ENABLED = true;
+        BuildSetup.TRACE_ENABLED = false;
+        BuildSetup.DEBUG_ENABLED = false;
+        BuildSetup.INFO_ENABLED  = true;
+        BuildSetup.WARN_ENABLED  = true;
+        BuildSetup.ERROR_ENABLED = true;
 
 
         SwingUtilities.invokeLater(() -> {

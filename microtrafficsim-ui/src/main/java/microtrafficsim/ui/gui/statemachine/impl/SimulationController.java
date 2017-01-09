@@ -4,17 +4,16 @@ import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
-import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.ui.gui.menues.MTSMenuBar;
 import microtrafficsim.ui.gui.statemachine.GUIController;
+import microtrafficsim.ui.gui.statemachine.GUIEvent;
+import microtrafficsim.ui.gui.statemachine.ScenarioConstructor;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
 import microtrafficsim.ui.preferences.impl.PreferencesFrame;
@@ -29,75 +28,86 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
-
 /**
- *
+ * Controls user input and represents an interface between visualization/parsing, simulation and GUI.
  *
  * @author Dominic Parga Cacheiro
  */
 public class SimulationController implements GUIController {
 
-    private static Logger logger = new EasyMarkableLogger(SimulationController.class);
+    private static final Logger logger = new EasyMarkableLogger(SimulationController.class);
 
-    // logic
-    private final SimulationConfig    config;
-    private final ScenarioConstructor scenarioConstructor;
+    /*
+    |=======|
+    | ideas |
+    |=======|
+    */
+    // TODO map double buffering
+    // TODO interrupt route calculations
+    // TODO simulation double buffering
 
-    // frame/gui
-    private final JFrame        frame;
-    private final MTSMenuBar    menubar;
-    private final ReentrantLock lock_gui;
+    /* multithreading */
+    private final AtomicBoolean isExecuting;
+    private final ReentrantLock lock_user_input;
 
-    // general
-    private GUIState        state, previousState;
-    private StreetGraph     streetgraph;
-    private Simulation      simulation;
-    private ScenarioBuilder simbuilder;
+    private boolean newSim;
+    /* state marker */
+    private boolean isCreated;
 
-    // visualization
-    private MapViewer      mapviewer;
-    private VehicleOverlay overlay;
-    private File           currentDirectory;
+    /* general */
+    private final SimulationConfig config;
 
-    // preferences
-    private PreferencesFrame preferences;
+    /* visualization and parsing */
+    private final MapViewer      mapviewer;
+    private final VehicleOverlay overlay;
+    private File                 currentDirectory;
+    private StreetGraph          streetgraph;
 
-    public SimulationController(ScenarioConstructor scenarioConstructor, MapViewer mapviewer) {
-        this(scenarioConstructor, mapviewer, "MicroTrafficSim - GUI Example");
+    /* simulation */
+    private Simulation          simulation;
+    private ScenarioConstructor scenarioConstructor;
+    private ScenarioBuilder     scenarioBuilder;
+
+    /* gui */
+    private final JFrame     frame;
+    private final MTSMenuBar menubar;
+    private final PreferencesFrame preferences;
+
+    public SimulationController() {
+        this(new BuildSetup());
     }
 
-    public SimulationController(ScenarioConstructor scenarioConstructor, MapViewer mapviewer, String title) {
-        super();
+    public SimulationController(BuildSetup buildSetup) {
 
-        // general
-        state         = GUIState.RAW;
-        previousState = null;
+        /* multithreading */
+        isExecuting     = new AtomicBoolean(false);
+        lock_user_input = new ReentrantLock();
 
-        // logic
-        config                   = new SimulationConfig();
-        this.scenarioConstructor = scenarioConstructor;
+        /* state marker */
+        isCreated = false;
+        newSim    = false;
 
-        // visualization
-        this.mapviewer   = mapviewer;
-        overlay          = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
+        /* general */
+        config = buildSetup.config;
+
+        /* visualization and parsing */
+        mapviewer        = buildSetup.mapviewer;
+        overlay          = buildSetup.overlay;
         currentDirectory = new File(System.getProperty("user.dir"));
 
-        // frame/gui
-        frame    = new JFrame(title);
-        menubar  = new MTSMenuBar();
-        lock_gui = new ReentrantLock();
-
-        // simulation
-        simbuilder = new VehicleScenarioBuilder(config.seedGenerator.next(), overlay.getVehicleFactory());
-        simulation = new VehicleSimulation();
+        /* simulation */
+        simulation          = buildSetup.simulation;
+        scenarioConstructor = buildSetup.scenarioConstructor;
+        scenarioBuilder     = buildSetup.scenarioBuilder;
         overlay.setSimulation(simulation);
-    }
 
-    private void setState(GUIState state) {
-        previousState = this.state;
-        this.state    = state;
+        /* gui */
+        frame       = new JFrame(buildSetup.frameTitle);
+        menubar     = new MTSMenuBar();
+        preferences = new PreferencesFrame(this);
     }
 
     /*
@@ -106,193 +116,157 @@ public class SimulationController implements GUIController {
     |===================|
     */
     @Override
-    public void addKeyCommand(short event, short vk, KeyCommand command) {
-        mapviewer.addKeyCommand(event, vk, command);
-    }
-
-    @Override
-    public void transiate(GUIEvent event, File file) {
-        logger.debug("GUIState before transiate = GUIState." + state);
-        logger.debug("GUIEvent called           = GUIEvent." + event);
+    public void transiate(GUIEvent event, final File file) {
+        logger.debug("GUIEvent called = GUIEvent." + event);
 
         switch (event) {
-        case CREATE:
-        case LOAD_MAP:
-            // map some states on other states for easier handling later
-            if (state == GUIState.RAW) {
-                create();
-                show();
-                setState(GUIState.INIT);
-            }
-            switch (state) {
-            case SIM_RUN: pauseSim(); setState(GUIState.SIM_PAUSE);
-            case SIM_PAUSE:
-            case INIT:
-            case MAP:
-                // Load map without file? => have to ask user
-                if (file == null && event == GUIEvent.LOAD_MAP) { file = askForMapFile(); }
-                // if user don't want to load a file => stop here
-                if (file != null) {
-                    switch (state) {
-                    case INIT:
-                    case MAP: setState(GUIState.PARSING); break;
-                    case SIM_PAUSE: setState(GUIState.PARSING_SIM_PAUSE); break;
-                    }
-                    asyncParseAndShow(file);
-                }
-            }
-            updateMenuBar();
-            break;
-        case DID_PARSE:
-            switch (state) {
-            case PARSING:
-            case PARSING_SIM_RUN:
-            case PARSING_SIM_PAUSE: state = GUIState.MAP;
-            }
-            updateMenuBar();
-            break;
-        case NEW_SIM:
-            switch (state) {
-            case SIM_RUN: pauseSim(); setState(GUIState.SIM_PAUSE);
-            case SIM_PAUSE:
-            case MAP: setState(GUIState.SIM_NEW); showPreferences();
-            }
-            updateMenuBar();
-            break;
-        case ACCEPT:
-            switch (state) {
-            case SIM_EDIT:
-                if (updateSimulationConfig()) {
-                    closePreferences();
-                    setState(GUIState.SIM_PAUSE);
-                }
-                break;
-            case SIM_NEW:
-                if (updateSimulationConfig()) {
-                    closePreferences();
-                    cleanupSimulation();
-                    startNewSimulation();
-                    setState(GUIState.SIM_PAUSE);
-                }
-            }
-            updateMenuBar();
-            break;
-        case CANCEL:
-            switch (state) {
-            case SIM_EDIT:
-            case SIM_NEW: closePreferences(); setState(previousState);
-            }
-            updateMenuBar();
-            break;
-        case EDIT_SIM:
-            switch (state) {
-            case SIM_RUN: pauseSim(); setState(GUIState.SIM_PAUSE);
-            case SIM_PAUSE: setState(GUIState.SIM_EDIT); showPreferences();
-            }
-            updateMenuBar();
-            break;
-        case RUN_SIM:
-            if (lock_gui.tryLock()) {
-                switch (state) {
-                case SIM_PAUSE:
-                    runSim();
-                    setState(GUIState.SIM_RUN);
-                    break;
-                case PARSING_SIM_PAUSE: runSim(); setState(GUIState.PARSING_SIM_RUN);
-                }
-                updateMenuBar();
-                lock_gui.unlock();
-            }
-            break;
-        case RUN_SIM_ONE_STEP:
-            if (lock_gui.tryLock()) {
-                switch (state) {
-                case SIM_RUN: pauseSim(); setState(GUIState.SIM_PAUSE);
-                case SIM_PAUSE: runSimOneStep(); break;
-                case PARSING_SIM_RUN: pauseSim(); setState(GUIState.PARSING_SIM_PAUSE);
-                case PARSING_SIM_PAUSE: runSimOneStep();
-                }
-                updateMenuBar();
-                lock_gui.unlock();
-            }
-            break;
-        case PAUSE_SIM:
-            if (lock_gui.tryLock()) {
-                switch (state) {
-                case SIM_RUN:
-                    pauseSim();
-                    setState(GUIState.SIM_PAUSE);
-                    break;
-                case PARSING_SIM_RUN: pauseSim(); setState(GUIState.PARSING_SIM_PAUSE);
-                }
-                updateMenuBar();
-                lock_gui.unlock();
-            }
-            break;
-        case EXIT: exit();
-        }
+            case CREATE:
+                subtransiate(() -> {
+                    if (isExecuting.compareAndSet(false, true)) {
+                        create();
+                        show();
 
-        logger.debug("GUIState after transiate  = GUIState." + state);
+                        if (file != null)
+                            parseAndShow(file);
+
+                        updateMenuBar();
+                        isExecuting.set(false);
+                    }
+                });
+            case LOAD_MAP:
+                subtransiate(() -> {
+                    if (isExecuting.compareAndSet(false, true)) {
+
+                        closePreferences();
+                        pauseSim();
+
+                        File loadedFile = file == null ? askForMapFile() : file;
+                        if (loadedFile != null)
+                            parseAndShow(loadedFile);
+
+                        updateMenuBar();
+                        isExecuting.set(false);
+                    }
+                });
+                break;
+            case NEW_SIM:
+                subtransiate(() -> {
+                    if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
+                        if (streetgraph != null) {
+                            pauseSim();
+                            newSim = true;
+                            showPreferences();
+                        } else
+                            isExecuting.set(false);
+                    }
+                });
+                break;
+            case ACCEPT:
+                subtransiate(() -> {
+                    if (updateSimulationConfig()) {
+                        closePreferences();
+
+                        if (newSim) {
+                            cleanupSimulation();
+                            startNewSimulation();
+                        }
+
+                        updateMenuBar();
+                        isExecuting.set(false);
+                    }
+                });
+                break;
+            case CANCEL:
+                subtransiate(() -> {
+                    closePreferences();
+                    updateMenuBar();
+                    isExecuting.set(false);
+                });
+                break;
+            case EDIT_SIM:
+                subtransiate(() -> {
+                    if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
+                        if (simulation.getScenario() != null) {
+                            pauseSim();
+                            newSim = false;
+                            showPreferences();
+
+                            updateMenuBar();
+                        } else
+                            isExecuting.set(false);
+                    }
+                });
+                break;
+            case RUN_SIM:
+                subtransiate(() -> {
+                    if (isExecuting.compareAndSet(false, true)) {
+                        runSim();
+
+                        updateMenuBar();
+                        isExecuting.set(false);
+                    }
+                });
+                break;
+            case RUN_SIM_ONE_STEP:
+                subtransiate(() -> {
+                    if (isExecuting.compareAndSet(false, true)) {
+                        pauseSim();
+                        runSimOneStep();
+
+                        updateMenuBar();
+                        isExecuting.set(false);
+                    }
+                });
+                break;
+            case PAUSE_SIM:
+                subtransiate(() -> {
+                    if (isExecuting.compareAndSet(false, true)) {
+                        pauseSim();
+
+                        updateMenuBar();
+                        isExecuting.set(false);
+                    }
+                });
+                break;
+            case EXIT:
+                exit();
+                break;
+        }
+    }
+
+    /**
+     * Executes the given runnable by initializing a new thread. Ignores user input requests if {@code subtransiate}
+     * is currently called.
+     *
+     * @param runnable This task will be executed.
+     */
+    private void subtransiate(Runnable runnable) {
+
+        if (lock_user_input.tryLock()) {
+            new Thread(runnable).start();
+            lock_user_input.unlock();
+        }
     }
 
     private void updateMenuBar() {
-        switch (state) {
-        case RAW:      /*---------------------------------------------*/
-        case PARSING:  /*-----------------------------------------*/
-        case SIM_NEW:  /*-----------------------------------------*/
-        case SIM_EDIT: /*----------------------------------------*/
-            menubar.menuMap.setEnabled(false);
-            menubar.menuMap.itemLoadMap.setEnabled(false);
+        if (!isCreated) return;
 
-            menubar.menuLogic.setEnabled(false);
-            menubar.menuLogic.itemRunPause.setEnabled(false);
-            menubar.menuLogic.itemRunOneStep.setEnabled(false);
-            menubar.menuLogic.itemEditSim.setEnabled(false);
-            menubar.menuLogic.itemNewSim.setEnabled(false);
-            break;
-        case INIT: /*--------------------------------------------*/
-            menubar.menuMap.setEnabled(true);
-            menubar.menuMap.itemLoadMap.setEnabled(true);
+        boolean hasStreetgraph = streetgraph != null;
+        boolean hasScenario    = simulation.getScenario() != null;
 
-            menubar.menuLogic.setEnabled(false);
-            menubar.menuLogic.itemRunPause.setEnabled(false);
-            menubar.menuLogic.itemRunOneStep.setEnabled(false);
-            menubar.menuLogic.itemEditSim.setEnabled(false);
-            menubar.menuLogic.itemNewSim.setEnabled(false);
-            break;
-        case PARSING_SIM_RUN:   /*---------------------------------*/
-        case PARSING_SIM_PAUSE: /*-------------------------------*/
-            menubar.menuMap.setEnabled(false);
-            menubar.menuMap.itemLoadMap.setEnabled(false);
+        menubar.menuMap.setEnabled(true);
+        menubar.menuMap.itemLoadMap.setEnabled(true);
 
-            menubar.menuLogic.setEnabled(true);
-            menubar.menuLogic.itemRunPause.setEnabled(true);
-            menubar.menuLogic.itemRunOneStep.setEnabled(true);
-            menubar.menuLogic.itemEditSim.setEnabled(false);
-            menubar.menuLogic.itemNewSim.setEnabled(false);
-            break;
-        case MAP: /*---------------------------------------------*/
-            menubar.menuMap.setEnabled(true);
-            menubar.menuMap.itemLoadMap.setEnabled(true);
+        menubar.menuLogic.setEnabled(               hasStreetgraph);
+        menubar.menuLogic.itemRunPause.setEnabled(  hasStreetgraph && hasScenario);
+        menubar.menuLogic.itemRunOneStep.setEnabled(hasStreetgraph && hasScenario);
+        menubar.menuLogic.itemEditSim.setEnabled(   hasStreetgraph && hasScenario);
+        menubar.menuLogic.itemNewSim.setEnabled(    hasStreetgraph);
+    }
 
-            menubar.menuLogic.setEnabled(true);
-            menubar.menuLogic.itemRunPause.setEnabled(false);
-            menubar.menuLogic.itemRunOneStep.setEnabled(false);
-            menubar.menuLogic.itemEditSim.setEnabled(false);
-            menubar.menuLogic.itemNewSim.setEnabled(true);
-            break;
-        case SIM_PAUSE: /*---------------------------------------*/
-        case SIM_RUN:   /*-----------------------------------------*/
-            menubar.menuMap.setEnabled(true);
-            menubar.menuMap.itemLoadMap.setEnabled(true);
-
-            menubar.menuLogic.setEnabled(true);
-            menubar.menuLogic.itemRunPause.setEnabled(true);
-            menubar.menuLogic.itemRunOneStep.setEnabled(true);
-            menubar.menuLogic.itemEditSim.setEnabled(true);
-            menubar.menuLogic.itemNewSim.setEnabled(true);
-            break;
-        }
+    @Override
+    public void addKeyCommand(short event, short vk, KeyCommand command) {
+        mapviewer.addKeyCommand(event, vk, command);
     }
 
     /*
@@ -301,12 +275,13 @@ public class SimulationController implements GUIController {
     |=========|
     */
     private void create() {
+        if (isCreated) throw new RuntimeException("The simulation controller has already been created.");
+
         try {
             mapviewer.create(config);
         } catch (UnsupportedFeatureException e) { e.printStackTrace(); }
 
         /* create preferences */
-        preferences = new PreferencesFrame(this);
         preferences.create();
         preferences.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         preferences.addComponentListener(new ComponentAdapter() {
@@ -345,9 +320,14 @@ public class SimulationController implements GUIController {
                 exit();
             }
         });
+
+        /* set state */
+        isCreated = true;
     }
 
     private void show() {
+        if (!isCreated) throw new RuntimeException("The simulation controller has to be created before it is shown.");
+
         frame.setLocationRelativeTo(null);    // center on screen; close to setVisible
         frame.setVisible(true);
         mapviewer.show();
@@ -356,6 +336,83 @@ public class SimulationController implements GUIController {
     private void exit() {
         mapviewer.stop();
         System.exit(0);
+    }
+
+    /*
+    |================|
+    | map and parser |
+    |================|
+    */
+    private File askForMapFile() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(currentDirectory);
+        chooser.setFileFilter(new FileFilter() {
+
+            @Override
+            public String getDescription() {
+                return ".osm";
+            }
+
+            @Override
+            public boolean accept(File file) {
+                if (file.isDirectory()) return true;
+
+                String extension = null;
+
+                String filename = file.getName();
+                int    i        = filename.lastIndexOf('.');
+
+                if (i > 0)
+                    if (i < filename.length() - 1)
+                        extension = filename.substring(i + 1).toLowerCase();
+
+                if (extension == null) return false;
+
+                switch (extension) {
+                    case "osm": return true;
+                    default:    return false;
+                }
+            }
+        });
+
+        int action = chooser.showDialog(null, "Open");
+        currentDirectory = chooser.getCurrentDirectory();
+        if (action == JFileChooser.APPROVE_OPTION) {
+            return chooser.getSelectedFile();
+        }
+
+        return null;
+    }
+
+    private void parseAndShow(File file) {
+        String cachedTitle = frame.getTitle();
+        frame.setTitle("Parsing new map, please wait...");
+
+        OSMParser.Result result = null;
+
+        try {
+            /* parse file and create tiled provider */
+            result = mapviewer.parse(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Runtime.getRuntime().halt(1);
+        }
+
+        if (result != null) {
+            if (result.streetgraph != null) {
+                cleanupSimulation();
+                streetgraph = result.streetgraph;
+
+                try {
+                    mapviewer.changeMap(result);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                cachedTitle = "MicroTrafficSim - " + file.getName();
+            }
+        }
+
+        frame.setTitle(cachedTitle);
     }
 
     /*
@@ -384,7 +441,7 @@ public class SimulationController implements GUIController {
 
         /* create the scenario */
         Scenario scenario = scenarioConstructor.instantiate(config, streetgraph);
-        simbuilder.prepare(
+        scenarioBuilder.prepare(
                 scenario,
                 currentInPercent -> frame.setTitle("Calculating vehicle routes " + currentInPercent + "%"));
         /* initialize the scenario */
@@ -404,102 +461,33 @@ public class SimulationController implements GUIController {
     }
 
     /*
-    |================|
-    | map and parser |
-    |================|
-    */
-    private File askForMapFile() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(currentDirectory);
-        chooser.setFileFilter(new FileFilter() {
-
-            @Override
-            public String getDescription() {
-                return ".osm";
-            }
-
-            @Override
-            public boolean accept(File f) {
-                if (f.isDirectory()) return true;
-
-                String extension = null;
-
-                String s = f.getName();
-                int    i = s.lastIndexOf('.');
-
-                if (i > 0 && i < s.length() - 1) extension = s.substring(i + 1).toLowerCase();
-
-                if (extension == null) return false;
-
-                switch (extension) {
-                    case "osm": return true;
-                    default:    return false;
-                }
-            }
-        });
-
-        int action = chooser.showDialog(null, "Öffnen");
-        currentDirectory = chooser.getCurrentDirectory();
-        if (action == JFileChooser.APPROVE_OPTION) {
-            return chooser.getSelectedFile();
-        }
-
-        return null;
-    }
-
-    private void asyncParseAndShow(File file) {
-        new Thread(() -> {
-            String oldTitle = frame.getTitle();
-            frame.setTitle("Parsing new map, please wait...");
-
-            try {
-                /* parse file and create tiled provider */
-                OSMParser.Result result = mapviewer.parse(file);
-
-                lock_gui.lock();
-                transiate(GUIEvent.DID_PARSE);
-                lock_gui.unlock();    // todo N = new sim and resetView centers view
-                cleanupSimulation();
-                streetgraph = result.streetgraph;
-
-                mapviewer.changeMap(result);
-                frame.setTitle("MicroTrafficSim - " + file.getName());
-            } catch (Exception e) {
-                lock_gui.lock();
-                transiate(GUIEvent.DID_PARSE);
-                lock_gui.unlock();
-                frame.setTitle(oldTitle);
-                e.printStackTrace();
-                Runtime.getRuntime().halt(1);
-            }
-        }).start();
-    }
-
-    /*
     |=============|
     | preferences |
     |=============|
     */
     private void showPreferences() {
-        boolean newSim = state == GUIState.SIM_NEW;
 
         /* set enabled */
-        // general
-        preferences.setEnabled(PrefElement.sliderSpeedup, PrefElement.sliderSpeedup.isEnabled());
+
+        /* general */
+        preferences.setEnabled(PrefElement.sliderSpeedup,   PrefElement.sliderSpeedup.isEnabled());
         preferences.setEnabled(PrefElement.maxVehicleCount, newSim && PrefElement.maxVehicleCount.isEnabled());
-        preferences.setEnabled(PrefElement.seed, newSim && PrefElement.seed.isEnabled());
-        preferences.setEnabled(PrefElement.metersPerCell, newSim && PrefElement.metersPerCell.isEnabled());
-        // crossing logic
-        preferences.setEnabled(PrefElement.edgePriority, newSim && PrefElement.edgePriority.isEnabled());
-        preferences.setEnabled(PrefElement.priorityToThe, newSim && PrefElement.priorityToThe.isEnabled());
-        preferences.setEnabled(PrefElement.onlyOneVehicle, newSim && PrefElement.onlyOneVehicle.isEnabled());
+        preferences.setEnabled(PrefElement.seed,            newSim && PrefElement.seed.isEnabled());
+        preferences.setEnabled(PrefElement.metersPerCell,   newSim && PrefElement.metersPerCell.isEnabled());
+
+        /* crossing logic */
+        preferences.setEnabled(PrefElement.edgePriority,    newSim && PrefElement.edgePriority.isEnabled());
+        preferences.setEnabled(PrefElement.priorityToThe,   newSim && PrefElement.priorityToThe.isEnabled());
+        preferences.setEnabled(PrefElement.onlyOneVehicle,  newSim && PrefElement.onlyOneVehicle.isEnabled());
         preferences.setEnabled(PrefElement.friendlyStandingInJam,
-                               newSim && PrefElement.friendlyStandingInJam.isEnabled());
-        // visualization
-        // concurrency
-        preferences.setEnabled(PrefElement.nThreads, newSim && PrefElement.nThreads.isEnabled());
+                newSim && PrefElement.friendlyStandingInJam.isEnabled());
+
+        /* visualization */
+
+        /* concurrency */
+        preferences.setEnabled(PrefElement.nThreads,            newSim && PrefElement.nThreads.isEnabled());
         preferences.setEnabled(PrefElement.vehiclesPerRunnable, PrefElement.vehiclesPerRunnable.isEnabled());
-        preferences.setEnabled(PrefElement.nodesPerThread, PrefElement.nodesPerThread.isEnabled());
+        preferences.setEnabled(PrefElement.nodesPerThread,      PrefElement.nodesPerThread.isEnabled());
 
         /* init values */
         preferences.setSettings(config);
@@ -509,13 +497,19 @@ public class SimulationController implements GUIController {
         preferences.toFront();
     }
 
+    /**
+     * @return True if the settings were correct; false otherwise
+     */
     private boolean updateSimulationConfig() {
         try {
             config.update(preferences.getCorrectSettings());
             return true;
         } catch (IncorrectSettingsException e) {
             JOptionPane.showMessageDialog(
-                    null, e.getMessage(), "Error: wrong preferences values", JOptionPane.ERROR_MESSAGE);
+                    null,
+                    e.getMessage(),
+                    "Error: wrong preferences values",
+                    JOptionPane.ERROR_MESSAGE);
             return false;
         }
     }
@@ -523,18 +517,5 @@ public class SimulationController implements GUIController {
     private void closePreferences() {
         preferences.setVisible(false);
         preferences.setAllEnabled(false);
-    }
-
-    /*
-    |=======|
-    | stuff |
-    |=======|
-    */
-    /**
-     * This interface gives the opportunity to call the constructor of {@link SimulationController} with a parameter,
-     * that is the constructor of the used Simulation.
-     */
-    public interface ScenarioConstructor {
-        Scenario instantiate(SimulationConfig config, StreetGraph streetgraph);
     }
 }
