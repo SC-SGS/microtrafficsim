@@ -394,9 +394,15 @@ public class OSMProcessor implements Processor {
                 + " ways");
         updateGraphNodeComponents(dataset, streetgraph);
 
+        if (Thread.interrupted())
+            throw new InterruptedException();
+
         // unify StreetGraph: split
         unifySplit(dataset);
         updateGraphNodeComponents(dataset, streetgraph);
+
+        if (Thread.interrupted())
+            throw new InterruptedException();
 
         // unify StreetGraph: sanitize
         streetgraphSanitizer.execute(parser, dataset);
@@ -493,8 +499,12 @@ public class OSMProcessor implements Processor {
         applyRestrictionRelations(dataset);
 
         // generate everything
-        for (FeatureDefinition def : features)
+        for (FeatureDefinition def : features) {
             def.getGenerator().execute(dataset, def, genprops);
+
+            if (Thread.interrupted())
+                throw new InterruptedException();
+        }
     }
 
 

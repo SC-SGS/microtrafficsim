@@ -138,7 +138,7 @@ public class Parser {
      * @throws XMLStreamException if the XML-file is malformed.
      * @throws IOException        if the specified file cannot be read.
      */
-    private DataSet extract(File file) throws XMLStreamException, IOException {
+    private DataSet extract(File file) throws XMLStreamException, IOException, InterruptedException {
         DataSet datastore = new DataSet();
 
         // initialize the ParserBase
