@@ -51,7 +51,9 @@ public class SimulationController implements GUIController {
 
     /* multithreading */
     private final AtomicBoolean isExecuting;
+    private final AtomicBoolean isParsing;
     private final ReentrantLock lock_user_input;
+    private Thread parsingThread;
 
     private boolean newSim;
     /* state marker */
@@ -84,6 +86,7 @@ public class SimulationController implements GUIController {
 
         /* multithreading */
         isExecuting     = new AtomicBoolean(false);
+        isParsing       = new AtomicBoolean(false);
         lock_user_input = new ReentrantLock();
 
         /* state marker */
@@ -119,23 +122,48 @@ public class SimulationController implements GUIController {
     public void transiate(GUIEvent event, final File file) {
         logger.debug("GUIEvent called = GUIEvent." + event);
 
+        if (!lock_user_input.tryLock())
+            return;
+
         switch (event) {
             case CREATE:
-                subtransiate(() -> {
-                    if (isExecuting.compareAndSet(false, true)) {
+                if (isExecuting.compareAndSet(false, true)) {
+                    new Thread(() -> {
                         create();
                         show();
 
-                        if (file != null)
-                            parseAndShow(file);
+                        if (file != null) {
+                            if (isParsing.compareAndSet(false, true)) {
+                                parseAndShow(file);
+                                isParsing.set(false);
+                            }
+                        }
 
                         updateMenuBar();
                         isExecuting.set(false);
-                    }
-                });
+                    }).start();
+                }
             case LOAD_MAP:
-                subtransiate(() -> {
-                    if (isExecuting.compareAndSet(false, true)) {
+                if (isParsing.get()) {
+                    new Thread(() -> {
+                        // ask user to cancel parsing
+                        Object[] options = { "Yes", "No" };
+                        int choice = JOptionPane.showOptionDialog(
+                                null,
+                                "Are you sure you would like to cancel the parsing?",
+                                "Cancel parsing?",
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.WARNING_MESSAGE,
+                                null,
+                                options,
+                                options[1]);
+                        // if yes: cancel
+                        if (choice == JOptionPane.YES_OPTION)
+                            cancelParsing();
+                    }).start();
+                } else if (isExecuting.compareAndSet(false, true)) {
+                    parsingThread = new Thread(() -> {
+                        isParsing.set(true);
 
                         closePreferences();
                         pauseSim();
@@ -144,25 +172,27 @@ public class SimulationController implements GUIController {
                         if (loadedFile != null)
                             parseAndShow(loadedFile);
 
+                        isParsing.set(false);
                         updateMenuBar();
                         isExecuting.set(false);
-                    }
-                });
+                    });
+                    parsingThread.start();
+                }
                 break;
             case NEW_SIM:
-                subtransiate(() -> {
-                    if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
+                if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
+                    new Thread(() -> {
                         if (streetgraph != null) {
                             pauseSim();
                             newSim = true;
                             showPreferences();
                         } else
                             isExecuting.set(false);
-                    }
-                });
+                    }).start();
+                }
                 break;
             case ACCEPT:
-                subtransiate(() -> {
+                new Thread(() -> {
                     if (updateSimulationConfig()) {
                         closePreferences();
 
@@ -174,18 +204,18 @@ public class SimulationController implements GUIController {
                         updateMenuBar();
                         isExecuting.set(false);
                     }
-                });
+                }).start();
                 break;
             case CANCEL:
-                subtransiate(() -> {
+                new Thread(() -> {
                     closePreferences();
                     updateMenuBar();
                     isExecuting.set(false);
-                });
+                }).start();
                 break;
             case EDIT_SIM:
-                subtransiate(() -> {
-                    if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
+                if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
+                    new Thread(() -> {
                         if (simulation.getScenario() != null) {
                             pauseSim();
                             newSim = false;
@@ -194,58 +224,46 @@ public class SimulationController implements GUIController {
                             updateMenuBar();
                         } else
                             isExecuting.set(false);
-                    }
-                });
+                    }).start();
+                }
                 break;
             case RUN_SIM:
-                subtransiate(() -> {
-                    if (isExecuting.compareAndSet(false, true)) {
+                if (isExecuting.compareAndSet(false, true)) {
+                    new Thread(() -> {
                         runSim();
 
                         updateMenuBar();
                         isExecuting.set(false);
-                    }
-                });
+                    }).start();
+                }
                 break;
             case RUN_SIM_ONE_STEP:
-                subtransiate(() -> {
-                    if (isExecuting.compareAndSet(false, true)) {
+                if (isExecuting.compareAndSet(false, true)) {
+                    new Thread(() -> {
                         pauseSim();
                         runSimOneStep();
 
                         updateMenuBar();
                         isExecuting.set(false);
-                    }
-                });
+                    }).start();
+                }
                 break;
             case PAUSE_SIM:
-                subtransiate(() -> {
-                    if (isExecuting.compareAndSet(false, true)) {
+                if (isExecuting.compareAndSet(false, true)) {
+                    new Thread(() -> {
                         pauseSim();
 
                         updateMenuBar();
                         isExecuting.set(false);
-                    }
-                });
+                    }).start();
+                }
                 break;
             case EXIT:
                 exit();
                 break;
         }
-    }
 
-    /**
-     * Executes the given runnable by initializing a new thread. Ignores user input requests if {@code subtransiate}
-     * is currently called.
-     *
-     * @param runnable This task will be executed.
-     */
-    private void subtransiate(Runnable runnable) {
-
-        if (lock_user_input.tryLock()) {
-            new Thread(runnable).start();
-            lock_user_input.unlock();
-        }
+        lock_user_input.unlock();
     }
 
     private void updateMenuBar() {
@@ -393,10 +411,14 @@ public class SimulationController implements GUIController {
         try {
             /* parse file and create tiled provider */
             result = mapviewer.parse(file);
+        } catch (InterruptedException e) {
+            logger.info("Interrupt parsing");
+            result = null; // might be unnecessary here
         } catch (Exception e) {
             e.printStackTrace();
             Runtime.getRuntime().halt(1);
         }
+
 
         if (result != null) {
             if (result.streetgraph != null) {
@@ -413,6 +435,13 @@ public class SimulationController implements GUIController {
         }
 
         frame.setTitle(cachedTitle);
+    }
+
+    private void cancelParsing() {
+        while (parsingThread.isAlive()) {
+            parsingThread.interrupt();
+            Thread.yield();
+        }
     }
 
     /*
