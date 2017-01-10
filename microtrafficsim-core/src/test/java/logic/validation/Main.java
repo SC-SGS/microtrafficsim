@@ -38,7 +38,10 @@ public class Main {
     public static void main(String[] args) {
 
         /* build setup: scenario and style */
+//        ScenarioType scenarioType = ScenarioType.T_CROSSROAD;
         ScenarioType scenarioType = ScenarioType.PLUS_CROSSROAD;
+//        ScenarioType scenarioType = ScenarioType.MOTORWAY_SLIP_ROAD;
+//        ScenarioType scenarioType = ScenarioType.ROUNDABOUT;
         StyleSheet styleSheet     = new DarkStyleSheet();
 
         /* build setup: logging */

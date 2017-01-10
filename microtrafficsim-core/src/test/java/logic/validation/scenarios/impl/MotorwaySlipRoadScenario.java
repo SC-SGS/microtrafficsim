@@ -105,6 +105,10 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
     */
     @Override
     public void prepare() {
-        scenarioBuilder.prepare(this);
+        try {
+            scenarioBuilder.prepare(this);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

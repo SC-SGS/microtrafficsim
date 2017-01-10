@@ -156,7 +156,11 @@ public class PlusCrossroadScenario extends ValidationScenario {
                 break;
         }
 
-        scenarioBuilder.prepare(this);
+        try {
+            scenarioBuilder.prepare(this);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private enum NextScenarioState {

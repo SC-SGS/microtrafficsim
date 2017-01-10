@@ -152,7 +152,11 @@ public class RoundaboutScenario extends ValidationScenario {
                 break;
         }
 
-        scenarioBuilder.prepare(this);
+        try {
+            scenarioBuilder.prepare(this);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private enum NextScenarioState { TOP_RIGHT, TOP_LEFT, BOTTOM, RIGHT }

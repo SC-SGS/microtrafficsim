@@ -182,7 +182,11 @@ public class Main {
         );
 
         overlay.setSimulation(simulation);
-        scenarioBuilder.prepare(scenario);
+        try {
+            scenarioBuilder.prepare(scenario);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         simulation.setAndInitScenario(scenario);
         simulation.runOneStep();
 

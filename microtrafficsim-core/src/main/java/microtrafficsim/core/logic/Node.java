@@ -171,15 +171,10 @@ public class Node implements ShortestPathNode {
      */
     public synchronized void update() {
 
-        /*
-        |=============================|
-        | add new registered vehicles |
-        |=============================|
-        */
-        while (!newRegisteredVehicles.isEmpty()) {
+        /* add new registered vehicles */
+        while (!newRegisteredVehicles.isEmpty()) { // invariant: all vehicles in this set are new at this point
             AbstractVehicle newVehicle = newRegisteredVehicles.poll();
             Set<AbstractVehicle> defeatedVehicles = new HashSet<>();
-            assessedVehicles.put(newVehicle, defeatedVehicles);
 
             // calculate priority counter
             newVehicle.resetPriorityCounter();
@@ -211,13 +206,11 @@ public class Node implements ShortestPathNode {
                     assessedVehicles.get(assessedVehicle).add(newVehicle);
                 }
             }
+
+            assessedVehicles.put(newVehicle, defeatedVehicles);
         }
 
-        /*
-        |===============================|
-        | find max prioritized vehicles |
-        |===============================|
-        */
+        /* find max prioritized vehicles */
         if (!assessedVehicles.isEmpty()) {
             maxPrioVehicles.clear();
 
