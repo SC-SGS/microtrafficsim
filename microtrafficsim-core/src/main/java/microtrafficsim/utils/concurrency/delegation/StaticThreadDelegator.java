@@ -1,13 +1,14 @@
 package microtrafficsim.utils.concurrency.delegation;
 
-import microtrafficsim.utils.concurrency.executorservices.FixedThreadPool;
 import microtrafficsim.utils.concurrency.interruptsafe.InterruptSafeExecutors;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 /**
@@ -75,7 +76,7 @@ public class StaticThreadDelegator implements ThreadDelegator {
             for (Future<Void> future : futures) {
                 try {
                     future.get();
-                } catch (Throwable t) {
+                } catch (Throwable ignored) {
                     // ignore any exceptions here, as we intend to cancel this task, regardless of the outcome
                 }
             }

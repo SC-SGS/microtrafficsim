@@ -18,7 +18,7 @@ import microtrafficsim.utils.concurrency.delegation.ThreadDelegator;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -138,9 +138,9 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
                 multiThreadedVehicleCreation(scenario, listener);
             else
                 singleThreadedVehicleCreation(scenario, listener);
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException e) {
             resetScenario(scenario);
-            throw new InterruptedException();
+            throw e;
         }
 
         time_routes = System.nanoTime() - time_routes;
@@ -168,7 +168,8 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
         scenario.getGraph().reset();
     }
 
-    private void multiThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener) throws InterruptedException {
+    private void multiThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener)
+            throws InterruptedException {
 
         // general attributes for this
         final SimulationConfig config = scenario.getConfig();
@@ -186,7 +187,6 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
             int routeCount = triple.obj2;
 
             for (int i = 0; i < routeCount; i++) { // "synchronized"
-                // stop if interrupted
                 if (Thread.interrupted())
                     throw new InterruptedException();
 
@@ -211,13 +211,13 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
                 config.multiThreading.vehiclesPerRunnable);
     }
 
-    private void singleThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener) throws InterruptedException {
+    private void singleThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener)
+            throws InterruptedException {
 
         lastPercentage = 0;
 
         int vehicleCount = 0;
         for (Triple<Node, Node, Integer> triple : scenario.getODMatrix()) {
-            // stop if interrupted
             if (Thread.interrupted())
                 throw new InterruptedException();
 
@@ -226,7 +226,6 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
             int routeCount = triple.obj2;
 
             for (int i = 0; i < routeCount; i++) {
-                // stop if interrupted
                 if (Thread.interrupted())
                     throw new InterruptedException();
 
