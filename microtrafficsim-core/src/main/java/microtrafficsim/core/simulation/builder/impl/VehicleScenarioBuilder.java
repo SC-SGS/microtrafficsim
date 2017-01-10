@@ -133,10 +133,15 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
         logger.info("CREATING VEHICLES started");
         long time_routes = System.nanoTime();
 
-        if (scenario.getConfig().multiThreading.nThreads > 1)
-            multiThreadedVehicleCreation(scenario, listener);
-        else
-            singleThreadedVehicleCreation(scenario, listener);
+        try {
+            if (scenario.getConfig().multiThreading.nThreads > 1)
+                multiThreadedVehicleCreation(scenario, listener);
+            else
+                singleThreadedVehicleCreation(scenario, listener);
+        } catch (InterruptedException ignored) {
+            resetScenario(scenario);
+            throw new InterruptedException();
+        }
 
         time_routes = System.nanoTime() - time_routes;
         logger.info(StringUtils.buildTimeString(
@@ -172,11 +177,19 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
 
         // create vehicles with empty routes and add them to the scenario (sequentially for determinism)
         for (Triple<Node, Node, Integer> triple : scenario.getODMatrix()) {
+            // stop if interrupted
+            if (Thread.interrupted())
+                throw new InterruptedException();
+
             Node start = triple.obj0;
             Node end = triple.obj1;
             int routeCount = triple.obj2;
 
             for (int i = 0; i < routeCount; i++) { // "synchronized"
+                // stop if interrupted
+                if (Thread.interrupted())
+                    throw new InterruptedException();
+
                 Route<Node> route = new Route<>(start, end);
                 AbstractVehicle vehicle = vehicleFactory.apply(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
@@ -198,17 +211,25 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
                 config.multiThreading.vehiclesPerRunnable);
     }
 
-    private void singleThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener) {
+    private void singleThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener) throws InterruptedException {
 
         lastPercentage = 0;
 
         int vehicleCount = 0;
         for (Triple<Node, Node, Integer> triple : scenario.getODMatrix()) {
+            // stop if interrupted
+            if (Thread.interrupted())
+                throw new InterruptedException();
+
             Node start = triple.obj0;
             Node end = triple.obj1;
             int routeCount = triple.obj2;
 
             for (int i = 0; i < routeCount; i++) {
+                // stop if interrupted
+                if (Thread.interrupted())
+                    throw new InterruptedException();
+
                 Route<Node> route = new Route<>(start, end);
                 AbstractVehicle vehicle = vehicleFactory.apply(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
