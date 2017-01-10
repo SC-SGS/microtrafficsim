@@ -23,10 +23,7 @@ import org.slf4j.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -45,18 +42,23 @@ public class SimulationController implements GUIController {
     | ideas |
     |=======|
     */
-    // TODO map double buffering
-    // TODO interrupt route calculations
-    // TODO simulation double buffering
+    // TODO map double buffering (in the way that you ask for changing the map after parsing has finished)
+    // TODO simulation double buffering (in the way that you ask for changing the map after parsing has finished)
 
-    /* multithreading */
+    /* multithreading: user input and task execution */
     private final AtomicBoolean isExecuting;
-    private final AtomicBoolean isParsing;
     private final ReentrantLock lock_user_input;
+
+    /* multithreading: interrupting parsing */
+    private final AtomicBoolean isParsing;
     private Thread parsingThread;
 
-    private boolean newSim;
+    /* multithreading: interrupting scenario preparation */
+    private final AtomicBoolean isBuildingScenario;
+    private Thread scenarioBuildThread;
+
     /* state marker */
+    private boolean newSim;
     private boolean isCreated;
 
     /* general */
@@ -65,7 +67,6 @@ public class SimulationController implements GUIController {
     /* visualization and parsing */
     private final MapViewer      mapviewer;
     private final VehicleOverlay overlay;
-    private File                 currentDirectory;
     private StreetGraph          streetgraph;
 
     /* simulation */
@@ -77,6 +78,7 @@ public class SimulationController implements GUIController {
     private final JFrame     frame;
     private final MTSMenuBar menubar;
     private final PreferencesFrame preferences;
+    private final JFileChooser mapfileChooser;
 
     public SimulationController() {
         this(new BuildSetup());
@@ -85,9 +87,10 @@ public class SimulationController implements GUIController {
     public SimulationController(BuildSetup buildSetup) {
 
         /* multithreading */
-        isExecuting     = new AtomicBoolean(false);
-        isParsing       = new AtomicBoolean(false);
-        lock_user_input = new ReentrantLock();
+        isExecuting        = new AtomicBoolean(false);
+        lock_user_input    = new ReentrantLock();
+        isParsing          = new AtomicBoolean(false);
+        isBuildingScenario = new AtomicBoolean(false);
 
         /* state marker */
         isCreated = false;
@@ -99,7 +102,6 @@ public class SimulationController implements GUIController {
         /* visualization and parsing */
         mapviewer        = buildSetup.mapviewer;
         overlay          = buildSetup.overlay;
-        currentDirectory = new File(System.getProperty("user.dir"));
 
         /* simulation */
         simulation          = buildSetup.simulation;
@@ -108,9 +110,39 @@ public class SimulationController implements GUIController {
         overlay.setSimulation(simulation);
 
         /* gui */
-        frame       = new JFrame(buildSetup.frameTitle);
-        menubar     = new MTSMenuBar();
-        preferences = new PreferencesFrame(this);
+        frame            = new JFrame(buildSetup.frameTitle);
+        menubar          = new MTSMenuBar();
+        preferences      = new PreferencesFrame(this);
+        mapfileChooser   = new JFileChooser();
+        mapfileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+        mapfileChooser.setFileFilter(new FileFilter() {
+
+            @Override
+            public String getDescription() {
+                return ".osm";
+            }
+
+            @Override
+            public boolean accept(File file) {
+                if (file.isDirectory()) return true;
+
+                String extension = null;
+
+                String filename = file.getName();
+                int    i        = filename.lastIndexOf('.');
+
+                if (i > 0)
+                    if (i < filename.length() - 1)
+                        extension = filename.substring(i + 1).toLowerCase();
+
+                if (extension == null) return false;
+
+                switch (extension) {
+                    case "osm": return true;
+                    default:    return false;
+                }
+            }
+        });
     }
 
     /*
@@ -122,6 +154,8 @@ public class SimulationController implements GUIController {
     public void transiate(GUIEvent event, final File file) {
         logger.debug("GUIEvent called = GUIEvent." + event);
 
+        if (event == GUIEvent.EXIT)
+            exit();
         if (!lock_user_input.tryLock())
             return;
 
@@ -180,7 +214,24 @@ public class SimulationController implements GUIController {
                 }
                 break;
             case NEW_SIM:
-                if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
+                if (isBuildingScenario.get()) {
+                    new Thread(() -> {
+                        // ask user to cancel scenario building
+                        Object[] options = { "Yes", "No" };
+                        int choice = JOptionPane.showOptionDialog(
+                                null,
+                                "Are you sure you would like to cancel the scenario building?",
+                                "Cancel scenario building?",
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.WARNING_MESSAGE,
+                                null,
+                                options,
+                                options[1]);
+                        // if yes: cancel
+                        if (choice == JOptionPane.YES_OPTION)
+                            cancelScenarioBuilding();
+                    }).start();
+                } else if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
                     new Thread(() -> {
                         if (streetgraph != null) {
                             pauseSim();
@@ -192,19 +243,22 @@ public class SimulationController implements GUIController {
                 }
                 break;
             case ACCEPT:
-                new Thread(() -> {
+                scenarioBuildThread = new Thread(() -> {
                     if (updateSimulationConfig()) {
                         closePreferences();
 
                         if (newSim) {
                             cleanupSimulation();
+                            isBuildingScenario.set(true);
                             startNewSimulation();
+                            isBuildingScenario.set(false);
                         }
 
                         updateMenuBar();
                         isExecuting.set(false);
                     }
-                }).start();
+                });
+                scenarioBuildThread.start();
                 break;
             case CANCEL:
                 new Thread(() -> {
@@ -258,9 +312,6 @@ public class SimulationController implements GUIController {
                     }).start();
                 }
                 break;
-            case EXIT:
-                exit();
-                break;
         }
 
         lock_user_input.unlock();
@@ -302,9 +353,9 @@ public class SimulationController implements GUIController {
         /* create preferences */
         preferences.create();
         preferences.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        preferences.addComponentListener(new ComponentAdapter() {
+        preferences.addWindowListener(new WindowAdapter() {
             @Override
-            public void componentHidden(ComponentEvent e) {
+            public void windowClosing(WindowEvent e) {
                 transiate(GUIEvent.CANCEL);
             }
         });
@@ -333,6 +384,7 @@ public class SimulationController implements GUIController {
         frame.setMinimumSize(new Dimension(100, 100));
 
         /* on close: stop the visualization and exit */
+        frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 exit();
@@ -352,8 +404,14 @@ public class SimulationController implements GUIController {
     }
 
     private void exit() {
-        mapviewer.stop();
-        System.exit(0);
+        int choice = JOptionPane.showConfirmDialog(frame,
+                "Are you sure to exit?", "Really exit?",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+        if (choice == JOptionPane.YES_OPTION) {
+            mapviewer.stop();
+            System.exit(0);
+        }
     }
 
     /*
@@ -362,42 +420,9 @@ public class SimulationController implements GUIController {
     |================|
     */
     private File askForMapFile() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(currentDirectory);
-        chooser.setFileFilter(new FileFilter() {
-
-            @Override
-            public String getDescription() {
-                return ".osm";
-            }
-
-            @Override
-            public boolean accept(File file) {
-                if (file.isDirectory()) return true;
-
-                String extension = null;
-
-                String filename = file.getName();
-                int    i        = filename.lastIndexOf('.');
-
-                if (i > 0)
-                    if (i < filename.length() - 1)
-                        extension = filename.substring(i + 1).toLowerCase();
-
-                if (extension == null) return false;
-
-                switch (extension) {
-                    case "osm": return true;
-                    default:    return false;
-                }
-            }
-        });
-
-        int action = chooser.showDialog(null, "Open");
-        currentDirectory = chooser.getCurrentDirectory();
-        if (action == JFileChooser.APPROVE_OPTION) {
-            return chooser.getSelectedFile();
-        }
+        int action = mapfileChooser.showOpenDialog(null);
+        if (action == JFileChooser.APPROVE_OPTION)
+            return mapfileChooser.getSelectedFile();
 
         return null;
     }
@@ -412,7 +437,7 @@ public class SimulationController implements GUIController {
             /* parse file and create tiled provider */
             result = mapviewer.parse(file);
         } catch (InterruptedException e) {
-            logger.info("Interrupt parsing");
+            logger.info("Parsing interrupted by user");
             result = null; // might be unnecessary here
         } catch (Exception e) {
             e.printStackTrace();
@@ -438,10 +463,10 @@ public class SimulationController implements GUIController {
     }
 
     private void cancelParsing() {
-        while (parsingThread.isAlive()) {
-            parsingThread.interrupt();
-            Thread.yield();
-        }
+        parsingThread.interrupt();
+        try {
+            parsingThread.join();
+        } catch (InterruptedException ignored) {}
     }
 
     /*
@@ -470,12 +495,17 @@ public class SimulationController implements GUIController {
 
         /* create the scenario */
         Scenario scenario = scenarioConstructor.instantiate(config, streetgraph);
-        scenarioBuilder.prepare(
-                scenario,
-                currentInPercent -> frame.setTitle("Calculating vehicle routes " + currentInPercent + "%"));
-        /* initialize the scenario */
-        simulation.setAndInitScenario(scenario);
-        simulation.runOneStep();
+        try {
+            scenarioBuilder.prepare(
+                    scenario,
+                    currentInPercent -> frame.setTitle("Calculating vehicle routes " + currentInPercent + "%"));
+            /* initialize the scenario */
+            simulation.setAndInitScenario(scenario);
+            simulation.runOneStep();
+        } catch (InterruptedException ignored) {
+            logger.info("Scenario building interrupted by user");
+        }
+
         frame.setTitle(oldTitle);
     }
 
@@ -484,9 +514,15 @@ public class SimulationController implements GUIController {
      * scenario data.
      */
     private void cleanupSimulation() {
-        if (streetgraph != null) streetgraph.reset();
         simulation.setAndInitScenario(null);
         menubar.menuLogic.simIsPaused(true);
+    }
+
+    private void cancelScenarioBuilding() {
+        scenarioBuildThread.interrupt();
+        try {
+            scenarioBuildThread.join();
+        } catch (InterruptedException ignored) {}
     }
 
     /*

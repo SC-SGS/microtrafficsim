@@ -11,6 +11,7 @@ import microtrafficsim.ui.gui.statemachine.impl.SimulationController;
  *
  * @author Dominic Parga Cacheiro
  */
+@FunctionalInterface
 public interface ScenarioConstructor {
     Scenario instantiate(SimulationConfig config, StreetGraph streetgraph);
 }

@@ -14,6 +14,7 @@ import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.utils.StringUtils;
 import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.concurrency.delegation.StaticThreadDelegator;
+import microtrafficsim.utils.concurrency.delegation.ThreadDelegator;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
@@ -109,26 +110,26 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
      * collected in one set, so there are no duplicates and the nodes are chosen distributed uniformly at random.
      */
     @Override
-    public Scenario prepare(final Scenario scenario, final ProgressListener listener) {
+    public Scenario prepare(final Scenario scenario, final ProgressListener listener) throws InterruptedException {
         logger.info("PREPARING SCENARIO started");
         long time_preparation = System.nanoTime();
 
-        /*
-        |===========|
-        | reset all |
-        |===========|
-        */
+        /* interrupt handling */
+        if (Thread.interrupted())
+            throw new InterruptedException();
+
+        /* reset all */
         logger.info("RESETTING SCENARIO started");
-        scenario.setPrepared(false);
-        scenario.getVehicleContainer().clearAll();
-        scenario.getGraph().reset();
+        resetScenario(scenario);
         logger.info("RESETTING SCENARIO finished");
 
-        /*
-        |=======================|
-        | create vehicle routes |
-        |=======================|
-        */
+        /* interrupt handling */
+        if (Thread.interrupted()) {
+            resetScenario(scenario);
+            throw new InterruptedException();
+        }
+
+        /* create vehicle routes */
         logger.info("CREATING VEHICLES started");
         long time_routes = System.nanoTime();
 
@@ -144,11 +145,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
                 "ns"
         ).toString());
 
-        /*
-        |==========================|
-        | finish building scenario |
-        |==========================|
-        */
+        /* finish building scenario */
         scenario.setPrepared(true);
         time_preparation = System.nanoTime() - time_preparation;
         logger.info(StringUtils.buildTimeString(
@@ -160,7 +157,13 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
         return scenario;
     }
 
-    private void multiThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener) {
+    private void resetScenario(Scenario scenario) {
+        scenario.setPrepared(false);
+        scenario.getVehicleContainer().clearAll();
+        scenario.getGraph().reset();
+    }
+
+    private void multiThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener) throws InterruptedException {
 
         // general attributes for this
         final SimulationConfig config = scenario.getConfig();
@@ -174,8 +177,6 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
             int routeCount = triple.obj2;
 
             for (int i = 0; i < routeCount; i++) { // "synchronized"
-                long id = config.longIDGenerator.next();
-                long seed = config.seedGenerator.next();
                 Route<Node> route = new Route<>(start, end);
                 AbstractVehicle vehicle = vehicleFactory.apply(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
@@ -183,7 +184,8 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
         }
 
         // calculate routes multithreaded
-        new StaticThreadDelegator(config.multiThreading.nThreads).doTask(
+        ThreadDelegator delegator = new StaticThreadDelegator(config.multiThreading.nThreads);
+        delegator.doTask(
                 vehicle -> {
                     ShortestPathAlgorithm scout = scenario.getScoutFactory().get();
                     Route<Node> route = vehicle.getRoute();
@@ -207,8 +209,6 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
             int routeCount = triple.obj2;
 
             for (int i = 0; i < routeCount; i++) {
-                long id = scenario.getConfig().longIDGenerator.next();
-                long seed = scenario.getConfig().seedGenerator.next();
                 Route<Node> route = new Route<>(start, end);
                 AbstractVehicle vehicle = vehicleFactory.apply(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);

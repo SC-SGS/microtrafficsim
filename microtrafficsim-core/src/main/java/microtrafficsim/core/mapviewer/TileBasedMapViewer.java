@@ -220,9 +220,6 @@ public class TileBasedMapViewer implements MapViewer {
         vis.getKeyController().addKeyCommand(
                 KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_F12, e -> Utils.asyncScreenshot(vis.getRenderContext()));
 
-        vis.getKeyController().addKeyCommand(
-                KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_ESCAPE, e -> Runtime.getRuntime().halt(0));
-
         /* set an exception handler, catching all unhandled exceptions on the render thread (for debugging purposes) */
         vis.getRenderContext().setUncaughtExceptionHandler(new Utils.DebugExceptionHandler());
 

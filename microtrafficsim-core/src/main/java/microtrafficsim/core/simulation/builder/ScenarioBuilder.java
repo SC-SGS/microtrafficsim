@@ -28,7 +28,7 @@ public interface ScenarioBuilder {
      * @param scenario This scenario should be prepared
      * @return The prepared scenario (same reference as the given one, just for practical purposes)
      */
-    default Scenario prepare(final Scenario scenario) {
+    default Scenario prepare(final Scenario scenario) throws InterruptedException {
         return prepare(scenario, null);
     }
 
@@ -40,5 +40,5 @@ public interface ScenarioBuilder {
      * @param listener This listener should get information about the preparation progress
      * @return The prepared scenario (same reference as the given one, just for practical purposes)
      */
-    Scenario prepare(final Scenario scenario, final ProgressListener listener);
+    Scenario prepare(final Scenario scenario, final ProgressListener listener) throws InterruptedException;
 }
