@@ -491,14 +491,18 @@ public class SimulationController implements GUIController {
 
     private void startNewSimulation() {
         String oldTitle = frame.getTitle();
-        frame.setTitle("Calculating vehicle routes 0%");
+        EventQueue.invokeLater(() -> {
+            frame.setTitle("Calculating vehicle routes 0%");
+        });
 
         /* create the scenario */
         Scenario scenario = scenarioConstructor.instantiate(config, streetgraph);
         try {
             scenarioBuilder.prepare(
                     scenario,
-                    currentInPercent -> frame.setTitle("Calculating vehicle routes " + currentInPercent + "%"));
+                    currentInPercent -> EventQueue.invokeLater(() -> {
+                        frame.setTitle("Calculating vehicle routes " + currentInPercent + "%");
+                    }));
             /* initialize the scenario */
             simulation.setAndInitScenario(scenario);
             simulation.runOneStep();
@@ -506,7 +510,9 @@ public class SimulationController implements GUIController {
             logger.info("Scenario building interrupted by user");
         }
 
-        frame.setTitle(oldTitle);
+        EventQueue.invokeLater(() -> {
+            frame.setTitle(oldTitle);
+        });
     }
 
     /**
