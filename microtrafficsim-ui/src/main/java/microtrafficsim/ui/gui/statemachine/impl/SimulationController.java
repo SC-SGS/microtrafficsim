@@ -51,11 +51,11 @@ public class SimulationController implements GUIController {
 
     /* multithreading: interrupting parsing */
     private final AtomicBoolean isParsing;
-    private Thread parsingThread;
+    private       Thread        parsingThread;
 
     /* multithreading: interrupting scenario preparation */
     private final AtomicBoolean isBuildingScenario;
-    private Thread scenarioBuildThread;
+    private       Thread        scenarioBuildThread;
 
     /* state marker */
     private boolean newSim;
@@ -67,7 +67,7 @@ public class SimulationController implements GUIController {
     /* visualization and parsing */
     private final MapViewer      mapviewer;
     private final VehicleOverlay overlay;
-    private StreetGraph          streetgraph;
+    private       StreetGraph    streetgraph;
 
     /* simulation */
     private Simulation          simulation;
@@ -409,6 +409,10 @@ public class SimulationController implements GUIController {
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
         if (choice == JOptionPane.YES_OPTION) {
+            if (parsingThread != null)
+                parsingThread.interrupt();
+            if (scenarioBuildThread != null)
+                scenarioBuildThread.interrupt();
             mapviewer.stop();
             System.exit(0);
         }
@@ -538,21 +542,21 @@ public class SimulationController implements GUIController {
 
         /* general */
         preferences.setEnabled(PrefElement.sliderSpeedup,   PrefElement.sliderSpeedup.isEnabled());
-        preferences.setEnabled(PrefElement.maxVehicleCount, newSim && PrefElement.maxVehicleCount.isEnabled());
-        preferences.setEnabled(PrefElement.seed,            newSim && PrefElement.seed.isEnabled());
-        preferences.setEnabled(PrefElement.metersPerCell,   newSim && PrefElement.metersPerCell.isEnabled());
+        preferences.setEnabled(PrefElement.maxVehicleCount, PrefElement.maxVehicleCount.isEnabled() && newSim);
+        preferences.setEnabled(PrefElement.seed,            PrefElement.seed.isEnabled()            && newSim);
+        preferences.setEnabled(PrefElement.metersPerCell,   PrefElement.metersPerCell.isEnabled()   && newSim);
 
         /* crossing logic */
-        preferences.setEnabled(PrefElement.edgePriority,    newSim && PrefElement.edgePriority.isEnabled());
-        preferences.setEnabled(PrefElement.priorityToThe,   newSim && PrefElement.priorityToThe.isEnabled());
-        preferences.setEnabled(PrefElement.onlyOneVehicle,  newSim && PrefElement.onlyOneVehicle.isEnabled());
+        preferences.setEnabled(PrefElement.edgePriority,    PrefElement.edgePriority.isEnabled()    && newSim);
+        preferences.setEnabled(PrefElement.priorityToThe,   PrefElement.priorityToThe.isEnabled()   && newSim);
+        preferences.setEnabled(PrefElement.onlyOneVehicle,  PrefElement.onlyOneVehicle.isEnabled()  && newSim);
         preferences.setEnabled(PrefElement.friendlyStandingInJam,
-                newSim && PrefElement.friendlyStandingInJam.isEnabled());
+                PrefElement.friendlyStandingInJam.isEnabled() && newSim);
 
         /* visualization */
 
         /* concurrency */
-        preferences.setEnabled(PrefElement.nThreads,            newSim && PrefElement.nThreads.isEnabled());
+        preferences.setEnabled(PrefElement.nThreads,            PrefElement.nThreads.isEnabled()    && newSim);
         preferences.setEnabled(PrefElement.vehiclesPerRunnable, PrefElement.vehiclesPerRunnable.isEnabled());
         preferences.setEnabled(PrefElement.nodesPerThread,      PrefElement.nodesPerThread.isEnabled());
 
