@@ -38,8 +38,8 @@ public class MTSMenuLogic extends JMenu {
     public void addActions(GUIController guiController) {
         itemRunPause.addActionListener(e -> guiController.transiate(isPaused ? GUIEvent.RUN_SIM : GUIEvent.PAUSE_SIM));
         itemRunOneStep.addActionListener(e -> guiController.transiate(GUIEvent.RUN_SIM_ONE_STEP));
-        itemEditSim.addActionListener(e -> guiController.transiate(GUIEvent.EDIT_SIM));
-        itemNewSim.addActionListener(e -> guiController.transiate(GUIEvent.NEW_SIM));
+        itemEditSim.addActionListener(e -> guiController.transiate(GUIEvent.EDIT_SCENARIO));
+        itemNewSim.addActionListener(e -> guiController.transiate(GUIEvent.NEW_SCENARIO));
 
         guiController.addKeyCommand(KeyEvent.EVENT_KEY_RELEASED,
                                     KeyEvent.VK_SPACE,
@@ -51,10 +51,10 @@ public class MTSMenuLogic extends JMenu {
 
         guiController.addKeyCommand(KeyEvent.EVENT_KEY_RELEASED,
                                     KeyEvent.VK_COMMA,
-                                    e -> guiController.transiate(GUIEvent.EDIT_SIM));
+                                    e -> guiController.transiate(GUIEvent.EDIT_SCENARIO));
 
         guiController.addKeyCommand(KeyEvent.EVENT_KEY_RELEASED,
                                     KeyEvent.VK_N,
-                                    e -> guiController.transiate(GUIEvent.NEW_SIM));
+                                    e -> guiController.transiate(GUIEvent.NEW_SCENARIO));
     }
 }

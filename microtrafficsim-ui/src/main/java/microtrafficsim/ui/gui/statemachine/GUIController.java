@@ -22,6 +22,8 @@ public interface GUIController {
     void transiate(GUIEvent event, File file);
 
     /**
+     * Calls {@code transiate(event, file: null)}
+     *
      * @see #transiate(GUIEvent, File)
      */
     default void transiate(GUIEvent event) {

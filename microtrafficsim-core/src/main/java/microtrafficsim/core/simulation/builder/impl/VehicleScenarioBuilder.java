@@ -51,7 +51,10 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
             SimulationConfig config = scenario.getConfig();
             long ID                 = config.longIDGenerator.next();
             long vehicleSeed        = config.seedGenerator.next();
-            return new Car(ID, vehicleSeed, route, scenario.getVehicleContainer());
+
+            Car car = new Car(ID, vehicleSeed, route);
+            car.addStateListener(scenario.getVehicleContainer());
+            return car;
         });
     }
 

@@ -64,7 +64,7 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
 
     @Override
     public int hashCode() {
-        return new FNVHashBuilder().add(ID).add(origin).add(destination).add(numberOfCells).getHash();
+        return new FNVHashBuilder().add(ID).add(origin).add(destination).getHash();
     }
 
     Lane[] getLanes() {

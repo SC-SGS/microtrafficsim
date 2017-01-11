@@ -29,9 +29,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * <p>
  * Controls user input and represents an interface between visualization/parsing, simulation and GUI.
  *
+ * <p>
+ * A central method is {@link #transiate(GUIEvent)}, which is initializing user tasks. It is thread-safe, so you
+ * can call it concurrently. One call is accepted, all others are ignored. Otherwise, you or an angry user could spam
+ * the GUI.
+ *
+ * <p>
+ * This class uses a static instance of {@link EasyMarkableLogger} to log. You can change the logging behaviour using
+ * {@link microtrafficsim.build.BuildSetup}. This is different to {@link BuildSetup} used in the constructor to build
+ * the {@code SimulationController}.
+ *
  * @author Dominic Parga Cacheiro
+ *
+ * @see #transiate(GUIEvent, File)
  */
 public class SimulationController implements GUIController {
 
@@ -150,6 +163,38 @@ public class SimulationController implements GUIController {
     | (i) GUIController |
     |===================|
     */
+    /**
+     * <p>
+     * Works like a transition of a state machine. Depending on the event, several functions are called.<br>
+     * NOTE: If not differently mentioned below, all events initializes executions if and only if no other execution
+     * is currently active.
+     *
+     * <ul>
+     * <li> {@link GUIEvent#EXIT} - If this is called, all running executions are interrupted and the application
+     * exits. So this event is getting executed even if there are other executions active. <br>
+     * <li> {@link GUIEvent#CREATE} - Creates and shows the GUI. If the file is not null, the map is parsed and
+     * shown. <br>
+     * <li> {@link GUIEvent#LOAD_MAP} - Asks the user to choose a map file. If (and only if) a parsing is already
+     * running, the user is asked to cancel the currently running parsing task. <br>
+     * <li> {@link GUIEvent#NEW_SCENARIO} - Pauses a running simulation and shows the scenario-preferences-window for
+     * choosing scenario parameters. If (and only if) a scenario is already preparing (not finished), the user is
+     * asked to cancel the currently running scenario-building task. <br>
+     * <li> {@link GUIEvent#ACCEPT} - Closes the scenario-preferences-window if all settings are correctly formatted.
+     * If the scenario should be a new one (due to {@code GUIEvent#NEW_SCENARIO}), a new scenario is build. This
+     * event does ignore other running tasks because it has to be called after choosing scenario parameters. It
+     * is only closing the scenario-preferences-window and updating the GUI, if no new scenario is chosen. BUT it
+     * unlocks the lock of other executions, so we recommend to call it only to finish the event NEW_SCENARIO. <br>
+     *
+     * <li> {@link GUIEvent#CANCEL} Analogue to {@code GUIEvent.ACCEPT}: It is only closing the
+     * scenario-preferences-window and updating the GUI. BUT it unlocks the lock of other executions, so we recommend to
+     * call it only to finish the event NEW_SCENARIO. <br>
+     * <li> {@link GUIEvent#EDIT_SCENARIO} Pauses a running simulation and shows the scenario-preferences-window for
+     * choosing scenario parameters. <br>
+     * <li> {@link GUIEvent#RUN_SIM} Runs the simulation. <br>
+     * <li> {@link GUIEvent#RUN_SIM_ONE_STEP} Pauses the simulation and runs it one step. <br>
+     * <li> {@link GUIEvent#PAUSE_SIM} Pauses the simulation. <br>
+     * </ul>
+     */
     @Override
     public void transiate(GUIEvent event, final File file) {
         logger.debug("GUIEvent called = GUIEvent." + event);
@@ -184,7 +229,7 @@ public class SimulationController implements GUIController {
                         Object[] options = { "Yes", "No" };
                         int choice = JOptionPane.showOptionDialog(
                                 null,
-                                "Are you sure you would like to cancel the parsing?",
+                                "Are you sure to cancel the parsing?",
                                 "Cancel parsing?",
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.WARNING_MESSAGE,
@@ -213,14 +258,14 @@ public class SimulationController implements GUIController {
                     parsingThread.start();
                 }
                 break;
-            case NEW_SIM:
+            case NEW_SCENARIO:
                 if (isBuildingScenario.get()) {
                     new Thread(() -> {
                         // ask user to cancel scenario building
                         Object[] options = { "Yes", "No" };
                         int choice = JOptionPane.showOptionDialog(
                                 null,
-                                "Are you sure you would like to cancel the scenario building?",
+                                "Are you sure to cancel the scenario building?",
                                 "Cancel scenario building?",
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.WARNING_MESSAGE,
@@ -244,18 +289,21 @@ public class SimulationController implements GUIController {
                 break;
             case ACCEPT:
                 scenarioBuildThread = new Thread(() -> {
-                    if (updateSimulationConfig()) {
-                        closePreferences();
+                    if (isBuildingScenario.compareAndSet(false, true)) {
+                        if (updateSimulationConfig()) {
+                            closePreferences();
 
-                        if (newSim) {
-                            cleanupSimulation();
-                            isBuildingScenario.set(true);
-                            startNewSimulation();
-                            isBuildingScenario.set(false);
+                            if (newSim) {
+                                cleanupSimulation();
+                                startNewSimulation();
+                                newSim = false;
+                            }
                         }
 
                         updateMenuBar();
                         isExecuting.set(false);
+
+                        isBuildingScenario.set(false);
                     }
                 });
                 scenarioBuildThread.start();
@@ -267,7 +315,7 @@ public class SimulationController implements GUIController {
                     isExecuting.set(false);
                 }).start();
                 break;
-            case EDIT_SIM:
+            case EDIT_SCENARIO:
                 if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
                     new Thread(() -> {
                         if (simulation.getScenario() != null) {
@@ -435,7 +483,7 @@ public class SimulationController implements GUIController {
         String cachedTitle = frame.getTitle();
         frame.setTitle("Parsing new map, please wait...");
 
-        OSMParser.Result result = null;
+        OSMParser.Result result;
 
         try {
             /* parse file and create tiled provider */
@@ -445,7 +493,12 @@ public class SimulationController implements GUIController {
             result = null; // might be unnecessary here
         } catch (Exception e) {
             e.printStackTrace();
-            Runtime.getRuntime().halt(1);
+            JOptionPane.showMessageDialog(
+                    null,
+                    "The chosen file has a wrong format.\nTherefore it could not be parsed.",
+                    "Error: wrong osm-file format",
+                    JOptionPane.ERROR_MESSAGE);
+            result = null;
         }
 
 

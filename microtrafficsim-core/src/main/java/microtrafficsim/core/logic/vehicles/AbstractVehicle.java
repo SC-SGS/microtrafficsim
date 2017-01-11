@@ -6,7 +6,6 @@ import microtrafficsim.core.logic.DirectedEdge;
 import microtrafficsim.core.logic.Lane;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
@@ -25,14 +24,9 @@ import java.util.function.Function;
  * additional information.
  * <p>
  * Additional information: <br>
- * &bull angry factor: This factor represents the current mood of the vehicle. It
- * increases by one for each time the vehicle has a velocity of 0 for more than
- * one simulation step in following. In opposition to the total angry factor,
- * this factor gets reduced exponentially and is set to 0 after a time given by
- * {@link SimulationConfig}. <br>
- * &bull total angry factor: this factor represents the number of simulation steps
- * when the vehicle has had a velocity of 0 for more than one simulation step in
- * following.
+ * &bull {@link Hulk}: This interface represents the current mood of the vehicle. It
+ * increases for each time the vehicle has a velocity of 0 for more than
+ * one simulation step in following. In opposite, the vehicle calms down when driving. <br>
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
@@ -116,53 +110,17 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     }
 
     /**
-     * @param stateListener adds this listener to this class by calling {@link #addStateListener(VehicleStateListener)}
+     * <p>
+     * Checks: <br>
+     * &bull dashFactor + dawdleFactor <= 1 <br>
+     * &bull dashFactor >= 0 <br>
+     * &bull dawdleFactor >= 0 <br>
      *
-     * @see #AbstractVehicle(long, long, Route, int)
+     * @param dashFactor The probability to dash in one simulation step (addition to dawdling in
+     *                   Nagel-Schreckenberg-model)
+     * @param dawdleFactor The probability to dawdle in one simulation step (after Nagel-Schreckenberg-model)
+     * @throws Exception if the input is wrong.
      */
-    public AbstractVehicle(long ID, long seed, Route<Node> route, VehicleStateListener stateListener) {
-        this(ID, seed, route);
-        addStateListener(stateListener);
-    }
-
-    /**
-     * @param stateListener adds this listener to this class by calling {@link #addStateListener(VehicleStateListener)}
-     *
-     * @see #AbstractVehicle(long, long, Route, int)
-     */
-    public AbstractVehicle(long ID, long seed, Route<Node> route, int spawnDelay, VehicleStateListener stateListener) {
-        this(ID, seed, route, spawnDelay);
-        addStateListener(stateListener);
-    }
-
-    /**
-     * @param stateListeners adds these listeners to this class by calling
-     * {@link #addStateListener(VehicleStateListener)}
-     *
-     * @see #AbstractVehicle(long, long, Route)
-     */
-    public AbstractVehicle(long ID, long seed, Route<Node> route, Collection<VehicleStateListener> stateListeners) {
-        this(ID, seed, route);
-        for (VehicleStateListener stateListener : stateListeners)
-            addStateListener(stateListener);
-    }
-
-    /**
-     * @param stateListeners adds these listeners to this class by calling
-     * {@link #addStateListener(VehicleStateListener)}
-     *
-     * @see #AbstractVehicle(long, long, Route, int)
-     */
-    public AbstractVehicle(long ID,
-                           long seed,
-                           Route<Node> route,
-                           int spawnDelay,
-                           Collection<VehicleStateListener> stateListeners) {
-        this(ID, seed, route, spawnDelay);
-        for (VehicleStateListener stateListener : stateListeners)
-            addStateListener(stateListener);
-    }
-
     protected static void validateDashAndDawdleFactors(float dashFactor, float dawdleFactor) throws Exception {
         if (dashFactor + dawdleFactor > 1) throw new Exception("(dash factor + dawdle factor) has to be <= 1");
         if (dashFactor < 0) throw new Exception("Dash factor has to be positive.");
@@ -426,6 +384,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
 
     public void dawdle() {
         if (!hasDashed)
+            // if dash factor == 1, hasDashed is always true => dividing by (1 - dash factor) is okay without check
             if (velocity > 0 && state == VehicleState.SPAWNED) {
                 //     P[dawdle] = P[dawdle | not dash] * P[not dash]
                 // <=> P[dawdle | not dash] = P[dawdle] / (1 - P[dash])

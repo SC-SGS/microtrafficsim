@@ -50,7 +50,10 @@ public class PlusCrossroadScenario extends ValidationScenario {
                     long ID        = scenario.getConfig().longIDGenerator.next();
                     long seed      = scenario.getConfig().seedGenerator.next();
                     int spawnDelay = spawnDelayMatrix.get(route.getStart(), route.getEnd());
-                    BlockingCar vehicle = new BlockingCar(ID, seed, route, spawnDelay, getVehicleContainer());
+
+                    BlockingCar vehicle = new BlockingCar(ID, seed, route, spawnDelay);
+                    vehicle.addStateListener(getVehicleContainer());
+
                     if (state == NextScenarioState.PRIORITY_TO_THE_RIGHT && route.getStart() == mid)
                         vehicle.toggleBlockMode();
                     return vehicle;

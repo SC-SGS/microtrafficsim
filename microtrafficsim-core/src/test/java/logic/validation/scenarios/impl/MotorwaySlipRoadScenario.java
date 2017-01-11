@@ -78,7 +78,10 @@ public class MotorwaySlipRoadScenario extends ValidationScenario {
                             spawnDelay = secondSpawnDelayMatrix.get(route.getStart(), route.getEnd());
                         toggle[1] = !toggle[1];
                     }
-                    return new Car(ID, seed, route, spawnDelay, getVehicleContainer());
+
+                    Car car = new Car(ID, seed, route, spawnDelay);
+                    car.addStateListener(getVehicleContainer());
+                    return car;
                 }
         );
     }

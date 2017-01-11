@@ -51,7 +51,10 @@ public class TCrossroadScenario extends ValidationScenario {
                     long ID        = scenario.getConfig().longIDGenerator.next();
                     long seed      = scenario.getConfig().seedGenerator.next();
                     int spawnDelay = spawnDelayMatrix.get(route.getStart(), route.getEnd());
-                    return new Car(ID, seed, route, spawnDelay, getVehicleContainer());
+
+                    Car car = new Car(ID, seed, route, spawnDelay);
+                    car.addStateListener(getVehicleContainer());
+                    return car;
                 }
         );
 
