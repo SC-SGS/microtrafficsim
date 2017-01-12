@@ -138,14 +138,12 @@ public class Node implements ShortestPathNode {
                     if (config.crossingLogic.priorityToTheRightEnabled) {
                         byte leftmostMatchingIdx = IndicesCalculator.leftmostIndexInMatching(
                                 origin1, destination1, origin2, destination2, indicesPerNode);
-                        System.err.println("origin1=" + origin1);
-                        System.err.println("destin1=" + destination1);
-                        System.err.println("origin2=" + origin2);
-                        System.err.println("destin2=" + destination2);
-                        if (leftmostMatchingIdx == origin1) return 1;
-                        System.err.println("davor");
-                        if (leftmostMatchingIdx == origin2) return -1;
-                        System.err.println("danach");
+                        if (leftmostMatchingIdx == origin1) {
+                            return 1;
+                        }
+                        if (leftmostMatchingIdx == origin2) {
+                            return -1;
+                        }
                         throw new CrossingLogicException();
                     } else {
                         // random out of {-1, 1}

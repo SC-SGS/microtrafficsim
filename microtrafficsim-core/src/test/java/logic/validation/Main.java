@@ -44,7 +44,7 @@ public class Main {
 
         /* build setup: logging */
         BuildSetup.TRACE_ENABLED = false;
-        BuildSetup.DEBUG_ENABLED = false;
+        BuildSetup.DEBUG_ENABLED = true;
         BuildSetup.INFO_ENABLED  = true;
         BuildSetup.WARN_ENABLED  = true;
         BuildSetup.ERROR_ENABLED = true;

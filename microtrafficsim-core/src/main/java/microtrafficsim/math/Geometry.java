@@ -93,7 +93,7 @@ public class Geometry {
         }
 
         LinkedList<Vec2f> sortedList = new LinkedList<>(alphas.keySet());
-        Collections.sort(sortedList, (o1, o2) -> {
+        sortedList.sort((o1, o2) -> {
             double a1 = alphas.get(o1);
             double a2 = alphas.get(o2);
             if (a1 > a2) return 1;
