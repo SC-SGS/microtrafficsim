@@ -1,21 +1,14 @@
 package logic.validation.scenarios.impl;
 
-import logic.validation.scenarios.ValidationScenario;
+import logic.validation.scenarios.QueueScenario;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-import microtrafficsim.core.logic.vehicles.VehicleState;
-import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.impl.Car;
-import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.core.simulation.core.StepListener;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
-import microtrafficsim.core.vis.opengl.utils.Color;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
@@ -23,42 +16,27 @@ import java.util.function.Supplier;
 /**
  * @author Dominic Parga Cacheiro
  */
-public class TCrossroadScenario extends ValidationScenario {
-
-    private Node              topLeft;
-    private Node              bottom;
-    private Node              topRight;
-    private ScenarioBuilder   scenarioBuilder;
-    private NextScenarioState state;
+public class TCrossroadScenario extends QueueScenario {
 
     public TCrossroadScenario(SimulationConfig config,
                               StreetGraph graph,
                               Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
+        init();
 
-        /* get nodes sorted by lon */
-        ArrayList<Node> sortedNodes = new ArrayList<>(graph.getNodes());
-        sortedNodes.sort((n1, n2) -> n1.getCoordinate().lon > n2.getCoordinate().lon ? 1 : -1);
-        topLeft  = sortedNodes.get(0);
-        bottom   = sortedNodes.get(2);
-        topRight = sortedNodes.get(3);
-
-        /* build scenario */
-        scenarioBuilder = new VehicleScenarioBuilder(
+        setScenarioBuilder(new VehicleScenarioBuilder(
                 config.seedGenerator.next(),
                 visVehicleFactory,
                 (scenario, route) -> {
                     long ID        = scenario.getConfig().longIDGenerator.next();
                     long seed      = scenario.getConfig().seedGenerator.next();
-                    int spawnDelay = spawnDelayMatrix.get(route.getStart(), route.getEnd());
+                    int spawnDelay = getSpawnDelayMatrix().get(route.getStart(), route.getEnd());
 
                     Car car = new Car(ID, seed, route, spawnDelay);
                     car.addStateListener(getVehicleContainer());
                     return car;
                 }
-        );
-
-        state = NextScenarioState.PRIORITY_TO_THE_RIGHT;
+        ));
     }
 
     /**
@@ -67,7 +45,7 @@ public class TCrossroadScenario extends ValidationScenario {
      */
     public static SimulationConfig setupConfig(SimulationConfig config) {
 
-        ValidationScenario.setupConfig(config);
+        QueueScenario.setupConfig(config);
 
         config.maxVehicleCount                         = 3;
         config.crossingLogic.friendlyStandingInJamEnabled = false;
@@ -75,56 +53,55 @@ public class TCrossroadScenario extends ValidationScenario {
         return config;
     }
 
-    private enum NextScenarioState { PRIORITY_TO_THE_RIGHT, NO_INTERCEPTION, DEADLOCK }
+    private void init() {
 
-    /*
-    |========================|
-    | (c) ValidationScenario |
-    |========================|
-    */
-    @Override
-    public void prepare() {
+        /* get nodes sorted by lon */
+        ArrayList<Node> sortedNodes = new ArrayList<>(getGraph().getNodes());
+        sortedNodes.sort((n1, n2) -> n1.getCoordinate().lon > n2.getCoordinate().lon ? 1 : -1);
+        Node topLeft  = sortedNodes.get(0);
+        Node bottom   = sortedNodes.get(2);
+        Node topRight = sortedNodes.get(3);
 
-        odMatrix.clear();
-        spawnDelayMatrix.clear();
 
-        switch (state) {
-            case PRIORITY_TO_THE_RIGHT:
-                odMatrix.add(1, topRight, topLeft);
-                odMatrix.add(1, bottom, topLeft);
+        /* setup scenario matrices */
+        ODMatrix odMatrix, spawnDelayMatrix;
 
-                spawnDelayMatrix.add(0, topRight, topLeft);
-                spawnDelayMatrix.add(1, bottom, topLeft);
 
-                state = NextScenarioState.NO_INTERCEPTION;
-                break;
-            case NO_INTERCEPTION:
-                odMatrix.add(1, topRight, topLeft);
-                odMatrix.add(1, bottom, topRight);
+        /* PRIORITY_TO_THE_RIGHT */
+        odMatrix = new SparseODMatrix();
+        odMatrix.add(1, topRight, topLeft);
+        odMatrix.add(1, bottom, topLeft);
 
-                spawnDelayMatrix.add(0, topRight, topLeft);
-                spawnDelayMatrix.add(1, bottom, topRight);
+        spawnDelayMatrix = new SparseODMatrix();
+        spawnDelayMatrix.add(0, topRight, topLeft);
+        spawnDelayMatrix.add(1, bottom, topLeft);
 
-                state = NextScenarioState.DEADLOCK;
-                break;
-            case DEADLOCK:
-                odMatrix.add(1, topRight, topLeft);
-                odMatrix.add(1, topLeft, topRight);
-                odMatrix.add(1, bottom, topLeft);
+        addSubScenario(odMatrix, spawnDelayMatrix);
 
-                spawnDelayMatrix.add(0, topRight, topLeft);
-                spawnDelayMatrix.add(1, topLeft, topRight);
-                spawnDelayMatrix.add(1, bottom, topLeft);
 
-                state = NextScenarioState.PRIORITY_TO_THE_RIGHT;
-                break;
-        }
+        /* NO_INTERCEPTION */
+        odMatrix = new SparseODMatrix();
+        odMatrix.add(1, topRight, topLeft);
+        odMatrix.add(1, bottom, topRight);
 
-        try {
-            scenarioBuilder.prepare(this);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        spawnDelayMatrix = new SparseODMatrix();
+        spawnDelayMatrix.add(0, topRight, topLeft);
+        spawnDelayMatrix.add(1, bottom, topRight);
+
+        addSubScenario(odMatrix, spawnDelayMatrix);
+
+
+        /* DEADLOCK */
+        odMatrix = new SparseODMatrix();
+        odMatrix.add(1, topRight, topLeft);
+        odMatrix.add(1, topLeft, topRight);
+        odMatrix.add(1, bottom, topLeft);
+
+        spawnDelayMatrix = new SparseODMatrix();
+        spawnDelayMatrix.add(0, topRight, topLeft);
+        spawnDelayMatrix.add(1, topLeft, topRight);
+        spawnDelayMatrix.add(1, bottom, topLeft);
+
+        addSubScenario(odMatrix, spawnDelayMatrix);
     }
-
 }

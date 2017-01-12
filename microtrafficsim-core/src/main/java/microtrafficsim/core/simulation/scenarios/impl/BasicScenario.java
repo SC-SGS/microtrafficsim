@@ -1,6 +1,5 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
@@ -9,8 +8,6 @@ import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehic
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
 import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
-
-import java.util.function.Supplier;
 
 /**
  * This class should only implement the basic stuff for children classes.
@@ -38,6 +35,7 @@ public abstract class BasicScenario implements Scenario {
         this.config = config;
         this.graph = graph;
         this.vehicleContainer = vehicleContainer;
+        this.isPrepared = false;
 
         this.odMatrix = new SparseODMatrix();
     }
@@ -48,37 +46,37 @@ public abstract class BasicScenario implements Scenario {
     }
 
     @Override
-    public SimulationConfig getConfig() {
+    public final SimulationConfig getConfig() {
         return config;
     }
 
     @Override
-    public StreetGraph getGraph() {
+    public final StreetGraph getGraph() {
         return graph;
     }
 
     @Override
-    public VehicleContainer getVehicleContainer() {
+    public final VehicleContainer getVehicleContainer() {
         return vehicleContainer;
     }
 
     @Override
-    public void setPrepared(boolean isPrepared) {
+    public final void setPrepared(boolean isPrepared) {
         this.isPrepared = isPrepared;
     }
 
     @Override
-    public boolean isPrepared() {
+    public final boolean isPrepared() {
         return isPrepared;
     }
 
     @Override
-    public void setODMatrix(ODMatrix odMatrix) {
+    public final void setODMatrix(ODMatrix odMatrix) {
         this.odMatrix = odMatrix;
     }
 
     @Override
-    public UnmodifiableODMatrix getODMatrix() {
+    public final UnmodifiableODMatrix getODMatrix() {
         return new UnmodifiableODMatrix(odMatrix);
     }
 }

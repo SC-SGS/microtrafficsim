@@ -1,7 +1,7 @@
 package logic.validation;
 
 import com.jogamp.newt.event.KeyEvent;
-import logic.validation.scenarios.ValidationScenario;
+import logic.validation.scenarios.QueueScenario;
 import logic.validation.scenarios.impl.MotorwaySlipRoadScenario;
 import logic.validation.scenarios.impl.PlusCrossroadScenario;
 import logic.validation.scenarios.impl.RoundaboutScenario;
@@ -10,7 +10,6 @@ import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
-import microtrafficsim.core.map.style.impl.LightStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
@@ -20,7 +19,6 @@ import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
-import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.resources.PackagedResource;
 
 import javax.swing.*;
@@ -127,7 +125,7 @@ public class Main {
 
 
             /* initialize the simulation */
-            ValidationScenario scenario = null;
+            QueueScenario scenario = null;
             switch (scenarioType) {
                 case MOTORWAY_SLIP_ROAD:
                     scenario = new MotorwaySlipRoadScenario(config, graph, overlay.getVehicleFactory());

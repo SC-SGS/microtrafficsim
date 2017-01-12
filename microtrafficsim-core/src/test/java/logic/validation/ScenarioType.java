@@ -17,7 +17,7 @@ public enum ScenarioType {
     T_CROSSROAD("T_crossroad.osm", TCrossroadScenario::setupConfig),
     ROUNDABOUT("roundabout.osm", RoundaboutScenario::setupConfig),
     PLUS_CROSSROAD("plus_crossroad.osm", PlusCrossroadScenario::setupConfig),
-    MOTORWAY_SLIP_ROAD("motorway_slip-road.osm", MotorwaySlipRoadScenario::setupConfig);
+    MOTORWAY_SLIP_ROAD("motorway_slip-road.osm", MotorwaySlipRoadScenario::setupConfig), ;
 
     private String osmFilename;
     private Function<SimulationConfig, SimulationConfig> configSetup;
