@@ -17,7 +17,7 @@ import microtrafficsim.utils.hashing.FNVHashBuilder;
  */
 public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
 
-    final long        ID;
+    public final long ID;
     private final int numberOfCells;
     private final int maxVelocity;
     private final byte priorityLevel;
@@ -64,7 +64,7 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
 
     @Override
     public int hashCode() {
-        return new FNVHashBuilder().add(ID).add(origin).add(destination).getHash();
+        return new FNVHashBuilder().add(ID).add(origin).add(destination).add(numberOfCells).getHash();
     }
 
     Lane[] getLanes() {
