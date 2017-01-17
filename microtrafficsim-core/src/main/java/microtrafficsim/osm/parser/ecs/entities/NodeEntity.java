@@ -3,6 +3,7 @@ package microtrafficsim.osm.parser.ecs.entities;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.Entity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
+import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -49,5 +50,10 @@ public class NodeEntity extends Entity {
         }
 
         return ce;
+    }
+
+    @Override
+    public int hashCode() {
+        return new FNVHashBuilder().add(id).getHash();
     }
 }

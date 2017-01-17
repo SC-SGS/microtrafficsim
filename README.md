@@ -8,6 +8,11 @@ We are cleaning up the existing project. This includes detailed Javadocs,
 removing quick fixes or creating branches for them.
 
 The simulation package is redesigned! The next step is making it deterministic.
+**IMPORTANT**: While doing this we recognized a bug in the crossing logic.
+Fortunately it is just an implementation bug, not a mistake in theory.
+We validated our crossing logic in several scenarios, but our chosen scenarios
+are correct by random. THEREFORE OUR CROSSING LOGIC IS NOT WORKING CORRECTLY.
+Of course we will fix this soon.
 
 
 ## Demonstration and Examples
