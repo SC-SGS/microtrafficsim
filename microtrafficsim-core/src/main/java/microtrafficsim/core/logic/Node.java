@@ -9,6 +9,7 @@ import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.exceptions.core.logic.CrossingLogicException;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.utils.Tuple;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 import java.util.*;
@@ -23,17 +24,17 @@ import java.util.*;
  */
 public class Node implements ShortestPathNode {
 
-    public final Long        ID;
+    public final Long      ID;
     private ScenarioConfig config;
-    private Random           random;
-    private Coordinate       coordinate;
-    private HashMap<Lane, ArrayList<Lane>> restrictions;
+    private Random         random;
+    private Coordinate     coordinate;
 
     // crossing logic
     private PriorityQueue<AbstractVehicle>                 newRegisteredVehicles;
     private HashMap<AbstractVehicle, Set<AbstractVehicle>> assessedVehicles;
     private HashSet<AbstractVehicle>                       maxPrioVehicles;
     private boolean                                        anyChangeSinceUpdate;
+    private HashMap<Lane, ArrayList<Lane>>                 restrictions;
 
     // edges
     private HashMap<DirectedEdge, Byte> leavingEdges;    // edge, index(for crossing logic)
@@ -341,6 +342,43 @@ public class Node implements ShortestPathNode {
      */
     public synchronized boolean permissionToCross(AbstractVehicle vehicle) {
         return maxPrioVehicles.contains(vehicle);
+    }
+
+    /**
+     * @return Iterator returning tuples of edges with their crossing index
+     */
+    public Iterator<Tuple<DirectedEdge, Byte>> iterCrossingIndices() {
+
+        Iterator<DirectedEdge> iterLeavingEdges = this.leavingEdges.keySet().iterator();
+        Iterator<DirectedEdge> iterIncomingEdges = this.incomingEdges.keySet().iterator();
+        HashMap<DirectedEdge, Byte> leavingEdges = new HashMap<>(this.leavingEdges);
+        HashMap<DirectedEdge, Byte> incomingEdges = new HashMap<>(this.incomingEdges);
+
+        return new Iterator<Tuple<DirectedEdge, Byte>>() {
+
+            Iterator<DirectedEdge> bla = leavingEdges.keySet().iterator();
+
+            @Override
+            public boolean hasNext() {
+                return iterLeavingEdges.hasNext() || iterIncomingEdges.hasNext();
+            }
+
+            @Override
+            public Tuple<DirectedEdge, Byte> next() {
+
+                if (iterLeavingEdges.hasNext()) {
+                    DirectedEdge edge = iterLeavingEdges.next();
+                    Byte crossingIndex = leavingEdges.get(edge);
+                    return new Tuple<>(edge, crossingIndex);
+                } else if (iterIncomingEdges.hasNext()) {
+                    DirectedEdge edge = iterIncomingEdges.next();
+                    Byte crossingIndex = incomingEdges.get(edge);
+                    return new Tuple<>(edge, crossingIndex);
+                }
+
+                return null;
+            }
+        };
     }
 
     /*

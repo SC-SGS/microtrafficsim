@@ -113,14 +113,14 @@ public class Car extends AbstractVehicle {
     @Override
     protected Function<Integer, Integer> createAccelerationFunction() {
         // 1 - e^(-1s/15s) = 1 - 0,9355 = 0.0645
-        //    return v -> (int)(0.0645f * maxVelocity + 0.9355f * v);
+        //    return obj1 -> (int)(0.0645f * maxVelocity + 0.9355f * obj1);
         return v -> v + 1;
     }
 
     @Override
     protected Function<Integer, Integer> createDawdleFunction() {
         // Dawdling only 5km/h
-        //    return v -> (v < 5) ? 0 : (v - 5);
+        //    return obj1 -> (obj1 < 5) ? 0 : (obj1 - 5);
         return v -> (v < 1) ? 0 : v - 1;
     }
 

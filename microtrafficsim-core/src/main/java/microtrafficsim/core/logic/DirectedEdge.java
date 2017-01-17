@@ -105,11 +105,11 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
     | visualization |
     |===============|
     */
-    Vec2d getOriginDirection() {
+    public Vec2d getOriginDirection() {
         return originDirection;
     }
 
-    Vec2d getDestinationDirection() {
+    public Vec2d getDestinationDirection() {
         return destinationDirection;
     }
 

@@ -183,7 +183,7 @@ public class Vec3d {
      * Calculates and returns the dot-product of this vector with the specified one.
      *
      * @param v the vector to calculate the dot-product with.
-     * @return the dot-product of this vector and {@code v}.
+     * @return the dot-product of this vector and {@code obj1}.
      */
     public double dot(Vec3d v) {
         return this.x * v.x + this.y * v.y + this.z * v.z;
@@ -193,7 +193,7 @@ public class Vec3d {
      * Calculates and returns the cross-product of this vector with the specified one.
      *
      * @param v the vector to calculate the cross-product with.
-     * @return the cross-product of this vector and {@code v} (i.e {@code this cross v}).
+     * @return the cross-product of this vector and {@code obj1} (i.e {@code this cross obj1}).
      */
     public Vec3d cross(Vec3d v) {
         double x = this.y * v.z - v.y * this.z;
@@ -212,7 +212,7 @@ public class Vec3d {
      * Normalizes the given vector and returns the result.
      *
      * @param v the vector to normalize.
-     * @return {@code v} as (new) normalized vector
+     * @return {@code obj1} as (new) normalized vector
      */
     public static Vec3d normalize(Vec3d v) {
         double abs = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -246,7 +246,7 @@ public class Vec3d {
      *
      * @param v      the vector to multiply with.
      * @param scalar the scalar value to multiply with.
-     * @return the result of this multiplication, i.e. {@code v * scalar} as new vector.
+     * @return the result of this multiplication, i.e. {@code obj1 * scalar} as new vector.
      */
     public static Vec3d mul(Vec3d v, double scalar) {
         return new Vec3d(v.x * scalar, v.y * scalar, v.z * scalar);

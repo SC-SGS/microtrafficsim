@@ -1,4 +1,4 @@
-package logic.crossingindices;
+package logic.crossinglogic;
 
 import microtrafficsim.core.logic.IndicesCalculator;
 import org.junit.Test;
@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Dominic Parga Cacheiro
  */
-public class TestCrossingIndices {
+public class TestCrossingIndicesCalculation {
 
     private final boolean crossing = true, not_crossing = false;
     private byte          origin1, destination1, origin2, destination2, indicesPerNode;

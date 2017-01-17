@@ -25,24 +25,24 @@
 		<nd ref="269781910"/>
 		<nd ref="269781911"/>
 		<nd ref="269781912"/>
-		<tag k="highway" v="motorway_link"/>
-		<tag k="lanes" v="1"/>
-		<tag k="oneway" v="yes"/>
+		<tag k="highway" obj1="motorway_link"/>
+		<tag k="lanes" obj1="1"/>
+		<tag k="oneway" obj1="yes"/>
 	</way>
 	<way id="266638953">
 		<nd ref="269781912"/>
 		<nd ref="34918001"/>
-		<tag k="highway" v="motorway"/>
-		<tag k="lanes" v="4"/>
-		<tag k="maxspeed" v="120"/>
-		<tag k="oneway" v="yes"/>
+		<tag k="highway" obj1="motorway"/>
+		<tag k="lanes" obj1="4"/>
+		<tag k="maxspeed" obj1="120"/>
+		<tag k="oneway" obj1="yes"/>
 	</way>
 	<way id="203751272">
 		<nd ref="34918000"/>
 		<nd ref="269781912"/>
-		<tag k="highway" v="motorway"/>
-		<tag k="lanes" v="3"/>
-		<tag k="maxspeed" v="120"/>
-		<tag k="oneway" v="yes"/>
+		<tag k="highway" obj1="motorway"/>
+		<tag k="lanes" obj1="3"/>
+		<tag k="maxspeed" obj1="120"/>
+		<tag k="oneway" obj1="yes"/>
 	</way>
 </osm>

@@ -205,7 +205,7 @@ public class Vec4f {
     }
 
     /**
-     * Subtract the given vector from this vector (i.e. {@code this - v}} and stores the result in this vector. This
+     * Subtract the given vector from this vector (i.e. {@code this - obj1}} and stores the result in this vector. This
      * calculation includes the {@code w}-component.
      *
      * @param v the vector to subtract.
@@ -221,7 +221,7 @@ public class Vec4f {
 
     /**
      * Subtracts the {@code x}-, {@code y}- and {@code z}-components of the given vector from this vector
-     * ({@code this - v}). This calculation fully ignores the {@code w}-component.
+     * ({@code this - obj1}). This calculation fully ignores the {@code w}-component.
      *
      * @param v the vector to add.
      * @return this vector.
@@ -267,7 +267,7 @@ public class Vec4f {
      * {@code w}-component.
      *
      * @param v the vector to calculate the dot product with.
-     * @return the dot product of this vector and {@code v}.
+     * @return the dot product of this vector and {@code obj1}.
      */
     public float dot(Vec4f v) {
         return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w;
@@ -278,7 +278,7 @@ public class Vec4f {
      * with the specified one. This calculation fully ignores the {@code w}-component.
      *
      * @param v the vector to calculate the dot product with.
-     * @return the dot product of the {@code x}-, {@code y}- and {@code z}-components of this vector and {@code v}.
+     * @return the dot product of the {@code x}-, {@code y}- and {@code z}-components of this vector and {@code obj1}.
      */
     public float dot3(Vec4f v) {
         return this.x * v.x + this.y * v.y + this.z * v.z;
@@ -289,7 +289,7 @@ public class Vec4f {
      * Normalizes the given vector and returns the result. This calculation includes the {@code w}-component.
      *
      * @param v the vector to normalize.
-     * @return {@code v} as (new) normalized vector
+     * @return {@code obj1} as (new) normalized vector
      */
     public static Vec4f normalize(Vec4f v) {
         float abs = (float) Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w);
@@ -379,7 +379,7 @@ public class Vec4f {
      * @param v      the vector to be multiplied with.
      * @param scalar the scalar to be multiplied with.
      * @return the result of the multiplication of the scalar value with the {@code x}-, {@code y}- and
-     * {@code z}-components of the specified vector (i.e. {@code v.xyz * scalar}) and {@code v.w} for the
+     * {@code z}-components of the specified vector (i.e. {@code obj1.xyz * scalar}) and {@code obj1.w} for the
      * {@code w}-component.
      */
     public static Vec4f mul3(Vec4f v, float scalar) {

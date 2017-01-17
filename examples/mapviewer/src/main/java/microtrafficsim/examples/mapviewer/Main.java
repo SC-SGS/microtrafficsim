@@ -1,41 +1,15 @@
 package microtrafficsim.examples.mapviewer;
 
-import com.jogamp.newt.event.KeyEvent;
-import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.map.style.StyleSheet;
-import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
-import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
-import microtrafficsim.core.mapviewer.utils.Utils;
-import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
-import microtrafficsim.core.vis.VisualizationPanel;
-import microtrafficsim.core.vis.Visualizer;
-import microtrafficsim.core.vis.VisualizerConfig;
-import microtrafficsim.core.vis.map.projections.MercatorProjection;
-import microtrafficsim.core.vis.map.projections.Projection;
-import microtrafficsim.core.vis.map.tiles.PreRenderedTileProvider;
-import microtrafficsim.core.vis.map.tiles.TileProvider;
-import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerGenerator;
-import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
-import microtrafficsim.core.vis.map.tiles.layers.LayeredTileMap;
-import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
-import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
-import microtrafficsim.osm.parser.features.FeatureGenerator;
-import microtrafficsim.osm.parser.features.streets.StreetComponent;
-import microtrafficsim.osm.parser.features.streets.StreetComponentFactory;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
-import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
-import microtrafficsim.osm.parser.relations.restriction.RestrictionRelationFactory;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.util.Collection;
 
 
 /**

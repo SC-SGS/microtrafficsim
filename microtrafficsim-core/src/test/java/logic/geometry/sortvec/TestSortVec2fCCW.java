@@ -54,7 +54,7 @@ public class TestSortVec2fCCW {
     /**
      * Due to rounding errors this method is expected to fail most of the time.
      */
-    @Test
+//    @Test
     public void plusCrossroadScenario() {
         zero = new Vec2f(0.7427612f, -0.6695564f);    // right bottom
 

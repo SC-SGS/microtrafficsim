@@ -46,8 +46,8 @@ uniform int   u_join_type               = JOIN_TYPE_ROUND;
 float cross(vec2 a, vec2 b) { return a.x * b.y - a.y * b.x; }
 
 /* screen-space pixel-space tranformations */
-vec4 s_to_p(vec4 v) { return vec4(v.xy * u_viewport.xy, v.zw); }
-vec4 p_to_s(vec4 v) { return vec4(v.xy * u_viewport.zw, v.zw); }
+vec4 s_to_p(vec4 obj1) { return vec4(obj1.xy * u_viewport.xy, obj1.zw); }
+vec4 p_to_s(vec4 obj1) { return vec4(obj1.xy * u_viewport.zw, obj1.zw); }
 
 /* use none-cap on thin lines */
 int get_sane_cap_type(float linewidth) {

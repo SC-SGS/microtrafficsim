@@ -38,7 +38,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
     private static Logger logger = new EasyMarkableLogger(StreetGraphGenerator.class);
 
     private StreetGraph        graph;
-    private ScenarioConfig config;
+    private ScenarioConfig     config;
     private DistanceCalculator distcalc;
 
     /**
@@ -215,11 +215,11 @@ public class StreetGraphGenerator implements FeatureGenerator {
 
         GraphWayComponent gwcFrom = wayFrom.get(GraphWayComponent.class);
 
-        // u-turns
+        // obj0-turns
         for (Connector c : gwcFrom.uturn) {
             if (sgwcFrom.forward == null || sgwcFrom.backward == null) continue;
 
-            // XXX u-turns should probably have a special direction?
+            // XXX obj0-turns should probably have a special direction?
             if (c.via.id == wayFrom.nodes[0]) {
                 sgNodeStart.addConnector(sgwcFrom.backward.getLane(0), sgwcFrom.forward.getLane(0), Direction.LEFT);
             } else if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1]) {

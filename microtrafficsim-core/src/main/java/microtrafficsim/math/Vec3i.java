@@ -147,7 +147,7 @@ public class Vec3i {
      * Calculates and returns the dot-product of this vector with the specified one.
      *
      * @param v the vector to calculate the dot-product with.
-     * @return the dot-product of this vector and {@code v}.
+     * @return the dot-product of this vector and {@code obj1}.
      */
     public int dot(Vec3i v) {
         return this.x * v.x + this.y * v.y + this.z * v.z;
@@ -157,7 +157,7 @@ public class Vec3i {
      * Calculates and returns the cross-product of this vector with the specified one.
      *
      * @param v the vector to calculate the cross-product with.
-     * @return the cross-product of this vector and {@code v} (i.e {@code this cross v}).
+     * @return the cross-product of this vector and {@code obj1} (i.e {@code this cross obj1}).
      */
     public Vec3i cross(Vec3i v) {
         int x = this.y * v.z - v.y * this.z;
@@ -199,7 +199,7 @@ public class Vec3i {
      *
      * @param v      the vector to multiply with.
      * @param scalar the scalar value to multiply with.
-     * @return the result of this multiplication, i.e. {@code v * scalar} as new vector.
+     * @return the result of this multiplication, i.e. {@code obj1 * scalar} as new vector.
      */
     public static Vec3i mul(Vec3i v, int scalar) {
         return new Vec3i(v.x * scalar, v.y * scalar, v.z * scalar);

@@ -469,16 +469,16 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
      * After simplifying vout, you get the formula above.
      *
      * @return A function that calculates a greater velocity depending on a given velocity.<br>
-     * E.g.: constant acceleration <=> this method returns something like v -> v + const
+     * E.g.: constant acceleration <=> this method returns something like obj1 -> obj1 + const
      */
     protected abstract Function<Integer, Integer> createAccelerationFunction();
 
     /**
      * This method is only called when the vehicle is dawdling, thus it should return<br>
-     * e.g. v -> v - 5km/h
+     * e.g. obj1 -> obj1 - 5km/h
      *
      * @return A function that calculates a lower velocity depending on a given velocity.<br>
-     * E.g.: constant acceleration <=> this method returns something like v -> v - const
+     * E.g.: constant acceleration <=> this method returns something like obj1 -> obj1 - const
      */
     protected abstract Function<Integer, Integer> createDawdleFunction();
 
