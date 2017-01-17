@@ -5,10 +5,10 @@ import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.exceptions.core.logic.CrossingLogicException;
 import microtrafficsim.math.Geometry;
-import microtrafficsim.math.Vec2f;
+import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 import java.util.*;
@@ -24,7 +24,7 @@ import java.util.*;
 public class Node implements ShortestPathNode {
 
     public final Long        ID;
-    private SimulationConfig config;
+    private ScenarioConfig config;
     private Random           random;
     private Coordinate       coordinate;
     private HashMap<Lane, ArrayList<Lane>> restrictions;
@@ -43,7 +43,7 @@ public class Node implements ShortestPathNode {
     /**
      * Default constructor
      */
-    public Node(SimulationConfig config, Coordinate coordinate) {
+    public Node(ScenarioConfig config, Coordinate coordinate) {
         this.config     = config;
         ID              = config.longIDGenerator.next();
         this.coordinate = coordinate;
@@ -93,7 +93,7 @@ public class Node implements ShortestPathNode {
      * At first, the crossing logic checks whether the two vehicles' turning ways are crossing each other (otherwise
      * return 0). If they are crossing, the origin-priorities are compared. If equal, the destination-priorities are
      * compared. If equal, they have to be compared by right-before-left or randomly. All sub-comparisons can be
-     * enabled/disabled with the {@link SimulationConfig}.
+     * enabled/disabled with the {@link ScenarioConfig}.
      *
      * @return an int > 0 if v1 has priority over v2; an int < 0 if v2 has priority over v1; an int = 0 if v1 and v2
      * have equal priorities
@@ -123,6 +123,8 @@ public class Node implements ShortestPathNode {
         byte origin2        = incomingEdges.get(v2.getDirectedEdge());
         byte destination2   = leavingEdges.get(v2.peekNextRouteSection());
         byte indicesPerNode = (byte) (incomingEdges.size() + leavingEdges.size());
+
+
 
         // if vehicles are crossing each other's way
         if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2, indicesPerNode)) {
@@ -253,6 +255,7 @@ public class Node implements ShortestPathNode {
                 }
             }
 
+
             if (!maxPrioVehicles.isEmpty()) {
                 // case #1: maxPrio == assessedVehicles.size() - 1
                 // => all vehicles are beaten (otherwise: deadlock between vehicles if more than one has priority)
@@ -377,41 +380,62 @@ public class Node implements ShortestPathNode {
      */
     void calculateEdgeIndices() {
 
-        // set zero vector
-        Vec2f zero = null;
+        /* init */
+        HashMap<Vec2d, ArrayList<DirectedEdge>> edges = new HashMap<>();
+        Vec2d zero = null;
+
+        /* get all vectors for sorting */
         for (DirectedEdge edge : leavingEdges.keySet()) {
-            zero = new Vec2f(edge.getOriginDirection());
-            break;
-        }
-        if (zero == null)
-            for (DirectedEdge edge : incomingEdges.keySet()) {
-                zero = Vec2f.mul(edge.getDestinationDirection(), -1);
-                break;
+            // invert leaving XOR incoming edges
+            Vec2d v = Vec2d.mul(edge.getOriginDirection(), -1);
+
+            // set zero reference if not done yet
+            if (zero == null)
+                zero = v;
+
+            // add edge to its vector
+            ArrayList<DirectedEdge> vectorsEdges = edges.get(v);
+            if (vectorsEdges == null) {
+                vectorsEdges = new ArrayList<>(2);
+                edges.put(v, vectorsEdges);
             }
-
-        // get all vectors for sorting
-        HashMap<Vec2f, ArrayList<DirectedEdge>> edges = new HashMap<>();
-        for (DirectedEdge edge : leavingEdges.keySet()) {
-            Vec2f v = new Vec2f(edge.getOriginDirection());
-            if (!edges.containsKey(v)) edges.put(v, new ArrayList<>(2));
-            edges.get(v).add(edge);
+            vectorsEdges.add(edge);
         }
+
         for (DirectedEdge edge : incomingEdges.keySet()) {
-            Vec2f v = Vec2f.mul(edge.getDestinationDirection(), -1);
-            if (!edges.containsKey(v)) edges.put(v, new ArrayList<>(2));
-            edges.get(v).add(edge);
+            Vec2d v = new Vec2d(edge.getDestinationDirection());
+
+            // set zero reference if not done yet
+            if (zero == null)
+                zero = v;
+
+            // add edge to its vector
+            ArrayList<DirectedEdge> vectorsEdges = edges.get(v);
+            if (vectorsEdges == null) {
+                vectorsEdges = new ArrayList<>(2);
+                edges.put(v, vectorsEdges);
+            }
+            vectorsEdges.add(edge);
         }
 
-        // now: all vectors are keys
-        Queue<Vec2f> sortedVectors
+        /* now: all vectors are keys */
+        Queue<Vec2d> sortedVectors
                 = Geometry.sortClockwiseAsc(zero, edges.keySet(), !config.crossingLogic.drivingOnTheRight);
         byte nextCrossingIndex = 0;
+        // iterate over the sorted vectors
         while (!sortedVectors.isEmpty()) {
-            ArrayList<DirectedEdge> nextEdges = edges.remove(sortedVectors.poll());
+            Vec2d v = sortedVectors.poll();
+            // take the current vector's edges
+            ArrayList<DirectedEdge> nextEdges = edges.remove(v);
+
+            // add its leaving edges before its incoming edges
             for (DirectedEdge nextEdge : nextEdges)
-                if (leavingEdges.containsKey(nextEdge)) leavingEdges.put(nextEdge, nextCrossingIndex++);
+                if (leavingEdges.containsKey(nextEdge))
+                    leavingEdges.put(nextEdge, nextCrossingIndex++);
+
             for (DirectedEdge nextEdge : nextEdges)
-                if (incomingEdges.containsKey(nextEdge)) incomingEdges.put(nextEdge, nextCrossingIndex++);
+                if (incomingEdges.containsKey(nextEdge))
+                    incomingEdges.put(nextEdge, nextCrossingIndex++);
         }
     }
 

@@ -6,7 +6,7 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
 
@@ -18,7 +18,7 @@ import java.util.function.Supplier;
  */
 public class TCrossroadScenario extends QueueScenario {
 
-    public TCrossroadScenario(SimulationConfig config,
+    public TCrossroadScenario(ScenarioConfig config,
                               StreetGraph graph,
                               Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
@@ -43,7 +43,7 @@ public class TCrossroadScenario extends QueueScenario {
      * @param config
      * @return the given config updated; just for practical purpose
      */
-    public static SimulationConfig setupConfig(SimulationConfig config) {
+    public static ScenarioConfig setupConfig(ScenarioConfig config) {
 
         QueueScenario.setupConfig(config);
 

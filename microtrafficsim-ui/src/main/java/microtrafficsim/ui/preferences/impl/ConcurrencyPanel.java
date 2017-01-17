@@ -1,6 +1,6 @@
 package microtrafficsim.ui.preferences.impl;
 
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
 
@@ -54,15 +54,15 @@ public class ConcurrencyPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
+    public void setSettings(ScenarioConfig config) {
         tfNThreads.setText("" + config.multiThreading.nThreads);
         tfVehiclesPerRunnable.setText("" + config.multiThreading.vehiclesPerRunnable);
         tfNodesPerThread.setText("" + config.multiThreading.nodesPerThread);
     }
 
     @Override
-    public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
-        SimulationConfig           config           = new SimulationConfig();
+    public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
+        ScenarioConfig config           = new ScenarioConfig();
         boolean                    exceptionOccured = false;
         IncorrectSettingsException exception        = new IncorrectSettingsException();
 

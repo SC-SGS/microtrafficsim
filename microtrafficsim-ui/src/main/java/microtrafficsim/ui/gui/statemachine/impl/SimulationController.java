@@ -4,7 +4,7 @@ import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
@@ -75,7 +75,7 @@ public class SimulationController implements GUIController {
     private boolean isCreated;
 
     /* general */
-    private final SimulationConfig config;
+    private final ScenarioConfig config;
 
     /* visualization and parsing */
     private final MapViewer      mapviewer;

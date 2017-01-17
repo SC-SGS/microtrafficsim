@@ -5,8 +5,7 @@ import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
@@ -18,9 +17,6 @@ import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.id.ConcurrentSeedGenerator;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.function.Supplier;
 
 /**
@@ -32,7 +28,7 @@ import java.util.function.Supplier;
 public abstract class QueueScenario implements Scenario {
 
     /* general */
-    private final SimulationConfig config;
+    private final ScenarioConfig config;
     private final StreetGraph graph;
     private final VehicleContainer vehicleContainer;
     private ShortestPathAlgorithm scout;
@@ -51,7 +47,7 @@ public abstract class QueueScenario implements Scenario {
      * @param graph used for route definitions etc.
      * @param vehicleContainer stores and manages vehicles running in this scenario
      */
-    protected QueueScenario(SimulationConfig config,
+    protected QueueScenario(ScenarioConfig config,
                          StreetGraph graph,
                          VehicleContainer vehicleContainer) {
 
@@ -71,9 +67,9 @@ public abstract class QueueScenario implements Scenario {
      * Just calls {@code QueueScenario(config, graph, new ConcurrentVehicleContainer())}.
      *
      * @see ConcurrentVehicleContainer
-     * @see QueueScenario#QueueScenario(SimulationConfig, StreetGraph, VehicleContainer)
+     * @see QueueScenario#QueueScenario(ScenarioConfig, StreetGraph, VehicleContainer)
      */
-    protected QueueScenario(SimulationConfig config,
+    protected QueueScenario(ScenarioConfig config,
                          StreetGraph graph) {
         this(config, graph, new ConcurrentVehicleContainer());
     }
@@ -82,7 +78,7 @@ public abstract class QueueScenario implements Scenario {
         this.scenarioBuilder = scenarioBuilder;
     }
 
-    public static SimulationConfig setupConfig(SimulationConfig config) {
+    public static ScenarioConfig setupConfig(ScenarioConfig config) {
 
         config.metersPerCell           = 7.5f;
         config.longIDGenerator         = new ConcurrentLongIDGenerator();
@@ -169,7 +165,7 @@ public abstract class QueueScenario implements Scenario {
     |==============|
     */
     @Override
-    public final SimulationConfig getConfig() {
+    public final ScenarioConfig getConfig() {
         return config;
     }
 

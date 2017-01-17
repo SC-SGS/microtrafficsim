@@ -1,6 +1,6 @@
 package microtrafficsim.ui.preferences.impl;
 
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
@@ -187,7 +187,7 @@ public class PreferencesFrame extends JFrame implements Preferences {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
+    public void setSettings(ScenarioConfig config) {
         generalPanel.setSettings(config);
         crossingLogicPanel.setSettings(config);
         visualizationPanel.setSettings(config);
@@ -195,8 +195,8 @@ public class PreferencesFrame extends JFrame implements Preferences {
     }
 
     @Override
-    public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
-        SimulationConfig           config           = new SimulationConfig();
+    public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
+        ScenarioConfig config           = new ScenarioConfig();
         boolean                    exceptionOccured = false;
         IncorrectSettingsException exception        = new IncorrectSettingsException();
 

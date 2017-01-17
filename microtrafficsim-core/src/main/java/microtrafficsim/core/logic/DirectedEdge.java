@@ -3,8 +3,8 @@ package microtrafficsim.core.logic;
 import microtrafficsim.core.entities.street.LogicStreetEntity;
 import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.math.Vec2f;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 
@@ -21,7 +21,7 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
     private final int numberOfCells;
     private final int maxVelocity;
     private final byte priorityLevel;
-    private final Vec2f originDirection, destinationDirection;
+    private final Vec2d originDirection, destinationDirection;
     private Node origin;
     private Node destination;
     private Lane[] lanes;
@@ -39,8 +39,8 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
      * @param origin         Origin node of this edge
      * @param destination    Destination node of this edge
      */
-    public DirectedEdge(SimulationConfig config, float lengthInMeters, Vec2f originDirection,
-                        Vec2f destinationDirection, float maxVelocity, int noOfLines, Node origin, Node destination,
+    public DirectedEdge(ScenarioConfig config, float lengthInMeters, Vec2d originDirection,
+                        Vec2d destinationDirection, float maxVelocity, int noOfLines, Node origin, Node destination,
                         byte priorityLevel) {
 
         ID = config.longIDGenerator.next();
@@ -64,7 +64,7 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
 
     @Override
     public int hashCode() {
-        return new FNVHashBuilder().add(ID).add(origin).add(destination).add(numberOfCells).getHash();
+        return new FNVHashBuilder().add(ID).add(origin).add(destination).getHash();
     }
 
     Lane[] getLanes() {
@@ -91,7 +91,8 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
 
     @Override
     public String toString() {
-        return ID + ":(" + origin.ID + " -" + numberOfCells + "-> " + destination.ID + ")";
+        return "ID=" + ID + ";hash=" + hashCode() + ":(" + origin.ID + " -" + numberOfCells + "-> " + destination.ID +
+                ")";
     }
 
     void reset() {
@@ -104,11 +105,11 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
     | visualization |
     |===============|
     */
-    Vec2f getOriginDirection() {
+    Vec2d getOriginDirection() {
         return originDirection;
     }
 
-    Vec2f getDestinationDirection() {
+    Vec2d getDestinationDirection() {
         return destinationDirection;
     }
 

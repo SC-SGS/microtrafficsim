@@ -8,7 +8,7 @@ import microtrafficsim.core.map.area.RectangleArea;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
 import microtrafficsim.math.HaversineDistanceCalculator;
@@ -42,9 +42,9 @@ public class EndOfTheWorldScenario extends BasicScenario {
     /**
      * Default constructor calling {@code EndOfTheWorldScenario(config, graph, new ConcurrentVehicleContainer())}
      *
-     * @see #EndOfTheWorldScenario(SimulationConfig, StreetGraph, VehicleContainer)
+     * @see #EndOfTheWorldScenario(ScenarioConfig, StreetGraph, VehicleContainer)
      */
-    public EndOfTheWorldScenario(SimulationConfig config,
+    public EndOfTheWorldScenario(ScenarioConfig config,
                                  StreetGraph graph) {
         this(config, graph, new ConcurrentVehicleContainer());
     }
@@ -53,7 +53,7 @@ public class EndOfTheWorldScenario extends BasicScenario {
      * After filling node lists for the graph's borders, this constructor calls {@link #next()} to initialize the
      * origin-destination-matrix.
      */
-    public EndOfTheWorldScenario(SimulationConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
+    public EndOfTheWorldScenario(ScenarioConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
         super(config, graph, vehicleContainer);
 
         random = new Random(config.seedGenerator.next()); // TODO reset
@@ -113,7 +113,7 @@ public class EndOfTheWorldScenario extends BasicScenario {
      * the seed of this class.
      *
      * <p>
-     * Until enough vehicles (defined in {@link SimulationConfig}) are created, this method is doing this:<br>
+     * Until enough vehicles (defined in {@link ScenarioConfig}) are created, this method is doing this:<br>
      * &bull get random origin <br>
      * &bull calculate its position relative to the graph's center <br>
      * &bull get a random destination out of the border field (of nodes) being closest to the chosen origin

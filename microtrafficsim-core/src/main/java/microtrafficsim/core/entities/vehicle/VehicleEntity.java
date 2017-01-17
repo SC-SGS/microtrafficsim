@@ -1,7 +1,5 @@
 package microtrafficsim.core.entities.vehicle;
 
-import microtrafficsim.core.simulation.configs.SimulationConfig;
-
 
 /**
  * This vehicle entity contains the logic and geometric parts of a vehicle. This class is used for communication between

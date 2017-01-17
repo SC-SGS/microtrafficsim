@@ -3,9 +3,6 @@ package microtrafficsim.core.logic.vehicles.impl;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-import microtrafficsim.core.logic.vehicles.VehicleState;
-import microtrafficsim.core.logic.vehicles.VehicleStateListener;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 

@@ -12,8 +12,8 @@ import microtrafficsim.core.shortestpath.astar.impl.FastestWayAStar;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.math.Vec2f;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -37,9 +37,9 @@ import static org.junit.Assert.assertTrue;
 public class TestShortestPathAlgorithms {
     private static final Logger logger = new EasyMarkableLogger(TestShortestPathAlgorithms.class);
 
-    private static SimulationConfig     config;
+    private static ScenarioConfig config;
     private static ShortestPathAlgorithm shortestPathAlgorithm;
-    private static Vec2f                rubbish;
+    private static Vec2d                rubbish;
     private final int                   maxVelocity = 1;
     private Stack<ShortestPathEdge>     shortestPath;
     private Stack<DirectedEdge>         correctShortestPath;
@@ -49,8 +49,8 @@ public class TestShortestPathAlgorithms {
 
     @BeforeClass
     public static void setupClass() {
-        config = new SimulationConfig();
-        rubbish  = new Vec2f(1.0f, 1.0f);
+        config = new ScenarioConfig();
+        rubbish  = new Vec2d(1.0f, 1.0f);
     }
 
     @Before

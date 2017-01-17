@@ -5,9 +5,8 @@ import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.impl.Car;
-import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
 
@@ -27,9 +26,9 @@ public class MotorwaySlipRoadScenario extends QueueScenario {
      * Initializes the matrices (for routes and spawn delays). For this, it has to sort the few nodes to guarantee
      * determinism independent of complicated coordinate calculations.
      *
-     * @see QueueScenario#QueueScenario(SimulationConfig, StreetGraph)
+     * @see QueueScenario#QueueScenario(ScenarioConfig, StreetGraph)
      */
-    public MotorwaySlipRoadScenario(SimulationConfig config,
+    public MotorwaySlipRoadScenario(ScenarioConfig config,
                                     StreetGraph graph,
                                     Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
@@ -74,7 +73,7 @@ public class MotorwaySlipRoadScenario extends QueueScenario {
      * @param config
      * @return the given config updated; just for practical purpose
      */
-    public static SimulationConfig setupConfig(SimulationConfig config) {
+    public static ScenarioConfig setupConfig(ScenarioConfig config) {
 
         QueueScenario.setupConfig(config);
 

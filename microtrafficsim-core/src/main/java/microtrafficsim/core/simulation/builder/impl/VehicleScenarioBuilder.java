@@ -8,7 +8,7 @@ import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.utils.StringUtils;
@@ -48,7 +48,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
      */
     public VehicleScenarioBuilder(long seed, Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         this(seed, visVehicleFactory, (scenario, route) -> {
-            SimulationConfig config = scenario.getConfig();
+            ScenarioConfig config = scenario.getConfig();
             long ID                 = config.longIDGenerator.next();
             long vehicleSeed        = config.seedGenerator.next();
 
@@ -175,7 +175,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
             throws InterruptedException {
 
         // general attributes for this
-        final SimulationConfig config = scenario.getConfig();
+        final ScenarioConfig config = scenario.getConfig();
         lastPercentage = 0;
         final AtomicInteger finishedVehiclesCount = new AtomicInteger(0);
 

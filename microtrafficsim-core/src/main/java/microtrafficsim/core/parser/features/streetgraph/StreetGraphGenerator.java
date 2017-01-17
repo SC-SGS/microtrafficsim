@@ -8,11 +8,11 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.parser.processing.Connector;
 import microtrafficsim.core.parser.processing.GraphWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.DistanceCalculator;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.HaversineDistanceCalculator;
-import microtrafficsim.math.Vec2f;
+import microtrafficsim.math.Vec2d;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
@@ -38,7 +38,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
     private static Logger logger = new EasyMarkableLogger(StreetGraphGenerator.class);
 
     private StreetGraph        graph;
-    private SimulationConfig   config;
+    private ScenarioConfig config;
     private DistanceCalculator distcalc;
 
     /**
@@ -47,10 +47,10 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * HaversineDistanceCalculator } as {@code DistanceCalculator}.
      * <p>
      * This is equivalent to
-     * {@link StreetGraphGenerator#StreetGraphGenerator(SimulationConfig, DistanceCalculator)
+     * {@link StreetGraphGenerator#StreetGraphGenerator(ScenarioConfig, DistanceCalculator)
      * StreetGraphGenerator(config, HaversineDistanceCalculator::getDistance) }
      */
-    public StreetGraphGenerator(SimulationConfig config) {
+    public StreetGraphGenerator(ScenarioConfig config) {
         // TODO: use vincenty-formular here for better accuracy?
         this(config, HaversineDistanceCalculator::getDistance);
     }
@@ -62,7 +62,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * @param distcalc the {@code DistanceCalculator} used to calculate the length of
      *                 streets.
      */
-    public StreetGraphGenerator(SimulationConfig config, DistanceCalculator distcalc) {
+    public StreetGraphGenerator(ScenarioConfig config, DistanceCalculator distcalc) {
         this.config   = config;
         this.distcalc = distcalc;
         this.graph    = null;
@@ -158,20 +158,20 @@ public class StreetGraphGenerator implements FeatureGenerator {
 
         if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.FORWARD
             || streetinfo.oneway == OnewayInfo.REVERSIBLE) {
-            Vec2f originDirection = new Vec2f((float) (node1.lon - node0.lon), (float) (node1.lat - node0.lat));
+            Vec2d originDirection = new Vec2d(node1.lon - node0.lon, node1.lat - node0.lat);
 
-            Vec2f destinationDirection = new Vec2f((float) (lastNode.lon - secondLastNode.lon),
-                                                   (float) (lastNode.lat - secondLastNode.lat));
+            Vec2d destinationDirection = new Vec2d(lastNode.lon - secondLastNode.lon,
+                                                   lastNode.lat - secondLastNode.lat);
 
             forward = new DirectedEdge(config, length, originDirection, destinationDirection,
                                        streetinfo.maxspeed.forward, 1, start, end, priorityLevel);
         }
 
         if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.BACKWARD) {
-            Vec2f originDirection = new Vec2f((float) (secondLastNode.lon - lastNode.lon),
-                                              (float) (secondLastNode.lat - lastNode.lat));
+            Vec2d originDirection = new Vec2d(secondLastNode.lon - lastNode.lon,
+                                              secondLastNode.lat - lastNode.lat);
 
-            Vec2f destinationDirection = new Vec2f((float) (node0.lon - node1.lon), (float) (node0.lat - node1.lat));
+            Vec2d destinationDirection = new Vec2d(node0.lon - node1.lon, node0.lat - node1.lat);
 
             backward = new DirectedEdge(config, length, originDirection, destinationDirection,
                                         streetinfo.maxspeed.backward, 1, end, start, priorityLevel);

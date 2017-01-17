@@ -27,7 +27,7 @@ import java.util.function.Function;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public final class SimulationConfig {
+public final class ScenarioConfig {
     // general
     public LongGenerator longIDGenerator;
     public LongGenerator seedGenerator;
@@ -55,7 +55,7 @@ public final class SimulationConfig {
     /**
      * Just calls {@link #reset()}.
      */
-    public SimulationConfig() {
+    public ScenarioConfig() {
         visualization  = new VisualizationConfig();
         crossingLogic  = new CrossingLogicConfig();
         multiThreading = new MultiThreadingConfig();
@@ -119,7 +119,7 @@ public final class SimulationConfig {
      *
      * @param config All values of the new config instance are set to this config-values.
      */
-    public void update(SimulationConfig config) {
+    public void update(ScenarioConfig config) {
         // general
         longIDGenerator   = config.longIDGenerator;
         metersPerCell     = config.metersPerCell;

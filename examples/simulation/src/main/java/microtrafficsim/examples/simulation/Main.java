@@ -9,7 +9,7 @@ import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
@@ -17,7 +17,6 @@ import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
-import microtrafficsim.utils.logging.EasyMarkableLogger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -49,7 +48,7 @@ public class Main {
 
 
         /* create configuration for scenarios */
-        SimulationConfig config = createConfig();
+        ScenarioConfig config = createConfig();
         /* build setup: logging */
         BuildSetup.TRACE_ENABLED = false;
         BuildSetup.DEBUG_ENABLED = false;
@@ -122,8 +121,8 @@ public class Main {
         }
     }
 
-    private static SimulationConfig createConfig() {
-        SimulationConfig config = new SimulationConfig();
+    private static ScenarioConfig createConfig() {
+        ScenarioConfig config = new ScenarioConfig();
 
         config.maxVehicleCount                            = 1000;
         config.speedup                                    = 5;
@@ -169,7 +168,7 @@ public class Main {
     }
 
     private static Simulation createAndInitSimulation(
-            SimulationConfig config,
+            ScenarioConfig config,
             StreetGraph graph,
             VehicleOverlay overlay) {
 

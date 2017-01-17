@@ -1,6 +1,6 @@
 package microtrafficsim.ui.preferences.impl;
 
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
 
@@ -123,7 +123,7 @@ public class CrossingLogicPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
+    public void setSettings(ScenarioConfig config) {
         cbEdgePriority.setSelected(config.crossingLogic.edgePriorityEnabled);
 
         String selectedItem;
@@ -138,8 +138,8 @@ public class CrossingLogicPanel extends PreferencesPanel {
     }
 
     @Override
-    public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
-        SimulationConfig config = new SimulationConfig();
+    public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
+        ScenarioConfig config = new ScenarioConfig();
 
         config.crossingLogic.edgePriorityEnabled = cbEdgePriority.isSelected();
         config.crossingLogic.setOnlyOneVehicle(cbOnlyOneVehicle.isSelected());

@@ -7,7 +7,7 @@ import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.impl.BlockingCar;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
@@ -32,7 +32,7 @@ public class PlusCrossroadScenario extends QueueScenario {
     private ScenarioState state;
     private Node mid;
 
-    public PlusCrossroadScenario(SimulationConfig config,
+    public PlusCrossroadScenario(ScenarioConfig config,
                                  StreetGraph graph,
                                  Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
@@ -62,7 +62,7 @@ public class PlusCrossroadScenario extends QueueScenario {
      * @param config
      * @return the given config updated; just for practical purpose
      */
-    public static SimulationConfig setupConfig(SimulationConfig config) {
+    public static ScenarioConfig setupConfig(ScenarioConfig config) {
 
         QueueScenario.setupConfig(config);
 
@@ -184,7 +184,8 @@ public class PlusCrossroadScenario extends QueueScenario {
             }
         }
 
-        switchState();
+        if (getVehicleContainer().getVehicleCount() == 0)
+            switchState();
 
         super.didOneStep(simulation);
     }

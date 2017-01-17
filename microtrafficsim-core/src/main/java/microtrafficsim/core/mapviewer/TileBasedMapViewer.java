@@ -13,7 +13,7 @@ import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefini
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
@@ -178,7 +178,7 @@ public class TileBasedMapViewer implements MapViewer {
     }
 
     @Override
-    public void create(SimulationConfig config) throws UnsupportedFeatureException {
+    public void create(ScenarioConfig config) throws UnsupportedFeatureException {
         /* set up layer and tile provider */
         layers                                = style.getLayers();
         TileLayerProvider       layerProvider = createLayerProvider(layers);
@@ -244,7 +244,7 @@ public class TileBasedMapViewer implements MapViewer {
     }
 
     @Override
-    public OSMParser createParser(SimulationConfig simconfig) {
+    public OSMParser createParser(ScenarioConfig simconfig) {
         /* global properties for (all) generators */
         FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
         genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.CLIP;

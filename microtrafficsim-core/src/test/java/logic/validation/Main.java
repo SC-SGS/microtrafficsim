@@ -13,7 +13,7 @@ import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
@@ -62,7 +62,7 @@ public class Main {
         }
 
         /* simulation config */
-        SimulationConfig config = new SimulationConfig();
+        ScenarioConfig config = new ScenarioConfig();
         scenarioType.setupConfig(config);
 
 
@@ -80,7 +80,7 @@ public class Main {
 
 
             /* setup JFrame */
-            JFrame frame = new JFrame("MicroTrafficSim - Validation Scenario");;
+            JFrame frame = new JFrame("MicroTrafficSim - Validation Scenario");
             frame.setSize(mapviewer.getInitialWindowWidth(), mapviewer.getInitialWindowHeight());
             frame.add(mapviewer.getVisualizationPanel());
 
@@ -122,6 +122,9 @@ public class Main {
                 e.printStackTrace();
                 Runtime.getRuntime().halt(1);
             }
+
+
+            System.err.println(graph);
 
 
             /* initialize the simulation */

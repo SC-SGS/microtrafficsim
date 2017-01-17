@@ -1,7 +1,7 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
@@ -16,7 +16,7 @@ import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
  */
 public abstract class BasicScenario implements Scenario {
 
-    private final SimulationConfig config;
+    private final ScenarioConfig config;
     private final StreetGraph graph;
     private final VehicleContainer vehicleContainer;
     private boolean isPrepared;
@@ -29,7 +29,7 @@ public abstract class BasicScenario implements Scenario {
      * @param graph used for route definitions etc.
      * @param vehicleContainer stores and manages vehicles running in this scenario
      */
-    protected BasicScenario(SimulationConfig config,
+    protected BasicScenario(ScenarioConfig config,
                             StreetGraph graph,
                             VehicleContainer vehicleContainer) {
         this.config = config;
@@ -40,13 +40,13 @@ public abstract class BasicScenario implements Scenario {
         this.odMatrix = new SparseODMatrix();
     }
 
-    protected BasicScenario(SimulationConfig config,
+    protected BasicScenario(ScenarioConfig config,
                             StreetGraph graph) {
         this(config, graph, new ConcurrentVehicleContainer());
     }
 
     @Override
-    public final SimulationConfig getConfig() {
+    public final ScenarioConfig getConfig() {
         return config;
     }
 

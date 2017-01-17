@@ -4,7 +4,7 @@ import logic.validation.scenarios.impl.MotorwaySlipRoadScenario;
 import logic.validation.scenarios.impl.PlusCrossroadScenario;
 import logic.validation.scenarios.impl.RoundaboutScenario;
 import logic.validation.scenarios.impl.TCrossroadScenario;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 
 import java.util.function.Function;
 
@@ -20,9 +20,9 @@ public enum ScenarioType {
     MOTORWAY_SLIP_ROAD("motorway_slip-road.osm", MotorwaySlipRoadScenario::setupConfig), ;
 
     private String osmFilename;
-    private Function<SimulationConfig, SimulationConfig> configSetup;
+    private Function<ScenarioConfig, ScenarioConfig> configSetup;
 
-    ScenarioType(String osmFilename, Function<SimulationConfig, SimulationConfig> configSetup) {
+    ScenarioType(String osmFilename, Function<ScenarioConfig, ScenarioConfig> configSetup) {
         this.osmFilename = osmFilename;
         this.configSetup = configSetup;
     }
@@ -31,7 +31,7 @@ public enum ScenarioType {
         return osmFilename;
     }
 
-    public SimulationConfig setupConfig(SimulationConfig config) {
+    public ScenarioConfig setupConfig(ScenarioConfig config) {
         return configSetup.apply(config);
     }
 }
