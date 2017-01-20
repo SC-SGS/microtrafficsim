@@ -175,10 +175,7 @@ public class Main {
         /* initialize the simulation */
         Scenario scenario = new RandomRouteScenario(config, graph);
         Simulation simulation = new VehicleSimulation();
-        ScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(
-                config.seedGenerator.next(),
-                overlay.getVehicleFactory()
-        );
+        ScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(overlay.getVehicleFactory());
 
         overlay.setSimulation(simulation);
         try {

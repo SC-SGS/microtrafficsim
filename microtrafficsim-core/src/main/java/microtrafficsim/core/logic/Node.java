@@ -292,7 +292,7 @@ public class Node implements ShortestPathNode {
      */
     public synchronized boolean registerVehicle(AbstractVehicle newVehicle) {
 
-        if (assessedVehicles.containsKey(newVehicle) || newRegisteredVehicles.contains(newVehicle))
+        if (isRegistered(newVehicle))
             return false;
 
         newRegisteredVehicles.add(newVehicle);
@@ -344,42 +344,46 @@ public class Node implements ShortestPathNode {
         return maxPrioVehicles.contains(vehicle);
     }
 
-    /**
-     * @return Iterator returning tuples of edges with their crossing index
-     */
-    public Iterator<Tuple<DirectedEdge, Byte>> iterCrossingIndices() {
-
-        Iterator<DirectedEdge> iterLeavingEdges = this.leavingEdges.keySet().iterator();
-        Iterator<DirectedEdge> iterIncomingEdges = this.incomingEdges.keySet().iterator();
-        HashMap<DirectedEdge, Byte> leavingEdges = new HashMap<>(this.leavingEdges);
-        HashMap<DirectedEdge, Byte> incomingEdges = new HashMap<>(this.incomingEdges);
-
-        return new Iterator<Tuple<DirectedEdge, Byte>>() {
-
-            Iterator<DirectedEdge> bla = leavingEdges.keySet().iterator();
-
-            @Override
-            public boolean hasNext() {
-                return iterLeavingEdges.hasNext() || iterIncomingEdges.hasNext();
-            }
-
-            @Override
-            public Tuple<DirectedEdge, Byte> next() {
-
-                if (iterLeavingEdges.hasNext()) {
-                    DirectedEdge edge = iterLeavingEdges.next();
-                    Byte crossingIndex = leavingEdges.get(edge);
-                    return new Tuple<>(edge, crossingIndex);
-                } else if (iterIncomingEdges.hasNext()) {
-                    DirectedEdge edge = iterIncomingEdges.next();
-                    Byte crossingIndex = incomingEdges.get(edge);
-                    return new Tuple<>(edge, crossingIndex);
-                }
-
-                return null;
-            }
-        };
+    public synchronized boolean isRegistered(AbstractVehicle vehicle) {
+        return assessedVehicles.containsKey(vehicle) || newRegisteredVehicles.contains(vehicle);
     }
+
+//    /**
+//     * @return Iterator returning tuples of edges with their crossing index
+//     */
+//    public Iterator<Tuple<DirectedEdge, Byte>> iterCrossingIndices() {
+//
+//        Iterator<DirectedEdge> iterLeavingEdges = this.leavingEdges.keySet().iterator();
+//        Iterator<DirectedEdge> iterIncomingEdges = this.incomingEdges.keySet().iterator();
+//        HashMap<DirectedEdge, Byte> leavingEdges = new HashMap<>(this.leavingEdges);
+//        HashMap<DirectedEdge, Byte> incomingEdges = new HashMap<>(this.incomingEdges);
+//
+//        return new Iterator<Tuple<DirectedEdge, Byte>>() {
+//
+//            Iterator<DirectedEdge> bla = leavingEdges.keySet().iterator();
+//
+//            @Override
+//            public boolean hasNext() {
+//                return iterLeavingEdges.hasNext() || iterIncomingEdges.hasNext();
+//            }
+//
+//            @Override
+//            public Tuple<DirectedEdge, Byte> next() {
+//
+//                if (iterLeavingEdges.hasNext()) {
+//                    DirectedEdge edge = iterLeavingEdges.next();
+//                    Byte crossingIndex = leavingEdges.get(edge);
+//                    return new Tuple<>(edge, crossingIndex);
+//                } else if (iterIncomingEdges.hasNext()) {
+//                    DirectedEdge edge = iterIncomingEdges.next();
+//                    Byte crossingIndex = incomingEdges.get(edge);
+//                    return new Tuple<>(edge, crossingIndex);
+//                }
+//
+//                return null;
+//            }
+//        };
+//    }
 
     /*
     |===========================|
@@ -395,9 +399,12 @@ public class Node implements ShortestPathNode {
      * @param direction UNUSED
      */
     public void addConnector(Lane incoming, Lane leaving, Direction direction) {
-        if (!restrictions.containsKey(incoming))
-            restrictions.put(incoming, new ArrayList<>());
-        restrictions.get(incoming).add(leaving);
+        ArrayList<Lane> connectedLanes = restrictions.get(incoming);
+        if (connectedLanes == null) {
+            connectedLanes = new ArrayList<>();
+            restrictions.put(incoming, connectedLanes);
+        }
+        connectedLanes.add(leaving);
     }
 
     /**

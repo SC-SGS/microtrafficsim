@@ -1,6 +1,6 @@
-package logic.validation.scenarios.impl;
+package logic.validation.scenarios;
 
-import logic.validation.scenarios.QueueScenario;
+import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
@@ -18,7 +18,7 @@ import java.util.function.Supplier;
  *
  * @author Dominic Parga Cacheiro
  */
-public class MotorwaySlipRoadScenario extends QueueScenario {
+public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
 
     private Node bottomMotorway, topMotorway, bottomRight;
 
@@ -26,7 +26,7 @@ public class MotorwaySlipRoadScenario extends QueueScenario {
      * Initializes the matrices (for routes and spawn delays). For this, it has to sort the few nodes to guarantee
      * determinism independent of complicated coordinate calculations.
      *
-     * @see QueueScenario#QueueScenario(ScenarioConfig, StreetGraph)
+     * @see QueueScenarioSmall#QueueScenarioSmall(ScenarioConfig, StreetGraph)
      */
     public MotorwaySlipRoadScenario(ScenarioConfig config,
                                     StreetGraph graph,
@@ -40,7 +40,6 @@ public class MotorwaySlipRoadScenario extends QueueScenario {
 
         final boolean[] toggle = { false, false };
         setScenarioBuilder(new VehicleScenarioBuilder(
-                config.seedGenerator.next(),
                 visVehicleFactory,
                 (scenario, route) -> {
                     long ID        = scenario.getConfig().longIDGenerator.next();
@@ -75,7 +74,7 @@ public class MotorwaySlipRoadScenario extends QueueScenario {
      */
     public static ScenarioConfig setupConfig(ScenarioConfig config) {
 
-        QueueScenario.setupConfig(config);
+        QueueScenarioSmall.setupConfig(config);
 
         config.maxVehicleCount                            = 3;
         config.crossingLogic.friendlyStandingInJamEnabled = false;

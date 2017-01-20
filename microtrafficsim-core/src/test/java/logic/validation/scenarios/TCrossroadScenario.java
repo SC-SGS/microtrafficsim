@@ -1,6 +1,6 @@
-package logic.validation.scenarios.impl;
+package logic.validation.scenarios;
 
-import logic.validation.scenarios.QueueScenario;
+import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
@@ -16,8 +16,11 @@ import java.util.function.Supplier;
 /**
  * @author Dominic Parga Cacheiro
  */
-public class TCrossroadScenario extends QueueScenario {
+public class TCrossroadScenario extends QueueScenarioSmall {
 
+    /**
+     * @see QueueScenarioSmall#QueueScenarioSmall(ScenarioConfig, StreetGraph)
+     */
     public TCrossroadScenario(ScenarioConfig config,
                               StreetGraph graph,
                               Supplier<VisualizationVehicleEntity> visVehicleFactory) {
@@ -25,7 +28,6 @@ public class TCrossroadScenario extends QueueScenario {
         init();
 
         setScenarioBuilder(new VehicleScenarioBuilder(
-                config.seedGenerator.next(),
                 visVehicleFactory,
                 (scenario, route) -> {
                     long ID        = scenario.getConfig().longIDGenerator.next();
@@ -45,7 +47,7 @@ public class TCrossroadScenario extends QueueScenario {
      */
     public static ScenarioConfig setupConfig(ScenarioConfig config) {
 
-        QueueScenario.setupConfig(config);
+        QueueScenarioSmall.setupConfig(config);
 
         config.maxVehicleCount                         = 3;
         config.crossingLogic.friendlyStandingInJamEnabled = false;

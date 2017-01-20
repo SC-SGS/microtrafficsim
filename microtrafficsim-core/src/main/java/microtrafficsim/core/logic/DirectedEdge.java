@@ -33,11 +33,15 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
      * the number of cells of this edge and adds this edge to the origin node's
      * leaving edges.
      *
+     * @param config Just used for ID generation and meters-per-cell
      * @param lengthInMeters Real length of this edge in meters
+     * @param originDirection direction vector of this edge leaving its origin node
+     * @param destinationDirection direction vector of this edge entering its destination node
      * @param maxVelocity    The max velocity of this edge. It's valid for all lanes.
      * @param noOfLines      Number of lines that will be created in this constructor
      * @param origin         Origin node of this edge
      * @param destination    Destination node of this edge
+     * @param priorityLevel the priority used for the crossing logic; smaller means higher priority
      */
     public DirectedEdge(ScenarioConfig config, float lengthInMeters, Vec2d originDirection,
                         Vec2d destinationDirection, float maxVelocity, int noOfLines, Node origin, Node destination,

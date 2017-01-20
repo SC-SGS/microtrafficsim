@@ -1,4 +1,4 @@
-package logic.validation.scenarios;
+package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.impl.Car;
@@ -21,11 +21,11 @@ import java.util.function.Supplier;
 
 /**
  * This scenario defines different scenarios in a queue, which can be executed after each other. The scenarios are
- * calculated on the fly, so this class is only for small scenarios.
+ * getting prepared/calculated on the fly, so this class is made only for small scenarios.
  *
  * @author Dominic Parga Cacheiro
  */
-public abstract class QueueScenario implements Scenario {
+public abstract class QueueScenarioSmall implements Scenario {
 
     /* general */
     private final ScenarioConfig config;
@@ -33,10 +33,13 @@ public abstract class QueueScenario implements Scenario {
     private final VehicleContainer vehicleContainer;
     private ShortestPathAlgorithm scout;
     private boolean isPrepared;
+
     /* scenario definition */
     private ArrayList<ODMatrix> odMatrices;
     private ArrayList<ODMatrix> spawnDelayMatrices;
     private int curIdx;
+    private boolean isLooping;
+
     /* scenario building */
     private ScenarioBuilder scenarioBuilder;
 
@@ -47,9 +50,9 @@ public abstract class QueueScenario implements Scenario {
      * @param graph used for route definitions etc.
      * @param vehicleContainer stores and manages vehicles running in this scenario
      */
-    protected QueueScenario(ScenarioConfig config,
-                         StreetGraph graph,
-                         VehicleContainer vehicleContainer) {
+    protected QueueScenarioSmall(ScenarioConfig config,
+                                 StreetGraph graph,
+                                 VehicleContainer vehicleContainer) {
 
         /* general */
         this.config           = config;
@@ -61,16 +64,17 @@ public abstract class QueueScenario implements Scenario {
         odMatrices         = new ArrayList<>();
         spawnDelayMatrices = new ArrayList<>();
         curIdx             = -1;
+        isLooping          = false;
     }
 
     /**
      * Just calls {@code QueueScenario(config, graph, new ConcurrentVehicleContainer())}.
      *
      * @see ConcurrentVehicleContainer
-     * @see QueueScenario#QueueScenario(ScenarioConfig, StreetGraph, VehicleContainer)
+     * @see QueueScenarioSmall#QueueScenarioSmall(ScenarioConfig, StreetGraph, VehicleContainer)
      */
-    protected QueueScenario(ScenarioConfig config,
-                         StreetGraph graph) {
+    protected QueueScenarioSmall(ScenarioConfig config,
+                                 StreetGraph graph) {
         this(config, graph, new ConcurrentVehicleContainer());
     }
 
@@ -94,6 +98,14 @@ public abstract class QueueScenario implements Scenario {
         Car.setDashAndDawdleFactor(0, 0);
 
         return config;
+    }
+
+    public void setLooping(boolean isLooping) {
+        this.isLooping = isLooping;
+    }
+
+    public boolean isLooping() {
+        return isLooping;
     }
 
     /*
@@ -124,7 +136,12 @@ public abstract class QueueScenario implements Scenario {
 
     public final void prepare() {
 
-        curIdx         = (curIdx + 1) % odMatrices.size();
+        curIdx = curIdx + 1;
+        if (!isLooping && curIdx == odMatrices.size()) {
+            curIdx = -1;
+            return;
+        }
+        curIdx %= odMatrices.size();
 
         try {
             scenarioBuilder.prepare(this);
@@ -150,12 +167,14 @@ public abstract class QueueScenario implements Scenario {
         if (getVehicleContainer().getVehicleCount() == 0) {
             boolean isPaused = simulation.isPaused();
             simulation.cancel();
+            setPrepared(false);
             prepare();
-            simulation.setAndInitScenario(this);
-            if (isPaused)
-                simulation.runOneStep();
-            else
-                simulation.run();
+            if (isPrepared()) {
+                simulation.setAndInitScenario(this);
+
+                if (!isPaused)
+                    simulation.run();
+            }
         }
     }
 

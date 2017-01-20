@@ -51,7 +51,7 @@ public class BuildSetup {
         /* simulation */
         simulation          = new VehicleSimulation();
         scenarioConstructor = RandomRouteScenario::new;
-        scenarioBuilder     = new VehicleScenarioBuilder(config.seedGenerator.next(), overlay.getVehicleFactory());
+        scenarioBuilder     = new VehicleScenarioBuilder(overlay.getVehicleFactory());
 
         /* gui */
         this.frameTitle = "MicroTrafficSim - GUI Example";

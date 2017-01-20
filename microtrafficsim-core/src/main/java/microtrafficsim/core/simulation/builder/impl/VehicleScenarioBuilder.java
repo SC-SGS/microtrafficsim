@@ -18,7 +18,6 @@ import microtrafficsim.utils.concurrency.delegation.ThreadDelegator;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -32,8 +31,6 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
 
     private Logger logger = new EasyMarkableLogger(VehicleScenarioBuilder.class);
 
-    private long seed;
-    private Random random;
     // used for printing vehicle creation process
     private int           lastPercentage;
     private final Integer percentageDelta; // > 0 !!!
@@ -41,14 +38,12 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
     private final BiFunction<Scenario, Route<Node>, AbstractVehicle> vehicleFactory;
 
     /**
-     * Calls {@code VehicleSimulationBuilder(seed, visVehicleFactory, logicVehicleFactory}, where the factory for
-     * logic vehicles is returning an instance of {@link Car}.
-     *
-     * @see #VehicleScenarioBuilder(long, Supplier, BiFunction)
+     * Calls {@link VehicleScenarioBuilder#VehicleScenarioBuilder(Supplier, BiFunction)} with basic logic vehicle
+     * factory returning {@link Car}s.
      */
-    public VehicleScenarioBuilder(long seed, Supplier<VisualizationVehicleEntity> visVehicleFactory) {
-        this(seed, visVehicleFactory, (scenario, route) -> {
-            ScenarioConfig config = scenario.getConfig();
+    public VehicleScenarioBuilder(Supplier<VisualizationVehicleEntity> visVehicleFactory) {
+        this(visVehicleFactory, (scenario, route) -> {
+            ScenarioConfig config   = scenario.getConfig();
             long ID                 = config.longIDGenerator.next();
             long vehicleSeed        = config.seedGenerator.next();
 
@@ -59,52 +54,71 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
     }
 
     /**
-     * Calls {@code VehicleSimulationBuilder(seed, vehicleFactory}, where the factory for vehicles is using the given
-     * "sub"-factories for visualization/logic part of a vehicle entity. These parts are getting linked to the entity.
+     * Default constructor linking created vehicles (by the given vehicle factories) using {@link VehicleEntity}. The
+     * {@code logicVehicleFactory} must be not null, the {@code visVehicleFactory} can be null, which means vehicles are
+     * not visualized.
      *
      * @param visVehicleFactory Creates the visualization part of the vehicle entity
      * @param logicVehicleFactory Creates the logic part of the vehicle entity
      */
-    public VehicleScenarioBuilder(long seed,
-                                  Supplier<VisualizationVehicleEntity> visVehicleFactory,
+    public VehicleScenarioBuilder(Supplier<VisualizationVehicleEntity> visVehicleFactory,
                                   BiFunction<Scenario, Route<Node>, AbstractVehicle> logicVehicleFactory) {
-        this(seed, (scenario, route) -> {
-            // create vehicle components
-            AbstractVehicle logicVehicle;
-            synchronized (logicVehicleFactory) {
-                logicVehicle = logicVehicleFactory.apply(scenario, route);
-            }
-            VisualizationVehicleEntity visVehicle;
-            synchronized (visVehicleFactory) {
-                visVehicle = visVehicleFactory.get();
-            }
+        /* general setup */
+        lastPercentage  = 0;
+        percentageDelta = 5;
 
-            // create vehicle entity
-            VehicleEntity entity = new VehicleEntity(logicVehicle, visVehicle);
-            logicVehicle.setEntity(entity);
-            visVehicle.setEntity(entity);
+        /* vehicle factory */
+        if (visVehicleFactory != null) {
+            vehicleFactory = (scenario, route) -> {
+                // create vehicle components
+                AbstractVehicle logicVehicle;
+                synchronized (logicVehicleFactory) {
+                    logicVehicle = logicVehicleFactory.apply(scenario, route);
+                }
+                VisualizationVehicleEntity visVehicle;
+                synchronized (visVehicleFactory) {
+                    visVehicle = visVehicleFactory.get();
+                }
 
-            return logicVehicle;
-        });
+                // create vehicle entity
+                VehicleEntity entity = new VehicleEntity(logicVehicle, visVehicle);
+                logicVehicle.setEntity(entity);
+                visVehicle.setEntity(entity);
+
+                return logicVehicle;
+            };
+        } else {
+            vehicleFactory = (scenario, route) -> {
+                // create vehicle components
+                AbstractVehicle logicVehicle;
+                synchronized (logicVehicleFactory) {
+                    logicVehicle = logicVehicleFactory.apply(scenario, route);
+                }
+
+                // create vehicle entity
+                VehicleEntity entity = new VehicleEntity(logicVehicle, null);
+                logicVehicle.setEntity(entity);
+
+                return logicVehicle;
+            };
+        }
     }
 
     /**
      * Default constructor.
      *
-     * @param seed This seed is used for an instance of {@link Random} used for the creation of the
-     *             origin-destination-matrix in {@link #prepare(Scenario, ProgressListener)}
-     * @param vehicleFactory is used for creating the vehicle. It is important to link the logic part of the vehicle
-     *                       ({@code AbstractVehicle}) with the visualization part using a {@link VehicleEntity}. If
-     *                       you are not sure about this, use
-     *                       {@link #VehicleScenarioBuilder(long, Supplier, BiFunction)} without linking.
+     * @param vehicleFactory is used for creating the vehicle. If a visualization is wished, it is important to link
+     *                       the logic part of the vehicle ({@code AbstractVehicle}) with the visualization part
+     *                       using a {@link VehicleEntity}. If you are not sure about this, use
+     *                       {@link #VehicleScenarioBuilder(Supplier, BiFunction)} without linking.
      */
-    public VehicleScenarioBuilder(long seed, BiFunction<Scenario, Route<Node>, AbstractVehicle> vehicleFactory) {
+    public VehicleScenarioBuilder(BiFunction<Scenario, Route<Node>, AbstractVehicle> vehicleFactory) {
 
+        /* general setup */
         lastPercentage  = 0;
         percentageDelta = 5;
-        this.seed = seed;
-        this.random = new Random(seed);
 
+        /* vehicle factory */
         this.vehicleFactory = vehicleFactory;
     }
 

@@ -521,12 +521,14 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
         }
         cellPosition = cellPosition + velocity;
         lane.insertVehicle(this, cellPosition);
-        entity.getVisualization().updatePosition();
+        if (entity.getVisualization() != null)
+            entity.getVisualization().updatePosition();
     }
 
     private void drive() {
         lane.moveVehicle(this, velocity);
         cellPosition = cellPosition + velocity;
-        entity.getVisualization().updatePosition();
+        if (entity.getVisualization() != null)
+            entity.getVisualization().updatePosition();
     }
 }

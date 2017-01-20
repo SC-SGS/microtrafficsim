@@ -1,12 +1,9 @@
 package logic.validation;
 
 import com.jogamp.newt.event.KeyEvent;
-import logic.validation.scenarios.QueueScenario;
-import logic.validation.scenarios.impl.MotorwaySlipRoadScenario;
-import logic.validation.scenarios.impl.PlusCrossroadScenario;
-import logic.validation.scenarios.impl.RoundaboutScenario;
-import logic.validation.scenarios.impl.TCrossroadScenario;
+import logic.validation.scenarios.PlusCrossroadFullScenario;
 import microtrafficsim.build.BuildSetup;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
@@ -16,10 +13,13 @@ import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.resources.PackagedResource;
+import org.slf4j.Logger;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,20 +27,31 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * @author Dominic Parga Cacheiro
  */
-public class Main {
+public class UIValidation {
+
+    private static Logger logger = new EasyMarkableLogger(UIValidation.class);
 
     public static void main(String[] args) {
 
         /* build setup: scenario and style */
-//        ScenarioType scenarioType = ScenarioType.T_CROSSROAD;
-        ScenarioType scenarioType = ScenarioType.PLUS_CROSSROAD;
-//        ScenarioType scenarioType = ScenarioType.MOTORWAY_SLIP_ROAD;
-//        ScenarioType scenarioType = ScenarioType.ROUNDABOUT;
-        StyleSheet styleSheet     = new DarkStyleSheet();
+        String osmFilename = new String[]{
+                "T_crossroad.osm",
+                "roundabout.osm",
+                "plus_crossroad.osm",
+                "motorway_slip-road.osm"}[2];
+        Consumer<ScenarioConfig> setupConfig    = PlusCrossroadFullScenario::setupConfig;
+        ScenarioConstructor scenarioConstructor = (config, graph, visVehicleFactory) -> {
+            QueueScenarioSmall scenario = new PlusCrossroadFullScenario(config, graph, visVehicleFactory);
+            scenario.setLooping(true);
+            return scenario;
+        };
+        StyleSheet styleSheet                   = new DarkStyleSheet();
 
         /* build setup: logging */
         BuildSetup.TRACE_ENABLED = false;
@@ -55,7 +66,7 @@ public class Main {
         /* get map file */
         File file;
         try {
-            file = new PackagedResource(Main.class, scenarioType.getOSMFilename()).asTemporaryFile();
+            file = new PackagedResource(UIValidation.class, osmFilename).asTemporaryFile();
         } catch (IOException e) {
             e.printStackTrace();
             return;
@@ -63,7 +74,7 @@ public class Main {
 
         /* simulation config */
         ScenarioConfig config = new ScenarioConfig();
-        scenarioType.setupConfig(config);
+        setupConfig.accept(config);
 
 
         SwingUtilities.invokeLater(() -> {
@@ -124,26 +135,11 @@ public class Main {
             }
 
 
-            System.err.println(graph);
+            logger.debug("\n" + graph);
 
 
             /* initialize the simulation */
-            QueueScenario scenario = null;
-            switch (scenarioType) {
-                case MOTORWAY_SLIP_ROAD:
-                    scenario = new MotorwaySlipRoadScenario(config, graph, overlay.getVehicleFactory());
-                    break;
-                case PLUS_CROSSROAD:
-                    scenario = new PlusCrossroadScenario(config, graph, overlay.getVehicleFactory());
-                    break;
-                case ROUNDABOUT:
-                    scenario = new RoundaboutScenario(config, graph, overlay.getVehicleFactory());
-                    break;
-                case T_CROSSROAD:
-                    scenario = new TCrossroadScenario(config, graph, overlay.getVehicleFactory());
-                    break;
-            }
-
+            QueueScenarioSmall scenario = scenarioConstructor.instantiate(config, graph, overlay.getVehicleFactory());
             Simulation sim = new VehicleSimulation();
             overlay.setSimulation(sim);
             scenario.prepare();
@@ -170,5 +166,11 @@ public class Main {
                     }
             );
         });
+    }
+
+    private interface ScenarioConstructor {
+        QueueScenarioSmall instantiate(ScenarioConfig config,
+                                       StreetGraph graph,
+                                       Supplier<VisualizationVehicleEntity> visVehicleFactory);
     }
 }
