@@ -1,0 +1,113 @@
+Alles ohne Leerzeichen und ohne Zeilenumbrueche
+
+|=====================|
+| age_when_despawning |
+|=====================|
+type (in order):
+int; ...
+
+order:
+age_0; age_1; ...
+
+
+
+|====================|
+| anger_per_timestep |
+|====================|
+type (in order):
+int; int; int; ... int;
+...
+
+order:
+n; simulation_age; anger_1; ...; anger_n;
+m; simulation_age; anger_1; ...; anger_m;
+...
+
+
+
+|=================================|
+| linear_distance_per_despawn_age |
+|=================================|
+type (in order):
+float; ...
+
+order:
+bla_0; bla_1; ...
+
+
+
+|============================|
+| spawned_count_per_timestep |
+|============================|
+type (in order):
+int; ...
+
+order:
+count_0; count_1; ...
+
+
+
+|=============================|
+| total_anger_when_despawning |
+|=============================|
+type (in order):
+int; ...
+
+order:
+ta_0; ta_1; ...
+
+
+
+
+=======
+Alles ohne Leerzeichen
+
+|======|
+| FILE |
+|======|
+
+filename:
+anger_per_timestep.csv
+
+order:
+// n, m are numbers
+// e_0 etc. are elements (here floats for anger_per_maxAnger)
+n; e_0; e_1; ...; e_n; m; e_0; e_1; ...; e_m; ...
+
+
+
+|======|
+| FILE |
+|======|
+
+filename:
+total_anger_when_despawning.csv
+
+order:
+ta_0; ta_1; ...
+
+
+
+|======|
+| FILE |
+|======|
+
+filename:
+spawned_count_per_timestep.csv
+
+order:
+sp_0; sp_1; ...
+
+
+
+|======|
+| FILE |
+|======|
+
+filename:
+t_spawn_despawn_depending_on_vehicleID.csv
+
+order: (line break just for better overview here)
+t(spawn(vehicleID_0)); t(despawn(vehicleID_0));
+t(spawn(vehicleID_1)); t(despawn(vehicleID_1));
+...
