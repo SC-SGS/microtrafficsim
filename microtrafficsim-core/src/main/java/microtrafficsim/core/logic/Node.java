@@ -491,22 +491,21 @@ public class Node implements ShortestPathNode {
     */
     @Override
     public Set<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming) {
+
+        if (incoming == null)
+            return Collections.unmodifiableSet(leavingEdges.keySet());
+
         HashSet<ShortestPathEdge> returnEdges = new HashSet<>();
 
-        if (incoming != null) {
-            for (Lane incomingLane : ((DirectedEdge) incoming).getLanes()) {
-                ArrayList<Lane> restrictedLeavingLanes = restrictions.get(incomingLane);
-                // if there exist restrictions
-                if (restrictedLeavingLanes != null)
-                    for (Lane leavingLane : restrictedLeavingLanes)
-                        returnEdges.add(leavingLane.getAssociatedEdge());
-                else
-                    returnEdges.addAll(leavingEdges.keySet());
-            }
-        } else {
-            returnEdges.addAll(leavingEdges.keySet());
+        for (Lane incomingLane : ((DirectedEdge) incoming).getLanes()) {
+            ArrayList<Lane> restrictedLeavingLanes = restrictions.get(incomingLane);
+            // if there exist restrictions
+            if (restrictedLeavingLanes != null)
+                for (Lane leavingLane : restrictedLeavingLanes)
+                    returnEdges.add(leavingLane.getAssociatedEdge());
+            else
+                return Collections.unmodifiableSet(leavingEdges.keySet());
         }
-
         return returnEdges;
     }
 

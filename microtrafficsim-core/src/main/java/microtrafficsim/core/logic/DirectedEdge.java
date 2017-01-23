@@ -5,7 +5,6 @@ import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.Vec2d;
-import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 
 /**
@@ -68,7 +67,7 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
 
     @Override
     public int hashCode() {
-        return new FNVHashBuilder().add(ID).add(origin).add(destination).getHash();
+        return Long.hashCode(ID);
     }
 
     Lane[] getLanes() {
@@ -100,8 +99,8 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
     }
 
     void reset() {
-        lanes    = new Lane[lanes.length];
-        lanes[0] = new Lane(this, 0);
+        for (Lane lane : lanes)
+            lane.reset();
     }
 
     /*

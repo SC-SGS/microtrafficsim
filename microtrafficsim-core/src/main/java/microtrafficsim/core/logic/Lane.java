@@ -31,6 +31,11 @@ public class Lane {
         return new FNVHashBuilder().add(associatedEdge).add(index).getHash();
     }
 
+    void reset() {
+        this.cells.clear();
+        this.lastVehicle = null;
+    }
+
     public synchronized int getVehicleCount() {
         return cells.size();
     }
