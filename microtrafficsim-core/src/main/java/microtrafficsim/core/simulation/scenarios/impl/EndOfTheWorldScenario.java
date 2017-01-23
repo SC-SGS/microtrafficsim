@@ -4,7 +4,7 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.area.Area;
-import microtrafficsim.core.map.area.RectangleArea;
+import microtrafficsim.core.map.area.polygons.RectangleArea;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;

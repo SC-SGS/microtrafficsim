@@ -1,18 +1,23 @@
-package microtrafficsim.core.map.area;
+package microtrafficsim.core.map.area.polygons;
 
 import microtrafficsim.core.map.Coordinate;
 
 
 /**
- * Simple area area, defined by a list of {@link Coordinate Coordinate}s.
+ * Simple area, defined by a list of {@link Coordinate Coordinate}s.
  *
  * @author Maximilian Luz
  */
-public class SimplePolygon implements ISimplePolygon {
+public class BasicPolygonArea implements PolygonArea {
 
     private Coordinate[] coordinates;
 
-    public SimplePolygon(Coordinate[] coordinates) {
+    /**
+     * Default constructor.
+     *
+     * @param coordinates Has to contain at least 3 points, otherwise {@link IllegalAccessException} is thrown.
+     */
+    public BasicPolygonArea(Coordinate[] coordinates) {
         if (coordinates.length < 3) throw new IllegalArgumentException();
         this.coordinates = coordinates;
     }
@@ -22,16 +27,15 @@ public class SimplePolygon implements ISimplePolygon {
         return coordinates;
     }
 
+    /**
+     * The point-in-polygon test is calculated using a, for integer values modified,
+     * version of the winding number algorithm described in {@code 'A Winding Number and
+     * Point-in-Polygon Algorithm'} by David G. Alciatore, Dept. of Mechanical
+     * Engineering, Colorado State University.
+     * (https://www.engr.colostate.edu/~dga/dga/papers/point_in_polygon.pdf)
+     */
     @Override
     public boolean contains(Coordinate p) {
-        /*
-         * The point-in-polygon test is calculated using a, for integer values modified,
-         * version of the winding number algorithm described in 'A Winding Number and
-         * Point-in-Polygon Algorithm' by David G. Alciatore, Dept. of Mechanical
-         * Engineering, Colorado State University.
-         * (https://www.engr.colostate.edu/~dga/dga/papers/point_in_polygon.pdf)
-         */
-
         int windings = 0;    // actually the doubled number of windings
 
         double x1 = coordinates[coordinates.length - 1].lon - p.lon;

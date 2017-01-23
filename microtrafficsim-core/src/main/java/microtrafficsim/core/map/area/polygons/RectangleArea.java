@@ -1,4 +1,4 @@
-package microtrafficsim.core.map.area;
+package microtrafficsim.core.map.area.polygons;
 
 import microtrafficsim.core.map.Coordinate;
 
@@ -9,7 +9,7 @@ import microtrafficsim.core.map.Coordinate;
  *
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
-public class RectangleArea implements ISimplePolygon {
+public class RectangleArea implements PolygonArea {
 
     public final double minlat;
     public final double minlon;

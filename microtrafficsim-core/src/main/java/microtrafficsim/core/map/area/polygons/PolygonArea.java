@@ -1,6 +1,7 @@
-package microtrafficsim.core.map.area;
+package microtrafficsim.core.map.area.polygons;
 
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.area.Area;
 
 
 /**
@@ -8,7 +9,7 @@ import microtrafficsim.core.map.Coordinate;
  *
  * @author Maximilian Luz
  */
-public interface ISimplePolygon extends Area {
+public interface PolygonArea extends Area {
 
     /**
      * Return the (ordered) list of coordinates that define this area.
