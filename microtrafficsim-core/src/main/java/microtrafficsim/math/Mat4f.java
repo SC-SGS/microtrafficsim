@@ -859,7 +859,7 @@ public class Mat4f {
      *
      * @param m the matrix to multiply with.
      * @param v the vector to multiply with.
-     * @return {@code obj1}.
+     * @return {@code v}.
      */
     public static Vec4f mulInPlace(Mat4f m, Vec4f v) {
         float x = m.raw[ 0] * v.x + m.raw[ 1] * v.y + m.raw[ 2] * v.z + m.raw[ 3] * v.z;

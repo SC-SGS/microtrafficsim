@@ -67,8 +67,8 @@
     <nd ref="27281852"/>
     <nd ref="1720776558"/>
     <nd ref="263679714"/>
-    <tag k="highway" obj1="residential"/>
-    <tag k="maxspeed" obj1="50"/>
+    <tag k="highway" v="residential"/>
+    <tag k="maxspeed" v="50"/>
   </way>
   <way id="24009189">
     <nd ref="271387772"/>
@@ -79,16 +79,16 @@
     <nd ref="271230644"/>
     <nd ref="1720155701"/>
     <nd ref="27281850"/>
-    <tag k="highway" obj1="tertiary"/>
-    <tag k="lanes" obj1="2"/>
-    <tag k="maxspeed" obj1="50"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="lanes" v="2"/>
+    <tag k="maxspeed" v="50"/>
   </way>
   <way id="156077269">
     <nd ref="43055934"/>
     <nd ref="271230646"/>
-    <tag k="highway" obj1="residential"/>
-    <tag k="maxspeed" obj1="50"/>
-    <tag k="oneway" obj1="yes"/>
+    <tag k="highway" v="residential"/>
+    <tag k="maxspeed" v="50"/>
+    <tag k="oneway" v="yes"/>
   </way>
   <way id="346056989">
     <nd ref="263679714"/>
@@ -102,29 +102,29 @@
     <nd ref="269667505"/>
     <nd ref="2485283619"/>
     <nd ref="254636138"/>
-    <tag k="highway" obj1="residential"/>
-    <tag k="maxspeed" obj1="50"/>
+    <tag k="highway" v="residential"/>
+    <tag k="maxspeed" v="50"/>
   </way>
   <way id="346081096">
     <nd ref="271230646"/>
     <nd ref="260334121"/>
-    <tag k="highway" obj1="residential"/>
-    <tag k="maxspeed" obj1="50"/>
-    <tag k="oneway" obj1="yes"/>
+    <tag k="highway" v="residential"/>
+    <tag k="maxspeed" v="50"/>
+    <tag k="oneway" v="yes"/>
   </way>
   <way id="76095756">
     <nd ref="246645900"/>
     <nd ref="1720776484"/>
     <nd ref="27281851"/>
-    <tag k="highway" obj1="tertiary"/>
-    <tag k="maxspeed" obj1="50"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="maxspeed" v="50"/>
   </way>
   <way id="4443119">
     <nd ref="498201336"/>
     <nd ref="1720776518"/>
     <nd ref="263679713"/>
-    <tag k="highway" obj1="tertiary"/>
-    <tag k="maxspeed" obj1="50"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="maxspeed" v="50"/>
   </way>
   <way id="24009184">
     <nd ref="243679734"/>
@@ -133,8 +133,8 @@
     <nd ref="132870871"/>
     <nd ref="132870872"/>
     <nd ref="246645900"/>
-    <tag k="highway" obj1="tertiary"/>
-    <tag k="maxspeed" obj1="50"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="maxspeed" v="50"/>
   </way>
   <way id="346056991">
     <nd ref="263679713"/>
@@ -145,8 +145,8 @@
     <nd ref="1720736456"/>
     <nd ref="1068421519"/>
     <nd ref="242539693"/>
-    <tag k="highway" obj1="tertiary"/>
-    <tag k="maxspeed" obj1="50"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="maxspeed" v="50"/>
   </way>
   <way id="195190000">
     <nd ref="27281851"/>
@@ -160,10 +160,10 @@
     <nd ref="43055939"/>
     <nd ref="498201327"/>
     <nd ref="27281852"/>
-    <tag k="highway" obj1="tertiary"/>
-    <tag k="junction" obj1="roundabout"/>
-    <tag k="lanes" obj1="1"/>
-    <tag k="maxspeed" obj1="50"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="junction" v="roundabout"/>
+    <tag k="lanes" v="1"/>
+    <tag k="maxspeed" v="50"/>
   </way>
   <way id="4443120">
     <nd ref="27281852"/>
@@ -173,10 +173,10 @@
     <nd ref="271230649"/>
     <nd ref="498201308"/>
     <nd ref="27281850"/>
-    <tag k="highway" obj1="tertiary"/>
-    <tag k="junction" obj1="roundabout"/>
-    <tag k="lanes" obj1="1"/>
-    <tag k="maxspeed" obj1="50"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="junction" v="roundabout"/>
+    <tag k="lanes" v="1"/>
+    <tag k="maxspeed" v="50"/>
   </way>
   <way id="195190009">
     <nd ref="27281850"/>
@@ -186,9 +186,9 @@
     <nd ref="271230648"/>
     <nd ref="498201347"/>
     <nd ref="27281851"/>
-    <tag k="highway" obj1="tertiary"/>
-    <tag k="junction" obj1="roundabout"/>
-    <tag k="lanes" obj1="1"/>
-    <tag k="maxspeed" obj1="50"/>
+    <tag k="highway" v="tertiary"/>
+    <tag k="junction" v="roundabout"/>
+    <tag k="lanes" v="1"/>
+    <tag k="maxspeed" v="50"/>
   </way>
 </osm>

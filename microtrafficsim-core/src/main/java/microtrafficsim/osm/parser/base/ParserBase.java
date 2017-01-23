@@ -228,7 +228,7 @@ public class ParserBase {
      */
     private void parseTag(XMLStreamReader reader, Map<String, String> tags) throws XMLStreamException {
         String k = reader.getAttributeValue(null, "k");
-        String v = reader.getAttributeValue(null, "obj1");
+        String v = reader.getAttributeValue(null, "v");
         tags.put(k, v);
     }
 

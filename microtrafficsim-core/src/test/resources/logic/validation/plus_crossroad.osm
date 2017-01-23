@@ -13,26 +13,26 @@
   <way id="292789429">
     <nd ref="92311691"/> <!--intersection-->
     <nd ref="96535139"/>
-    <tag k="highway" obj1="residential"/>
-    <tag k="maxspeed" obj1="30"/>
+    <tag k="highway" v="residential"/>
+    <tag k="maxspeed" v="30"/>
   </way>
   <way id="303639202">
     <nd ref="92311691"/> <!--intersection-->
     <nd ref="92311692"/>
-    <tag k="highway" obj1="residential"/>
-    <tag k="maxspeed" obj1="30"/>
+    <tag k="highway" v="residential"/>
+    <tag k="maxspeed" v="30"/>
   </way>
   <way id="303639203">
     <nd ref="3080413323"/>
     <nd ref="3080413322"/>
     <nd ref="92311691"/> <!--intersection-->
-    <tag k="highway" obj1="residential"/>
-    <tag k="maxspeed" obj1="30"/>
+    <tag k="highway" v="residential"/>
+    <tag k="maxspeed" v="30"/>
   </way>
   <way id="292931265">
     <nd ref="96535138"/>
     <nd ref="92311691"/> <!--intersection-->
-    <tag k="highway" obj1="residential"/>
-    <tag k="maxspeed" obj1="30"/>
+    <tag k="highway" v="residential"/>
+    <tag k="maxspeed" v="30"/>
   </way>
 </osm>

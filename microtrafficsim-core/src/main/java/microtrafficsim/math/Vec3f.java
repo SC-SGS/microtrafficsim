@@ -169,7 +169,7 @@ public class Vec3f {
      * Calculates and returns the dot-product of this vector with the specified one.
      *
      * @param v the vector to calculate the dot-product with.
-     * @return the dot-product of this vector and {@code obj1}.
+     * @return the dot-product of this vector and {@code v}.
      */
     public float dot(Vec3f v) {
         return this.x * v.x + this.y * v.y + this.z * v.z;
@@ -179,7 +179,7 @@ public class Vec3f {
      * Calculates and returns the cross-product of this vector with the specified one.
      *
      * @param v the vector to calculate the cross-product with.
-     * @return the cross-product of this vector and {@code obj1} (i.e {@code this cross obj1}).
+     * @return the cross-product of this vector and {@code v} (i.e {@code this cross v}).
      */
     public Vec3f cross(Vec3f v) {
         float x = this.y * v.z - v.y * this.z;
@@ -198,7 +198,7 @@ public class Vec3f {
      * Normalizes the given vector and returns the result.
      *
      * @param v the vector to normalize.
-     * @return {@code obj1} as (new) normalized vector
+     * @return {@code v} as (new) normalized vector
      */
     public static Vec3f normalize(Vec3f v) {
         float abs = (float) Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -232,7 +232,7 @@ public class Vec3f {
      *
      * @param v      the vector to multiply with.
      * @param scalar the scalar value to multiply with.
-     * @return the result of this multiplication, i.e. {@code obj1 * scalar} as new vector.
+     * @return the result of this multiplication, i.e. {@code v * scalar} as new vector.
      */
     public static Vec3f mul(Vec3f v, float scalar) {
         return new Vec3f(v.x * scalar, v.y * scalar, v.z * scalar);

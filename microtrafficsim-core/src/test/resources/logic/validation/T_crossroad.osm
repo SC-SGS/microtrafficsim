@@ -12,15 +12,15 @@
   <way id="24562781">
     <nd ref="267070091"/>
     <nd ref="267070094"/>
-    <tag k="highway" obj1="residential"/>
-    <tag k="maxspeed" obj1="30"/>
+    <tag k="highway" v="residential"/>
+    <tag k="maxspeed" v="30"/>
   </way>
   <way id="24777236">
     <nd ref="253030521"/>
     <nd ref="1145357832"/>
     <nd ref="267070091"/> <!--intersection-->
     <nd ref="269231922"/>
-    <tag k="highway" obj1="residential"/>
-    <tag k="maxspeed" obj1="30"/>
+    <tag k="highway" v="residential"/>
+    <tag k="maxspeed" v="30"/>
   </way>
 </osm>
