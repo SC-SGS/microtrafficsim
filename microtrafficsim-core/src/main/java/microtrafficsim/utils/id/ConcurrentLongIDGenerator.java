@@ -11,6 +11,7 @@ package microtrafficsim.utils.id;
 public class ConcurrentLongIDGenerator implements LongGenerator {
 
     private long id;
+    private final long initialID;
 
     public ConcurrentLongIDGenerator() {
         this(0);
@@ -18,6 +19,7 @@ public class ConcurrentLongIDGenerator implements LongGenerator {
 
     public ConcurrentLongIDGenerator(long initialID) {
         id = initialID;
+        this.initialID = initialID;
     }
 
     @Override
@@ -25,5 +27,10 @@ public class ConcurrentLongIDGenerator implements LongGenerator {
         long returnID = id;
         id            = id + 1;
         return returnID;
+    }
+
+    @Override
+    public synchronized void reset() {
+        id = initialID;
     }
 }

@@ -23,7 +23,8 @@ public interface ScenarioBuilder {
     /**
      * <p>
      * Prepares the given scenario, e.g. it pre-calculates vehicle routes. If the scenario is already prepared, it
-     * gets prepared again.
+     * gets prepared again. This method does NOT change the scenario's definition. If you like to change the
+     * scenario, you could call {@link Scenario#changeMatrix()}
      *
      * @param scenario This scenario should be prepared
      * @return The prepared scenario (same reference as the given one, just for practical purposes)

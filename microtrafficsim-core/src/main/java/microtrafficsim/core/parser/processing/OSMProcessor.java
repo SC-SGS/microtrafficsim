@@ -527,5 +527,10 @@ public class OSMProcessor implements Processor {
 
             return next++;
         }
+
+        @Override
+        public void reset() {
+            next = 0;
+        }
     }
 }

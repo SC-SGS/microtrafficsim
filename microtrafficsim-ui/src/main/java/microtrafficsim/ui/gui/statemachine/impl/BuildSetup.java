@@ -1,5 +1,7 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
+import microtrafficsim.core.map.style.impl.DarkStyleSheet;
+import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
@@ -45,7 +47,7 @@ public class BuildSetup {
         config = new ScenarioConfig();
 
         /* visualization and parsing */
-        mapviewer   = new TileBasedMapViewer();
+        mapviewer   = new TileBasedMapViewer(new DarkStyleSheet());
         overlay     = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
 
         /* simulation */

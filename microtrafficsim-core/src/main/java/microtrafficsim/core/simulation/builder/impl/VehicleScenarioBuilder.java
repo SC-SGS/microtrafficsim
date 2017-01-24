@@ -122,10 +122,6 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
         this.vehicleFactory = vehicleFactory;
     }
 
-    /**
-     * Addition to superclass-doc: If the ODMatrix should be created using origin/destination fields, all nodes are
-     * collected in one set, so there are no duplicates and the nodes are chosen distributed uniformly at random.
-     */
     @Override
     public Scenario prepare(final Scenario scenario, final ProgressListener listener) throws InterruptedException {
         logger.info("PREPARING SCENARIO started");
@@ -137,12 +133,12 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
 
         /* reset all */
         logger.info("RESETTING SCENARIO started");
-        resetScenario(scenario);
+        scenario.reset();
         logger.info("RESETTING SCENARIO finished");
 
         /* interrupt handling */
         if (Thread.interrupted()) {
-            resetScenario(scenario);
+            scenario.reset();
             throw new InterruptedException();
         }
 
@@ -156,7 +152,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
             else
                 singleThreadedVehicleCreation(scenario, listener);
         } catch (InterruptedException e) {
-            resetScenario(scenario);
+            scenario.reset();
             throw e;
         }
 
@@ -177,12 +173,6 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
         ).toString());
 
         return scenario;
-    }
-
-    private void resetScenario(Scenario scenario) {
-        scenario.setPrepared(false);
-        scenario.getVehicleContainer().clearAll();
-        scenario.getGraph().reset();
     }
 
     private void multiThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener)

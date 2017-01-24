@@ -12,12 +12,12 @@ import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
 import microtrafficsim.math.HaversineDistanceCalculator;
+import microtrafficsim.math.random.distributions.impl.ResettableRandom;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Supplier;
 
 /**
@@ -30,9 +30,10 @@ import java.util.function.Supplier;
  * @author Dominic Parga Cacheiro
  */
 public class EndOfTheWorldScenario extends BasicScenario {
+
     private static Logger logger = new EasyMarkableLogger(EndOfTheWorldScenario.class);
 
-    private Random random;
+    private ResettableRandom random;
     // matrix
     private final ArrayList<Node> nodes, leftNodes, bottomNodes, rightNodes, topNodes;
     // scout factory
@@ -50,13 +51,13 @@ public class EndOfTheWorldScenario extends BasicScenario {
     }
 
     /**
-     * After filling node lists for the graph's borders, this constructor calls {@link #next()} to initialize the
+     * After filling node lists for the graph's borders, this constructor calls {@link #changeMatrix()} to initialize the
      * origin-destination-matrix.
      */
     public EndOfTheWorldScenario(ScenarioConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
         super(config, graph, vehicleContainer);
 
-        random = new Random(config.seedGenerator.next()); // TODO reset
+        random = new ResettableRandom(config.seedGenerator.next());
 
         /*
         |===============|
@@ -104,9 +105,19 @@ public class EndOfTheWorldScenario extends BasicScenario {
         | init |
         |======|
         */
-        next();
+        changeMatrix();
     }
 
+    private Node getRandomNode(List<Node> nodes) {
+        int rdm = random.nextInt(nodes.size());
+        return nodes.get(rdm);
+    }
+
+    /*
+    |==============|
+    | (i) Scenario |
+    |==============|
+    */
     /**
      * <p>
      * Referring to {@code Random.nextAnything()}, this method calculates the next origin-destination-matrix based on
@@ -119,7 +130,8 @@ public class EndOfTheWorldScenario extends BasicScenario {
      * &bull get a random destination out of the border field (of nodes) being closest to the chosen origin
      * &bull increase the route count for the found origin-destination-pair
      */
-    public void next() {
+    @Override
+    public void changeMatrix() {
         // note: the directions used in this method's comments are referring to Europe (so the northern hemisphere)
         logger.info("BUILDING ODMatrix started");
 
@@ -172,21 +184,18 @@ public class EndOfTheWorldScenario extends BasicScenario {
         logger.info("BUILDING ODMatrix finished");
     }
 
-    private Node getRandomNode(List<Node> nodes) {
-        int rdm = random.nextInt(nodes.size());
-        return nodes.get(rdm);
-    }
-
-    /*
-    |==============|
-    | (i) Scenario |
-    |==============|
-    */
     @Override
     public Supplier<ShortestPathAlgorithm> getScoutFactory() {
         return () ->
                 (random.nextFloat() < fastestWayProbability)
                         ? fastestWayBidirectionalAStar
                         : linearDistanceBidirectionalAStar;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        random.reset();
+        changeMatrix();
     }
 }

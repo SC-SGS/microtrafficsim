@@ -5,6 +5,7 @@ import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.utils.Resettable;
 
 
 /**
@@ -14,7 +15,7 @@ import microtrafficsim.math.Vec2d;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
+public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity, Resettable {
 
     public final long ID;
     private final int numberOfCells;
@@ -98,7 +99,11 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
                 ")";
     }
 
-    void reset() {
+    /**
+     * Resets all lanes.
+     */
+    @Override
+    public void reset() {
         for (Lane lane : lanes)
             lane.reset();
     }

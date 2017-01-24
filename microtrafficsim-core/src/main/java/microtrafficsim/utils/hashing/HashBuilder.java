@@ -1,12 +1,14 @@
 package microtrafficsim.utils.hashing;
 
 
+import microtrafficsim.utils.Resettable;
+
 /**
  * Interface for a simple hash-generator.
  *
  * @author Maximilian Luz
  */
-public interface HashBuilder {
+public interface HashBuilder extends Resettable {
 
     /**
      * Returns the generated hash which is constructed by applying an
@@ -19,6 +21,7 @@ public interface HashBuilder {
     /**
      * Resets this builders internal state.
      */
+    @Override
     void reset();
 
     /**

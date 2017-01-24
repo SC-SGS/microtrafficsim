@@ -8,12 +8,12 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
 import microtrafficsim.interesting.emotions.Hulk;
+import microtrafficsim.math.random.distributions.impl.ResettableRandom;
+import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Function;
 
 
@@ -36,7 +36,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     public final long                  ID;
     private final int                  spawnDelay;
     private final Object               lock_priorityCounter = new Object();
-    private Random                     random;
+    private ResettableRandom           random;
     private VehicleEntity              entity;
     private VehicleState               state;
     private List<VehicleStateListener> stateListeners;
@@ -81,7 +81,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
      */
     public AbstractVehicle(long ID, long seed, Route<Node> route, int spawnDelay) {
         this.ID             = ID;
-        this.random         = new Random(seed);
+        this.random         = new ResettableRandom(seed);
         this.stateListeners = new LinkedList<>();
         state = VehicleState.NOT_SPAWNED;
 

@@ -1,12 +1,14 @@
 package microtrafficsim.core.simulation.configs;
 
 
+import microtrafficsim.utils.Resettable;
+
 /**
  * This class contains configurations for working parallel.
  *
  * @author Dominic Parga Cacheiro
  */
-public final class MultiThreadingConfig {
+public final class MultiThreadingConfig implements Resettable {
     public int nThreads;
     public int vehiclesPerRunnable;
     public int nodesPerThread;
@@ -21,6 +23,7 @@ public final class MultiThreadingConfig {
     /**
      * Resets the parameter of this config file.
      */
+    @Override
     public void reset() {
         nThreads            = 8;
         vehiclesPerRunnable = 200;

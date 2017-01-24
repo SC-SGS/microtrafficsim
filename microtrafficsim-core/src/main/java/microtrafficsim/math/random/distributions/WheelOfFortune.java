@@ -1,5 +1,7 @@
 package microtrafficsim.math.random.distributions;
 
+import microtrafficsim.utils.Resettable;
+
 import java.util.Iterator;
 
 /**
@@ -17,7 +19,7 @@ import java.util.Iterator;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface WheelOfFortune {
+public interface WheelOfFortune extends Resettable {
 
     /**
      * Adds the given object with the given weight to this wheel. If the object is already added, nothing happens. To

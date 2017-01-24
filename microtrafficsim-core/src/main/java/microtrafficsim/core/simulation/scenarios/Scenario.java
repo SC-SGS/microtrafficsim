@@ -8,6 +8,7 @@ import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.StepListener;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.utils.ODMatrix;
+import microtrafficsim.utils.Resettable;
 
 import java.util.function.Supplier;
 
@@ -25,7 +26,7 @@ import java.util.function.Supplier;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface Scenario extends StepListener {
+public interface Scenario extends StepListener, Resettable {
 
     /*
     |=========|
@@ -72,6 +73,11 @@ public interface Scenario extends StepListener {
      */
     ODMatrix getODMatrix();
 
+    /**
+     * Usually, the matrix depends on random numbers. Preparing the scenario does not mean
+     */
+    void changeMatrix();
+
     /*
     |================|
     | route creation |
@@ -90,5 +96,29 @@ public interface Scenario extends StepListener {
     @Override
     default void didOneStep(Simulation simulation) {
 
+    }
+
+    /*
+    |================|
+    | (i) Resettable |
+    |================|
+    */
+    /**
+     * Resets this scenario by<br>
+     * &bull setting prepared to false <br>
+     * &bull clearing the vehicle container <br>
+     * &bull resetting the streetgraph
+     *
+     * @see #setPrepared(boolean)
+     * @see #getVehicleContainer()
+     * @see VehicleContainer#clearAll()
+     * @see #getGraph()
+     * @see StreetGraph#reset()
+     */
+    @Override
+    default void reset() {
+        setPrepared(false);
+        getVehicleContainer().clearAll();
+        getGraph().reset();
     }
 }

@@ -11,6 +11,7 @@ import microtrafficsim.osm.parser.relations.RelationFactory;
 import microtrafficsim.osm.primitives.Node;
 import microtrafficsim.osm.primitives.Relation;
 import microtrafficsim.osm.primitives.Way;
+import microtrafficsim.utils.Resettable;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,7 +25,7 @@ import java.util.Set;
  *
  * @author Maximilian Luz
  */
-public class MultiPassParserBaseEventHandler implements ParserBaseEventHandler {
+public class MultiPassParserBaseEventHandler implements ParserBaseEventHandler, Resettable {
 
     private DataSet        datastore;
     private FeatureMatcher matcher;
@@ -162,6 +163,7 @@ public class MultiPassParserBaseEventHandler implements ParserBaseEventHandler {
      * Resets the internal storage except for the {@code DataSet}, which has to
      * be cleared manually.
      */
+    @Override
     public void reset() {
         pass = 0;
         requiredNodes.clear();

@@ -8,11 +8,11 @@ import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalA
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
+import microtrafficsim.math.random.distributions.impl.ResettableRandom;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.function.Supplier;
 
 /**
@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 public class RandomRouteScenario extends BasicScenario {
     private static Logger logger = new EasyMarkableLogger(RandomRouteScenario.class);
 
-    private Random random;
+    private ResettableRandom random;
     // scout factory
     private final float fastestWayProbability = 1.0f;
     private final ShortestPathAlgorithm fastestWayBidirectionalAStar, linearDistanceBidirectionalAStar;
@@ -54,24 +54,29 @@ public class RandomRouteScenario extends BasicScenario {
     }
 
     /**
-     * Default constructor calling {@link #next()} to initialize the origin-destination-matrix.
+     * Default constructor calling {@link #changeMatrix()} to initialize the origin-destination-matrix.
      *
-     * @param seed Used for the used instance of {@link Random}
+     * @param seed Used for the used instance of {@link ResettableRandom}
      */
     public RandomRouteScenario(long seed, ScenarioConfig config, StreetGraph graph, VehicleContainer
             vehicleContainer) {
         super(config, graph, vehicleContainer);
 
-        random = new Random(seed);
+        random = new ResettableRandom(seed);
 
         // scout factory
         fastestWayBidirectionalAStar = new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);
         linearDistanceBidirectionalAStar = new LinearDistanceBidirectionalAStar(config.metersPerCell);
 
         // init
-        next();
+        changeMatrix();
     }
 
+    /*
+    |==============|
+    | (i) Scenario |
+    |==============|
+    */
     /**
      * <p>
      * Referring to {@code Random.nextAnything()}, this method calculates the next origin-destination-matrix based on
@@ -83,7 +88,8 @@ public class RandomRouteScenario extends BasicScenario {
      * &bull get random destination <br>
      * &bull increase the route count for the found origin-destination-pair
      */
-    public void next() {
+    @Override
+    public void changeMatrix() {
         logger.info("BUILDING ODMatrix started");
 
         ArrayList<Node> nodes = new ArrayList<>(getGraph().getNodes());
@@ -99,16 +105,18 @@ public class RandomRouteScenario extends BasicScenario {
         logger.info("BUILDING ODMatrix finished");
     }
 
-    /*
-    |==============|
-    | (i) Scenario |
-    |==============|
-    */
     @Override
     public Supplier<ShortestPathAlgorithm> getScoutFactory() {
         return () ->
                 (random.nextFloat() < fastestWayProbability)
                 ? fastestWayBidirectionalAStar
                 : linearDistanceBidirectionalAStar;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        random.reset();
+        changeMatrix();
     }
 }

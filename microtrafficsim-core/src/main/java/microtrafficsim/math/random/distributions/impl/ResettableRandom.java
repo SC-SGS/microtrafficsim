@@ -9,7 +9,7 @@ import java.util.Random;
  *
  * @author Dominic Parga Cacheiro
  */
-public class JavaRandom implements RandomGenerator {
+public class ResettableRandom implements RandomGenerator {
 
     private long seed;
     private Random random;
@@ -17,16 +17,16 @@ public class JavaRandom implements RandomGenerator {
 
     /**
      * <p>
-     * Calls {@link #JavaRandom(long)} using {@code seedUniquifier + System.nanoTime()}.
+     * Calls {@link #ResettableRandom(long)} using {@code seedUniquifier + System.nanoTime()}.
      *
      * <p>
      * Modelled after the OpenJDK Random implementation.
      */
-    public JavaRandom() {
+    public ResettableRandom() {
         this(++seedUniquifier + System.nanoTime());
     }
 
-    public JavaRandom(long seed) {
+    public ResettableRandom(long seed) {
         setSeed(seed);
     }
 
@@ -57,6 +57,19 @@ public class JavaRandom implements RandomGenerator {
     @Override
     public int nextInt() {
         return random.nextInt();
+    }
+
+    /**
+     * @see Random#nextInt(int)
+     */
+    @Override
+    public int nextInt(int bound) {
+        return random.nextInt(bound);
+    }
+
+    @Override
+    public long nextLong() {
+        return random.nextLong();
     }
 
     @Override

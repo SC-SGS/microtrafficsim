@@ -4,25 +4,24 @@ import microtrafficsim.math.random.distributions.WheelOfFortune;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Random;
 
 /**
  * Basic implementation using a {@link HashMap}. For the random number generator used for {@link #nextObject()},
- * {@link Random} is used.
+ * {@link ResettableRandom} is used.
  *
  * @author Dominic Parga Cacheiro
  */
 public class BasicWheelOfFortune implements WheelOfFortune {
 
-    private Random random;
+    private ResettableRandom random;
     private HashMap<Object, Integer> fields;
     private int               n;
 
     public BasicWheelOfFortune(long seed) {
-        this(new Random(seed));
+        this(new ResettableRandom(seed));
     }
 
-    public BasicWheelOfFortune(Random random) {
+    public BasicWheelOfFortune(ResettableRandom random) {
         this.random = random;
         fields      = new HashMap<>();
         n           = 0;
@@ -76,5 +75,17 @@ public class BasicWheelOfFortune implements WheelOfFortune {
         }
 
         return lastObj;
+    }
+
+    /*
+    |================|
+    | (i) Resettable |
+    |================|
+    */
+    @Override
+    public void reset() {
+        random.reset();
+        fields.clear();
+        n = 0;
     }
 }

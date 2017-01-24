@@ -223,6 +223,13 @@ public abstract class QueueScenarioSmall implements Scenario {
         return new UnmodifiableODMatrix(odMatrices.get(curIdx));
     }
 
+    /**
+     * Empty
+     */
+    @Override
+    public void changeMatrix() {
+    }
+
     @Override
     public final Supplier<ShortestPathAlgorithm> getScoutFactory() {
         return () -> scout;

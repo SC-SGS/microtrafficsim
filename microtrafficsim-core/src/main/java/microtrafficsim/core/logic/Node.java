@@ -9,6 +9,8 @@ import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.exceptions.core.logic.CrossingLogicException;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.math.random.distributions.impl.ResettableRandom;
+import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.Tuple;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
@@ -22,12 +24,12 @@ import java.util.*;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class Node implements ShortestPathNode {
+public class Node implements ShortestPathNode, Resettable {
 
-    public final Long      ID;
-    private ScenarioConfig config;
-    private Random         random;
-    private Coordinate     coordinate;
+    public final Long        ID;
+    private ScenarioConfig   config;
+    private ResettableRandom random;
+    private Coordinate       coordinate;
 
     // crossing logic
     private PriorityQueue<AbstractVehicle>                 newRegisteredVehicles;
@@ -50,7 +52,11 @@ public class Node implements ShortestPathNode {
         this.coordinate = coordinate;
 
         // crossing logic
-        reset();
+        random                = new ResettableRandom(config.seedGenerator.next());
+        assessedVehicles      = new HashMap<>();
+        maxPrioVehicles       = new HashSet<>();
+        newRegisteredVehicles = new PriorityQueue<>((v1, v2) -> Long.compare(v1.ID, v2.ID));
+        anyChangeSinceUpdate  = false;
 
         // edges
         restrictions  = new HashMap<>();
@@ -160,14 +166,14 @@ public class Node implements ShortestPathNode {
     }
 
     /**
-     * The node empties its crossing sets etc., but also reset its instance of {@link Random}, whereas it is not
-     * guaranteed, that it will be identical.
+     * The node empties its crossing sets etc. and resets its {@link ResettableRandom}
      */
-    synchronized void reset() {
-        random                = new Random(config.seedGenerator.next()); // TODO determinism => remember seed
-        assessedVehicles      = new HashMap<>();
-        maxPrioVehicles       = new HashSet<>();
-        newRegisteredVehicles = new PriorityQueue<>((v1, v2) -> Long.compare(v1.ID, v2.ID));
+    @Override
+    public synchronized void reset() {
+        random.reset();
+        assessedVehicles.clear();
+        maxPrioVehicles.clear();
+        newRegisteredVehicles.clear();
         anyChangeSinceUpdate  = false;
     }
 

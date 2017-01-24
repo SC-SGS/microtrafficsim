@@ -1,11 +1,12 @@
 package microtrafficsim.core.simulation.configs;
 
+import microtrafficsim.math.random.distributions.impl.ResettableRandom;
 import microtrafficsim.osm.parser.features.streets.info.StreetType;
+import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.id.ConcurrentSeedGenerator;
 import microtrafficsim.utils.id.LongGenerator;
 
-import java.util.Random;
 import java.util.function.Function;
 
 
@@ -27,7 +28,7 @@ import java.util.function.Function;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public final class ScenarioConfig {
+public final class ScenarioConfig implements Resettable {
     // general
     public LongGenerator longIDGenerator;
     public LongGenerator seedGenerator;
@@ -68,12 +69,13 @@ public final class ScenarioConfig {
      * &bull {@link CrossingLogicConfig}<br>
      * &bull {@link MultiThreadingConfig}<br>
      */
+    @Override
     public void reset() {
         // 1/3,6 = 25/90 = 0,277... => 0,277 m/cell means 1 cell/s <=> 1 km/h
         metersPerCell     = 7.5f; // Nagel-Schreckenberg-Model
         globalMaxVelocity = 6;
         speedup           = 1;
-        seed              = new Random().nextLong();
+        seed              = new ResettableRandom().nextLong();
         // visualization
         visualization.reset();
         // crossing logic

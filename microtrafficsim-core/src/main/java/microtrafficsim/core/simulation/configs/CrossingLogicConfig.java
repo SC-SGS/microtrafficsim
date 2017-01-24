@@ -1,13 +1,15 @@
 package microtrafficsim.core.simulation.configs;
 
 
+import microtrafficsim.utils.Resettable;
+
 /**
  * This class isolates the crossing logic configs from the other config
  * parameters to guarantee better overview.
  *
  * @author Dominic Parga Cacheiro
  */
-public final class CrossingLogicConfig {
+public final class CrossingLogicConfig implements Resettable {
     public boolean  drivingOnTheRight;    // or left
     public boolean  edgePriorityEnabled;
     public boolean  priorityToTheRightEnabled;
@@ -24,6 +26,7 @@ public final class CrossingLogicConfig {
     /**
      * Resets the parameter of this config file.
      */
+    @Override
     public void reset() {
         drivingOnTheRight            = true;
         edgePriorityEnabled          = true;

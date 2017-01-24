@@ -4,9 +4,9 @@ import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.interesting.emotions.Hulk;
+import microtrafficsim.math.random.distributions.impl.ResettableRandom;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 
-import java.util.Random;
 import java.util.function.Function;
 
 
@@ -45,7 +45,7 @@ public class Car extends AbstractVehicle {
      * Default constructor.
      *
      * @param ID unique ID
-     * @param seed seed for {@link Random}, e.g. used for dawdling
+     * @param seed seed for {@link ResettableRandom}, e.g. used for dawdling
      * @param route you only use the vehicle to drive a route
      */
     public Car(long ID, long seed, Route<Node> route) {
@@ -58,7 +58,7 @@ public class Car extends AbstractVehicle {
      * Default constructor.
      *
      * @param ID unique ID
-     * @param seed seed for {@link Random}, e.g. used for dawdling
+     * @param seed seed for {@link ResettableRandom}, e.g. used for dawdling
      * @param route you only use the vehicle to drive a route
      * @param spawnDelay This vehicle spawns after this delay
      */

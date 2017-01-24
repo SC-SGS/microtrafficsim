@@ -1,12 +1,14 @@
 package microtrafficsim.core.simulation.configs;
 
+import microtrafficsim.utils.Resettable;
+
 /**
  * This class isolates the visualization configs from the other config
  * parameters to guarantee better overview.
  *
  * @author Dominic Parga Cacheiro
  */
-public final class VisualizationConfig {
+public final class VisualizationConfig implements Resettable {
 
     /**
      * Just calls {@link #reset()}.
@@ -18,6 +20,7 @@ public final class VisualizationConfig {
     /**
      * Resets the parameter of this config file.
      */
+    @Override
     public void reset() {
 
     }

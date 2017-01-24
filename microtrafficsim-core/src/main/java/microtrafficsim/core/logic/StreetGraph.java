@@ -1,5 +1,7 @@
 package microtrafficsim.core.logic;
 
+import microtrafficsim.utils.Resettable;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -12,7 +14,7 @@ import java.util.Set;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class StreetGraph {
+public class StreetGraph implements Resettable {
 
     public final float            minLat, maxLat, minLon, maxLon;
     private HashSet<Node>         nodes;
@@ -90,6 +92,7 @@ public class StreetGraph {
      * This method resets the nodes and edges of the streetgraph. The "new" streetgraph will NOT be identical to the
      * previous one (e.g. random numbers will be different).
      */
+    @Override
     public void reset() {
         nodes.forEach(Node::reset);
         edges.forEach(DirectedEdge::reset);

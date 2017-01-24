@@ -11,14 +11,24 @@ package microtrafficsim.utils.id;
 public class BasicLongIDGenerator implements LongGenerator {
 
     private long id;
+    private final long initialID;
 
     public BasicLongIDGenerator() {
-        this.id = 0;
+        this(0);
     }
 
+    public BasicLongIDGenerator(long initialID) {
+        id = initialID;
+        this.initialID = initialID;
+    }
 
     @Override
     public long next() {
         return id++;
+    }
+
+    @Override
+    public void reset() {
+        id = initialID;
     }
 }

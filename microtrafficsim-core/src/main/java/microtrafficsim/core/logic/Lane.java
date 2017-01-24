@@ -1,6 +1,7 @@
 package microtrafficsim.core.logic;
 
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
+import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 import java.util.HashMap;
@@ -11,7 +12,7 @@ import java.util.HashMap;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class Lane {
+public class Lane implements Resettable {
 
     public final Object  lock = new Object();
     private DirectedEdge associatedEdge;
@@ -31,7 +32,11 @@ public class Lane {
         return new FNVHashBuilder().add(associatedEdge).add(index).getHash();
     }
 
-    void reset() {
+    /**
+     * Clears all cells and sets the last vehicle to null.
+     */
+    @Override
+    public void reset() {
         this.cells.clear();
         this.lastVehicle = null;
     }
