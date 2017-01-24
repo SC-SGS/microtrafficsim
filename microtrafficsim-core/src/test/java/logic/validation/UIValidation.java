@@ -6,7 +6,7 @@ import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.style.StyleSheet;
-import microtrafficsim.core.map.style.impl.DarkStyleSheet;
+import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
@@ -51,7 +51,7 @@ public class UIValidation {
             scenario.setLooping(true);
             return scenario;
         };
-        StyleSheet styleSheet                   = new DarkStyleSheet();
+        StyleSheet styleSheet                   = new MonochromeStyleSheet();
 
         /* build setup: logging */
         BuildSetup.TRACE_ENABLED = false;

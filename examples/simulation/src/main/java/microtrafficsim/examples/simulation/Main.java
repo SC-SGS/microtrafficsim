@@ -3,7 +3,7 @@ package microtrafficsim.examples.simulation;
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.map.style.impl.DarkStyleSheet;
+import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
@@ -60,7 +60,7 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
 
             /* create map viewer and vehicle overlay */
-            MapViewer mapviewer    = new TileBasedMapViewer(new DarkStyleSheet());
+            MapViewer mapviewer    = new TileBasedMapViewer(new MonochromeStyleSheet());
             VehicleOverlay overlay = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
             try {
                 mapviewer.create(config);
