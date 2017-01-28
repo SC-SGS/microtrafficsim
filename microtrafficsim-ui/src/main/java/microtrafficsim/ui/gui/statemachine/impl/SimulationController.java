@@ -290,7 +290,7 @@ public class SimulationController implements GUIController {
             case ACCEPT:
                 scenarioBuildThread = new Thread(() -> {
                     if (isBuildingScenario.compareAndSet(false, true)) {
-                        if (updateSimulationConfig()) {
+                        if (updateScenarioConfig()) {
                             closePreferences();
 
                             if (newSim) {
@@ -512,7 +512,9 @@ public class SimulationController implements GUIController {
         if (result != null) {
             if (result.streetgraph != null) {
                 simulation.removeCurrentScenario();
+                config.removeUpdateListener(streetgraph);
                 streetgraph = result.streetgraph;
+                config.addUpdateListener(streetgraph);
 
                 try {
                     mapviewer.changeMap(result);
@@ -560,17 +562,22 @@ public class SimulationController implements GUIController {
         String oldTitle = frame.getTitle();
         EventQueue.invokeLater(() -> frame.setTitle("Calculating vehicle routes 0%"));
 
-        /* create the scenario */
-        Scenario scenario = scenarioConstructor.instantiate(config, streetgraph);
+        /* remove old scenario */
+        config.removeUpdateListener(simulation.getScenario());
         simulation.removeCurrentScenario();
+
+        /* create and prepare new scenario */
+        Scenario scenario = scenarioConstructor.instantiate(config, streetgraph);
         try {
             scenarioBuilder.prepare(
                     scenario,
                     currentInPercent -> EventQueue.invokeLater(() -> {
                         frame.setTitle("Calculating vehicle routes " + currentInPercent + "%");
                     }));
+
             /* initialize the scenario */
             simulation.setAndInitPreparedScenario(scenario);
+            config.addUpdateListener(scenario);
             simulation.runOneStep();
         } catch (InterruptedException ignored) {
             logger.info("Scenario building interrupted by user");
@@ -626,7 +633,7 @@ public class SimulationController implements GUIController {
     /**
      * @return True if the settings were correct; false otherwise
      */
-    private boolean updateSimulationConfig() {
+    private boolean updateScenarioConfig() {
         try {
             ScenarioConfig newConfig = preferences.getCorrectSettings();
             config.update(newConfig);

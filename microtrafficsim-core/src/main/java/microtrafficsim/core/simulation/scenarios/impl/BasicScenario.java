@@ -74,4 +74,14 @@ public abstract class BasicScenario implements Scenario {
     public final UnmodifiableODMatrix getODMatrix() {
         return new UnmodifiableODMatrix(odMatrix);
     }
+
+    /*
+    |==========================|
+    | (i) ConfigUpdateListener |
+    |==========================|
+    */
+    @Override
+    public void updateConfig(ScenarioConfig updatedConfig) {
+        System.err.println("Yay ConfigUpdateListener");
+    }
 }

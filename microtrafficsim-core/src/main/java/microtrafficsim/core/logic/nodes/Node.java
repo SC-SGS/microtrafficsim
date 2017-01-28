@@ -8,6 +8,7 @@ import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
+import microtrafficsim.core.simulation.configs.ConfigUpdateListener;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.exceptions.core.logic.CrossingLogicException;
 import microtrafficsim.math.Geometry;
@@ -26,7 +27,7 @@ import java.util.*;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class Node implements ShortestPathNode, Resettable {
+public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable {
 
     public final Long        ID;
     private ScenarioConfig   config;
@@ -80,6 +81,16 @@ public class Node implements ShortestPathNode, Resettable {
         //				output += start + " to " + end + "\n";
 
         return output;
+    }
+
+    /*
+    |==========================|
+    | (i) ConfigUpdateListener |
+    |==========================|
+    */
+    @Override
+    public void updateConfig(ScenarioConfig updatedConfig) {
+//        System.err.println("Yay ConfigUpdateListener");
     }
 
     /*

@@ -2,6 +2,8 @@ package microtrafficsim.core.logic;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.simulation.configs.ConfigUpdateListener;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.utils.Resettable;
 
 import java.util.Collections;
@@ -16,7 +18,7 @@ import java.util.Set;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class StreetGraph implements Resettable {
+public class StreetGraph implements ConfigUpdateListener, Resettable {
 
     public final float            minLat, maxLat, minLon, maxLon;
     private HashSet<Node>         nodes;
@@ -90,6 +92,11 @@ public class StreetGraph implements Resettable {
         return output;
     }
 
+    /*
+    |================|
+    | (i) Resettable |
+    |================|
+    */
     /**
      * This method resets the nodes and edges of the streetgraph. The "new" streetgraph will NOT be identical to the
      * previous one (e.g. random numbers will be different).
@@ -98,5 +105,17 @@ public class StreetGraph implements Resettable {
     public void reset() {
         nodes.forEach(Node::reset);
         edges.forEach(DirectedEdge::reset);
+    }
+
+    /*
+    |==========================|
+    | (i) ConfigUpdateListener |
+    |==========================|
+    */
+    @Override
+    public void updateConfig(ScenarioConfig updatedConfig) {
+        System.err.println("Yay ConfigUpdateListener");
+        nodes.forEach(node -> node.updateConfig(updatedConfig));
+        edges.forEach(edge -> edge.updateConfig(updatedConfig));
     }
 }

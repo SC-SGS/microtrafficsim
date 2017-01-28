@@ -6,6 +6,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.information.FullStreetInfo;
 import microtrafficsim.core.logic.streets.information.RawStreetInfo;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
+import microtrafficsim.core.simulation.configs.ConfigUpdateListener;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.Resettable;
@@ -21,7 +22,7 @@ import java.util.Collection;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity, Resettable {
+public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, LogicStreetEntity, Resettable {
 
     /* street information */
     private FullStreetInfo streetInfo;
@@ -165,9 +166,9 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity, Resett
     }
 
     /*
-    |================|
-    | (i) ILogicEdge |
-    |================|
+    |=======================|
+    | (i) LogicStreetEntity |
+    |=======================|
     */
     @Override
     public StreetEntity getEntity() {
@@ -177,5 +178,15 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity, Resett
     @Override
     public void setEntity(StreetEntity entity) {
         this.entity = entity;
+    }
+
+    /*
+    |==========================|
+    | (i) ConfigUpdateListener |
+    |==========================|
+    */
+    @Override
+    public void updateConfig(ScenarioConfig updatedConfig) {
+//        System.err.println("Yay ConfigUpdateListener");
     }
 }

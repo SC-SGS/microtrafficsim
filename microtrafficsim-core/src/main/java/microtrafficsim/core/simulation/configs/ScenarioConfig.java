@@ -7,6 +7,7 @@ import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.id.ConcurrentSeedGenerator;
 import microtrafficsim.utils.id.LongGenerator;
 
+import java.util.LinkedList;
 import java.util.function.Function;
 
 
@@ -29,6 +30,9 @@ import java.util.function.Function;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public final class ScenarioConfig implements Resettable {
+
+    private LinkedList<ConfigUpdateListener> updateListeners;
+
     // general
     public LongGenerator longIDGenerator;
     public LongGenerator seedGenerator;
@@ -57,6 +61,8 @@ public final class ScenarioConfig implements Resettable {
      * Just calls {@link #reset()}.
      */
     public ScenarioConfig() {
+        updateListeners = new LinkedList<>();
+
         visualization  = new VisualizationConfig();
         crossingLogic  = new CrossingLogicConfig();
         multiThreading = new MultiThreadingConfig();
@@ -113,6 +119,11 @@ public final class ScenarioConfig implements Resettable {
         seedGenerator = new ConcurrentSeedGenerator(seed);
     }
 
+    /*
+    |========|
+    | update |
+    |========|
+    */
     /**
      * Updates the parameter of this config file. This method keeps references of<br>
      * &bull {@link VisualizationConfig}<br>
@@ -138,5 +149,16 @@ public final class ScenarioConfig implements Resettable {
         streetPriorityLevel = config.streetPriorityLevel;
         // multithreading
         multiThreading.update(config.multiThreading);
+
+        for (ConfigUpdateListener listener : updateListeners)
+            listener.updateConfig(this);
+    }
+
+    public void addUpdateListener(ConfigUpdateListener updateListener) {
+        updateListeners.add(updateListener);
+    }
+
+    public void removeUpdateListener(ConfigUpdateListener updateListener) {
+        updateListeners.remove(updateListener);
     }
 }
