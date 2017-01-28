@@ -2,7 +2,7 @@ package microtrafficsim.core.simulation.builder.impl;
 
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.Node;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.impl.Car;

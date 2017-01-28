@@ -1,8 +1,8 @@
 package microtrafficsim.core.parser.features.streetgraph;
 
-import microtrafficsim.core.logic.DirectedEdge;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.Direction;
-import microtrafficsim.core.logic.Node;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.parser.processing.Connector;
@@ -163,8 +163,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
             Vec2d destinationDirection = new Vec2d(lastNode.lon - secondLastNode.lon,
                                                    lastNode.lat - secondLastNode.lat);
 
-            forward = new DirectedEdge(config, length, originDirection, destinationDirection,
-                                       streetinfo.maxspeed.forward, 1, start, end, priorityLevel);
+            forward = new DirectedEdge(config, length, originDirection, destinationDirection, start, end,
+                    1, streetinfo.maxspeed.forward, priorityLevel);
         }
 
         if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.BACKWARD) {
@@ -173,8 +173,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
 
             Vec2d destinationDirection = new Vec2d(node0.lon - node1.lon, node0.lat - node1.lat);
 
-            backward = new DirectedEdge(config, length, originDirection, destinationDirection,
-                                        streetinfo.maxspeed.backward, 1, end, start, priorityLevel);
+            backward = new DirectedEdge(config, length, originDirection, destinationDirection, end, start,
+                                        1, streetinfo.maxspeed.backward, priorityLevel);
         }
 
         // create component for ECS

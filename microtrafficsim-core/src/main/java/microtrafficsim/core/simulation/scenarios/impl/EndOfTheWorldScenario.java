@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
-import microtrafficsim.core.logic.Node;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.area.Area;

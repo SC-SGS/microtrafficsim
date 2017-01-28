@@ -35,19 +35,7 @@ public interface MapViewer {
 
     void addOverlay(int index, Overlay overlay);
 
-    /**
-     * @throws UnsupportedFeatureException if not all required OpenGL features
-     *                                     are available
-     */
-    default void create() throws UnsupportedFeatureException {
-        create(null);
-    }
-
-    /**
-     * @throws UnsupportedFeatureException if not all required OpenGL features
-     *                                     are available
-     */
-    void create(ScenarioConfig config) throws UnsupportedFeatureException;
+    void addKeyCommand(short event, short vk, KeyCommand command);
 
     /**
      * Set up this example. Layer definitions describe the visual layers
@@ -66,6 +54,20 @@ public interface MapViewer {
     }
 
     /**
+     * @throws UnsupportedFeatureException if not all required OpenGL features
+     *                                     are available
+     */
+    default void create() throws UnsupportedFeatureException {
+        create(null);
+    }
+
+    /**
+     * @throws UnsupportedFeatureException if not all required OpenGL features
+     *                                     are available
+     */
+    void create(ScenarioConfig config) throws UnsupportedFeatureException;
+
+    /**
      * Create the (tile-based) visualization object. The visualization object is
      * used to bind input and display structures together.
      */
@@ -80,8 +82,6 @@ public interface MapViewer {
      *                                     are available
      */
     void createVisualizationPanel() throws UnsupportedFeatureException;
-
-    void addKeyCommand(short event, short vk, KeyCommand command);
 
     /**
      * @see #createParser(ScenarioConfig)

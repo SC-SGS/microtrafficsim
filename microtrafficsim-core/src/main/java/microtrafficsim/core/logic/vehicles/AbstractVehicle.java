@@ -2,9 +2,9 @@ package microtrafficsim.core.logic.vehicles;
 
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
-import microtrafficsim.core.logic.DirectedEdge;
-import microtrafficsim.core.logic.Lane;
-import microtrafficsim.core.logic.Node;
+import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.streets.Lane;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
 import microtrafficsim.interesting.emotions.Hulk;

@@ -2,7 +2,7 @@ package logic.validation.scenarios;
 
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.Node;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.impl.BlockingCar;

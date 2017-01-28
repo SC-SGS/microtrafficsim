@@ -1,6 +1,6 @@
 package logic.crossinglogic;
 
-import microtrafficsim.core.logic.IndicesCalculator;
+import microtrafficsim.core.logic.nodes.IndicesCalculator;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

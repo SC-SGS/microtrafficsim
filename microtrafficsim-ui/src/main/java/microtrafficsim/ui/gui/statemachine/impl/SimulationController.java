@@ -330,23 +330,31 @@ public class SimulationController implements GUIController {
                 break;
             case RUN_SIM:
                 if (isExecuting.compareAndSet(false, true)) {
-                    new Thread(() -> {
-                        runSim();
-
-                        updateMenuBar();
+                    if (!simulation.hasScenario())
                         isExecuting.set(false);
-                    }).start();
+                    else {
+                        new Thread(() -> {
+                            runSim();
+
+                            updateMenuBar();
+                            isExecuting.set(false);
+                        }).start();
+                    }
                 }
                 break;
             case RUN_SIM_ONE_STEP:
                 if (isExecuting.compareAndSet(false, true)) {
-                    new Thread(() -> {
-                        pauseSim();
-                        runSimOneStep();
-
-                        updateMenuBar();
+                    if (!simulation.hasScenario())
                         isExecuting.set(false);
-                    }).start();
+                    else {
+                        new Thread(() -> {
+                            pauseSim();
+                            runSimOneStep();
+
+                            updateMenuBar();
+                            isExecuting.set(false);
+                        }).start();
+                    }
                 }
                 break;
             case PAUSE_SIM:
@@ -503,7 +511,7 @@ public class SimulationController implements GUIController {
 
         if (result != null) {
             if (result.streetgraph != null) {
-                simulation.setAndInitPreparedScenario(null);
+                simulation.removeCurrentScenario();
                 streetgraph = result.streetgraph;
 
                 try {
@@ -546,11 +554,15 @@ public class SimulationController implements GUIController {
     }
 
     private void startNewSimulation() {
+//        mapviewer.createParser(config);
+        // todo set config of streetgraph and simulation
+
         String oldTitle = frame.getTitle();
         EventQueue.invokeLater(() -> frame.setTitle("Calculating vehicle routes 0%"));
 
         /* create the scenario */
         Scenario scenario = scenarioConstructor.instantiate(config, streetgraph);
+        simulation.removeCurrentScenario();
         try {
             scenarioBuilder.prepare(
                     scenario,
@@ -616,7 +628,8 @@ public class SimulationController implements GUIController {
      */
     private boolean updateSimulationConfig() {
         try {
-            config.update(preferences.getCorrectSettings());
+            ScenarioConfig newConfig = preferences.getCorrectSettings();
+            config.update(newConfig);
             return true;
         } catch (IncorrectSettingsException e) {
             JOptionPane.showMessageDialog(

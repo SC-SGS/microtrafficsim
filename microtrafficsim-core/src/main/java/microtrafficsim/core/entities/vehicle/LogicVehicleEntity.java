@@ -1,6 +1,6 @@
 package microtrafficsim.core.entities.vehicle;
 
-import microtrafficsim.core.logic.DirectedEdge;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 
 
 /**

@@ -1,11 +1,10 @@
 package microtrafficsim.core.simulation.scenarios.containers;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 
 import java.util.Collection;
-import java.util.function.Supplier;
 
 
 /**
@@ -63,7 +62,7 @@ public interface VehicleContainer extends VehicleStateListener, Iterable<Abstrac
      * Returns the list of spawned (i.e. visible and ready to drive) vehicles.
      * Note: The state of the vehicles contained in this list may change due to
      * the asynchronous nature of the simulation, this means the associated
-     * {@link microtrafficsim.core.logic.DirectedEdge DirectedEdge} is {@code null}
+     * {@link DirectedEdge DirectedEdge} is {@code null}
      * if the vehicle has de-spawned.
      *
      * @return All spawned vehicles in a collection. The returned collection should be unmodifiable to guarantee

@@ -1,5 +1,7 @@
-package microtrafficsim.core.logic;
+package microtrafficsim.core.logic.nodes;
 
+
+import microtrafficsim.core.logic.streets.DirectedEdge;
 
 public class IndicesCalculator {
 

@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.utils;
 
-import microtrafficsim.core.logic.Node;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.utils.collections.Triple;
 
 import java.util.Iterator;

@@ -27,6 +27,10 @@ public interface Simulation {
     | scenario |
     |==========|
     */
+    default boolean hasScenario() {
+        return getScenario() != null;
+    }
+
     /**
      * @return Currently executed scenario
      */
@@ -41,6 +45,11 @@ public interface Simulation {
      */
     void setAndInitPreparedScenario(Scenario scenario);
 
+    /**
+     * Removes the current scenario from this simulation.
+     */
+    void removeCurrentScenario();
+
     /*
     |======================|
     | simulation execution |
@@ -50,6 +59,11 @@ public interface Simulation {
      * @param stepListener This listener gets informed when this simulation has done a complete simulation step
      */
     void addStepListener(StepListener stepListener);
+
+    /**
+     * @param stepListener This listener gets informed when this simulation has done a complete simulation step
+     */
+    void removeStepListener(StepListener stepListener);
 
     /**
      * @return Number of finished simulation steps.

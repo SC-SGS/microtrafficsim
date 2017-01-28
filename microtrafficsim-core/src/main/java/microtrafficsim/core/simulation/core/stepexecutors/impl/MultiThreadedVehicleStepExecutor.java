@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.core.stepexecutors.impl;
 
-import microtrafficsim.core.logic.Node;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;

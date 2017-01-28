@@ -1,4 +1,4 @@
-package microtrafficsim.core.logic;
+package microtrafficsim.core.logic.streets;
 
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.utils.Resettable;

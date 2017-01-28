@@ -42,7 +42,9 @@ public class VehicleSimulation implements Simulation {
      * Default constructor. Before this simulation can be used, it needs a scenario!
      */
     public VehicleSimulation() {
-        this(null);
+        paused = true;
+        timer = new Timer();
+        this.stepListeners = new LinkedList<>();
     }
 
     /**
@@ -51,10 +53,8 @@ public class VehicleSimulation implements Simulation {
      * @param scenario This scenario is executed later.
      */
     public VehicleSimulation(Scenario scenario) {
-        paused = true;
+        this();
         setAndInitPreparedScenario(scenario);
-        timer = new Timer();
-        this.stepListeners = new LinkedList<>();
     }
 
     /*
@@ -72,20 +72,14 @@ public class VehicleSimulation implements Simulation {
         if (!isPaused())
             throw new RuntimeException("The simulation sets a new scenario but is not paused.");
 
-        if (scenario == null) {
-            age = -1;
-            return;
-        }
-
         if (!scenario.isPrepared())
             throw new RuntimeException("The simulation sets a new scenario but the scenario is not prepared.");
 
         /* remove old scenario */
-        while(stepListeners.contains(this.scenario))
-            stepListeners.remove(this.scenario);
-        age = 0;
+        removeCurrentScenario();
 
         /* add new scenario */
+        age = 0;
         this.scenario = scenario;
         addStepListener(scenario);
         int nThreads = scenario.getConfig().multiThreading.nThreads;
@@ -97,6 +91,23 @@ public class VehicleSimulation implements Simulation {
         vehicleStepExecutor.updateNodes(this.scenario);
     }
 
+    @Override
+    public void removeCurrentScenario() {
+        if (!isPaused())
+            throw new RuntimeException("The simulation removes its current scenario but is not paused.");
+
+        if (scenario == null)
+            return;
+
+        do
+            stepListeners.remove(scenario);
+        while (stepListeners.contains(scenario));
+
+        scenario = null;
+        age = -1;
+        vehicleStepExecutor = null;
+    }
+
     /**
      * The internal collection used to store listeners is a {@link LinkedList} for easy iterating. Due to its
      * runtime in O(n) for checking whether an Object is contained or not, this method {@code addStepListener} DOES
@@ -106,6 +117,17 @@ public class VehicleSimulation implements Simulation {
     public void addStepListener(StepListener stepListener) {
         if (stepListener != null)
             stepListeners.add(stepListener);
+    }
+
+    /**
+     * The internal collection used to store listeners is a {@link LinkedList} for easy iterating. Due to its
+     * runtime in O(n) for checking whether an Object is contained or not, this method {@code addStepListener} DOES
+     * NOT check for duplicates. Thus if you have added a listener twice, it is only removed once due to
+     * {@link LinkedList#remove(Object)}
+     */
+    @Override
+    public void removeStepListener(StepListener stepListener) {
+        stepListeners.remove(stepListener);
     }
 
     @Override

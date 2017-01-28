@@ -1,7 +1,7 @@
 package logic.shortestpath;
 
-import microtrafficsim.core.logic.DirectedEdge;
-import microtrafficsim.core.logic.Node;
+import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;

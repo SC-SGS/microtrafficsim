@@ -1,6 +1,6 @@
 package microtrafficsim.core.logic.vehicles.impl;
 
-import microtrafficsim.core.logic.Node;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.interesting.emotions.Hulk;

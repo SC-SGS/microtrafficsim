@@ -1,12 +1,8 @@
 package microtrafficsim.core.simulation.utils;
 
-import microtrafficsim.core.logic.Node;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.utils.collections.Triple;
-import microtrafficsim.utils.datacollection.Bundle;
-import microtrafficsim.utils.datacollection.Data;
-import microtrafficsim.utils.datacollection.Tag;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 

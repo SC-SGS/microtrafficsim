@@ -1,5 +1,7 @@
 package microtrafficsim.core.logic;
 
+import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.utils.Resettable;
 
 import java.util.Collections;

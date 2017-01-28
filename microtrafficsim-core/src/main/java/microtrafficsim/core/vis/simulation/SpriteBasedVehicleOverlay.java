@@ -4,7 +4,7 @@ import com.jogamp.opengl.GL3;
 import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
-import microtrafficsim.core.logic.DirectedEdge;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.context.RenderContext;

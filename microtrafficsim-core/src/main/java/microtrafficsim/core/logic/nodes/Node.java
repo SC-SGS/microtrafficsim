@@ -1,5 +1,8 @@
-package microtrafficsim.core.logic;
+package microtrafficsim.core.logic.nodes;
 
+import microtrafficsim.core.logic.Direction;
+import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.map.Coordinate;
@@ -428,7 +431,7 @@ public class Node implements ShortestPathNode, Resettable {
      * calculates the order of the edges that is needed for crossing logic
      * calculation.
      */
-    void calculateEdgeIndices() {
+    public void calculateEdgeIndices() {
 
         /* init */
         HashMap<Vec2d, ArrayList<DirectedEdge>> edges = new HashMap<>();

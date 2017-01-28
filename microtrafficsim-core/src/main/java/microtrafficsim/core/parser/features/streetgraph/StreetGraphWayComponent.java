@@ -1,6 +1,6 @@
 package microtrafficsim.core.parser.features.streetgraph;
 
-import microtrafficsim.core.logic.DirectedEdge;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.Entity;
 
