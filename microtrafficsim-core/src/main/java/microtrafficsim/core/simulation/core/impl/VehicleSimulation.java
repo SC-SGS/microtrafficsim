@@ -46,13 +46,13 @@ public class VehicleSimulation implements Simulation {
     }
 
     /**
-     * Default constructor. Adopts the given scenario by calling {@link #setAndInitScenario(Scenario)}.
+     * Default constructor. Adopts the given scenario by calling {@link #setAndInitPreparedScenario(Scenario)}.
      *
      * @param scenario This scenario is executed later.
      */
     public VehicleSimulation(Scenario scenario) {
         paused = true;
-        setAndInitScenario(scenario);
+        setAndInitPreparedScenario(scenario);
         timer = new Timer();
         this.stepListeners = new LinkedList<>();
     }
@@ -68,7 +68,7 @@ public class VehicleSimulation implements Simulation {
     }
 
     @Override
-    public void setAndInitScenario(Scenario scenario) {
+    public void setAndInitPreparedScenario(Scenario scenario) {
         if (!isPaused())
             throw new RuntimeException("The simulation sets a new scenario but is not paused.");
 
@@ -84,6 +84,8 @@ public class VehicleSimulation implements Simulation {
         while(stepListeners.contains(this.scenario))
             stepListeners.remove(this.scenario);
         age = 0;
+
+        /* add new scenario */
         this.scenario = scenario;
         addStepListener(scenario);
         int nThreads = scenario.getConfig().multiThreading.nThreads;

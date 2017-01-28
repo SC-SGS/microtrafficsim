@@ -1,9 +1,9 @@
 package microtrafficsim.utils.id;
 
-import microtrafficsim.math.random.distributions.impl.ResettableRandom;
+import microtrafficsim.math.random.distributions.impl.Random;
 
 /**
- * Basic (not concurrent) implementation of {@link LongGenerator} using an object of {@link ResettableRandom} to create
+ * Basic (not concurrent) implementation of {@link LongGenerator} using an object of {@link Random} to create
  * seeds
  * for
  * every call of {@link #next()}.
@@ -12,19 +12,19 @@ import microtrafficsim.math.random.distributions.impl.ResettableRandom;
  */
 public class BasicSeedGenerator implements LongGenerator {
 
-    private ResettableRandom seeds;
+    private Random seeds;
 
     /**
-     * @param seed This seed is used to initialize the instance of {@link ResettableRandom}, which generates seeds for
+     * @param seed This seed is used to initialize the instance of {@link Random}, which generates seeds for
      *             every call
      *             of {@link #next()}.
      */
     public BasicSeedGenerator(long seed) {
-        seeds = new ResettableRandom(seed);
+        seeds = new Random(seed);
     }
 
     /**
-     * @return seeds.nextLong(), where seeds is an object of {@link ResettableRandom} initialized in the constructor of
+     * @return seeds.nextLong(), where seeds is an object of {@link Random} initialized in the constructor of
      * this class
      */
     @Override

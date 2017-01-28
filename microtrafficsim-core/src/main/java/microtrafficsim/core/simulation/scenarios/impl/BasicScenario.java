@@ -71,11 +71,6 @@ public abstract class BasicScenario implements Scenario {
     }
 
     @Override
-    public final void setODMatrix(ODMatrix odMatrix) {
-        this.odMatrix = odMatrix;
-    }
-
-    @Override
     public final UnmodifiableODMatrix getODMatrix() {
         return new UnmodifiableODMatrix(odMatrix);
     }

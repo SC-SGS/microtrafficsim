@@ -39,7 +39,7 @@ public interface Simulation {
      *
      * @param scenario This scenario is being executed
      */
-    void setAndInitScenario(Scenario scenario);
+    void setAndInitPreparedScenario(Scenario scenario);
 
     /*
     |======================|

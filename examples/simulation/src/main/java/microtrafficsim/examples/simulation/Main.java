@@ -183,7 +183,7 @@ public class Main {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        simulation.setAndInitScenario(scenario);
+        simulation.setAndInitPreparedScenario(scenario);
         simulation.runOneStep();
 
         return simulation;

@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 
 /**
  * This scenario defines different scenarios in a queue, which can be executed after each other. The scenarios are
- * getting prepared/calculated on the fly, so this class is made only for small scenarios.
+ * getting prepared/calculated on the fly, so this class is made only for small scenarios due to runtime.
  *
  * @author Dominic Parga Cacheiro
  */
@@ -170,7 +170,7 @@ public abstract class QueueScenarioSmall implements Scenario {
             setPrepared(false);
             prepare();
             if (isPrepared()) {
-                simulation.setAndInitScenario(this);
+                simulation.setAndInitPreparedScenario(this);
 
                 if (!isPaused)
                     simulation.run();
@@ -209,25 +209,11 @@ public abstract class QueueScenarioSmall implements Scenario {
     }
 
     /**
-     * Empty. For adding matrices, use {@link #addSubScenario(ODMatrix)}
-     */
-    @Override
-    public void setODMatrix(ODMatrix odMatrix) {
-    }
-
-    /**
      * @return Peeks the first origin-destination-matrix of the queue.
      */
     @Override
     public final UnmodifiableODMatrix getODMatrix() {
         return new UnmodifiableODMatrix(odMatrices.get(curIdx));
-    }
-
-    /**
-     * Empty
-     */
-    @Override
-    public void changeMatrix() {
     }
 
     @Override

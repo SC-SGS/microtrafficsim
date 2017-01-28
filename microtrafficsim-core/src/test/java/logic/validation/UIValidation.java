@@ -143,7 +143,7 @@ public class UIValidation {
             Simulation sim = new VehicleSimulation();
             overlay.setSimulation(sim);
             scenario.prepare();
-            sim.setAndInitScenario(scenario);
+            sim.setAndInitPreparedScenario(scenario);
             sim.runOneStep();
 
 

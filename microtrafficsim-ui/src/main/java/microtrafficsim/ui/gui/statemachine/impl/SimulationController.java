@@ -294,7 +294,6 @@ public class SimulationController implements GUIController {
                             closePreferences();
 
                             if (newSim) {
-                                cleanupSimulation();
                                 startNewSimulation();
                                 newSim = false;
                             }
@@ -504,7 +503,7 @@ public class SimulationController implements GUIController {
 
         if (result != null) {
             if (result.streetgraph != null) {
-                cleanupSimulation();
+                simulation.setAndInitPreparedScenario(null);
                 streetgraph = result.streetgraph;
 
                 try {
@@ -559,22 +558,13 @@ public class SimulationController implements GUIController {
                         frame.setTitle("Calculating vehicle routes " + currentInPercent + "%");
                     }));
             /* initialize the scenario */
-            simulation.setAndInitScenario(scenario);
+            simulation.setAndInitPreparedScenario(scenario);
             simulation.runOneStep();
         } catch (InterruptedException ignored) {
             logger.info("Scenario building interrupted by user");
         }
 
         EventQueue.invokeLater(() -> frame.setTitle(oldTitle));
-    }
-
-    /**
-     * You can call this method to cleanup the simulation, which means resetting the streetgraph and removing all
-     * scenario data.
-     */
-    private void cleanupSimulation() {
-        simulation.setAndInitScenario(null);
-        menubar.menuLogic.simIsPaused(true);
     }
 
     private void cancelScenarioBuilding() {

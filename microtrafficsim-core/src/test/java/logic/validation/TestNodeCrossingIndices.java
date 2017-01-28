@@ -53,7 +53,7 @@ public class TestNodeCrossingIndices {
 
             Simulation sim = new VehicleSimulation();
             scenario.prepare();
-            sim.setAndInitScenario(scenario);
+            sim.setAndInitPreparedScenario(scenario);
             while (scenario.getVehicleContainer().getVehicleCount() > 0) {
                 sim.runOneStep();
 

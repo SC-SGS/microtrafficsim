@@ -7,21 +7,21 @@ import java.util.Iterator;
 
 /**
  * Basic implementation using a {@link HashMap}. For the random number generator used for {@link #nextObject()},
- * {@link ResettableRandom} is used.
+ * {@link Random} is used.
  *
  * @author Dominic Parga Cacheiro
  */
 public class BasicWheelOfFortune implements WheelOfFortune {
 
-    private ResettableRandom random;
+    private Random random;
     private HashMap<Object, Integer> fields;
     private int               n;
 
     public BasicWheelOfFortune(long seed) {
-        this(new ResettableRandom(seed));
+        this(new Random(seed));
     }
 
-    public BasicWheelOfFortune(ResettableRandom random) {
+    public BasicWheelOfFortune(Random random) {
         this.random = random;
         fields      = new HashMap<>();
         n           = 0;

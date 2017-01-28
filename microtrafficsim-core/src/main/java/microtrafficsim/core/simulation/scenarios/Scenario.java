@@ -64,19 +64,9 @@ public interface Scenario extends StepListener, Resettable {
     |===========================|
     */
     /**
-     * @param odMatrix the matrix of this scenario gets set to this value and determines the routes of this scenario
-     */
-    void setODMatrix(ODMatrix odMatrix);
-
-    /**
      * @return the matrix used in this scenario determining the routes of this scenario
      */
     ODMatrix getODMatrix();
-
-    /**
-     * Usually, the matrix depends on random numbers. Preparing the scenario does not mean
-     */
-    void changeMatrix();
 
     /*
     |================|

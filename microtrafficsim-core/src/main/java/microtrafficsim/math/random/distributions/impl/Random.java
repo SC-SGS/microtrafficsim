@@ -2,31 +2,29 @@ package microtrafficsim.math.random.distributions.impl;
 
 import microtrafficsim.math.random.distributions.RandomGenerator;
 
-import java.util.Random;
-
 /**
  * Just a wrapper class for Javas {@code Random} class ensuring seed resetting.
  *
  * @author Dominic Parga Cacheiro
  */
-public class ResettableRandom implements RandomGenerator {
+public class Random implements RandomGenerator {
 
     private long seed;
-    private Random random;
+    private java.util.Random random;
     private static volatile long seedUniquifier = 8682522807148012L;
 
     /**
      * <p>
-     * Calls {@link #ResettableRandom(long)} using {@code seedUniquifier + System.nanoTime()}.
+     * Calls {@link #Random(long)} using {@code seedUniquifier + System.nanoTime()}.
      *
      * <p>
      * Modelled after the OpenJDK Random implementation.
      */
-    public ResettableRandom() {
+    public Random() {
         this(++seedUniquifier + System.nanoTime());
     }
 
-    public ResettableRandom(long seed) {
+    public Random(long seed) {
         setSeed(seed);
     }
 
@@ -46,7 +44,7 @@ public class ResettableRandom implements RandomGenerator {
     @Override
     public void setSeed(long seed) {
         this.seed = seed;
-        random = new Random(seed);
+        random = new java.util.Random(seed);
     }
 
     @Override
@@ -60,7 +58,7 @@ public class ResettableRandom implements RandomGenerator {
     }
 
     /**
-     * @see Random#nextInt(int)
+     * @see java.util.Random#nextInt(int)
      */
     @Override
     public int nextInt(int bound) {

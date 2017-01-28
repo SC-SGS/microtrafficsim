@@ -1,10 +1,10 @@
 package microtrafficsim.math.random.distributions;
 
-import microtrafficsim.math.random.distributions.impl.ResettableRandom;
+import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
 
 /**
- * Serves functionality for general use of {@link ResettableRandom} or similar, because Java is not able to do this.
+ * Serves functionality for general use of {@link Random} or similar, because Java is not able to do this.
  *
  * @author Dominic Parga Cacheiro
  */

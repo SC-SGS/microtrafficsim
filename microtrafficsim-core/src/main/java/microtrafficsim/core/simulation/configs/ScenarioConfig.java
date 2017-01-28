@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.configs;
 
-import microtrafficsim.math.random.distributions.impl.ResettableRandom;
+import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.osm.parser.features.streets.info.StreetType;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
@@ -75,7 +75,7 @@ public final class ScenarioConfig implements Resettable {
         metersPerCell     = 7.5f; // Nagel-Schreckenberg-Model
         globalMaxVelocity = 6;
         speedup           = 1;
-        seed              = new ResettableRandom().nextLong();
+        seed              = new Random().nextLong();
         // visualization
         visualization.reset();
         // crossing logic

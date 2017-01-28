@@ -9,9 +9,8 @@ import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.exceptions.core.logic.CrossingLogicException;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.Vec2d;
-import microtrafficsim.math.random.distributions.impl.ResettableRandom;
+import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
-import microtrafficsim.utils.Tuple;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 import java.util.*;
@@ -28,7 +27,7 @@ public class Node implements ShortestPathNode, Resettable {
 
     public final Long        ID;
     private ScenarioConfig   config;
-    private ResettableRandom random;
+    private Random random;
     private Coordinate       coordinate;
 
     // crossing logic
@@ -52,7 +51,7 @@ public class Node implements ShortestPathNode, Resettable {
         this.coordinate = coordinate;
 
         // crossing logic
-        random                = new ResettableRandom(config.seedGenerator.next());
+        random                = new Random(config.seedGenerator.next());
         assessedVehicles      = new HashMap<>();
         maxPrioVehicles       = new HashSet<>();
         newRegisteredVehicles = new PriorityQueue<>((v1, v2) -> Long.compare(v1.ID, v2.ID));
@@ -166,7 +165,7 @@ public class Node implements ShortestPathNode, Resettable {
     }
 
     /**
-     * The node empties its crossing sets etc. and resets its {@link ResettableRandom}
+     * The node empties its crossing sets etc. and resets its {@link Random}
      */
     @Override
     public synchronized void reset() {
