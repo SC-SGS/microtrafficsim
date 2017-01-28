@@ -2,7 +2,7 @@ package microtrafficsim.ui.gui.statemachine.impl;
 
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
-import microtrafficsim.core.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;

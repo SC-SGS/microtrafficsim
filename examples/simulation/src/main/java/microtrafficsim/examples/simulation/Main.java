@@ -5,7 +5,7 @@ import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
-import microtrafficsim.core.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;

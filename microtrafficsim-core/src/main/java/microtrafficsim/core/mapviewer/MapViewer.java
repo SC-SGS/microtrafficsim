@@ -1,6 +1,5 @@
 package microtrafficsim.core.mapviewer;
 
-import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.vis.Overlay;
@@ -8,16 +7,12 @@ import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.map.projections.Projection;
-import microtrafficsim.core.vis.map.tiles.TileProvider;
-import microtrafficsim.core.vis.map.tiles.layers.TileLayerProvider;
-import microtrafficsim.core.vis.tilebased.TileBasedVisualization;
 
 import java.io.File;
-import java.util.Collection;
 
 
 /**
- * @author Dominic Parga Cacheiro
+ * @author Maximilian Luz, Dominic Parga Cacheiro
  */
 public interface MapViewer {
 
@@ -62,32 +57,38 @@ public interface MapViewer {
      * parser is created to parse the specified file (asynchronously) and
      * update the layers (respectively their sources).
      */
-    void show();
+    default void show() {
+        getVisualizationPanel().start();
+    }
 
-    void stop();
+    default void stop() {
+        getVisualizationPanel().stop();
+    }
 
     /**
      * Create the (tile-based) visualization object. The visualization object is
      * used to bind input and display structures together.
-     *
-     * @param provider the provider providing the tiles to be displayed
-     * @return the created visualization object
      */
-    TileBasedVisualization createVisualization(TileProvider provider);
+    void createVisualization();
 
     /**
      * Create a visualization panel. The visualization panel is the interface
      * between the Java UI toolkit (Swing) and the OpenGL-based visualization.
      * Thus it is used to display the visualization.
      *
-     * @param vis the visualization to show on the panel
-     * @return the created visualization panel
      * @throws UnsupportedFeatureException if not all required OpenGL features
      *                                     are available
      */
-    VisualizationPanel createVisualizationPanel(TileBasedVisualization vis) throws UnsupportedFeatureException;
+    void createVisualizationPanel() throws UnsupportedFeatureException;
 
     void addKeyCommand(short event, short vk, KeyCommand command);
+
+    /**
+     * @see #createParser(ScenarioConfig)
+     */
+    default void createParser() {
+        createParser(null);
+    }
 
     /**
      * Creates and sets up the parser used to parse OSM files. The parser
@@ -100,27 +101,8 @@ public interface MapViewer {
      * {@code StreetComponent}), or factories to initialize relations
      * (such as the {@code RestrictionRelationFactory}). The in this example
      * provided components and initializers are enough for most use-cases.
-     *
-     * @return the created parser
      */
-    default OSMParser createParser() {
-        return createParser(null);
-    }
-
-    OSMParser createParser(ScenarioConfig simconfig);
-
-    /**
-     * Creates a {@code TileLayerProvider} from the given layer definitions.
-     * The {@code TileLayerProvider} is used to provide map-layers and their
-     * style to the visualization. {@code LayerDefinition}s describe such
-     * a layer in dependence of a source object. {@code TileLayerGenerator}s
-     * are used to generate a renderable {@code TileLayer} from a specified
-     * source.
-     *
-     * @param layers the layer definitions for the provider
-     * @return the created layer provider
-     */
-    TileLayerProvider createLayerProvider(Collection<LayerDefinition> layers);
+    void createParser(ScenarioConfig simconfig);
 
     void changeMap(OSMParser.Result result) throws InterruptedException;
 

@@ -2,7 +2,7 @@ package microtrafficsim.examples.mapviewer;
 
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
-import microtrafficsim.core.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 
 import javax.swing.*;

@@ -21,7 +21,7 @@ import java.util.*;
  */
 public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeatureProvider {
 
-    private QuadTreeTilingScheme scheme;
+    private TilingScheme scheme;
     private Bounds               bounds;
     private TileRect             leafs;
     private Map<String, TileGroup<?>> featureset;
@@ -37,7 +37,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
      * @param featureset the set of features provided by this tiled map-segment.
      */
     private QuadTreeTiledMapSegment(
-            QuadTreeTilingScheme scheme,
+            TilingScheme scheme,
             Bounds bounds,
             TileRect leafs,
             Map<String, TileGroup<?>> featureset) {
@@ -50,7 +50,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
     }
 
     @Override
-    public QuadTreeTilingScheme getTilingScheme() {
+    public TilingScheme getTilingScheme() {
         return scheme;
     }
 
@@ -243,7 +243,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
          * @return the generated tiled map-segment.
          * @throws InterruptedException if this call has been interrupted.
          */
-        public QuadTreeTiledMapSegment generate(SegmentFeatureProvider segment, QuadTreeTilingScheme scheme,
+        public QuadTreeTiledMapSegment generate(SegmentFeatureProvider segment, TilingScheme scheme,
                                                 int gridlevel) throws InterruptedException {
             logger.debug("begin tiling process");
             Rect2d bounds  = scheme.getProjection().project(segment.getBounds());
@@ -271,7 +271,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
          */
         @SuppressWarnings("unchecked")
         private <T extends FeaturePrimitive> TileGroup<T>
-        createTileGroup(QuadTreeTilingScheme scheme, Rect2d bounds, Feature<T> feature, int gridlevel) {
+        createTileGroup(TilingScheme scheme, Rect2d bounds, Feature<T> feature, int gridlevel) {
             TileIntersector<? super T> intersector = (TileIntersector<? super T>) intersectors.get(feature.getType());
             TileId                                                            root = scheme.getTile(bounds);
 
