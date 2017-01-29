@@ -6,6 +6,7 @@ import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
@@ -76,14 +77,14 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
     /**
      *
-     * @param projection          the projection used in the visualization.
-     * @param defaultVehicleColor the default color used for the vehicles.
+     * @param projection   the projection used in the visualization.
+     * @param vehicleStyle the default color used for the vehicles.
      */
-    public SpriteBasedVehicleOverlay(Projection projection, Color defaultVehicleColor) {
+    public SpriteBasedVehicleOverlay(Projection projection, VehicleStyleSheet vehicleStyle) {
         this.simulation = null;
         this.projection = projection;
 
-        this.vehicleFactory = () -> new Vehicle(defaultVehicleColor);
+        this.vehicleFactory = () -> new Vehicle(vehicleStyle.getDefaultVehicleColor());
 
         this.vao = -1;
         this.vbo = null;

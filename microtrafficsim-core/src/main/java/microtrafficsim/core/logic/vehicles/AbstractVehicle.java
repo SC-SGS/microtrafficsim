@@ -304,28 +304,30 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
      * check, if it can cross the node.
      */
     public void spawn() {
-        if (state == VehicleState.NOT_SPAWNED && age >= spawnDelay) {
-            if (!route.isEmpty()) {
-                if (!route.getStart().permissionToCross(this)) {
-                    velocity = 0;
-                } else {    // allowed to spawn
-                    if (((DirectedEdge)route.peek()).getLane(0).getMaxInsertionIndex() < 0) {
+        if (state == VehicleState.NOT_SPAWNED) {
+            if (age >= spawnDelay) {
+                if (!route.isEmpty()) {
+                    if (!route.getStart().permissionToCross(this)) {
                         velocity = 0;
-                    } else {
-                        velocity = 1;
-                        route.getStart().unregisterVehicle(this);
-                        enterNextRoad();
-                        setState(VehicleState.SPAWNED);
+                    } else {    // allowed to spawn
+                        if (((DirectedEdge) route.peek()).getLane(0).getMaxInsertionIndex() < 0) {
+                            velocity = 0;
+                        } else {
+                            velocity = 1;
+                            route.getStart().unregisterVehicle(this);
+                            enterNextRoad();
+                            setState(VehicleState.SPAWNED);
+                        }
                     }
-                }
-            } else {    // route is empty
-                velocity = 0;
+                } else {    // route is empty
+                    velocity = 0;
 
-                despawn();
-                return;
+                    despawn();
+                    return;
+                }
             }
+            didOneSimulationStep();
         }
-        didOneSimulationStep();
     }
 
     private void despawn() {

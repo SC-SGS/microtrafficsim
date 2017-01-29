@@ -108,11 +108,7 @@ public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, Log
     @Override
     public String toString() {
         return "ID=" + streetInfo.ID + ";hash=" + hashCode() + ":(" + streetInfo.raw.origin.ID + " -" +
-                streetInfo.numberOfCells +
-                "-> " +
-                streetInfo.raw.destination
-                .ID +
-                ")";
+                streetInfo.numberOfCells + "-> " + streetInfo.raw.destination.ID + ")";
     }
 
     /**
@@ -144,7 +140,6 @@ public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, Log
     */
     @Override
     public int getLength() {
-
         return streetInfo.numberOfCells;
     }
 

@@ -4,6 +4,7 @@ import com.jogamp.opengl.GL3;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
@@ -78,14 +79,14 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
     /**
      * Creates a {@code ShaderBasedVehicleOverlay} with the given projection and default vehicle color.
      *
-     * @param projection          the {@code Projection} used for the visualization.
-     * @param defaultVehicleColor the default color used for the vehicles.
+     * @param projection   the {@code Projection} used for the visualization.
+     * @param vehicleStyle the default color used for the vehicles.
      */
-    public ShaderBasedVehicleOverlay(Projection projection, Color defaultVehicleColor) {
+    public ShaderBasedVehicleOverlay(Projection projection, VehicleStyleSheet vehicleStyle) {
         this.simulation = null;
         this.projection = projection;
 
-        this.vehicleFactory = () -> new Vehicle(defaultVehicleColor);
+        this.vehicleFactory = () -> new Vehicle(vehicleStyle.getDefaultVehicleColor());
 
         this.vao = -1;
         this.vbo = null;

@@ -41,8 +41,8 @@ public class RawStreetInfo {
                         byte priorityLevel) {
         this.config = config;
         this.lengthInMeters = lengthInMeters;
-        this.originDirection = originDirection;
-        this.destinationDirection = destinationDirection;
+        this.originDirection = originDirection.normalize();
+        this.destinationDirection = destinationDirection.normalize();
         this.origin = origin;
         this.destination = destination;
         this.noOfLines = noOfLines;

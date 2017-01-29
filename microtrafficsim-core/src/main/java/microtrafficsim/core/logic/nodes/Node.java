@@ -145,7 +145,6 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
         byte indicesPerNode = (byte) (incomingEdges.size() + leavingEdges.size());
 
 
-
         // if vehicles are crossing each other's way
         if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2, indicesPerNode)) {
             // compare priorities of origins
@@ -237,8 +236,8 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
         }
 
         /* find max prioritized vehicles */
+        maxPrioVehicles.clear();
         if (!assessedVehicles.isEmpty()) {
-            maxPrioVehicles.clear();
 
             // get vehicles with max prio
             int maxPrio = Integer.MIN_VALUE;

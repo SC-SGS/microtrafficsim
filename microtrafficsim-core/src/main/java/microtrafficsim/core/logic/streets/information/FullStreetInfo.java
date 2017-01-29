@@ -20,11 +20,12 @@ public class FullStreetInfo {
         ScenarioConfig config = rawStreetInfo.config;
 
         /* calculate discrete street information */
-        ID            = config.longIDGenerator.next();
+        ID = config.longIDGenerator.next();
+
         // important for shortest path: round up
         numberOfCells = Math.max(1, (int) (Math.ceil(rawStreetInfo.lengthInMeters / config.metersPerCell)));
 
         // maxVelocity in km/h, but this.maxVelocity in cells/s
-        this.maxVelocity = Math.max(1, (int) Math.round(rawStreetInfo.maxVelocity / 3.6 / config.metersPerCell));
+        maxVelocity = Math.max(1, (int) Math.round(rawStreetInfo.maxVelocity / 3.6 / config.metersPerCell));
     }
 }
