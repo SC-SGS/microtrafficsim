@@ -2,6 +2,7 @@ package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
@@ -40,7 +41,7 @@ public class RandomRouteScenario extends BasicScenario {
      * @see #RandomRouteScenario(ScenarioConfig, StreetGraph, VehicleContainer)
      */
     public RandomRouteScenario(ScenarioConfig config,
-                                  StreetGraph graph) {
+                               StreetGraph graph) {
         this(config, graph, new ConcurrentVehicleContainer());
     }
 
@@ -50,7 +51,9 @@ public class RandomRouteScenario extends BasicScenario {
      *
      * @see #RandomRouteScenario(long, ScenarioConfig, StreetGraph, VehicleContainer)
      */
-    public RandomRouteScenario(ScenarioConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
+    public RandomRouteScenario(ScenarioConfig config,
+                               StreetGraph graph,
+                               VehicleContainer vehicleContainer) {
         this(config.seedGenerator.next(), config, graph, vehicleContainer);
     }
 
@@ -59,8 +62,10 @@ public class RandomRouteScenario extends BasicScenario {
      *
      * @param seed Used for the used instance of {@link Random}
      */
-    public RandomRouteScenario(long seed, ScenarioConfig config, StreetGraph graph, VehicleContainer
-            vehicleContainer) {
+    public RandomRouteScenario(long seed,
+                               ScenarioConfig config,
+                               StreetGraph graph,
+                               VehicleContainer vehicleContainer) {
         super(config, graph, vehicleContainer);
 
         random = new Random(seed);

@@ -41,8 +41,6 @@ import java.util.function.Supplier;
  */
 public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
-    private static final Color DEFAULT_FG_COLOR = Color.fromRGBA(0xCC4C1AF0);
-
     private static final float VEHICLE_SIZE               = 10.f;
     private static final float VEHICLE_SCALE_NORM         = 1.f / (1 << 18);
     private static final float VEHICLE_LANE_OFFSET        = 6.f;
@@ -75,15 +73,6 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
     private boolean enabled;
 
-
-    /**
-     * Creates a new overlay using the provided {@code Projection}.
-     *
-     * @param projection the {@code Projection} used for the visualization.
-     */
-    public SpriteBasedVehicleOverlay(Projection projection) {
-        this(projection, DEFAULT_FG_COLOR);
-    }
 
     /**
      *

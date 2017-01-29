@@ -39,7 +39,7 @@ public class TestShortestPathAlgorithms {
 
     private static ScenarioConfig config;
     private static ShortestPathAlgorithm shortestPathAlgorithm;
-    private static Vec2d                rubbish;
+    private static Vec2d rubbishVec2d;
     private final int                   maxVelocity = 1;
     private Stack<ShortestPathEdge>     shortestPath;
     private Stack<DirectedEdge>         correctShortestPath;
@@ -50,7 +50,7 @@ public class TestShortestPathAlgorithms {
     @BeforeClass
     public static void setupClass() {
         config = new ScenarioConfig();
-        rubbish  = new Vec2d(1.0f, 1.0f);
+        rubbishVec2d = new Vec2d(1.0f, 1.0f);
     }
 
     @Before
@@ -67,6 +67,8 @@ public class TestShortestPathAlgorithms {
     */
     @Test
     public void testDijkstra() {
+        logger.info("");
+        logger.info("NEW TEST CLASS: ShortestWayDijkstra");
         shortestPathAlgorithm = AStar.createShortestWayDijkstra();
         shortestPathAlgorithm.preprocess();
         testAll();
@@ -74,6 +76,8 @@ public class TestShortestPathAlgorithms {
 
     @Test
     public void testFastestWayAStar() {
+        logger.info("");
+        logger.info("NEW TEST CLASS: " + FastestWayAStar.class.getSimpleName());
         shortestPathAlgorithm = new FastestWayAStar(config.metersPerCell, config.globalMaxVelocity);
         shortestPathAlgorithm.preprocess();
         testAll();
@@ -81,6 +85,8 @@ public class TestShortestPathAlgorithms {
 
     @Test
     public void testLinearDistanceAStar() {
+        logger.info("");
+        logger.info("NEW TEST CLASS: " + LinearDistanceAStar.class.getSimpleName());
         shortestPathAlgorithm = new LinearDistanceAStar(config.metersPerCell);
         shortestPathAlgorithm.preprocess();
         testAll();
@@ -88,6 +94,8 @@ public class TestShortestPathAlgorithms {
 
     @Test
     public void testBidirectionalDijkstra() {
+        logger.info("");
+        logger.info("NEW TEST CLASS: BidirectionalShortestWayDijkstra");
         shortestPathAlgorithm = BidirectionalAStar.createShortestWayDijkstra();
         shortestPathAlgorithm.preprocess();
         testAll();
@@ -95,6 +103,8 @@ public class TestShortestPathAlgorithms {
 
     @Test
     public void testFastestWayBidirectionalAStar() {
+        logger.info("");
+        logger.info("NEW TEST CLASS: " + FastestWayBidirectionalAStar.class.getSimpleName());
         shortestPathAlgorithm = new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);
         shortestPathAlgorithm.preprocess();
         testAll();
@@ -102,6 +112,8 @@ public class TestShortestPathAlgorithms {
 
     @Test
     public void testLinearDistanceBidirectionalAStar() {
+        logger.info("");
+        logger.info("NEW TEST CLASS: " + LinearDistanceBidirectionalAStar.class.getSimpleName());
         shortestPathAlgorithm = new LinearDistanceBidirectionalAStar(config.metersPerCell);
         shortestPathAlgorithm.preprocess();
         testAll();
@@ -130,6 +142,20 @@ public class TestShortestPathAlgorithms {
     | test case impl |
     |================|
     */
+    private DirectedEdge createEdge(int lengthInCells, Node origin, Node destination, int noOfLines) {
+        return new DirectedEdge(
+                config,
+                lengthInCells * config.metersPerCell,
+                rubbishVec2d,
+                rubbishVec2d,
+                origin,
+                destination,
+                noOfLines,
+                maxVelocity,
+                (byte)0
+        );
+    }
+
     /**
      * <p>
      * This method creates a graph using {@link DirectedEdge} and {@link Node} and checks the shortest path algorithm
@@ -151,27 +177,27 @@ public class TestShortestPathAlgorithms {
         Node e = new Node(config, uselessPosition);
 
         // create edges and add them to the nodes
-        DirectedEdge ab = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, a, b, (byte) 0);
+        DirectedEdge ab = createEdge(1, a, b, 1);
         a.addEdge(ab);
         b.addEdge(ab);
 
-        DirectedEdge bc = new DirectedEdge(config, 2 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, b, c, (byte) 0);
+        DirectedEdge bc = createEdge(2, b, c, 1);
         b.addEdge(bc);
         c.addEdge(bc);
 
-        DirectedEdge bd = new DirectedEdge(config, 5 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, b, d, (byte) 0);
+        DirectedEdge bd = createEdge(5, b, d, 1);
         b.addEdge(bd);
         d.addEdge(bd);
 
-        DirectedEdge cd = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, c, d, (byte) 0);
+        DirectedEdge cd = createEdge(1, c, d, 1);
         c.addEdge(cd);
         d.addEdge(cd);
 
-        DirectedEdge de = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, d, e, (byte) 0);
+        DirectedEdge de = createEdge(1, d, e, 1);
         d.addEdge(de);
         e.addEdge(de);
 
-        DirectedEdge ec = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, e, c, (byte) 0);
+        DirectedEdge ec = createEdge(1, e, c, 1);
         e.addEdge(ec);
         c.addEdge(ec);
 
@@ -241,51 +267,51 @@ public class TestShortestPathAlgorithms {
         Node h = new Node(config, uselessPosition);
 
         // create edges and add them to the nodes
-        DirectedEdge ab = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, a, b, (byte) 0);
+        DirectedEdge ab = createEdge(1, a, b, 1);
         a.addEdge(ab);
         b.addEdge(ab);
 
-        DirectedEdge ac = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, a, c, (byte) 0);
+        DirectedEdge ac = createEdge(1, a, c, 3);
         a.addEdge(ac);
         c.addEdge(ac);
 
-        DirectedEdge ba = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, b, a, (byte) 0);
+        DirectedEdge ba = createEdge(1, b, a, 1);
         a.addEdge(ba);
         b.addEdge(ba);
 
-        DirectedEdge bc = new DirectedEdge(config, 2 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, b, c, (byte) 0);
+        DirectedEdge bc = createEdge(2, b, c, 3);
         b.addEdge(bc);
         c.addEdge(bc);
 
-        DirectedEdge de = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, d, e, (byte) 0);
+        DirectedEdge de = createEdge(1, d, e, 1);
         d.addEdge(de);
         e.addEdge(de);
 
-        DirectedEdge df = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, e, f, (byte) 0);
+        DirectedEdge df = createEdge(1, e, f, 3);
         d.addEdge(df);
         f.addEdge(df);
 
-        DirectedEdge ea = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, e, a, (byte) 0);
+        DirectedEdge ea = createEdge(1, e, a, 1);
         e.addEdge(ea);
         a.addEdge(ea);
 
-        DirectedEdge fh = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 2, f, h, (byte) 0);
+        DirectedEdge fh = createEdge(1, f, h, 2);
         f.addEdge(fh);
         h.addEdge(fh);
 
-        DirectedEdge gd = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, g, d, (byte) 0);
+        DirectedEdge gd = createEdge(1, g, d, 3);
         g.addEdge(gd);
         d.addEdge(gd);
 
-        DirectedEdge gf = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 2, g, f, (byte) 0);
+        DirectedEdge gf = createEdge(1, g, f, 2);
         g.addEdge(gf);
         f.addEdge(gf);
 
-        DirectedEdge he = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 4, h, e, (byte) 0);
+        DirectedEdge he = createEdge(1, h, e, 4);
         h.addEdge(he);
         e.addEdge(he);
 
-        DirectedEdge hg = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 4, h, g, (byte) 0);
+        DirectedEdge hg = createEdge(1, h, g, 4);
         h.addEdge(hg);
         g.addEdge(hg);
 
@@ -352,55 +378,55 @@ public class TestShortestPathAlgorithms {
         Node h = new Node(config, uselessPosition);
 
         // create edges and add them to the nodes
-        DirectedEdge ab = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, a, b, (byte) 0);
+        DirectedEdge ab = createEdge(1, a, b, 1);
         a.addEdge(ab);
         b.addEdge(ab);
 
-        DirectedEdge ac = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, a, c, (byte) 0);
+        DirectedEdge ac = createEdge(1, a, c, 3);
         a.addEdge(ac);
         c.addEdge(ac);
 
-        DirectedEdge ba = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, b, a, (byte) 0);
+        DirectedEdge ba = createEdge(1, b, a, 1);
         a.addEdge(ba);
         b.addEdge(ba);
 
-        DirectedEdge bc = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 2, b, c, (byte) 0);
+        DirectedEdge bc = createEdge(1, b, c, 2);
         b.addEdge(bc);
         c.addEdge(bc);
 
-        DirectedEdge de = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, d, e, (byte) 0);
+        DirectedEdge de = createEdge(1, d, e, 1);
         d.addEdge(de);
         e.addEdge(de);
 
-        DirectedEdge df = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, e, f, (byte) 0);
+        DirectedEdge df = createEdge(1, e, f, 3);
         d.addEdge(df);
         f.addEdge(df);
 
-        DirectedEdge ea = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 1, e, a, (byte) 0);
+        DirectedEdge ea = createEdge(1, e, a, 1);
         e.addEdge(ea);
         a.addEdge(ea);
 
-        DirectedEdge eb = new DirectedEdge(config, 1* config.metersPerCell, rubbish, rubbish, maxVelocity, 1, e, b, (byte) 0);
+        DirectedEdge eb = createEdge(1, e, b, 1);
         e.addEdge(eb);
         b.addEdge(eb);
 
-        DirectedEdge fh = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 2, f, h, (byte) 0);
+        DirectedEdge fh = createEdge(1, f, h, 2);
         f.addEdge(fh);
         h.addEdge(fh);
 
-        DirectedEdge gd = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 3, g, d, (byte) 0);
+        DirectedEdge gd = createEdge(1, g, d, 3);
         g.addEdge(gd);
         d.addEdge(gd);
 
-        DirectedEdge gf = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 2, g, f, (byte) 0);
+        DirectedEdge gf = createEdge(1, g, f, 2);
         g.addEdge(gf);
         f.addEdge(gf);
 
-        DirectedEdge he = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 4, h, e, (byte) 0);
+        DirectedEdge he = createEdge(1, h, e, 4);
         h.addEdge(he);
         e.addEdge(he);
 
-        DirectedEdge hg = new DirectedEdge(config, 1 * config.metersPerCell, rubbish, rubbish, maxVelocity, 4, h, g, (byte) 0);
+        DirectedEdge hg = createEdge(1, h, g, 4);
         h.addEdge(hg);
         g.addEdge(hg);
 

@@ -3,6 +3,8 @@ package microtrafficsim.core.logic.vehicles.impl;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
+import microtrafficsim.core.map.style.VehicleStyleSheet;
+import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -48,8 +50,8 @@ public class Car extends AbstractVehicle {
      * @param seed seed for {@link Random}, e.g. used for dawdling
      * @param route you only use the vehicle to drive a route
      */
-    public Car(long ID, long seed, Route<Node> route) {
-        super(ID, seed, route);
+    public Car(long ID, long seed, Route<Node> route, VehicleStyleSheet style) {
+        super(ID, seed, route, style);
         anger      = 0;
         totalAnger = 0;
     }
@@ -62,8 +64,8 @@ public class Car extends AbstractVehicle {
      * @param route you only use the vehicle to drive a route
      * @param spawnDelay This vehicle spawns after this delay
      */
-    public Car(long ID, long seed, Route<Node> route, int spawnDelay) {
-        super(ID, seed, route, spawnDelay);
+    public Car(long ID, long seed, Route<Node> route, int spawnDelay, VehicleStyleSheet style) {
+        super(ID, seed, route, spawnDelay, style);
         anger      = 0;
         totalAnger = 0;
     }

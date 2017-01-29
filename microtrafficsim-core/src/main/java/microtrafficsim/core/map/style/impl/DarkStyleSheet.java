@@ -1,5 +1,6 @@
 package microtrafficsim.core.map.style.impl;
 
+import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.map.style.BasicStyleSheet;
 import microtrafficsim.core.vis.opengl.utils.Color;
 

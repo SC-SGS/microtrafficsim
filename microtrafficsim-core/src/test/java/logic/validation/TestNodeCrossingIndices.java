@@ -42,7 +42,7 @@ public class TestNodeCrossingIndices {
 
             /* setup graph */
             File file = new PackagedResource(UIValidation.class, "plus_crossroad.osm").asTemporaryFile();
-            MapViewer mapviewer = new TileBasedMapViewer(new DarkStyleSheet());
+            MapViewer mapviewer = new TileBasedMapViewer(config.visualization.style);
             mapviewer.createParser(config);
             StreetGraph graph = mapviewer.parse(file).streetgraph;
 

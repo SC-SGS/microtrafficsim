@@ -103,7 +103,7 @@ public class GeneralPanel extends PreferencesPanel {
 
     @Override
     public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
-        ScenarioConfig config           = new ScenarioConfig();
+        ScenarioConfig             config           = new ScenarioConfig();
         boolean                    exceptionOccured = false;
         IncorrectSettingsException exception        = new IncorrectSettingsException();
 

@@ -34,7 +34,7 @@ public class TCrossroadScenario extends QueueScenarioSmall {
                     long seed      = scenario.getConfig().seedGenerator.next();
                     int spawnDelay = getSpawnDelayMatrix().get(route.getStart(), route.getEnd());
 
-                    Car car = new Car(ID, seed, route, spawnDelay);
+                    Car car = new Car(ID, seed, route, spawnDelay, config.visualization.style);
                     car.addStateListener(getVehicleContainer());
                     return car;
                 }

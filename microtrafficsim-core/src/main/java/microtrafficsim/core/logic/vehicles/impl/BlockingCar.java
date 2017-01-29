@@ -2,6 +2,7 @@ package microtrafficsim.core.logic.vehicles.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.Route;
+import microtrafficsim.core.map.style.VehicleStyleSheet;
 
 
 /**
@@ -18,8 +19,8 @@ public class BlockingCar extends Car {
      *
      * @see Car#Car(long, long, Route)
      */
-    public BlockingCar(long ID, long seed, Route<Node> route) {
-        super(ID, seed, route);
+    public BlockingCar(long ID, long seed, Route<Node> route, VehicleStyleSheet style) {
+        super(ID, seed, route, style);
         blocking = false;
     }
 
@@ -28,8 +29,8 @@ public class BlockingCar extends Car {
      *
      * @see Car#Car(long, long, Route, int)
      */
-    public BlockingCar(long ID, long seed, Route<Node> route, int spawnDelay) {
-        super(ID, seed, route, spawnDelay);
+    public BlockingCar(long ID, long seed, Route<Node> route, int spawnDelay, VehicleStyleSheet style) {
+        super(ID, seed, route, spawnDelay, style);
         blocking = false;
     }
 

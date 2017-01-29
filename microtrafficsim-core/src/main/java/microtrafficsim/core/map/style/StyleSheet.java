@@ -1,13 +1,12 @@
 package microtrafficsim.core.map.style;
 
+import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
-import microtrafficsim.osm.parser.features.FeatureDependency;
 
 import java.util.Collection;
-import java.util.function.UnaryOperator;
 
 
 /**
@@ -15,30 +14,13 @@ import java.util.function.UnaryOperator;
  *
  * @author Maximilian Luz
  */
-public interface StyleSheet {
+public interface StyleSheet extends VehicleStyleSheet {
 
-    /**
-     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-unification step.
-     */
-    FeatureDefinition DEPENDS_ON_WAY_CLIPPING
-            = FeatureDefinition.createDependencyPlaceholder(
-                    "placeholder for way-clipping stage (stylesheet)");
-
-    /**
-     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-unification step.
-     */
-    FeatureDefinition DEPENDS_ON_UNIFICATION
-            = FeatureDefinition.createDependencyPlaceholder(
-                    "placeholder for street-unification stage (stylesheet)");
-
-    /**
-     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-graph-generation.
-     */
-    FeatureDefinition DEPENDS_ON_STREETGRAPH
-            = FeatureDefinition.createDependencyPlaceholder(
-                    "placeholder for streetgraph feature-definitnion (stylesheet)");
-
-
+    /*
+    |============|
+    | map colors |
+    |============|
+    */
     /**
      * Returns the background-color of this style-sheet.
      *
@@ -52,6 +34,42 @@ public interface StyleSheet {
      * @return the background-color for tiles of this style.
      */
     Color getTileBackgroundColor();
+
+    /*
+    |=======================|
+    | (i) VehicleStyleSheet |
+    |=======================|
+    */
+    @Override
+    default Color getColor(AbstractVehicle vehicle) {
+        return getDefaultVehicleColor();
+    }
+
+    /*
+    |=====================|
+    | features and layers |
+    |=====================|
+    */
+    /**
+     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-unification step.
+     */
+    FeatureDefinition DEPENDS_ON_WAY_CLIPPING
+            = FeatureDefinition.createDependencyPlaceholder(
+            "placeholder for way-clipping stage (stylesheet)");
+
+    /**
+     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-unification step.
+     */
+    FeatureDefinition DEPENDS_ON_UNIFICATION
+            = FeatureDefinition.createDependencyPlaceholder(
+            "placeholder for street-unification stage (stylesheet)");
+
+    /**
+     * Placeholder {@code FeatureDefinition} that can be used to specify dependencies on the street-graph-generation.
+     */
+    FeatureDefinition DEPENDS_ON_STREETGRAPH
+            = FeatureDefinition.createDependencyPlaceholder(
+            "placeholder for streetgraph feature-definitnion (stylesheet)");
 
     /**
      * Returns the feature-definitions of this style.

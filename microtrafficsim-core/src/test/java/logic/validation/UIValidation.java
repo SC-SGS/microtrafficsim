@@ -51,7 +51,6 @@ public class UIValidation {
             scenario.setLooping(true);
             return scenario;
         };
-        StyleSheet styleSheet                   = new MonochromeStyleSheet();
 
         /* build setup: logging */
         BuildSetup.TRACE_ENABLED = false;
@@ -80,8 +79,10 @@ public class UIValidation {
         SwingUtilities.invokeLater(() -> {
 
             /* visualization */
-            MapViewer mapviewer    = new TileBasedMapViewer(styleSheet);
-            VehicleOverlay overlay = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
+            MapViewer mapviewer    = new TileBasedMapViewer(config.visualization.style);
+            VehicleOverlay overlay = new SpriteBasedVehicleOverlay(
+                    mapviewer.getProjection(),
+                    mapviewer.getStyle().getDefaultVehicleColor());
             try {
                 mapviewer.create(config);
             } catch (UnsupportedFeatureException e) {

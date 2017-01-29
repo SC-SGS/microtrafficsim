@@ -42,8 +42,6 @@ import java.util.function.Supplier;
  */
 public class ShaderBasedVehicleOverlay implements VehicleOverlay {
 
-    private static final Color DEFAULT_FG_COLOR = Color.fromRGB(0xCC4C1A);
-
     private static final Vec2f VEHICLE_SIZE               = new Vec2f(7.5f, 7.5f);
     private static final float VEHICLE_SCALE_NORM         = 1.f / (1 << 18);
     private static final int   VIEWPORT_CULLING_EXPANSION = 20;
@@ -76,15 +74,6 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
 
     private boolean enabled;
 
-
-    /**
-     * Creates a {@code ShaderBasedVehicleOverlay} with the given projection.
-     *
-     * @param projection the {@code Projection} used for the visualization.
-     */
-    public ShaderBasedVehicleOverlay(Projection projection) {
-        this(projection, DEFAULT_FG_COLOR);
-    }
 
     /**
      * Creates a {@code ShaderBasedVehicleOverlay} with the given projection and default vehicle color.

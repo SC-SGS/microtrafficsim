@@ -1,5 +1,6 @@
 package microtrafficsim.core.mapviewer;
 
+import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.vis.Overlay;
@@ -22,6 +23,8 @@ public interface MapViewer {
      * @return the projection used in this map viewer
      */
     Projection getProjection();
+
+    StyleSheet getStyle();
 
     /**
      * @return initial window width

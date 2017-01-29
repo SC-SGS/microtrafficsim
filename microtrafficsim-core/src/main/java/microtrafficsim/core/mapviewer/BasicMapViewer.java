@@ -69,6 +69,11 @@ public abstract class BasicMapViewer implements MapViewer {
     }
 
     @Override
+    public StyleSheet getStyle() {
+        return style;
+    }
+
+    @Override
     public int getInitialWindowWidth() {
         return initialWindowWidth;
     }

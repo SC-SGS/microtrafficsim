@@ -6,6 +6,7 @@ import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.Route;
+import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.math.random.distributions.impl.Random;
@@ -31,81 +32,88 @@ import java.util.function.Function;
  */
 public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
 
-    // general
+    /* general */
     public final long                  ID;
     private final int                  spawnDelay;
     private final Object               lock_priorityCounter = new Object();
-    private Random random;
+    private final Random               random;
     private VehicleEntity              entity;
     private VehicleState               state;
     private List<VehicleStateListener> stateListeners;
 
-    // routing
+    /* routing */
     private Route<Node> route;
-    private int   age;
+    private int         age;
 
-    // driving behaviour
+    /* driving behaviour */
     private int   cellPosition;
     private int   velocity;
     private Function<Integer, Integer> accelerate, dawdle;
 
-    // traffic
+    /* traffic */
     private Lane            lane;
     private AbstractVehicle vehicleInFront;
     private AbstractVehicle vehicleInBack;
     private boolean         hasDashed;          // for simulation
     private int             priorityCounter;    // for crossing logic
 
-    // angry factor
+    /* angry factor */
     private boolean lastVelocityWasZero;
+
+    /* visualization */
+    private final VehicleStyleSheet style;
 
 
     /**
      * Calls {@code AbstractVehicle(ID, seed, route, 0)}
      *
-     * @see #AbstractVehicle(long, long, Route, int)
+     * @see #AbstractVehicle(long, long, Route, int, VehicleStyleSheet)
      */
-    public AbstractVehicle(long ID, long seed, Route<Node> route) {
-        this(ID, seed, route, 0);
+    public AbstractVehicle(long ID, long seed, Route<Node> route, VehicleStyleSheet style) {
+        this(ID, seed, route, 0, style);
     }
 
     /**
      * Default constructor, but calls {@link #validateDashAndDawdleFactors(float, float)} after initializing all
      * variables.
      *
-     * @param ID should be unique
-     * @param seed used for dashing/dawdling
-     * @param route this vehicle drives on this route
+     * @param ID         should be unique
+     * @param seed       used for dashing/dawdling
+     * @param route      this vehicle drives on this route
      * @param spawnDelay after this number of simulation steps, this vehicle spawns
+     * @param style      this style defines the vehicle color and resets the color after each simulation step
      */
-    public AbstractVehicle(long ID, long seed, Route<Node> route, int spawnDelay) {
+    public AbstractVehicle(long ID, long seed, Route<Node> route, int spawnDelay, VehicleStyleSheet style) {
         this.ID             = ID;
         this.random         = new Random(seed);
         this.stateListeners = new LinkedList<>();
         state = VehicleState.NOT_SPAWNED;
 
-        // routing
+        /* routing */
         this.route = route;
         age        = 0;
         this.spawnDelay = spawnDelay;
         resetPriorityCounter();
 
-        // driving behaviour
+        /* driving behaviour */
         cellPosition = -1;
         velocity     = 0;
         accelerate   = createAccelerationFunction();
         dawdle       = createDawdleFunction();
 
-        // traffic
+        /* traffic */
         hasDashed       = false;
         priorityCounter = 0;
 
-        // interesting stuff
+        /* interesting stuff */
         lastVelocityWasZero = false;
 
         try {
             validateDashAndDawdleFactors(getDashFactor(), getDawdleFactor());
         } catch (Exception e) { e.printStackTrace(); }
+
+        /* visualization */
+        this.style = style;
     }
 
     /**
@@ -448,8 +456,13 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
             if (!lastVelocityWasZero) calmDown();
             lastVelocityWasZero = false;
         }
+
         // age
         age++;
+
+        // color
+        if (entity.getVisualization() != null)
+            entity.getVisualization().setBaseColor(style.getColor(this));
     }
 
     /**

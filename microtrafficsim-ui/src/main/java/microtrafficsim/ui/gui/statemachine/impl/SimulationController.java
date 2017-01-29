@@ -512,9 +512,7 @@ public class SimulationController implements GUIController {
         if (result != null) {
             if (result.streetgraph != null) {
                 simulation.removeCurrentScenario();
-                config.removeUpdateListener(streetgraph);
                 streetgraph = result.streetgraph;
-                config.addUpdateListener(streetgraph);
 
                 try {
                     mapviewer.changeMap(result);

@@ -1,6 +1,7 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
@@ -16,11 +17,11 @@ import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
  */
 public abstract class BasicScenario implements Scenario {
 
-    private final ScenarioConfig config;
-    private final StreetGraph graph;
-    private final VehicleContainer vehicleContainer;
-    private boolean isPrepared;
-    protected ODMatrix odMatrix;
+    private final ScenarioConfig    config;
+    private final StreetGraph       graph;
+    private final VehicleContainer  vehicleContainer;
+    private boolean                 isPrepared;
+    protected ODMatrix              odMatrix;
 
     /**
      * Default constructor
@@ -40,8 +41,7 @@ public abstract class BasicScenario implements Scenario {
         this.odMatrix = new SparseODMatrix();
     }
 
-    protected BasicScenario(ScenarioConfig config,
-                            StreetGraph graph) {
+    protected BasicScenario(ScenarioConfig config, StreetGraph graph) {
         this(config, graph, new ConcurrentVehicleContainer());
     }
 
@@ -73,15 +73,5 @@ public abstract class BasicScenario implements Scenario {
     @Override
     public final UnmodifiableODMatrix getODMatrix() {
         return new UnmodifiableODMatrix(odMatrix);
-    }
-
-    /*
-    |==========================|
-    | (i) ConfigUpdateListener |
-    |==========================|
-    */
-    @Override
-    public void updateConfig(ScenarioConfig updatedConfig) {
-        System.err.println("Yay ConfigUpdateListener");
     }
 }

@@ -48,7 +48,7 @@ public class PlusCrossroadScenario extends QueueScenarioSmall {
                     long seed      = scenario.getConfig().seedGenerator.next();
                     int spawnDelay = getSpawnDelayMatrix().get(route.getStart(), route.getEnd());
 
-                    BlockingCar vehicle = new BlockingCar(ID, seed, route, spawnDelay);
+                    BlockingCar vehicle = new BlockingCar(ID, seed, route, spawnDelay, config.visualization.style);
                     vehicle.addStateListener(getVehicleContainer());
 
                     if (state == ScenarioState.GO_WITHOUT_PRIORITY && route.getStart() == mid)

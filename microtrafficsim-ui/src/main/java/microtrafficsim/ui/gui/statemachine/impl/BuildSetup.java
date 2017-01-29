@@ -46,8 +46,10 @@ public class BuildSetup {
         config = new ScenarioConfig();
 
         /* visualization and parsing */
-        mapviewer   = new TileBasedMapViewer(new DarkStyleSheet());
-        overlay     = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
+        mapviewer = new TileBasedMapViewer(config.visualization.style);
+        overlay   = new SpriteBasedVehicleOverlay(
+                mapviewer.getProjection(),
+                mapviewer.getStyle().getDefaultVehicleColor());
 
         /* simulation */
         simulation          = new VehicleSimulation();

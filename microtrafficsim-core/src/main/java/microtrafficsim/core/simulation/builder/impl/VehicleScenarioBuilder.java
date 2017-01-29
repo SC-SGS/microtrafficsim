@@ -6,6 +6,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.impl.Car;
+import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -38,8 +39,8 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
     private final BiFunction<Scenario, Route<Node>, AbstractVehicle> vehicleFactory;
 
     /**
-     * Calls {@link VehicleScenarioBuilder#VehicleScenarioBuilder(Supplier, BiFunction)} with basic logic vehicle
-     * factory returning {@link Car}s.
+     * Calls {@link VehicleScenarioBuilder#VehicleScenarioBuilder(Supplier, BiFunction)} with basic
+     * logic vehicle factory returning {@link Car}s.
      */
     public VehicleScenarioBuilder(Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         this(visVehicleFactory, (scenario, route) -> {
@@ -47,7 +48,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
             long ID                 = config.longIDGenerator.next();
             long vehicleSeed        = config.seedGenerator.next();
 
-            Car car = new Car(ID, vehicleSeed, route);
+            Car car = new Car(ID, vehicleSeed, route, config.visualization.style);
             car.addStateListener(scenario.getVehicleContainer());
             return car;
         });

@@ -3,6 +3,7 @@ package microtrafficsim.examples.simulation;
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
@@ -60,8 +61,10 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
 
             /* create map viewer and vehicle overlay */
-            MapViewer mapviewer    = new TileBasedMapViewer(new MonochromeStyleSheet());
-            VehicleOverlay overlay = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
+            MapViewer mapviewer    = new TileBasedMapViewer(config.visualization.style);
+            VehicleOverlay overlay = new SpriteBasedVehicleOverlay(
+                    mapviewer.getProjection(),
+                    mapviewer.getStyle().getDefaultVehicleColor());
             try {
                 mapviewer.create(config);
             } catch (UnsupportedFeatureException e) {
@@ -133,6 +136,7 @@ public class Main {
         config.crossingLogic.priorityToTheRightEnabled    = true;
         config.crossingLogic.friendlyStandingInJamEnabled = true;
         config.crossingLogic.setOnlyOneVehicle(false);
+        config.visualization.style                        = new DarkStyleSheet();
 
         return config;
     }

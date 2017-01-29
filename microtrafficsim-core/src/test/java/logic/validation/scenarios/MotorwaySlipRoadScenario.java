@@ -61,7 +61,7 @@ public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
                         toggle[1] = !toggle[1];
                     }
 
-                    Car car = new Car(ID, seed, route, spawnDelay);
+                    Car car = new Car(ID, seed, route, spawnDelay, config.visualization.style);
                     car.addStateListener(getVehicleContainer());
                     return car;
                 }
