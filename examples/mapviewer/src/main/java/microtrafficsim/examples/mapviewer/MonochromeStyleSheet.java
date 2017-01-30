@@ -4,7 +4,7 @@ import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Polygon;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.map.style.StyleSheet;
+import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.parser.features.MapFeatureGenerator;
 import microtrafficsim.core.parser.features.polygons.PolygonFeatureGenerator;
@@ -29,7 +29,7 @@ import java.util.function.Predicate;
  *
  * @author Maximilian Luz
  */
-class MonochromeStyleSheet implements StyleSheet {
+class MonochromeStyleSheet implements MapStyleSheet {
 
     private static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
 

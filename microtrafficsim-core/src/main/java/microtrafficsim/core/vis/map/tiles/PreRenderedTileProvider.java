@@ -3,7 +3,7 @@ package microtrafficsim.core.vis.map.tiles;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.Bounds;
-import microtrafficsim.core.map.style.StyleSheet;
+import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
@@ -260,7 +260,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
 
     @Override
-    public void apply(StyleSheet style) {
+    public void apply(MapStyleSheet style) {
         bgcolor = style.getTileBackgroundColor();
     }
 

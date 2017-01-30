@@ -47,7 +47,7 @@ public class BuildSetup {
 
         /* visualization and parsing */
         mapviewer = new TileBasedMapViewer(config.visualization.style);
-        overlay   = new SpriteBasedVehicleOverlay(mapviewer.getProjection(), mapviewer.getStyle());
+        overlay   = new SpriteBasedVehicleOverlay(mapviewer.getProjection(), config.visualization.style);
 
         /* simulation */
         simulation          = new VehicleSimulation();

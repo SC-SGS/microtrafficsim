@@ -4,7 +4,6 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
-import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.interesting.emotions.Hulk;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.logging.EasyMarkableLogger;

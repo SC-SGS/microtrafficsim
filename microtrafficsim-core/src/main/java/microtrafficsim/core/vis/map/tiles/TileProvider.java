@@ -1,7 +1,7 @@
 package microtrafficsim.core.vis.map.tiles;
 
 import microtrafficsim.core.map.Bounds;
-import microtrafficsim.core.map.style.StyleSheet;
+import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
@@ -121,7 +121,7 @@ public interface TileProvider {
      *
      * @param style the style-sheet to apply.
      */
-    void apply(StyleSheet style);
+    void apply(MapStyleSheet style);
 
     /**
      * Adds the given {@code TileChangeListener} to the set of change-listeners.

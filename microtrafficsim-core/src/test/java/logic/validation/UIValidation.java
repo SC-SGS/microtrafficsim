@@ -5,8 +5,6 @@ import logic.validation.scenarios.PlusCrossroadFullScenario;
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.map.style.StyleSheet;
-import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
@@ -80,7 +78,9 @@ public class UIValidation {
 
             /* visualization */
             MapViewer mapviewer    = new TileBasedMapViewer(config.visualization.style);
-            VehicleOverlay overlay = new SpriteBasedVehicleOverlay(mapviewer.getProjection(), mapviewer.getStyle());
+            VehicleOverlay overlay = new SpriteBasedVehicleOverlay(
+                    mapviewer.getProjection(),
+                    config.visualization.style);
             try {
                 mapviewer.create(config);
             } catch (UnsupportedFeatureException e) {

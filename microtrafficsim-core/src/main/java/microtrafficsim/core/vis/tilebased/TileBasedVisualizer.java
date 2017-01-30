@@ -4,7 +4,7 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
-import microtrafficsim.core.map.style.StyleSheet;
+import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
@@ -17,7 +17,6 @@ import microtrafficsim.core.vis.map.tiles.TileManager;
 import microtrafficsim.core.vis.map.tiles.TileProvider;
 import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.core.vis.opengl.shader.Shader;
-import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
@@ -30,7 +29,6 @@ import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.core.vis.view.View;
 import microtrafficsim.math.Mat4f;
 import microtrafficsim.math.Rect2d;
-import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
@@ -456,7 +454,7 @@ public class TileBasedVisualizer implements Visualizer {
      *
      * @param style the style-sheet to apply.
      */
-    public void apply(StyleSheet style) {
+    public void apply(MapStyleSheet style) {
         bgcolor = style.getBackgroundColor();
         provider.apply(style);
     }

@@ -3,7 +3,7 @@ package microtrafficsim.core.mapviewer.impl;
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.map.layers.LayerSource;
-import microtrafficsim.core.map.style.StyleSheet;
+import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
@@ -40,7 +40,7 @@ public class TileBasedMapViewer extends BasicMapViewer {
     /**
      * Default constructor using {@link MonochromeStyleSheet} as default style sheet.
      *
-     * @see #TileBasedMapViewer(StyleSheet)
+     * @see #TileBasedMapViewer(MapStyleSheet)
      */
     public TileBasedMapViewer() {
         this(new MonochromeStyleSheet());
@@ -56,9 +56,9 @@ public class TileBasedMapViewer extends BasicMapViewer {
      * &bull {@code STYLE} = {@code style} (given as parameter) <br>
      *
      * @param style This style sheet is used for the map style
-     * @see #TileBasedMapViewer(int, int, StyleSheet, Projection)
+     * @see #TileBasedMapViewer(int, int, MapStyleSheet, Projection)
      */
-    public TileBasedMapViewer(StyleSheet style) {
+    public TileBasedMapViewer(MapStyleSheet style) {
         this(1600, 900, style, new MercatorProjection(256));
     }
 
@@ -67,9 +67,9 @@ public class TileBasedMapViewer extends BasicMapViewer {
      * Default constructor initializing basic configurations: <br>
      * &bull {@code PRINT_FRAME_STATS} = false <br>
      *
-     * @see #TileBasedMapViewer(int, int, StyleSheet, Projection, boolean)
+     * @see #TileBasedMapViewer(int, int, MapStyleSheet, Projection, boolean)
      */
-    public TileBasedMapViewer(int width, int height, StyleSheet style, Projection projection) {
+    public TileBasedMapViewer(int width, int height, MapStyleSheet style, Projection projection) {
         this(width, height, style, projection, false);
     }
 
@@ -81,10 +81,10 @@ public class TileBasedMapViewer extends BasicMapViewer {
      * &bull {@code TILE_GRID_LEVEL} = 12 <br>
      * &bull {@code NUM_TILE_WORKERS} = at least 2 <br>
      *
-     * @see TileBasedMapViewer#TileBasedMapViewer(int, int, StyleSheet, Projection, TilingScheme, int, int,
+     * @see TileBasedMapViewer#TileBasedMapViewer(int, int, MapStyleSheet, Projection, TilingScheme, int, int,
      * boolean)
      */
-    public TileBasedMapViewer(int width, int height, StyleSheet style, Projection projection, boolean printFrameStats) {
+    public TileBasedMapViewer(int width, int height, MapStyleSheet style, Projection projection, boolean printFrameStats) {
         this(
                 width,
                 height,
@@ -112,9 +112,9 @@ public class TileBasedMapViewer extends BasicMapViewer {
      * @param numTileWorkers  the number of worker-threads loading tiles in parallel in the background.
      * @param printFrameStats set to {@code true} to write frame-statistics to stdout.
      */
-    public TileBasedMapViewer(int width, int height, StyleSheet style, Projection projection,
-                          TilingScheme tilingScheme, int tileGridLevel, int numTileWorkers,
-                          boolean printFrameStats) {
+    public TileBasedMapViewer(int width, int height, MapStyleSheet style, Projection projection,
+                              TilingScheme tilingScheme, int tileGridLevel, int numTileWorkers,
+                              boolean printFrameStats) {
         super(width, height, style, projection, printFrameStats);
 
         /* style parameters */

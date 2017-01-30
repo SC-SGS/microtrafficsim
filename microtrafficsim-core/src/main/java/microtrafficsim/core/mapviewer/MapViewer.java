@@ -24,8 +24,6 @@ public interface MapViewer {
      */
     Projection getProjection();
 
-    StyleSheet getStyle();
-
     /**
      * @return initial window width
      */

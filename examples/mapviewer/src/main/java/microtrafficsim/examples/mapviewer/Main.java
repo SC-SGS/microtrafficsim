@@ -1,6 +1,6 @@
 package microtrafficsim.examples.mapviewer;
 
-import microtrafficsim.core.map.style.StyleSheet;
+import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
@@ -22,7 +22,7 @@ public class Main {
     /**
      * The used style sheet, defining style and content of the visualization.
      */
-    private static final StyleSheet STYLE = new MonochromeStyleSheet();
+    private static final MapStyleSheet STYLE = new MonochromeStyleSheet();
 
 
     /**

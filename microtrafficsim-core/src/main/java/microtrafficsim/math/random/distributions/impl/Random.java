@@ -52,6 +52,34 @@ public class Random implements RandomGenerator {
         return seed;
     }
 
+    /**
+     * @see java.util.Random#nextBytes(byte[])
+     */
+    public byte nextByte() {
+        byte[] b = new byte[1];
+        random.nextBytes(b);
+        return b[0];
+    }
+
+    /**
+     * @see java.util.Random#nextBytes(byte[])
+     */
+    public byte[] nextByte(int count) {
+        byte[] b = new byte[count];
+        random.nextBytes(b);
+        return b;
+    }
+
+    /**
+     * @see java.util.Random#nextBytes(byte[])
+     */
+    public void nextByte(byte[] b) {
+        random.nextBytes(b);
+    }
+
+    /**
+     * @see java.util.Random#nextInt()
+     */
     @Override
     public int nextInt() {
         return random.nextInt();
@@ -65,11 +93,17 @@ public class Random implements RandomGenerator {
         return random.nextInt(bound);
     }
 
+    /**
+     * @see java.util.Random#nextLong()
+     */
     @Override
     public long nextLong() {
         return random.nextLong();
     }
 
+    /**
+     * @see java.util.Random#nextFloat()
+     */
     @Override
     public float nextFloat() {
         return random.nextFloat();

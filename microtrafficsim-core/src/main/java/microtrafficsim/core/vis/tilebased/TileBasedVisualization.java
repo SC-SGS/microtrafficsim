@@ -1,24 +1,14 @@
 package microtrafficsim.core.vis.tilebased;
 
-import com.jogamp.newt.event.KeyEvent;
-import com.jogamp.newt.event.MouseEvent;
-import com.jogamp.newt.event.MouseListener;
-import microtrafficsim.core.map.style.StyleSheet;
+import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.vis.AbstractVisualization;
-import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.context.RenderContext;
-import microtrafficsim.core.vis.input.KeyCommand;
-import microtrafficsim.core.vis.input.KeyController;
 import microtrafficsim.core.vis.input.OrthoInputController;
 import microtrafficsim.core.vis.map.tiles.TileProvider;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.utils.concurrency.interruptsafe.InterruptSafeExecutors;
 
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
-import java.util.function.BiPredicate;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 
 /**
@@ -93,7 +83,7 @@ public class TileBasedVisualization extends AbstractVisualization {
      *
      * @param style the style-sheet to apply.
      */
-    public void apply(StyleSheet style) {
+    public void apply(MapStyleSheet style) {
         ((TileBasedVisualizer) getVisualizer()).apply(style);
     }
 

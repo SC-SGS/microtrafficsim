@@ -62,7 +62,9 @@ public class Main {
 
             /* create map viewer and vehicle overlay */
             MapViewer mapviewer    = new TileBasedMapViewer(config.visualization.style);
-            VehicleOverlay overlay = new SpriteBasedVehicleOverlay(mapviewer.getProjection(), mapviewer.getStyle());
+            VehicleOverlay overlay = new SpriteBasedVehicleOverlay(
+                    mapviewer.getProjection(),
+                    config.visualization.style);
             try {
                 mapviewer.create(config);
             } catch (UnsupportedFeatureException e) {

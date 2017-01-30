@@ -51,13 +51,13 @@ public class LightStyleSheet extends BasicStyleSheet {
             case "tertiary":
                 return Color.from(177, 98, 134);
             case "unclassified":
-                return Color.from(104, 157,- 106);
+                return Color.from(104, 157, 106);
             case "residential":
-                return Color.from(124, 111,- 100);
+                return Color.from(124, 111, 100);
             case "road":
-                return Color.from(146, 131,- 116);
+                return Color.from(146, 131, 116);
             case "living-street":
-                return Color.from(146, 131,- 116);
+                return Color.from(146, 131, 116);
             default: // should be never reached
                 return getBackgroundColor();
         }

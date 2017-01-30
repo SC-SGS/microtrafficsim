@@ -1,6 +1,7 @@
 package microtrafficsim.core.map.style;
 
 import com.jogamp.opengl.GL3;
+import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
@@ -178,11 +179,6 @@ public abstract class BasicStyleSheet implements StyleSheet {
     | (i) StyleSheet |
     |================|
     */
-    @Override
-    public Color getTileBackgroundColor() {
-        return getBackgroundColor();
-    }
-
     @Override
     public Collection<MapFeatureDefinition<?>> getFeatureDefinitions() {
         return features;

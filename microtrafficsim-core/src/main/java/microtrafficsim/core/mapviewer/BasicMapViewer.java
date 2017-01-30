@@ -1,6 +1,6 @@
 package microtrafficsim.core.mapviewer;
 
-import microtrafficsim.core.map.style.StyleSheet;
+import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
@@ -28,7 +28,7 @@ public abstract class BasicMapViewer implements MapViewer {
     private final int initialWindowWidth;
     private final int initialWindowHeight;
 
-    protected final StyleSheet style;
+    protected final MapStyleSheet style;
     private final Projection   projection;
 
     private final boolean printFrameStats;
@@ -37,7 +37,7 @@ public abstract class BasicMapViewer implements MapViewer {
     private OSMParser               parser;
 
 
-    public BasicMapViewer(int width, int height, StyleSheet style, Projection projection, boolean printFrameStats) {
+    public BasicMapViewer(int width, int height, MapStyleSheet style, Projection projection, boolean printFrameStats) {
 
         /* window parameters */
         this.initialWindowWidth = width;
@@ -66,11 +66,6 @@ public abstract class BasicMapViewer implements MapViewer {
     @Override
     public Projection getProjection() {
         return projection;
-    }
-
-    @Override
-    public StyleSheet getStyle() {
-        return style;
     }
 
     @Override

@@ -53,6 +53,11 @@ public class Color {
     }
 
 
+    /*
+    |======|
+    | from |
+    |======|
+    */
     /**
      * Constructs a new {@code Color} from the specified RGB byte-values.
      *
@@ -117,6 +122,136 @@ public class Color {
     }
 
     /**
+     * Constructs a new {@code Color} from the values stored in the given three-component vector.
+     * {@code x}, {@code y} and {@code z} will be interpreted as {@code r}, {@code g} and {@code b} respectively, the
+     * alpha-component will be set to one.
+     *
+     * @param v the vector to convert to a {@code Color}.
+     * @return the converted {@code Color}.
+     */
+    public static Color from(Vec3f v) {
+        return new Color(v.x, v.y, v.z);
+    }
+
+    /**
+     * Constructs a new {@code Color} from the values stored in the given three-component vector.
+     * {@code x}, {@code y}, {@code z} and {@code w} will be interpreted as {@code r}, {@code g}, {@code b} and
+     * {@code a} respectively, the alpha-component will be set to one.
+     *
+     * @param v the vector to convert to a {@code Color}.
+     * @return the converted {@code Color}.
+     */
+    public static Color from(Vec4f v) {
+        return new Color(v.x, v.y, v.z, v.w);
+    }
+
+
+    /*
+    |==============|
+    | inverse from |
+    |==============|
+    */
+    /**
+     * Constructs a new {@code Color} from the specified RGB byte-values.
+     *
+     * @param r the red component as (unsigned) byte.
+     * @param g the green component as (unsigned) byte.
+     * @param b the blue component as (unsigned) byte.
+     * @return the created {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
+     */
+    public static Color inverseFrom(byte r, byte g, byte b) {
+        int r_int = (r & 0xFF) ^ 0xFF;
+        int g_int = (g & 0xFF) ^ 0xFF;
+        int b_int = (b & 0xFF) ^ 0xFF;
+        return new Color(r_int / 255.f, g_int / 255.f, b_int / 255.f);
+    }
+
+    /**
+     * Constructs a new {@code Color} from the specified RGBA byte-values.
+     *
+     * @param r the red component as (unsigned) byte.
+     * @param g the green component as (unsigned) byte.
+     * @param b the blue component as (unsigned) byte.
+     * @param a the alpha component as (unsigned) byte.
+     * @return the created {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
+     */
+    public static Color inverseFrom(byte r, byte g, byte b, byte a) {
+        int r_int = (r & 0xFF) ^ 0xFF;
+        int g_int = (g & 0xFF) ^ 0xFF;
+        int b_int = (b & 0xFF) ^ 0xFF;
+        int a_int = (a & 0xFF);
+        return new Color(r_int / 255.f, g_int / 255.f, b_int / 255.f, a_int / 255.f);
+    }
+
+    /**
+     * Constructs a new {@code Color} from the specified RGB int-values.
+     *
+     * @param r the red component as int, ranging from 0 to 255.
+     * @param g the green component as int, ranging from 0 to 255.
+     * @param b the blue component as int, ranging from 0 to 255.
+     * @return the created {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
+     */
+    public static Color inverseFrom(int r, int g, int b) {
+        return new Color((255 - r) / 255.f, (255 - g) / 255.f, (255 - b) / 255.f);
+    }
+
+    /**
+     * Constructs a new {@code Color} from the specified RGBA int-values.
+     *
+     * @param r the red component as int, ranging from 0 to 255.
+     * @param g the green component as int, ranging from 0 to 255.
+     * @param b the blue component as int, ranging from 0 to 255.
+     * @param a the alpha component as int, ranging from 0 to 255.
+     * @return the created {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
+     */
+    public static Color inverseFrom(int r, int g, int b, int a) {
+        return new Color((255 - r) / 255.f, (255 - g) / 255.f, (255 - b) / 255.f, a / 255.f);
+    }
+
+    /**
+     * Constructs a new {@code Color} from the specified RGBA values.
+     *
+     * @param r the red component as float, 0 to 1.
+     * @param g the green component as float, 0 to 1.
+     * @param b the blue component as float, 0 to 1.
+     * @param a the alpha component as float, 0 to 1.
+     * @return the created {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
+     */
+    public static Color inverseFrom(float r, float g, float b, float a) {
+        return new Color(1.f - r, 1.f - g, 1.f - b, a);
+    }
+
+    /**
+     * Constructs a new {@code Color} from the values stored in the given three-component vector.
+     * {@code x}, {@code y} and {@code z} will be interpreted as {@code r}, {@code g} and {@code b} respectively, the
+     * alpha-component will be set to one.
+     *
+     * @param v the vector to convert to a {@code Color}.
+     * @return the converted {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
+     */
+    public static Color inverseFrom(Vec3f v) {
+        return new Color(1.f - v.x, 1.f - v.y, 1.f - v.z);
+    }
+
+    /**
+     * Constructs a new {@code Color} from the values stored in the given three-component vector.
+     * {@code x}, {@code y}, {@code z} and {@code w} will be interpreted as {@code r}, {@code g}, {@code b} and
+     * {@code a} respectively, the alpha-component will be set to one.
+     *
+     * @param v the vector to convert to a {@code Color}.
+     * @return the converted {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
+     */
+    public static Color inverseFrom(Vec4f v) {
+        return new Color(1.f - v.x, 1.f - v.y, 1.f - v.z, v.w);
+    }
+
+
+    /*
+    |=======================|
+    | from rgb (or similar) |
+    |=======================|
+    */
+    /**
      * Constructs a new {@code Color} from the specified RGB value.
      *
      * @param rgb the integer-value describing the RGB value using the lower three bytes, i.e. as described by HTML
@@ -175,31 +310,82 @@ public class Color {
         return fromRGBA(Integer.decode(s));
     }
 
+
+    /*
+    |===============================|
+    | inverse from rgb (or similar) |
+    |===============================|
+    */
     /**
-     * Constructs a new {@code Color} from the values stored in the given three-component vector.
-     * {@code x}, {@code y} and {@code z} will be interpreted as {@code r}, {@code g} and {@code b} respectively, the
-     * alpha-component will be set to one.
+     * Constructs a new {@code Color} from the specified RGB value.
      *
-     * @param v the vector to convert to a {@code Color}.
-     * @return the converted {@code Color}.
+     * @param rgb the integer-value describing the RGB value using the lower three bytes, i.e. as described by HTML
+     *            hexadecimal color-codes (in hexadecimal notation: {@code 0xRRGGBB}).
+     * @return the created {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
      */
-    public static Color from(Vec3f v) {
-        return new Color(v.x, v.y, v.z);
+    public static Color inverseFromRGB(int rgb) {
+        int r = ((rgb >> 16) & 0xFF) ^ 0xFF;
+        int g = ((rgb >>  8) & 0xFF) ^ 0xFF;
+        int b =  (rgb        & 0xFF) ^ 0xFF;
+        return new Color(r / 255.f, g / 255.f, b / 255.f);
     }
 
     /**
-     * Constructs a new {@code Color} from the values stored in the given three-component vector.
-     * {@code x}, {@code y}, {@code z} and {@code w} will be interpreted as {@code r}, {@code g}, {@code b} and
-     * {@code a} respectively, the alpha-component will be set to one.
+     * Constructs a new {@code Color} from the specified RGBA value.
      *
-     * @param v the vector to convert to a {@code Color}.
-     * @return the converted {@code Color}.
+     * @param rgba the integer-value describing the RGB value using the upper three bytes and the alpha-value as the
+     *             lower byte (in hexadecimal notation: {@code 0xRRGGBBAA}).
+     * @return the created {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
      */
-    public static Color from(Vec4f v) {
-        return new Color(v.x, v.y, v.z, v.w);
+    public static Color inverseFromRGBA(int rgba) {
+        int r_int = ((rgba >> 24) & 0xFF) ^ 0xFF;
+        int g_int = ((rgba >> 16) & 0xFF) ^ 0xFF;
+        int b_int = ((rgba >>  8) & 0xFF) ^ 0xFF;
+        int a_int =  (rgba        & 0xFF);
+        return new Color(r_int / 255.f, g_int / 255.f, b_int / 255.f, a_int / 255.f);
+    }
+
+    /**
+     * Constructs a new {@code Color} from the specified ABGR value.
+     *
+     * @param abgr the integer-value describing the RGB value using the upper three bytes and the alpha-value as the
+     *             lower byte (in hexadecimal notation: {@code 0xAABBGGRR}).
+     * @return the created {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
+     */
+    public static Color inverseFromABGR(int abgr) {
+        int r_int =  (abgr        & 0xFF) ^ 0xFF;
+        int g_int = ((abgr >>  8) & 0xFF) ^ 0xFF;
+        int b_int = ((abgr >> 16) & 0xFF) ^ 0xFF;
+        int a_int =  (abgr >> 24  & 0xFF);
+        return new Color(r_int / 255.f, g_int / 255.f, b_int / 255.f, a_int / 255.f);
+    }
+
+    /**
+     * Constructs a new {@code Color} by decoding the given String as RGB integer-value.
+     *
+     * @param s the string to decode as color.
+     * @return the created {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
+     */
+    public static Color inverseFromRGB(String s) {
+        return inverseFromRGB(Integer.decode(s));
+    }
+
+    /**
+     * Constructs a new {@code Color} by decoding the given String as RGBA integer-value.
+     *
+     * @param s the string to decode as color.
+     * @return the created {@code Color} inverse to the given {@code Color}. The alpha-value is NOT inverted.
+     */
+    public static Color inverseFromRGBA(String s) {
+        return inverseFromRGBA(Integer.decode(s));
     }
 
 
+    /*
+    |===========|
+    | set color |
+    |===========|
+    */
     /**
      * Copy-assign values given by the specified {@code Color} to this instance.
      *
@@ -362,6 +548,11 @@ public class Color {
     }
 
 
+    /*
+    |============|
+    | conversion |
+    |============|
+    */
     /**
      * Return the color encoded as RGBA integer value.
      *
@@ -419,6 +610,11 @@ public class Color {
     }
 
 
+    /*
+    |=========|
+    | general |
+    |=========|
+    */
     /**
      * Clamps this color to the normalized space (0 to 1) and returns it.
      *
@@ -444,6 +640,31 @@ public class Color {
             a = 0.f;
         else if (a > 1.f)
             a = 1.f;
+
+        return this;
+    }
+
+    /**
+     * Takes the given color and creates an inverted copy of it. The alpha-value is NOT inverted.
+     *
+     * @param color This color should be returned inverted (different instance, this one is not touched)
+     * @return Inverted color of the given one
+     */
+    public static Color inverse(Color color) {
+        return new Color(1.f - color.r, 1.f - color.g, 1.f - color.b, color.a);
+    }
+
+    /**
+     * Inverts this color. The alpha-value is NOT inverted.
+     *
+     * @return this color inverted for easier usage
+     */
+    public Color invert() {
+        r = 1.f - r;
+        g = 1.f - g;
+        b = 1.f - b;
+
+        clamp(); // just to be sure that there are no rounding errors
 
         return this;
     }
