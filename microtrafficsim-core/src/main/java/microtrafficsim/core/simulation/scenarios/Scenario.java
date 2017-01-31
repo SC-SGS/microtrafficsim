@@ -1,7 +1,6 @@
 package microtrafficsim.core.simulation.scenarios;
 
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ConfigUpdateListener;
@@ -86,8 +85,8 @@ public interface Scenario extends ConfigUpdateListener, StepListener, Resettable
     |==========================|
     */
     @Override
-    default void updateConfig(ScenarioConfig updatedConfig) {
-        getGraph().updateConfig(updatedConfig);
+    default void configDidUpdate(ScenarioConfig updatedConfig) {
+        getGraph().configDidUpdate(updatedConfig);
     }
 
     /*

@@ -43,10 +43,10 @@ public final class ScenarioConfig implements Resettable {
     public long           seed;// TODO
 
     // visualization
-    public VisualizationConfig visualization;
+    public final VisualizationConfig visualization;
 
     // crossing logic
-    public CrossingLogicConfig crossingLogic;
+    public final CrossingLogicConfig crossingLogic;
 
     // vehicles
     public int maxVehicleCount;
@@ -55,7 +55,7 @@ public final class ScenarioConfig implements Resettable {
     public Function<StreetType, Byte> streetPriorityLevel;
 
     // multithreading
-    public MultiThreadingConfig multiThreading;
+    public final MultiThreadingConfig multiThreading;
 
     /**
      * Just calls {@link #reset()}.
@@ -151,7 +151,7 @@ public final class ScenarioConfig implements Resettable {
         multiThreading.update(config.multiThreading);
 
         for (ConfigUpdateListener listener : updateListeners)
-            listener.updateConfig(this);
+            listener.configDidUpdate(this);
     }
 
     public void addUpdateListener(ConfigUpdateListener updateListener) {

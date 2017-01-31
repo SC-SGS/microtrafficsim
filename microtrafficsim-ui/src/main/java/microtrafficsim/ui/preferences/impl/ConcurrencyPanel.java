@@ -95,17 +95,12 @@ public class ConcurrencyPanel extends PreferencesPanel {
 
     @Override
     public void setEnabled(PrefElement id, boolean enabled) {
+        enabled = id.isEnabled() && enabled;
+
         switch (id) {
         case nThreads:            tfNThreads.setEnabled(enabled);            break;
         case vehiclesPerRunnable: tfVehiclesPerRunnable.setEnabled(enabled); break;
         case nodesPerThread:      tfNodesPerThread.setEnabled(enabled);      break;
         }
-    }
-
-    @Override
-    public void setAllEnabled(boolean enabled) {
-        tfNThreads.setEnabled(enabled);
-        tfVehiclesPerRunnable.setEnabled(enabled);
-        tfNodesPerThread.setEnabled(enabled);
     }
 }

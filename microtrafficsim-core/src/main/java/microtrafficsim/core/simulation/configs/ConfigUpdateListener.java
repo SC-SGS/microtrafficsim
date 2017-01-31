@@ -5,5 +5,5 @@ package microtrafficsim.core.simulation.configs;
  */
 public interface ConfigUpdateListener {
 
-    void updateConfig(ScenarioConfig updatedConfig);
+    void configDidUpdate(ScenarioConfig updatedConfig);
 }

@@ -317,14 +317,11 @@ public class SimulationController implements GUIController {
             case EDIT_SCENARIO:
                 if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
                     new Thread(() -> {
-                        if (simulation.getScenario() != null) {
-                            pauseSim();
-                            newSim = false;
-                            showPreferences();
+                        pauseSim();
+                        newSim = false;
+                        showPreferences();
 
-                            updateMenuBar();
-                        } else
-                            isExecuting.set(false);
+                        updateMenuBar();
                     }).start();
                 }
                 break;
@@ -381,10 +378,10 @@ public class SimulationController implements GUIController {
         menubar.menuMap.setEnabled(true);
         menubar.menuMap.itemLoadMap.setEnabled(true);
 
-        menubar.menuLogic.setEnabled(               hasStreetgraph);
+        menubar.menuLogic.setEnabled(true);
         menubar.menuLogic.itemRunPause.setEnabled(  hasStreetgraph && hasScenario);
         menubar.menuLogic.itemRunOneStep.setEnabled(hasStreetgraph && hasScenario);
-        menubar.menuLogic.itemEditSim.setEnabled(   hasStreetgraph && hasScenario);
+        menubar.menuLogic.itemEditSim.setEnabled(true);
         menubar.menuLogic.itemNewSim.setEnabled(    hasStreetgraph);
     }
 
@@ -599,26 +596,28 @@ public class SimulationController implements GUIController {
     private void showPreferences() {
 
         /* set enabled */
+        boolean hasStreetgraph = streetgraph != null;
+        boolean hasScenario    = simulation.getScenario() != null;
 
         /* general */
-        preferences.setEnabled(PrefElement.sliderSpeedup,   PrefElement.sliderSpeedup.isEnabled());
-        preferences.setEnabled(PrefElement.maxVehicleCount, PrefElement.maxVehicleCount.isEnabled() && newSim);
-        preferences.setEnabled(PrefElement.seed,            PrefElement.seed.isEnabled()            && newSim);
-        preferences.setEnabled(PrefElement.metersPerCell,   PrefElement.metersPerCell.isEnabled()   && newSim);
+        preferences.setEnabled(PrefElement.sliderSpeedup,         newSim || hasScenario);
+        preferences.setEnabled(PrefElement.maxVehicleCount,       newSim);
+        preferences.setEnabled(PrefElement.seed,                  newSim);
+        preferences.setEnabled(PrefElement.metersPerCell,         newSim);
 
         /* crossing logic */
-        preferences.setEnabled(PrefElement.edgePriority,    PrefElement.edgePriority.isEnabled()    && newSim);
-        preferences.setEnabled(PrefElement.priorityToThe,   PrefElement.priorityToThe.isEnabled()   && newSim);
-        preferences.setEnabled(PrefElement.onlyOneVehicle,  PrefElement.onlyOneVehicle.isEnabled()  && newSim);
-        preferences.setEnabled(PrefElement.friendlyStandingInJam,
-                PrefElement.friendlyStandingInJam.isEnabled() && newSim);
+        preferences.setEnabled(PrefElement.edgePriority,          newSim);
+        preferences.setEnabled(PrefElement.priorityToThe,         newSim);
+        preferences.setEnabled(PrefElement.onlyOneVehicle,        newSim);
+        preferences.setEnabled(PrefElement.friendlyStandingInJam, newSim);
 
         /* visualization */
+        preferences.setEnabled(PrefElement.style, true);
 
         /* concurrency */
-        preferences.setEnabled(PrefElement.nThreads,            PrefElement.nThreads.isEnabled()    && newSim);
-        preferences.setEnabled(PrefElement.vehiclesPerRunnable, PrefElement.vehiclesPerRunnable.isEnabled());
-        preferences.setEnabled(PrefElement.nodesPerThread,      PrefElement.nodesPerThread.isEnabled());
+        preferences.setEnabled(PrefElement.nThreads,            newSim);
+        preferences.setEnabled(PrefElement.vehiclesPerRunnable, newSim);
+        preferences.setEnabled(PrefElement.nodesPerThread,      newSim);
 
         /* init values */
         preferences.setSettings(config);
@@ -632,18 +631,26 @@ public class SimulationController implements GUIController {
      * @return True if the settings were correct; false otherwise
      */
     private boolean updateScenarioConfig() {
+
+        /* get new config */
+        ScenarioConfig newConfig = null;
         try {
-            ScenarioConfig newConfig = preferences.getCorrectSettings();
-            config.update(newConfig);
-            return true;
+            newConfig = preferences.getCorrectSettings();
         } catch (IncorrectSettingsException e) {
             JOptionPane.showMessageDialog(
                     null,
                     e.getMessage(),
                     "Error: wrong preferences values",
                     JOptionPane.ERROR_MESSAGE);
-            return false;
         }
+
+        /* check if new config is set */
+        if (newConfig == null)
+            return false;
+
+        /* if yes => update */
+        config.update(newConfig);
+        return true;
     }
 
     private void closePreferences() {

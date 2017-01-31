@@ -11,6 +11,7 @@ public enum PrefElement {
     seed(true),
     metersPerCell(false),
     // Visualization
+    style(false),
     // crossing logic
     edgePriority(true),
     priorityToThe(true),

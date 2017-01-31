@@ -89,8 +89,8 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
     |==========================|
     */
     @Override
-    public void updateConfig(ScenarioConfig updatedConfig) {
-//        System.err.println("Yay ConfigUpdateListener");
+    public void configDidUpdate(ScenarioConfig updatedConfig) {
+        // TODO
     }
 
     /*

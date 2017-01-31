@@ -113,9 +113,8 @@ public class StreetGraph implements ConfigUpdateListener, Resettable {
     |==========================|
     */
     @Override
-    public void updateConfig(ScenarioConfig updatedConfig) {
-        System.err.println("Yay ConfigUpdateListener");
-        nodes.forEach(node -> node.updateConfig(updatedConfig));
-        edges.forEach(edge -> edge.updateConfig(updatedConfig));
+    public void configDidUpdate(ScenarioConfig updatedConfig) {
+        nodes.forEach(node -> node.configDidUpdate(updatedConfig));
+        edges.forEach(edge -> edge.configDidUpdate(updatedConfig));
     }
 }

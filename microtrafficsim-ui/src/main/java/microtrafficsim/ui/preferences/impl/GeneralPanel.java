@@ -138,19 +138,13 @@ public class GeneralPanel extends PreferencesPanel {
 
     @Override
     public void setEnabled(PrefElement id, boolean enabled) {
+        enabled = id.isEnabled() && enabled;
+
         switch (id) {
         case sliderSpeedup:   sliderSpeedup.setEnabled(enabled);     break;
         case maxVehicleCount: tfMaxVehicleCount.setEnabled(enabled); break;
         case seed:            tfSeed.setEnabled(enabled);            break;
         case metersPerCell:   tfMetersPerCell.setEnabled(enabled);   break;
         }
-    }
-
-    @Override
-    public void setAllEnabled(boolean enabled) {
-        sliderSpeedup.setEnabled(enabled);
-        tfMaxVehicleCount.setEnabled(enabled);
-        tfSeed.setEnabled(enabled);
-        tfMetersPerCell.setEnabled(enabled);
     }
 }

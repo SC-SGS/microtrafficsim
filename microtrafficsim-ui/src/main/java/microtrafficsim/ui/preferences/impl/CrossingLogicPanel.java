@@ -114,10 +114,10 @@ public class CrossingLogicPanel extends PreferencesPanel {
         decRow();
         addOnlyOneVehicleEnabled();       // row 0 column 1
         incColumn();
-        addGapPanel(1);                   // row 0 column 2+
+        addGapPanel();                   // row 0 column 2+
         addGoWithoutPriorityEnabled();    // row 1 column 1
         incColumn();
-        addGapPanel(1);                   // row 1 column 2+
+        addGapPanel();                   // row 1 column 2+
 
         setAllEnabled(false);
     }
@@ -166,19 +166,13 @@ public class CrossingLogicPanel extends PreferencesPanel {
 
     @Override
     public void setEnabled(PrefElement id, boolean enabled) {
+        enabled = id.isEnabled() && enabled;
+
         switch (id) {
         case edgePriority:          cbEdgePriority.setEnabled(enabled);          break;
         case priorityToThe:         cbPriorityToThe.setEnabled(enabled);         break;
         case onlyOneVehicle:        cbOnlyOneVehicle.setEnabled(enabled);        break;
         case friendlyStandingInJam: cbFriendlyStandingInJam.setEnabled(enabled); break;
         }
-    }
-
-    @Override
-    public void setAllEnabled(boolean enabled) {
-        cbEdgePriority.setEnabled(enabled);
-        cbPriorityToThe.setEnabled(enabled);
-        cbOnlyOneVehicle.setEnabled(enabled);
-        cbFriendlyStandingInJam.setEnabled(enabled);
     }
 }

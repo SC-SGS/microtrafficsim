@@ -79,9 +79,23 @@ public abstract class PreferencesPanel extends JPanel implements Preferences {
         add(textField, constraints);
 
         incColumn();
+        addGapPanel();
+    }
+
+    /**
+     * Calls {@code addGapPanel(1)}
+     *
+     * @see #addGapPanel(double)
+     */
+    public void addGapPanel() {
         addGapPanel(1);
     }
 
+    /**
+     * Calls {@code addGapPanel(weightx, 1)}
+     *
+     * @see #addGapPanel(double, int)
+     */
     public void addGapPanel(double weightx) {
         addGapPanel(weightx, 1);
     }

@@ -181,7 +181,7 @@ public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, Log
     |==========================|
     */
     @Override
-    public void updateConfig(ScenarioConfig updatedConfig) {
+    public void configDidUpdate(ScenarioConfig updatedConfig) {
 //        System.err.println("Yay ConfigUpdateListener");
     }
 }

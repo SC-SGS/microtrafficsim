@@ -245,6 +245,8 @@ public class PreferencesFrame extends JFrame implements Preferences {
             break;
 
         // Visualization
+        case style:
+            visualizationPanel.setEnabled(id, enabled);
 
         // concurrency
         case nThreads:
@@ -259,19 +261,5 @@ public class PreferencesFrame extends JFrame implements Preferences {
         case onlyOneVehicle:
         case friendlyStandingInJam: crossingLogicPanel.setEnabled(id, enabled);
         }
-    }
-
-    /*
-    |=======|
-    | stuff |
-    |=======|
-    */
-
-    @Override
-    public void setAllEnabled(boolean enabled) {
-        generalPanel.setAllEnabled(enabled);
-        visualizationPanel.setAllEnabled(enabled);
-        concurrencyPanel.setAllEnabled(enabled);
-        crossingLogicPanel.setAllEnabled(enabled);
     }
 }

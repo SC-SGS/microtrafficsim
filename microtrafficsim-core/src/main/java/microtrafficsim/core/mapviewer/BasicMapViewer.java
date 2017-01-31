@@ -28,13 +28,13 @@ public abstract class BasicMapViewer implements MapViewer {
     private final int initialWindowWidth;
     private final int initialWindowHeight;
 
-    protected final MapStyleSheet style;
-    private final Projection   projection;
+    protected MapStyleSheet style;
+    private final Projection projection;
 
     private final boolean printFrameStats;
 
-    private VisualizationPanel      vpanel;
-    private OSMParser               parser;
+    private VisualizationPanel vpanel;
+    private OSMParser          parser;
 
 
     public BasicMapViewer(int width, int height, MapStyleSheet style, Projection projection, boolean printFrameStats) {
