@@ -48,18 +48,24 @@ public class AreaVertex extends Component {
     private static final Color COLOR_OUTER = Colors.white();
     private static final Color COLOR_OUTER_SELECTED = Color.fromRGB(0xE29B4A);
 
+    private static final AreaVertexPass PASS_OUTER = new AreaVertexPass(COLOR_OUTER, SIZE_OUTER,
+            v -> (v instanceof AreaVertex) && !((AreaVertex) v).isSelected());
+
+    private static final AreaVertexPass PASS_OUTER_SELECTED = new AreaVertexPass(COLOR_OUTER_SELECTED, SIZE_OUTER_SELECTED,
+            v -> (v instanceof AreaVertex) && ((AreaVertex) v).isSelected());
+
+    private static final AreaVertexPass PASS_INNER = new AreaVertexPass(COLOR_INNER, SIZE_INNER, v -> true);
 
 
     private ScenarioAreaOverlay root;
     private Vec2d pos;
     private boolean selected;
 
+    protected EdgeSplit left;
+    protected EdgeSplit right;
+
     AreaVertex(ScenarioAreaOverlay root, Vec2d pos) {
-        super(
-                new AreaVertexPass(COLOR_OUTER, SIZE_OUTER, v -> !v.isSelected()),
-                new AreaVertexPass(COLOR_OUTER_SELECTED, SIZE_OUTER_SELECTED, v -> v.isSelected()),
-                new AreaVertexPass(COLOR_INNER, SIZE_INNER, v -> true)
-        );
+        super(PASS_OUTER, PASS_OUTER_SELECTED, PASS_INNER);
 
         this.root = root;
         this.pos = pos;
@@ -304,17 +310,23 @@ public class AreaVertex extends Component {
 
             @Override
             public boolean isApplicableFor(Component component, ComponentRenderPass pass) {
-                return component instanceof AreaVertex && pass instanceof AreaVertexPass
+                return component instanceof AreaVertex || component instanceof EdgeSplit
+                        && pass instanceof AreaVertexPass
                         && color.equals(((AreaVertexPass) pass).getColor())
                         && pointsize == ((AreaVertexPass) pass).getPointSize();
             }
 
             @Override
             public BatchBuilder add(Component component, ComponentRenderPass pass, Mat3d transform) {
-                AreaVertex vertex = (AreaVertex) component;
+                Vec2d pos;
+                if (component instanceof AreaVertex) {
+                    pos = ((AreaVertex) component).pos;
+                } else {
+                    pos = ((EdgeSplit) component).pos;
+                }
 
-                Vec3d pos = transform.mul(new Vec3d(vertex.pos.x, vertex.pos.y, 1.0));
-                vertices.add(new Vec2d(pos.x / pos.z, pos.y / pos.z));
+                Vec3d p = transform.mul(new Vec3d(pos.x, pos.y, 1.0));
+                vertices.add(new Vec2d(p.x / p.z, p.y / p.z));
 
                 return this;
             }
@@ -340,9 +352,9 @@ public class AreaVertex extends Component {
     public static class AreaVertexPass implements ComponentRenderPass {
         private Color color;
         private float pointsize;
-        private Predicate<AreaVertex> filter;
+        private Predicate<Component> filter;
 
-        AreaVertexPass(Color color, float pointsize, Predicate<AreaVertex> filter) {
+        AreaVertexPass(Color color, float pointsize, Predicate<Component> filter) {
             this.color = color;
             this.pointsize = pointsize;
             this.filter = filter;
@@ -360,7 +372,7 @@ public class AreaVertex extends Component {
 
         @Override
         public boolean isActiveFor(Component component) {
-            return component instanceof AreaVertex && filter.test((AreaVertex) component);
+            return (component instanceof AreaVertex || component instanceof EdgeSplit) && filter.test(component);
         }
 
         @Override

@@ -181,4 +181,17 @@ public class Rect2d {
 
         return new Rect2d(min.x / min.z, min.y / min.z, max.x / max.z, max.y / max.z);
     }
+
+    public static Rect2d from(Vec2d... points) {
+        Rect2d aabb = new Rect2d(Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
+
+        for (Vec2d v : points) {
+            if (aabb.xmin > v.x) aabb.xmin = v.x;
+            if (aabb.xmax < v.x) aabb.xmax = v.x;
+            if (aabb.ymin > v.y) aabb.ymin = v.y;
+            if (aabb.ymax < v.y) aabb.ymax = v.y;
+        }
+
+        return aabb;
+    }
 }

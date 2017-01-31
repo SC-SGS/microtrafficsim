@@ -22,8 +22,8 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-// TODO: selection by rectangle
 // TODO: edge-split-component
+// TODO: selection by rectangle
 // TODO: proper line rendering for area outline
 
 // TODO: pre-load shaders?
@@ -339,6 +339,10 @@ public class ScenarioAreaOverlay implements Overlay {
 
 
     private Vec2d lastmove = null;
+
+    public boolean isAreaInConstruction() {
+        return construction != null;
+    }
 
     private class MouseListenerImpl extends microtrafficsim.core.vis.glui.events.MouseAdapter {
 

@@ -4,8 +4,6 @@ import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.collections.ArrayUtils;
 
-import java.util.Arrays;
-
 
 /**
  * Polygonal area, described by an outline and islands.
@@ -100,16 +98,7 @@ public class Polygon {
     }
 
     public Rect2d bounds() {
-        Rect2d aabb = new Rect2d(Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
-
-        for (Vec2d v : outline) {
-            if (aabb.xmin > v.x) aabb.xmin = v.x;
-            if (aabb.xmax < v.x) aabb.xmax = v.x;
-            if (aabb.ymin > v.y) aabb.ymin = v.y;
-            if (aabb.ymax < v.y) aabb.ymax = v.y;
-        }
-
-        return aabb;
+        return Rect2d.from(outline);
     }
 
 
