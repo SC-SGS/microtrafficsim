@@ -52,7 +52,7 @@ public class GraphWayComponent extends Component implements Mergeable<GraphWayCo
      * the given way-entity.
      *
      * @param entity           the entity for which this component should be created.
-     * @param uturn            the set of u-turn connectors.
+     * @param uturn            the set of obj0-turn connectors.
      * @param from             the set of connectors leaving this way.
      * @param to               the set of connectors going to this way.
      * @param cyclicStartToEnd set to {@code true}, if this way is cyclic and a connector
@@ -128,7 +128,7 @@ public class GraphWayComponent extends Component implements Mergeable<GraphWayCo
         WayEntity keep   = (WayEntity) this.getEntity();
         WayEntity remove = (WayEntity) other.getEntity();
 
-        // remove u-turns at merge-point
+        // remove obj0-turns at merge-point
         this.uturn.remove(new Connector(mergepoint.node, keep, keep));
         other.uturn.remove(new Connector(mergepoint.node, remove, remove));
 
@@ -152,9 +152,9 @@ public class GraphWayComponent extends Component implements Mergeable<GraphWayCo
             Connectors.remove(rk);
         }
 
-        // add u-turns from 'remove'
+        // add obj0-turns from 'remove'
         for (Connector c : other.uturn) {
-            if (c.via == mergepoint.node) continue;    // ignore u-turns on merge-point
+            if (c.via == mergepoint.node) continue;    // ignore obj0-turns on merge-point
 
             Connectors.add(Connectors.create(c.via, keep, keep));
         }
@@ -233,7 +233,7 @@ public class GraphWayComponent extends Component implements Mergeable<GraphWayCo
             if (this.cyclicEndToStart) Connectors.add(Connectors.create(via, splits[splits.length - 1], splits[0]));
         }
 
-        // add connectors between segments, including u-turns
+        // add connectors between segments, including obj0-turns
         WayEntity prev = splits[0];
         for (int i = 1; i < splits.length; i++) {
             NodeEntity via = dataset.nodes.get(splits[i].nodes[0]);

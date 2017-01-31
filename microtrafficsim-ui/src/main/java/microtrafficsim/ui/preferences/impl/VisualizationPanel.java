@@ -1,10 +1,8 @@
 package microtrafficsim.ui.preferences.impl;
 
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
-
-import javax.swing.*;
 
 
 /**
@@ -36,12 +34,12 @@ public class VisualizationPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
+    public void setSettings(ScenarioConfig config) {
     }
 
     @Override
-    public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
-        return new SimulationConfig();
+    public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
+        return new ScenarioConfig();
     }
 
     @Override

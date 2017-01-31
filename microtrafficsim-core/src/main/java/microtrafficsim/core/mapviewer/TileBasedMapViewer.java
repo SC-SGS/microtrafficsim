@@ -13,7 +13,7 @@ import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefini
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
@@ -187,7 +187,7 @@ public class TileBasedMapViewer implements MapViewer {
     }
 
     @Override
-    public void create(SimulationConfig config) throws UnsupportedFeatureException {
+    public void create(ScenarioConfig config) throws UnsupportedFeatureException {
         /* set up layer and tile provider */
         layers                                = style.getLayers();
         TileLayerProvider       layerProvider = createLayerProvider(layers);
@@ -197,7 +197,7 @@ public class TileBasedMapViewer implements MapViewer {
         visualization = createVisualization(provider);
 
         /* parse the OSM file asynchronously and update the sources */
-        parser = createParser(config);
+        createParser(config);
 
         /* create and initialize the VisualizationPanel */
         vpanel = createVisualizationPanel(visualization);
@@ -229,9 +229,6 @@ public class TileBasedMapViewer implements MapViewer {
         vis.getKeyController().addKeyCommand(
                 KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_F12, e -> Utils.asyncScreenshot(vis.getRenderContext()));
 
-        vis.getKeyController().addKeyCommand(
-                KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_ESCAPE, e -> Runtime.getRuntime().halt(0));
-
         /* set an exception handler, catching all unhandled exceptions on the render thread (for debugging purposes) */
         vis.getRenderContext().setUncaughtExceptionHandler(new Utils.DebugExceptionHandler());
 
@@ -256,7 +253,7 @@ public class TileBasedMapViewer implements MapViewer {
     }
 
     @Override
-    public OSMParser createParser(SimulationConfig simconfig) {
+    public OSMParser createParser(ScenarioConfig scenarioConfig) {
         /* global properties for (all) generators */
         FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
         genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.CLIP;
@@ -265,7 +262,7 @@ public class TileBasedMapViewer implements MapViewer {
         OSMParser.Config osmconfig = new OSMParser.Config().setGeneratorProperties(genprops);
 
         StreetGraphFeatureDefinition streetgraph = null;
-        if (simconfig != null) {
+        if (scenarioConfig != null) {
             // predicates to match/select features
             Predicate<Way> streetgraphMatcher = w -> {
                 if (!w.visible) return false;
@@ -298,7 +295,7 @@ public class TileBasedMapViewer implements MapViewer {
             streetgraph = new StreetGraphFeatureDefinition(
                     "streetgraph",
                     new FeatureDependency(OSMParser.PLACEHOLDER_UNIFICATION, null),
-                    new StreetGraphGenerator(simconfig),
+                    new StreetGraphGenerator(scenarioConfig),
                     n -> false,
                     streetgraphMatcher
             );
@@ -318,7 +315,8 @@ public class TileBasedMapViewer implements MapViewer {
         style.getFeatureDefinitions().forEach(osmconfig::putMapFeatureDefinition);
 
         /* create and return the parser */
-        return osmconfig.createParser();
+        parser = osmconfig.createParser();
+        return parser;
     }
 
     @Override

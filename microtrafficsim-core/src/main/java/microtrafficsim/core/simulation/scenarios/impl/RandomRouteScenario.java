@@ -5,7 +5,7 @@ import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -36,9 +36,9 @@ public class RandomRouteScenario extends BasicScenario {
      * Default constructor calling {@code RandomRouteScenario(config, graph, new ConcurrentVehicleContainer())}
      *
      * @see ConcurrentVehicleContainer
-     * @see #RandomRouteScenario(SimulationConfig, StreetGraph, VehicleContainer)
+     * @see #RandomRouteScenario(ScenarioConfig, StreetGraph, VehicleContainer)
      */
-    public RandomRouteScenario(SimulationConfig config,
+    public RandomRouteScenario(ScenarioConfig config,
                                   StreetGraph graph) {
         this(config, graph, new ConcurrentVehicleContainer());
     }
@@ -47,9 +47,9 @@ public class RandomRouteScenario extends BasicScenario {
      * Default constructor calling {@code RandomRouteScenario(config.seedGenerator.next(), config, graph,
      * vehicleContainer)}
      *
-     * @see #RandomRouteScenario(long, SimulationConfig, StreetGraph, VehicleContainer)
+     * @see #RandomRouteScenario(long, ScenarioConfig, StreetGraph, VehicleContainer)
      */
-    public RandomRouteScenario(SimulationConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
+    public RandomRouteScenario(ScenarioConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
         this(config.seedGenerator.next(), config, graph, vehicleContainer);
     }
 
@@ -58,7 +58,7 @@ public class RandomRouteScenario extends BasicScenario {
      *
      * @param seed Used for the used instance of {@link Random}
      */
-    public RandomRouteScenario(long seed, SimulationConfig config, StreetGraph graph, VehicleContainer
+    public RandomRouteScenario(long seed, ScenarioConfig config, StreetGraph graph, VehicleContainer
             vehicleContainer) {
         super(config, graph, vehicleContainer);
 
@@ -78,7 +78,7 @@ public class RandomRouteScenario extends BasicScenario {
      * the seed of this class.
      *
      * <p>
-     * Until enough vehicles (defined in {@link SimulationConfig}) are created, this method is doing this:<br>
+     * Until enough vehicles (defined in {@link ScenarioConfig}) are created, this method is doing this:<br>
      * &bull get random origin <br>
      * &bull get random destination <br>
      * &bull increase the route count for the found origin-destination-pair

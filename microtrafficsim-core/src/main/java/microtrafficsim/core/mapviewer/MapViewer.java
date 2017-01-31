@@ -2,7 +2,7 @@ package microtrafficsim.core.mapviewer;
 
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
@@ -52,7 +52,7 @@ public interface MapViewer {
      * @throws UnsupportedFeatureException if not all required OpenGL features
      *                                     are available
      */
-    void create(SimulationConfig config) throws UnsupportedFeatureException;
+    void create(ScenarioConfig config) throws UnsupportedFeatureException;
 
     /**
      * Set up this example. Layer definitions describe the visual layers
@@ -107,7 +107,7 @@ public interface MapViewer {
         return createParser(null);
     }
 
-    OSMParser createParser(SimulationConfig simconfig);
+    OSMParser createParser(ScenarioConfig simconfig);
 
     /**
      * Creates a {@code TileLayerProvider} from the given layer definitions.

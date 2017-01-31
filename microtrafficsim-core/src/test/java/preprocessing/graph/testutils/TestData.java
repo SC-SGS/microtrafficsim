@@ -4,7 +4,7 @@ import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
 import microtrafficsim.core.parser.processing.OSMProcessor;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.osm.parser.Parser;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
@@ -52,7 +52,7 @@ public class TestData {
     public static TestData parse(File osmxml, Predicate<Way> sgmatcher) throws Exception {
         DataSetCloneExtractor s1extractor = new DataSetCloneExtractor("stage 1");
         DataSetCloneExtractor s2extractor = new DataSetCloneExtractor("stage 2");
-        StreetGraphGenerator  sggen       = new StreetGraphGenerator(new SimulationConfig());
+        StreetGraphGenerator  sggen       = new StreetGraphGenerator(new ScenarioConfig());
 
         // requires to be generated before unification
         FeatureDependency stage1dep = new FeatureDependency(null, OSMProcessor.PLACEHOLDER_UNIFICATION);

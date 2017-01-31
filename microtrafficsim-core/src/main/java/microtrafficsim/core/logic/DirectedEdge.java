@@ -3,9 +3,8 @@ package microtrafficsim.core.logic;
 import microtrafficsim.core.entities.street.LogicStreetEntity;
 import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.math.Vec2f;
-import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.math.Vec2d;
 
 
 /**
@@ -17,11 +16,11 @@ import microtrafficsim.utils.hashing.FNVHashBuilder;
  */
 public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
 
-    final long        ID;
+    public final long ID;
     private final int numberOfCells;
     private final int maxVelocity;
     private final byte priorityLevel;
-    private final Vec2f originDirection, destinationDirection;
+    private final Vec2d originDirection, destinationDirection;
     private Node origin;
     private Node destination;
     private Lane[] lanes;
@@ -33,14 +32,18 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
      * the number of cells of this edge and adds this edge to the origin node's
      * leaving edges.
      *
+     * @param config Just used for ID generation and meters-per-cell
      * @param lengthInMeters Real length of this edge in meters
+     * @param originDirection direction vector of this edge leaving its origin node
+     * @param destinationDirection direction vector of this edge entering its destination node
      * @param maxVelocity    The max velocity of this edge. It's valid for all lanes.
      * @param noOfLines      Number of lines that will be created in this constructor
      * @param origin         Origin node of this edge
      * @param destination    Destination node of this edge
+     * @param priorityLevel the priority used for the crossing logic; smaller means higher priority
      */
-    public DirectedEdge(SimulationConfig config, float lengthInMeters, Vec2f originDirection,
-                        Vec2f destinationDirection, float maxVelocity, int noOfLines, Node origin, Node destination,
+    public DirectedEdge(ScenarioConfig config, float lengthInMeters, Vec2d originDirection,
+                        Vec2d destinationDirection, float maxVelocity, int noOfLines, Node origin, Node destination,
                         byte priorityLevel) {
 
         ID = config.longIDGenerator.next();
@@ -64,7 +67,7 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
 
     @Override
     public int hashCode() {
-        return new FNVHashBuilder().add(ID).add(origin).add(destination).add(numberOfCells).getHash();
+        return Long.hashCode(ID);
     }
 
     Lane[] getLanes() {
@@ -91,12 +94,13 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
 
     @Override
     public String toString() {
-        return ID + ":(" + origin.ID + " -" + numberOfCells + "-> " + destination.ID + ")";
+        return "ID=" + ID + ";hash=" + hashCode() + ":(" + origin.ID + " -" + numberOfCells + "-> " + destination.ID +
+                ")";
     }
 
     void reset() {
-        lanes    = new Lane[lanes.length];
-        lanes[0] = new Lane(this, 0);
+        for (Lane lane : lanes)
+            lane.reset();
     }
 
     /*
@@ -104,11 +108,11 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity {
     | visualization |
     |===============|
     */
-    Vec2f getOriginDirection() {
+    public Vec2d getOriginDirection() {
         return originDirection;
     }
 
-    Vec2f getDestinationDirection() {
+    public Vec2d getDestinationDirection() {
         return destinationDirection;
     }
 

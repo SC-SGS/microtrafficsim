@@ -4,6 +4,7 @@ import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.Entity;
 import microtrafficsim.osm.parser.features.FeatureDefinition;
 import microtrafficsim.utils.collections.ArrayUtils;
+import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -56,5 +57,10 @@ public class WayEntity extends Entity {
         }
 
         return ce;
+    }
+
+    @Override
+    public int hashCode() {
+        return new FNVHashBuilder().add(id).getHash();
     }
 }

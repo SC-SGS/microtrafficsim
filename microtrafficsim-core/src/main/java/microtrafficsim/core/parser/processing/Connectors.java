@@ -50,14 +50,14 @@ public class Connectors {
      * Adds the given {@code Connector} to the specific sets in the {@code
      * GraphWayComponent} of the referenced Ways. These Components must be present,
      * otherwise a {@code NullPointerException} will be thrown.
-     * If {@code c.from == c.to} the Connector is assumed to be a u-turn.
+     * If {@code c.from == c.to} the Connector is assumed to be a obj0-turn.
      *
      * @param c the {@code Connector} to add.
      */
     public static void add(Connector c) {
         if (c == null) return;
 
-        if (c.from == c.to) {       // u-turn connector
+        if (c.from == c.to) {       // obj0-turn connector
             c.to.get(GraphWayComponent.class).uturn.add(c);
         } else {                    // from-to connector
             c.from.get(GraphWayComponent.class).from.add(c);
@@ -75,7 +75,7 @@ public class Connectors {
     public static void remove(Connector c) {
         if (c == null) return;
 
-        if (c.to == c.from) {       // u-turn connector
+        if (c.to == c.from) {       // obj0-turn connector
             c.to.get(GraphWayComponent.class).uturn.remove(c);
         } else {                    // from-to connector
             c.from.get(GraphWayComponent.class).from.remove(c);
@@ -92,7 +92,7 @@ public class Connectors {
     public static void tryRemove(Connector c) {
         if (c == null) return;
 
-        if (c.to == c.from) {       // u-turn connector
+        if (c.to == c.from) {       // obj0-turn connector
             GraphWayComponent gwc = c.to.get(GraphWayComponent.class);
             if (gwc != null) gwc.uturn.remove(c);
 

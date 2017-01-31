@@ -31,50 +31,70 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
 
     @Override
     public void willMoveAll(final Scenario scenario) {
-        delegator.doTask(
-                (AbstractVehicle v) -> {
-                    v.accelerate();
-                    v.dash();
-                    try {
-                        v.brake();
-                    } catch (NagelSchreckenbergException e) {
-                        e.printStackTrace();
-                    }
-                },
-                scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
-                scenario.getConfig().multiThreading.vehiclesPerRunnable
-        );
+        try {
+            delegator.doTask(
+                    (AbstractVehicle v) -> {
+                        v.accelerate();
+                        v.dash();
+                        try {
+                            v.brake();
+                        } catch (NagelSchreckenbergException e) {
+                            e.printStackTrace();
+                        }
+                    },
+                    scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
+                    scenario.getConfig().multiThreading.vehiclesPerRunnable
+            );
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void moveAll(final Scenario scenario) {
-        delegator.doTask(AbstractVehicle::move,
-                scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
-                scenario.getConfig().multiThreading.vehiclesPerRunnable
-        );
+        try {
+            delegator.doTask(AbstractVehicle::move,
+                    scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
+                    scenario.getConfig().multiThreading.vehiclesPerRunnable
+            );
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void didMoveAll(final Scenario scenario) {
-        delegator.doTask(AbstractVehicle::didMove,
-                scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
-                scenario.getConfig().multiThreading.vehiclesPerRunnable
-        );
+        try {
+            delegator.doTask(AbstractVehicle::didMove,
+                    scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
+                    scenario.getConfig().multiThreading.vehiclesPerRunnable
+            );
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void spawnAll(final Scenario scenario) {
-        delegator.doTask(AbstractVehicle::spawn,
-                scenario.getVehicleContainer().getNotSpawnedVehicles().iterator(),
-                scenario.getConfig().multiThreading.vehiclesPerRunnable
-        );
+        try {
+            delegator.doTask(AbstractVehicle::spawn,
+                    scenario.getVehicleContainer().getNotSpawnedVehicles().iterator(),
+                    scenario.getConfig().multiThreading.vehiclesPerRunnable
+            );
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void updateNodes(final Scenario scenario) {
-        delegator.doTask(
-                Node::update,
-                scenario.getGraph().getNodes().iterator(),
-                scenario.getConfig().multiThreading.nodesPerThread);
+        try {
+            delegator.doTask(
+                    Node::update,
+                    scenario.getGraph().getNodes().iterator(),
+                    scenario.getConfig().multiThreading.nodesPerThread);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

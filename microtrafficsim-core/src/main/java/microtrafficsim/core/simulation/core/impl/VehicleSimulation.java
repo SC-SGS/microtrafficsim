@@ -127,16 +127,16 @@ public class VehicleSimulation implements Simulation {
 
     @Override
     public void willRunOneStep() {
-        if (logger.isDebugEnabled()) {
+        if (logger.isTraceEnabled()) {
 
-            logger.debug("########## ########## ########## ########## ##");
+            logger.trace("########## ########## ########## ########## ##");
 
             if (scenario.isPrepared()) {
-                logger.debug("NEW SIMULATION STEP");
-                logger.debug("simulation age before execution = " + getAge());
+                logger.trace("NEW SIMULATION STEP");
+                logger.trace("simulation age before execution = " + getAge());
                 time = System.nanoTime();
             } else {
-                logger.debug("NEW SIMULATION STEP (NOT PREPARED)");
+                logger.trace("NEW SIMULATION STEP (NOT PREPARED)");
             }
         }
     }
@@ -154,31 +154,31 @@ public class VehicleSimulation implements Simulation {
             if (logger.isDebugEnabled()) {
                 time = System.nanoTime();
                 vehicleStepExecutor.willMoveAll(scenario);
-                logger.debug(
+                logger.trace(
                         StringUtils.buildTimeString("time brake() etc. = ", System.nanoTime() - time, "ns").toString()
                 );
 
                 time = System.nanoTime();
                 vehicleStepExecutor.moveAll(scenario);
-                logger.debug(
+                logger.trace(
                         StringUtils.buildTimeString("time move() = ", System.nanoTime() - time, "ns").toString()
                 );
 
                 time = System.nanoTime();
                 vehicleStepExecutor.didMoveAll(scenario);
-                logger.debug(
+                logger.trace(
                         StringUtils.buildTimeString("time didMove() = ", System.nanoTime() - time, "ns").toString()
                 );
 
                 time = System.nanoTime();
                 vehicleStepExecutor.spawnAll(scenario);
-                logger.debug(
+                logger.trace(
                         StringUtils.buildTimeString("time spawn() = ", System.nanoTime() - time, "ns").toString()
                 );
 
                 time = System.nanoTime();
                 vehicleStepExecutor.updateNodes(scenario);
-                logger.debug(
+                logger.trace(
                         StringUtils.buildTimeString("time updateNodes() = ", System.nanoTime() - time, "ns").toString()
                 );
             } else {
@@ -199,11 +199,11 @@ public class VehicleSimulation implements Simulation {
         for (StepListener stepListener : stepListeners)
             stepListener.didOneStep(this);
 
-        logger.debug(StringUtils.buildTimeString(
+        logger.trace(StringUtils.buildTimeString(
                 "time for this step = ",
                 System.nanoTime() - time, "ns").toString()
         );
-        logger.debug("number of vehicles after run = " + scenario.getVehicleContainer().getVehicleCount());
+        logger.trace("number of vehicles after run = " + scenario.getVehicleContainer().getVehicleCount());
     }
 
     @Override

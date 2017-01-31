@@ -1,13 +1,14 @@
 package microtrafficsim.utils.concurrency.delegation;
 
-import microtrafficsim.utils.concurrency.executorservices.FixedThreadPool;
+import microtrafficsim.utils.concurrency.interruptsafe.InterruptSafeExecutors;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 /**
@@ -21,12 +22,8 @@ public class StaticThreadDelegator implements ThreadDelegator {
 
     private final ExecutorService pool;
 
-    public StaticThreadDelegator(ExecutorService pool) {
-        this.pool = pool;
-    }
-
     public StaticThreadDelegator(int nThreads) {
-        this(new FixedThreadPool(nThreads));
+        this.pool = InterruptSafeExecutors.newFixedThreadPool(nThreads);
     }
 
     /**
@@ -34,23 +31,57 @@ public class StaticThreadDelegator implements ThreadDelegator {
      * This method executes the given task on every element in this iterator using a thread pool. At first, all
      * tasks containing a list of a certain number of elements (<=> {@code elementCount} are created.
      */
-    public <T> void doTask(Consumer<T> elementTask, Iterator<T> iter, int elementCount) {
+    public <T> void doTask(Consumer<T> elementTask, Iterator<T> iter, int elementCount) throws InterruptedException {
 
-        LinkedList<Callable<Object>> tasks = new LinkedList<>();
+        LinkedList<Future<Void>> futures = new LinkedList<>();
 
-        while (iter.hasNext()) {
+        while (iter.hasNext() && !Thread.currentThread().isInterrupted()) {
+            if (Thread.interrupted())
+                throw new InterruptedException();
+
             // fill current thread's vehicle list
             ArrayList<T> list = new ArrayList<>(elementCount);
             int c = 0;
-            while (c++ < elementCount && iter.hasNext())
+            while (c++ < elementCount && iter.hasNext()) {
                 list.add(iter.next());
+            }
+
             // let a thread work off the list
-            tasks.add(Executors.callable(() -> list.forEach(elementTask)));
+            futures.add(pool.submit(() -> {
+                for (T t : list) {
+                    if (Thread.interrupted())
+                        throw new CancellationException();
+
+                    elementTask.accept(t);
+                }
+
+                return null;
+            }));
         }
 
-        // waiting for finishing the threads
-        try {
-            pool.invokeAll(tasks);
-        } catch (InterruptedException e) { e.printStackTrace(); }
+        try {                                   // try to wait on all futures
+            for (Future<Void> future : futures) {
+                try {
+                    future.get();
+                } catch (CancellationException | ExecutionException e) {
+                    // NOTE: we do not cancel any tasks before this loop, so there should be no CancellationExceptions
+                    throw new RuntimeException(e);
+                }
+            }
+        } catch (InterruptedException e) {      // cancel if interrupted, interrupt worker-threads
+            for (Future<Void> future : futures) {
+                future.cancel(true);
+            }
+
+            for (Future<Void> future : futures) {
+                try {
+                    future.get();
+                } catch (Throwable ignored) {
+                    // ignore any exceptions here, as we intend to cancel this task, regardless of the outcome
+                }
+            }
+
+            throw e;                            // propagate the interrupt
+        }
     }
 }

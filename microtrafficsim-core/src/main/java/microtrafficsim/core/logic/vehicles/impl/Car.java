@@ -3,8 +3,8 @@ package microtrafficsim.core.logic.vehicles.impl;
 import microtrafficsim.core.logic.Node;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-import microtrafficsim.core.logic.vehicles.VehicleStateListener;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.interesting.emotions.Hulk;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 
 import java.util.Random;
 import java.util.function.Function;
@@ -18,31 +18,52 @@ import java.util.function.Function;
  * &bull dash factor = 0f<br>
  * &bull acceleration and dawdle functions as described in the Nagel-Schreckenberg-Model, which can be changed by
  * extending this class<br>
- * &bull implementation of the interface {@link microtrafficsim.interesting.emotions.Hulk}. Becoming more angry and
- * calming down is implemented by increasing/decreasing a counter of maximum equal to Integer.MAX_VALUE.
+ * &bull implementation of the interface {@link Hulk}. Becoming more angry and calming down is implemented by
+ * increasing/decreasing a counter of maximum equal to Integer.MAX_VALUE.
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public class Car extends AbstractVehicle {
 
-    // AbstractVehicle
-    public static int maxVelocity = 5;
+    private static final EasyMarkableLogger logger = new EasyMarkableLogger(Car.class);
 
-    // Hulk
-    public static int    maxAnger     = Integer.MAX_VALUE;
+    /**
+     * After Nagel-Schreckenberg-model; 135 km/h
+     */
+    public static int maxVelocity = 5;
     private static float dawdleFactor = 0.2f;
     private static float dashFactor   = 0f;
+
+    /**
+     * Hulk
+     */
+    public static int    maxAnger     = Integer.MAX_VALUE;
     private int          anger;
     private int          totalAnger;
 
-    public Car(long ID, long seed, Route<Node> route, VehicleStateListener stateListener) {
-        super(ID, seed, route, stateListener);
+    /**
+     * Default constructor.
+     *
+     * @param ID unique ID
+     * @param seed seed for {@link Random}, e.g. used for dawdling
+     * @param route you only use the vehicle to drive a route
+     */
+    public Car(long ID, long seed, Route<Node> route) {
+        super(ID, seed, route);
         anger      = 0;
         totalAnger = 0;
     }
 
-    public Car(long ID, long seed, Route<Node> route, int spawnDelay, VehicleStateListener stateListener) {
-        super(ID, seed, route, spawnDelay, stateListener);
+    /**
+     * Default constructor.
+     *
+     * @param ID unique ID
+     * @param seed seed for {@link Random}, e.g. used for dawdling
+     * @param route you only use the vehicle to drive a route
+     * @param spawnDelay This vehicle spawns after this delay
+     */
+    public Car(long ID, long seed, Route<Node> route, int spawnDelay) {
+        super(ID, seed, route, spawnDelay);
         anger      = 0;
         totalAnger = 0;
     }
@@ -52,12 +73,18 @@ public class Car extends AbstractVehicle {
     | (i) Hulk |
     |==========|
     */
+    /**
+     * Increases the anger by 1 up to a maximum of {@link #getMaxAnger()}
+     */
     @Override
     public void becomeMoreAngry() {
         anger = Math.min(anger + 1, maxAnger);
         totalAnger += 1;
     }
 
+    /**
+     * Decreases the anger by 1 down to a minimum of 0.
+     */
     @Override
     public void calmDown() {
         anger = Math.max(anger - 1, 0);
@@ -107,11 +134,19 @@ public class Car extends AbstractVehicle {
         return dawdleFactor;
     }
 
+    /**
+     * Sets the dawdle factor to the given one. Calls {@link #validateDashAndDawdleFactors(float, float)} afterwards.
+     *
+     * @param dawdleFactor The probability to dawdle in one simulation step (after Nagel-Schreckenberg-model)
+     */
     public static void setDawdleFactor(float dawdleFactor) {
-        Car.dawdleFactor = dawdleFactor;
         try {
             validateDashAndDawdleFactors(Car.dashFactor, Car.dawdleFactor);
-        } catch (Exception e) { e.printStackTrace(); }
+            Car.dawdleFactor = dawdleFactor;
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Dawdle factor is set wrong. Thus they are not changed.");
+        }
     }
 
     @Override
@@ -119,18 +154,38 @@ public class Car extends AbstractVehicle {
         return dashFactor;
     }
 
+    /**
+     * Sets the dash factor to the given one. Calls {@link #validateDashAndDawdleFactors(float, float)} before.
+     *
+     * @param dashFactor The probability to dash in one simulation step (addition to dawdling in
+     *                   Nagel-Schreckenberg-model)
+     */
     public static void setDashFactor(float dashFactor) {
-        Car.dashFactor = dashFactor;
         try {
             validateDashAndDawdleFactors(Car.dashFactor, Car.dawdleFactor);
-        } catch (Exception e) { e.printStackTrace(); }
+            Car.dashFactor = dashFactor;
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Dash factor i set wrong. Thus they are not changed.");
+        }
     }
 
+    /**
+     * Sets the dawdle and dash factor to the given ones. Calls {@link #validateDashAndDawdleFactors(float, float)}
+     * before.
+     *
+     * @param dashFactor The probability to dash in one simulation step (addition to dawdling in
+     *                   Nagel-Schreckenberg-model)
+     * @param dawdleFactor The probability to dawdle in one simulation step (after Nagel-Schreckenberg-model)
+     */
     public static void setDashAndDawdleFactor(float dashFactor, float dawdleFactor) {
-        Car.dashFactor   = dashFactor;
-        Car.dawdleFactor = dawdleFactor;
         try {
-            validateDashAndDawdleFactors(Car.dashFactor, Car.dawdleFactor);
-        } catch (Exception e) { e.printStackTrace(); }
+            validateDashAndDawdleFactors(dashFactor, dawdleFactor);
+            Car.dashFactor   = dashFactor;
+            Car.dawdleFactor = dawdleFactor;
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Dash and dawdle factor are set wrong. Thus they are not changed.");
+        }
     }
 }

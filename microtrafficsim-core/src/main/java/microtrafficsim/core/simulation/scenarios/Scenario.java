@@ -3,7 +3,7 @@ package microtrafficsim.core.simulation.scenarios;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.StepListener;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
@@ -35,7 +35,7 @@ public interface Scenario extends StepListener {
     /**
      * @return config file of this scenario including all important information about it
      */
-    SimulationConfig getConfig();
+    ScenarioConfig getConfig();
 
     /**
      * @return streetgraph used in this scenario

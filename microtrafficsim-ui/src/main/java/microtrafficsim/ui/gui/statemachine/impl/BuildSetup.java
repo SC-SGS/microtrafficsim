@@ -1,17 +1,17 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
+import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.ui.gui.statemachine.ScenarioConstructor;
-import microtrafficsim.ui.gui.statemachine.impl.SimulationController;
 
 /**
  * <p>
@@ -26,7 +26,7 @@ import microtrafficsim.ui.gui.statemachine.impl.SimulationController;
 public class BuildSetup {
 
     /* general */
-    public SimulationConfig config;
+    public ScenarioConfig config;
 
     /* visualization and parsing */
     public MapViewer mapviewer;
@@ -43,16 +43,16 @@ public class BuildSetup {
     public BuildSetup() {
 
         /* general */
-        config = new SimulationConfig();
+        config = new ScenarioConfig();
 
         /* visualization and parsing */
-        mapviewer   = new TileBasedMapViewer();
+        mapviewer   = new TileBasedMapViewer(new DarkStyleSheet());
         overlay     = new SpriteBasedVehicleOverlay(mapviewer.getProjection());
 
         /* simulation */
         simulation          = new VehicleSimulation();
         scenarioConstructor = RandomRouteScenario::new;
-        scenarioBuilder     = new VehicleScenarioBuilder(config.seedGenerator.next(), overlay.getVehicleFactory());
+        scenarioBuilder     = new VehicleScenarioBuilder(overlay.getVehicleFactory());
 
         /* gui */
         this.frameTitle = "MicroTrafficSim - GUI Example";

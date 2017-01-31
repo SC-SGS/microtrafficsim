@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface VehicleContainer extends VehicleStateListener {
+public interface VehicleContainer extends VehicleStateListener, Iterable<AbstractVehicle> {
 
     /**
      * Adds the vehicle as unspawned.

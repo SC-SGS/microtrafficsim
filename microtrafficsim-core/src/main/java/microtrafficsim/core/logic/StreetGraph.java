@@ -37,10 +37,11 @@ public class StreetGraph {
         return Collections.unmodifiableSet(nodes);
     }
 
-    // |==================|
-    // | change structure |
-    // |==================|
-
+    /*
+    |==================|
+    | change structure |
+    |==================|
+    */
     /**
      * Adds the {@link Node}s of the given {@link DirectedEdge} to the node set
      * and the edge to the edge set.

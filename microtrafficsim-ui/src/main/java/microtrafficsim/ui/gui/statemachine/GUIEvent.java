@@ -9,10 +9,10 @@ package microtrafficsim.ui.gui.statemachine;
 public enum GUIEvent {
     CREATE,
     LOAD_MAP,
-    NEW_SIM,
+    NEW_SCENARIO,
     ACCEPT,
     CANCEL,
-    EDIT_SIM,
+    EDIT_SCENARIO,
     RUN_SIM,
     RUN_SIM_ONE_STEP,
     PAUSE_SIM,

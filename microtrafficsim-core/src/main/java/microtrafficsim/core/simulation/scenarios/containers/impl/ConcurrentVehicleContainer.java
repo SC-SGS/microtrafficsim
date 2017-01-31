@@ -7,6 +7,7 @@ import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -103,5 +104,15 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
             notSpawnedVehicles.remove(vehicle);
             spawnedVehicles.add(vehicle);
         }
+    }
+
+    /*
+    |==============|
+    | (i) Iterable |
+    |==============|
+    */
+    @Override
+    public Iterator<AbstractVehicle> iterator() {
+        return getVehicles().iterator();
     }
 }

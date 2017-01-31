@@ -12,7 +12,7 @@ public class Coordinate {
     public double lat, lon;
 
     /**
-     * Constructs a new {@code Coordinate}.
+     * Constructs a new {@code Coordinate}. For normalization, you should call {@link #normalize()}
      *
      * @param lat the latitude of the coordinate
      * @param lon the longitude of the coordinate
@@ -23,9 +23,10 @@ public class Coordinate {
     }
 
     /**
-     * Copy-constructs a new {@code Coordinate}:
+     * Copy-constructs a new {@code Coordinate}.
      *
      * @param c the coordinate to copy.
+     * @see #Coordinate(double, double)
      */
     public Coordinate(Coordinate c) {
         this(c.lat, c.lon);

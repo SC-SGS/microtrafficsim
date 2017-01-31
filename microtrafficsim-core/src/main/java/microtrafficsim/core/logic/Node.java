@@ -5,10 +5,11 @@ import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
-import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.exceptions.core.logic.CrossingLogicException;
 import microtrafficsim.math.Geometry;
-import microtrafficsim.math.Vec2f;
+import microtrafficsim.math.Vec2d;
+import microtrafficsim.utils.Tuple;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 import java.util.*;
@@ -23,17 +24,17 @@ import java.util.*;
  */
 public class Node implements ShortestPathNode {
 
-    public final Long        ID;
-    private SimulationConfig config;
-    private Random           random;
-    private Coordinate       coordinate;
-    private HashMap<Lane, ArrayList<Lane>> restrictions;
+    public final Long      ID;
+    private ScenarioConfig config;
+    private Random         random;
+    private Coordinate     coordinate;
 
     // crossing logic
     private PriorityQueue<AbstractVehicle>                 newRegisteredVehicles;
     private HashMap<AbstractVehicle, Set<AbstractVehicle>> assessedVehicles;
     private HashSet<AbstractVehicle>                       maxPrioVehicles;
     private boolean                                        anyChangeSinceUpdate;
+    private HashMap<Lane, ArrayList<Lane>>                 restrictions;
 
     // edges
     private HashMap<DirectedEdge, Byte> leavingEdges;    // edge, index(for crossing logic)
@@ -43,7 +44,7 @@ public class Node implements ShortestPathNode {
     /**
      * Default constructor
      */
-    public Node(SimulationConfig config, Coordinate coordinate) {
+    public Node(ScenarioConfig config, Coordinate coordinate) {
         this.config     = config;
         ID              = config.longIDGenerator.next();
         this.coordinate = coordinate;
@@ -93,7 +94,7 @@ public class Node implements ShortestPathNode {
      * At first, the crossing logic checks whether the two vehicles' turning ways are crossing each other (otherwise
      * return 0). If they are crossing, the origin-priorities are compared. If equal, the destination-priorities are
      * compared. If equal, they have to be compared by right-before-left or randomly. All sub-comparisons can be
-     * enabled/disabled with the {@link SimulationConfig}.
+     * enabled/disabled with the {@link ScenarioConfig}.
      *
      * @return an int > 0 if v1 has priority over v2; an int < 0 if v2 has priority over v1; an int = 0 if v1 and v2
      * have equal priorities
@@ -124,6 +125,8 @@ public class Node implements ShortestPathNode {
         byte destination2   = leavingEdges.get(v2.peekNextRouteSection());
         byte indicesPerNode = (byte) (incomingEdges.size() + leavingEdges.size());
 
+
+
         // if vehicles are crossing each other's way
         if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2, indicesPerNode)) {
             // compare priorities of origins
@@ -138,8 +141,12 @@ public class Node implements ShortestPathNode {
                     if (config.crossingLogic.priorityToTheRightEnabled) {
                         byte leftmostMatchingIdx = IndicesCalculator.leftmostIndexInMatching(
                                 origin1, destination1, origin2, destination2, indicesPerNode);
-                        if (leftmostMatchingIdx == origin1) return 1;
-                        if (leftmostMatchingIdx == origin2) return -1;
+                        if (leftmostMatchingIdx == origin1) {
+                            return 1;
+                        }
+                        if (leftmostMatchingIdx == origin2) {
+                            return -1;
+                        }
                         throw new CrossingLogicException();
                     } else {
                         // random out of {-1, 1}
@@ -171,15 +178,10 @@ public class Node implements ShortestPathNode {
      */
     public synchronized void update() {
 
-        /*
-        |=============================|
-        | add new registered vehicles |
-        |=============================|
-        */
-        while (!newRegisteredVehicles.isEmpty()) {
+        /* add new registered vehicles */
+        while (!newRegisteredVehicles.isEmpty()) { // invariant: all vehicles in this set are new at this point
             AbstractVehicle newVehicle = newRegisteredVehicles.poll();
             Set<AbstractVehicle> defeatedVehicles = new HashSet<>();
-            assessedVehicles.put(newVehicle, defeatedVehicles);
 
             // calculate priority counter
             newVehicle.resetPriorityCounter();
@@ -211,13 +213,11 @@ public class Node implements ShortestPathNode {
                     assessedVehicles.get(assessedVehicle).add(newVehicle);
                 }
             }
+
+            assessedVehicles.put(newVehicle, defeatedVehicles);
         }
 
-        /*
-        |===============================|
-        | find max prioritized vehicles |
-        |===============================|
-        */
+        /* find max prioritized vehicles */
         if (!assessedVehicles.isEmpty()) {
             maxPrioVehicles.clear();
 
@@ -256,6 +256,7 @@ public class Node implements ShortestPathNode {
                 }
             }
 
+
             if (!maxPrioVehicles.isEmpty()) {
                 // case #1: maxPrio == assessedVehicles.size() - 1
                 // => all vehicles are beaten (otherwise: deadlock between vehicles if more than one has priority)
@@ -291,7 +292,7 @@ public class Node implements ShortestPathNode {
      */
     public synchronized boolean registerVehicle(AbstractVehicle newVehicle) {
 
-        if (assessedVehicles.containsKey(newVehicle) || newRegisteredVehicles.contains(newVehicle))
+        if (isRegistered(newVehicle))
             return false;
 
         newRegisteredVehicles.add(newVehicle);
@@ -343,6 +344,47 @@ public class Node implements ShortestPathNode {
         return maxPrioVehicles.contains(vehicle);
     }
 
+    public synchronized boolean isRegistered(AbstractVehicle vehicle) {
+        return assessedVehicles.containsKey(vehicle) || newRegisteredVehicles.contains(vehicle);
+    }
+
+//    /**
+//     * @return Iterator returning tuples of edges with their crossing index
+//     */
+//    public Iterator<Tuple<DirectedEdge, Byte>> iterCrossingIndices() {
+//
+//        Iterator<DirectedEdge> iterLeavingEdges = this.leavingEdges.keySet().iterator();
+//        Iterator<DirectedEdge> iterIncomingEdges = this.incomingEdges.keySet().iterator();
+//        HashMap<DirectedEdge, Byte> leavingEdges = new HashMap<>(this.leavingEdges);
+//        HashMap<DirectedEdge, Byte> incomingEdges = new HashMap<>(this.incomingEdges);
+//
+//        return new Iterator<Tuple<DirectedEdge, Byte>>() {
+//
+//            Iterator<DirectedEdge> bla = leavingEdges.keySet().iterator();
+//
+//            @Override
+//            public boolean hasNext() {
+//                return iterLeavingEdges.hasNext() || iterIncomingEdges.hasNext();
+//            }
+//
+//            @Override
+//            public Tuple<DirectedEdge, Byte> next() {
+//
+//                if (iterLeavingEdges.hasNext()) {
+//                    DirectedEdge edge = iterLeavingEdges.next();
+//                    Byte crossingIndex = leavingEdges.get(edge);
+//                    return new Tuple<>(edge, crossingIndex);
+//                } else if (iterIncomingEdges.hasNext()) {
+//                    DirectedEdge edge = iterIncomingEdges.next();
+//                    Byte crossingIndex = incomingEdges.get(edge);
+//                    return new Tuple<>(edge, crossingIndex);
+//                }
+//
+//                return null;
+//            }
+//        };
+//    }
+
     /*
     |===========================|
     | add edges (preprocessing) |
@@ -357,9 +399,12 @@ public class Node implements ShortestPathNode {
      * @param direction UNUSED
      */
     public void addConnector(Lane incoming, Lane leaving, Direction direction) {
-        if (!restrictions.containsKey(incoming))
-            restrictions.put(incoming, new ArrayList<>());
-        restrictions.get(incoming).add(leaving);
+        ArrayList<Lane> connectedLanes = restrictions.get(incoming);
+        if (connectedLanes == null) {
+            connectedLanes = new ArrayList<>();
+            restrictions.put(incoming, connectedLanes);
+        }
+        connectedLanes.add(leaving);
     }
 
     /**
@@ -380,41 +425,62 @@ public class Node implements ShortestPathNode {
      */
     void calculateEdgeIndices() {
 
-        // set zero vector
-        Vec2f zero = null;
+        /* init */
+        HashMap<Vec2d, ArrayList<DirectedEdge>> edges = new HashMap<>();
+        Vec2d zero = null;
+
+        /* get all vectors for sorting */
         for (DirectedEdge edge : leavingEdges.keySet()) {
-            zero = new Vec2f(edge.getOriginDirection());
-            break;
-        }
-        if (zero == null)
-            for (DirectedEdge edge : incomingEdges.keySet()) {
-                zero = Vec2f.mul(edge.getDestinationDirection(), -1);
-                break;
+            // invert leaving XOR incoming edges
+            Vec2d v = Vec2d.mul(edge.getOriginDirection(), -1);
+
+            // set zero reference if not done yet
+            if (zero == null)
+                zero = v;
+
+            // add edge to its vector
+            ArrayList<DirectedEdge> vectorsEdges = edges.get(v);
+            if (vectorsEdges == null) {
+                vectorsEdges = new ArrayList<>(2);
+                edges.put(v, vectorsEdges);
             }
-
-        // get all vectors for sorting
-        HashMap<Vec2f, ArrayList<DirectedEdge>> edges = new HashMap<>();
-        for (DirectedEdge edge : leavingEdges.keySet()) {
-            Vec2f v = new Vec2f(edge.getOriginDirection());
-            if (!edges.containsKey(v)) edges.put(v, new ArrayList<>(2));
-            edges.get(v).add(edge);
+            vectorsEdges.add(edge);
         }
+
         for (DirectedEdge edge : incomingEdges.keySet()) {
-            Vec2f v = Vec2f.mul(edge.getDestinationDirection(), -1);
-            if (!edges.containsKey(v)) edges.put(v, new ArrayList<>(2));
-            edges.get(v).add(edge);
+            Vec2d v = new Vec2d(edge.getDestinationDirection());
+
+            // set zero reference if not done yet
+            if (zero == null)
+                zero = v;
+
+            // add edge to its vector
+            ArrayList<DirectedEdge> vectorsEdges = edges.get(v);
+            if (vectorsEdges == null) {
+                vectorsEdges = new ArrayList<>(2);
+                edges.put(v, vectorsEdges);
+            }
+            vectorsEdges.add(edge);
         }
 
-        // now: all vectors are keys
-        Queue<Vec2f> sortedVectors
+        /* now: all vectors are keys */
+        Queue<Vec2d> sortedVectors
                 = Geometry.sortClockwiseAsc(zero, edges.keySet(), !config.crossingLogic.drivingOnTheRight);
         byte nextCrossingIndex = 0;
+        // iterate over the sorted vectors
         while (!sortedVectors.isEmpty()) {
-            ArrayList<DirectedEdge> nextEdges = edges.remove(sortedVectors.poll());
+            Vec2d v = sortedVectors.poll();
+            // take the current vector's edges
+            ArrayList<DirectedEdge> nextEdges = edges.remove(v);
+
+            // add its leaving edges before its incoming edges
             for (DirectedEdge nextEdge : nextEdges)
-                if (leavingEdges.containsKey(nextEdge)) leavingEdges.put(nextEdge, nextCrossingIndex++);
+                if (leavingEdges.containsKey(nextEdge))
+                    leavingEdges.put(nextEdge, nextCrossingIndex++);
+
             for (DirectedEdge nextEdge : nextEdges)
-                if (incomingEdges.containsKey(nextEdge)) incomingEdges.put(nextEdge, nextCrossingIndex++);
+                if (incomingEdges.containsKey(nextEdge))
+                    incomingEdges.put(nextEdge, nextCrossingIndex++);
         }
     }
 
@@ -425,22 +491,21 @@ public class Node implements ShortestPathNode {
     */
     @Override
     public Set<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming) {
+
+        if (incoming == null)
+            return Collections.unmodifiableSet(leavingEdges.keySet());
+
         HashSet<ShortestPathEdge> returnEdges = new HashSet<>();
 
-        if (incoming != null) {
-            for (Lane incomingLane : ((DirectedEdge) incoming).getLanes()) {
-                ArrayList<Lane> restrictedLeavingLanes = restrictions.get(incomingLane);
-                // if there exist restrictions
-                if (restrictedLeavingLanes != null)
-                    for (Lane leavingLane : restrictedLeavingLanes)
-                        returnEdges.add(leavingLane.getAssociatedEdge());
-                else
-                    returnEdges.addAll(leavingEdges.keySet());
-            }
-        } else {
-            returnEdges.addAll(leavingEdges.keySet());
+        for (Lane incomingLane : ((DirectedEdge) incoming).getLanes()) {
+            ArrayList<Lane> restrictedLeavingLanes = restrictions.get(incomingLane);
+            // if there exist restrictions
+            if (restrictedLeavingLanes != null)
+                for (Lane leavingLane : restrictedLeavingLanes)
+                    returnEdges.add(leavingLane.getAssociatedEdge());
+            else
+                return Collections.unmodifiableSet(leavingEdges.keySet());
         }
-
         return returnEdges;
     }
 

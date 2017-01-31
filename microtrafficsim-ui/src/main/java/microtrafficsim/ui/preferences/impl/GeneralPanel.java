@@ -1,7 +1,6 @@
 package microtrafficsim.ui.preferences.impl;
 
-import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.utils.id.ConcurrentSeedGenerator;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
@@ -95,7 +94,7 @@ public class GeneralPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
+    public void setSettings(ScenarioConfig config) {
         sliderSpeedup.setValue(config.speedup);
         tfMaxVehicleCount.setText("" + config.maxVehicleCount);
         tfSeed.setText("" + config.seed);
@@ -103,8 +102,8 @@ public class GeneralPanel extends PreferencesPanel {
     }
 
     @Override
-    public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
-        SimulationConfig           config           = new SimulationConfig();
+    public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
+        ScenarioConfig config           = new ScenarioConfig();
         boolean                    exceptionOccured = false;
         IncorrectSettingsException exception        = new IncorrectSettingsException();
 
