@@ -13,6 +13,7 @@ import microtrafficsim.core.vis.glui.events.MouseEvent;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.scenario.areas.ui.AreaComponent;
 import microtrafficsim.core.vis.scenario.areas.ui.AreaVertex;
+import microtrafficsim.core.vis.scenario.areas.ui.EdgeSplit;
 import microtrafficsim.core.vis.scenario.areas.ui.PropertyFrame;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Vec2d;
@@ -37,6 +38,7 @@ public class ScenarioAreaOverlay implements Overlay {
 
     private HashSet<AreaComponent> selectedAreas = new HashSet<>();
     private HashSet<AreaVertex> selectedVertices = new HashSet<>();
+    private EdgeSplit activeSplit = null;
 
     private AreaComponent construction = null;
     private PropertyFrame properties = null;
@@ -344,6 +346,16 @@ public class ScenarioAreaOverlay implements Overlay {
         return construction != null;
     }
 
+
+    public EdgeSplit getActiveSplit() {
+        return activeSplit;
+    }
+
+    public void setActiveSplit(EdgeSplit split) {
+        this.activeSplit = split;
+    }
+
+
     private class MouseListenerImpl extends microtrafficsim.core.vis.glui.events.MouseAdapter {
 
         @Override
@@ -410,6 +422,7 @@ public class ScenarioAreaOverlay implements Overlay {
                 if (e.isShiftDown()) return;
 
                 ui.getContext().addTask(c -> {
+                    System.out.println(selectedVertices.size());
                     if (!selectedVertices.isEmpty()) {      // remove vertices (or area, if not enough vertices are left)
                         assert selectedAreas.size() == 1;
 

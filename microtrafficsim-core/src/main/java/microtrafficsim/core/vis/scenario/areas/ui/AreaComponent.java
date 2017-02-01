@@ -105,6 +105,7 @@ public class AreaComponent extends Component {
 
                 this.add(c);
                 this.add(edge);
+                vertices.add(c);
 
                 prev = c;
                 a = b;
@@ -181,11 +182,13 @@ public class AreaComponent extends Component {
             AreaVertex av = new AreaVertex(root, v);
             AreaVertex other = vertices.get(0);
 
-            super.add(av);
-            vertices.add(av);
-
             EdgeSplit e1 = new EdgeSplit(root, av.getPosition(), other.getPosition());
             EdgeSplit e2 = new EdgeSplit(root, other.getPosition(), av.getPosition());
+
+            super.add(av);
+            super.add(e1);
+            super.add(e2);
+            vertices.add(av);
 
             av.left = e2;
             av.right = e1;
@@ -203,28 +206,29 @@ public class AreaComponent extends Component {
     public void remove(AreaVertex vertex) {
         int index = vertices.indexOf(vertex);
 
-        Vec2d[] outline = new Vec2d[area.outline.length - 1];
-        for (int i = 0, j = 0; i < area.outline.length; i++)
-            if (area.outline[i] != vertex.getPosition())
-                outline[j++] = area.outline[i];
+        System.out.println("index = " + index);
 
+        Vec2d[] outline = new Vec2d[area.outline.length - 1];
+        System.arraycopy(area.outline, 0, outline, 0, index);
+        System.arraycopy(area.outline, index + 1, outline, index, area.outline.length - index - 1);
         area.outline = outline;
 
-        int iright = (index + 1) <= vertices.size() ? (index + 1) : (index + 1) - vertices.size();
+        int iright = (index + 1) < vertices.size() ? index + 1 : index + 1 - vertices.size();
         AreaVertex right = vertices.get(iright);
 
         vertex.left.b = right.getPosition();
+        right.left = vertex.left;
 
         vertices.remove(index);
         super.remove(vertex.right);
         super.remove(vertex);
 
-        redraw();
+        redraw(true);
     }
 
     public void removeAll(HashSet<AreaVertex> vertices) {
         for (AreaVertex v : vertices)
-            remove(v);
+            this.remove(v);
     }
 
     public ArrayList<AreaVertex> getVertices() {

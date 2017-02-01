@@ -43,6 +43,8 @@ public class EdgeSplit extends Component {
         this.a = a;
         this.b = b;
         this.pos = Vec2d.add(a, b).mul(0.5);
+        this.focusable = false;
+        this.active = false;
 
         addMouseListener(new MouseListenerImpl());
     }
@@ -92,29 +94,41 @@ public class EdgeSplit extends Component {
 
         @Override
         public void mouseClicked(MouseEvent e) {
+            if (root.isAreaInConstruction()) return;
+            if (root.getActiveSplit() != EdgeSplit.this) return;
+
             // TODO
+
             e.setConsumed(true);
         }
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            if (!root.isAreaInConstruction())
+            if (!root.isAreaInConstruction() && root.getActiveSplit() == null) {
                 active = true;
+                root.setActiveSplit(EdgeSplit.this);
 
-            redraw();
+                redraw();
+            }
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            if (!root.isAreaInConstruction())
+            if (!root.isAreaInConstruction() && root.getActiveSplit() == null) {
                 active = true;
+                root.setActiveSplit(EdgeSplit.this);
 
-            redraw();
+                redraw();
+            }
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
             active = false;
+
+            if (root.getActiveSplit() == EdgeSplit.this)
+                root.setActiveSplit(null);
+
             redraw();
         }
     }

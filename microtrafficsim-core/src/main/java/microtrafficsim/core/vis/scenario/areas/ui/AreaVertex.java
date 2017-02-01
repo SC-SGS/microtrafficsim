@@ -310,7 +310,7 @@ public class AreaVertex extends Component {
 
             @Override
             public boolean isApplicableFor(Component component, ComponentRenderPass pass) {
-                return component instanceof AreaVertex || component instanceof EdgeSplit
+                return (component instanceof AreaVertex || component instanceof EdgeSplit)
                         && pass instanceof AreaVertexPass
                         && color.equals(((AreaVertexPass) pass).getColor())
                         && pointsize == ((AreaVertexPass) pass).getPointSize();
