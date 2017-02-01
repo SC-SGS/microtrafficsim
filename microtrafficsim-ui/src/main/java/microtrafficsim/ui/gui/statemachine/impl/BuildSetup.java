@@ -1,6 +1,5 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
-import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
@@ -8,10 +7,8 @@ import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
-import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
-import microtrafficsim.ui.gui.statemachine.ScenarioConstructor;
 
 /**
  * <p>
@@ -34,7 +31,6 @@ public class BuildSetup {
 
     /* simulation */
     public Simulation simulation;
-    public ScenarioConstructor scenarioConstructor;
     public ScenarioBuilder scenarioBuilder;
 
     /* gui */
@@ -51,8 +47,7 @@ public class BuildSetup {
 
         /* simulation */
         simulation          = new VehicleSimulation();
-        scenarioConstructor = RandomRouteScenario::new;
-        scenarioBuilder     = new VehicleScenarioBuilder(overlay.getVehicleFactory());
+        scenarioBuilder     = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
 
         /* gui */
         this.frameTitle = "MicroTrafficSim - GUI Example";

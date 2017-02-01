@@ -1,13 +1,16 @@
 package microtrafficsim.core.parser.features.streetgraph;
 
-import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.Direction;
-import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.parser.processing.Connector;
 import microtrafficsim.core.parser.processing.GraphWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
+import microtrafficsim.core.simulation.builder.MapInitializer;
+import microtrafficsim.core.simulation.builder.impl.StreetGraphInitializer;
+import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.DistanceCalculator;
 import microtrafficsim.math.Geometry;
@@ -37,8 +40,10 @@ import java.util.Set;
 public class StreetGraphGenerator implements FeatureGenerator {
     private static Logger logger = new EasyMarkableLogger(StreetGraphGenerator.class);
 
-    private StreetGraph        graph;
+    private MapInitializer initializer;
+
     private ScenarioConfig     config;
+    private StreetGraph        graph;
     private DistanceCalculator distcalc;
 
     /**
@@ -63,9 +68,12 @@ public class StreetGraphGenerator implements FeatureGenerator {
      *                 streets.
      */
     public StreetGraphGenerator(ScenarioConfig config, DistanceCalculator distcalc) {
-        this.config   = config;
-        this.distcalc = distcalc;
-        this.graph    = null;
+
+        this.initializer = new StreetGraphInitializer();
+
+        this.config      = config;
+        this.distcalc    = distcalc;
+        this.graph       = null;
     }
 
     /**
@@ -109,7 +117,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
         // create required nodes and edges
         for (WayEntity way : dataset.ways.values()) {
             if (!way.features.contains(feature)) continue;
-            createAndAddEdges(dataset, graph, way);
+            createAndAddEdges(dataset, graph, way, config);
         }
 
         // add turn-lanes
@@ -126,8 +134,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
             node.remove(StreetGraphNodeComponent.class);
 
         // finish
-        graph.calcEdgeIndicesPerNode();
-        this.graph = graph;
+        this.graph = initializer.postprocessCreatedStreetGraph(graph, config.seed);
         logger.info("finished generating StreetGraph");
     }
 
@@ -139,13 +146,13 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * @param graph   the StreetGraph to which the generated edges should be added.
      * @param way     the {@code WayEntity} for which the edges should be generated.
      */
-    private void createAndAddEdges(DataSet dataset, StreetGraph graph, WayEntity way) {
+    private void createAndAddEdges(DataSet dataset, StreetGraph graph, WayEntity way, ScenarioConfig config) {
         NodeEntity      node0          = dataset.nodes.get(way.nodes[0]);
         NodeEntity      node1          = dataset.nodes.get(way.nodes[1]);
         NodeEntity      secondLastNode = dataset.nodes.get(way.nodes[way.nodes.length - 2]);
         NodeEntity      lastNode       = dataset.nodes.get(way.nodes[way.nodes.length - 1]);
-        Node start          = getNode(node0);
-        Node end            = getNode(lastNode);
+        Node            start          = getNode(node0, config.crossingLogic);
+        Node            end            = getNode(lastNode, config.crossingLogic);
         StreetComponent streetinfo     = way.get(StreetComponent.class);
 
         // generate edges
@@ -163,8 +170,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
             Vec2d destinationDirection = new Vec2d(lastNode.lon - secondLastNode.lon,
                                                    lastNode.lat - secondLastNode.lat);
 
-            forward = new DirectedEdge(config, length, originDirection, destinationDirection, start, end,
-                    1, streetinfo.maxspeed.forward, priorityLevel);
+            forward = new DirectedEdge(way.id, length, originDirection, destinationDirection, start, end,
+                    config.metersPerCell, 1, streetinfo.maxspeed.forward, priorityLevel);
         }
 
         if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.BACKWARD) {
@@ -173,8 +180,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
 
             Vec2d destinationDirection = new Vec2d(node0.lon - node1.lon, node0.lat - node1.lat);
 
-            backward = new DirectedEdge(config, length, originDirection, destinationDirection, end, start,
-                                        1, streetinfo.maxspeed.backward, priorityLevel);
+            backward = new DirectedEdge(way.id, length, originDirection, destinationDirection, end, start,
+                                        config.metersPerCell, 1, streetinfo.maxspeed.backward, priorityLevel);
         }
 
         // create component for ECS
@@ -331,11 +338,14 @@ public class StreetGraphGenerator implements FeatureGenerator {
      *               returned.
      * @return the {@code Node} associated with the given {@code NodeEntity}.
      */
-    private Node getNode(NodeEntity entity) {
+    private Node getNode(NodeEntity entity, CrossingLogicConfig config) {
         StreetGraphNodeComponent graphinfo = entity.get(StreetGraphNodeComponent.class);
 
         if (graphinfo == null) {
-            graphinfo = new StreetGraphNodeComponent(entity, new Node(config, new Coordinate(entity.lat, entity.lon)));
+            graphinfo = new StreetGraphNodeComponent(
+                    entity,
+                    new Node(entity.id, new Coordinate(entity.lat, entity.lon), config)
+            );
             entity.set(StreetGraphNodeComponent.class, graphinfo);
         }
 

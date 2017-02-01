@@ -4,7 +4,6 @@ import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
-import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
@@ -18,6 +17,7 @@ import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
+import microtrafficsim.math.random.distributions.impl.Random;
 
 import javax.swing.*;
 import java.awt.*;
@@ -171,15 +171,14 @@ public class Main {
         return frame;
     }
 
-    private static Simulation createAndInitSimulation(
-            ScenarioConfig config,
-            StreetGraph graph,
-            VehicleOverlay overlay) {
+    private static Simulation createAndInitSimulation(ScenarioConfig config,
+                                                      StreetGraph graph,
+                                                      VehicleOverlay overlay) {
 
         /* initialize the simulation */
-        Scenario scenario = new RandomRouteScenario(config, graph);
+        Scenario scenario = new RandomRouteScenario(new Random(), config, graph);
         Simulation simulation = new VehicleSimulation();
-        ScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(overlay.getVehicleFactory());
+        ScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
 
         overlay.setSimulation(simulation);
         try {

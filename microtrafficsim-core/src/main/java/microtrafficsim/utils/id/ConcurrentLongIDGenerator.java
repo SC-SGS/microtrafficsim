@@ -4,7 +4,7 @@ package microtrafficsim.utils.id;
 /**
  * Simple implementation of the {@code LongGenerator} returning IDs. This is implementation
  * works by simply incrementing an internal value synchronized and thus is
- * thread-safe. The first ID is 0 per default.
+ * thread-safe. The first id is 0 per default.
  *
  * @author Dominic Parga Cacheiro
  */

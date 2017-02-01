@@ -9,10 +9,12 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
 import microtrafficsim.core.simulation.configs.ConfigUpdateListener;
+import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.exceptions.core.logic.CrossingLogicException;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
@@ -27,12 +29,12 @@ import java.util.*;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable {
+public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable, Seeded {
 
-    public final Long        ID;
-    private ScenarioConfig   config;
-    private Random random;
-    private Coordinate       coordinate;
+    public final long id;
+    private      CrossingLogicConfig config;
+    private      Coordinate          coordinate;
+    private      Random              random;
 
     // crossing logic
     private PriorityQueue<AbstractVehicle>                 newRegisteredVehicles;
@@ -49,13 +51,13 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
     /**
      * Default constructor
      */
-    public Node(ScenarioConfig config, Coordinate coordinate) {
-        this.config     = config;
-        ID              = config.longIDGenerator.next();
+    public Node(long id, Coordinate coordinate, CrossingLogicConfig config) {
+        this.id         = id;
         this.coordinate = coordinate;
+        this.config     = config;
 
         // crossing logic
-        random                = new Random(config.seedGenerator.next());
+        random                = new Random();
         assessedVehicles      = new HashMap<>();
         maxPrioVehicles       = new HashSet<>();
         newRegisteredVehicles = new PriorityQueue<>((v1, v2) -> Long.compare(v1.ID, v2.ID));
@@ -69,12 +71,12 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
 
     @Override
     public int hashCode() {
-        return new FNVHashBuilder().add(ID).add(coordinate).getHash();
+        return new FNVHashBuilder().add(id).add(coordinate).getHash();
     }
 
     @Override
     public String toString() {
-        String output = "Node ID = " + ID + " at " + coordinate.toString();
+        String output = "Node id = " + id + " at " + coordinate.toString();
 
         //		for (Lane start : restrictions.keySet())
         //			for (Lane end : restrictions.get(start))
@@ -101,7 +103,7 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
     /**
      * <p>
      * Rules:<br>
-     * &bull two not-spawned vehicles are compared by their IDs. The greater ID wins.<br>
+     * &bull two not-spawned vehicles are compared by their IDs. The greater id wins.<br>
      * &bull spawned vehicles gets priority over not spawned vehicles. This makes sense when thinking about the
      * situation, when you want to enter the street from your private parking place.<br>
      * &bull two spawned vehicles means they are coming from a street and want to make a turn. Thus they have to be
@@ -120,7 +122,7 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
      */
     private int compare(AbstractVehicle v1, AbstractVehicle v2) throws CrossingLogicException {
         // main rules:
-        // (1) two not-spawned vehicles are compared by their IDs. The greater ID wins.
+        // (1) two not-spawned vehicles are compared by their IDs. The greater id wins.
         // (2) spawned vehicles before not spawned vehicles
         // (3) two spawned vehicles => comparator
 
@@ -149,14 +151,14 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
         if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2, indicesPerNode)) {
             // compare priorities of origins
             byte cmp = (byte) (v1.getDirectedEdge().getPriorityLevel() - v2.getDirectedEdge().getPriorityLevel());
-            boolean edgePriorityEnabled = config.crossingLogic.edgePriorityEnabled;
+            boolean edgePriorityEnabled = config.edgePriorityEnabled;
             if (cmp == 0 || !edgePriorityEnabled) {
                 // compare priorities of destinations
                 cmp = (byte) (v1.peekNextRouteSection().getPriorityLevel()
                         - v2.peekNextRouteSection().getPriorityLevel());
                 if (cmp == 0 || !edgePriorityEnabled) {
                     // compare right before left (or left before right)
-                    if (config.crossingLogic.priorityToTheRightEnabled) {
+                    if (config.priorityToTheRightEnabled) {
                         byte leftmostMatchingIdx = IndicesCalculator.leftmostIndexInMatching(
                                 origin1, destination1, origin2, destination2, indicesPerNode);
                         if (leftmostMatchingIdx == origin1) {
@@ -175,18 +177,6 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
             return cmp;
         }
         return 0;
-    }
-
-    /**
-     * The node empties its crossing sets etc. and resets its {@link Random}
-     */
-    @Override
-    public synchronized void reset() {
-        random.reset();
-        assessedVehicles.clear();
-        maxPrioVehicles.clear();
-        newRegisteredVehicles.clear();
-        anyChangeSinceUpdate  = false;
     }
 
     /**
@@ -259,7 +249,7 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
                     // (1)
                     if (!anyChangeSinceUpdate) {
                         // (3), different order than above for better performance
-                        if (config.crossingLogic.friendlyStandingInJamEnabled)
+                        if (config.friendlyStandingInJamEnabled)
                             // (2), different order than above for better performance
                             if (!(vehicle.peekNextRouteSection().getLane(0).getMaxInsertionIndex() >= 0))
                                 continue;
@@ -282,7 +272,7 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
                 // XOR
                 // case #2: deadlock OR tooManyVehicles
                 // => choose random vehicle
-                boolean tooManyVehicles = config.crossingLogic.isOnlyOneVehicleEnabled() && maxPrioVehicles.size() > 1;
+                boolean tooManyVehicles = config.isOnlyOneVehicleEnabled() && maxPrioVehicles.size() > 1;
                 if (!allOthersBeaten || tooManyVehicles) {
                     Iterator<AbstractVehicle> bla = maxPrioVehicles.iterator();
                     for (int i = 0; i < random.nextInt(maxPrioVehicles.size()); i++)
@@ -483,7 +473,7 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
 
         /* now: all vectors are keys */
         Queue<Vec2d> sortedVectors
-                = Geometry.sortClockwiseAsc(zero, edges.keySet(), !config.crossingLogic.drivingOnTheRight);
+                = Geometry.sortClockwiseAsc(zero, edges.keySet(), !config.drivingOnTheRight);
         byte nextCrossingIndex = 0;
         // iterate over the sorted vectors
         while (!sortedVectors.isEmpty()) {
@@ -535,5 +525,37 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable 
     @Override
     public Coordinate getCoordinate() {
         return coordinate;
+    }
+
+    /*
+    |================|
+    | (i) Resettable |
+    |================|
+    */
+    /**
+     * The node empties its crossing sets etc. and resets its {@link Random}
+     */
+    @Override
+    public synchronized void reset() {
+        random.reset();
+        assessedVehicles.clear();
+        maxPrioVehicles.clear();
+        newRegisteredVehicles.clear();
+        anyChangeSinceUpdate  = false;
+    }
+
+    /*
+    |============|
+    | (i) Seeded |
+    |============|
+    */
+    @Override
+    public void setSeed(long seed) {
+        random.setSeed(seed);
+    }
+
+    @Override
+    public long getSeed() {
+        return random.getSeed();
     }
 }

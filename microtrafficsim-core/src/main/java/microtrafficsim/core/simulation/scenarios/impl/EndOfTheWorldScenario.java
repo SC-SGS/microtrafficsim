@@ -30,49 +30,25 @@ import java.util.function.Supplier;
  *
  * @author Dominic Parga Cacheiro
  */
-public class EndOfTheWorldScenario extends BasicScenario {
+public class EndOfTheWorldScenario extends BasicRandomScenario {
 
     private static Logger logger = new EasyMarkableLogger(EndOfTheWorldScenario.class);
 
     // matrix
     private final ArrayList<Node> nodes, leftNodes, bottomNodes, rightNodes, topNodes;
-    // scout factory
-    private Random random;
-    private final float fastestWayProbability = 1.0f;
-    private final ShortestPathAlgorithm fastestWayBidirectionalAStar, linearDistanceBidirectionalAStar;
 
-    /**
-     * Default constructor calling {@code EndOfTheWorldScenario(config, graph, new ConcurrentVehicleContainer())}
-     *
-     * @see #EndOfTheWorldScenario(ScenarioConfig, StreetGraph, VehicleContainer)
-     */
-    public EndOfTheWorldScenario(ScenarioConfig config,
-                                 StreetGraph graph) {
-        this(config, graph, new ConcurrentVehicleContainer());
-    }
-
-    /**
-     * After filling node lists for the graph's borders, this constructor calls {@link #fillMatrix()} to initialize the
-     * origin-destination-matrix.
-     */
-    public EndOfTheWorldScenario(ScenarioConfig config, StreetGraph graph, VehicleContainer vehicleContainer) {
-        this(config.seedGenerator.next(), config, graph, vehicleContainer);
-    }
-
-    /**
-     * Default constructor calling {@link #fillMatrix(long)} to initialize the origin-destination-matrix.
-     *
-     * @param seed Used for the used instance of {@link Random}
-     */
     public EndOfTheWorldScenario(long seed,
                                  ScenarioConfig config,
                                  StreetGraph graph,
                                  VehicleContainer vehicleContainer) {
-        super(config, graph, vehicleContainer);
+        this(new Random(seed), config, graph, vehicleContainer);
+    }
 
-        /* scout factory */
-        fastestWayBidirectionalAStar = new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);
-        linearDistanceBidirectionalAStar = new LinearDistanceBidirectionalAStar(config.metersPerCell);
+    public EndOfTheWorldScenario(Random random,
+                                 ScenarioConfig config,
+                                 StreetGraph graph,
+                                 VehicleContainer vehicleContainer) {
+        super(random, config, graph, vehicleContainer);
 
         /* prepare building matrix */
         nodes       = new ArrayList<>(graph.getNodes());
@@ -104,8 +80,7 @@ public class EndOfTheWorldScenario extends BasicScenario {
         }
 
         /* init */
-        fillMatrix(seed);
-        random = new Random(seed);
+        fillMatrix();
     }
 
     /**
@@ -116,11 +91,12 @@ public class EndOfTheWorldScenario extends BasicScenario {
      * &bull get a random destination out of the border field (of nodes) being closest to the chosen origin
      * &bull increase the route count for the found origin-destination-pair
      */
-    private void fillMatrix(long seed) {
+    @Override
+    protected void fillMatrix() {
         // note: the directions used in this method's comments are referring to Europe (so the northern hemisphere)
         logger.info("BUILDING ODMatrix started");
 
-        Random random = new Random(seed);
+        Random random = new Random(getSeed());
         Function<List<Node>, Node> getRandomNode = nodes -> nodes.get(random.nextInt(nodes.size()));
 
         odMatrix.clear();
@@ -170,24 +146,5 @@ public class EndOfTheWorldScenario extends BasicScenario {
         }
 
         logger.info("BUILDING ODMatrix finished");
-    }
-
-    /*
-    |==============|
-    | (i) Scenario |
-    |==============|
-    */
-    @Override
-    public Supplier<ShortestPathAlgorithm> getScoutFactory() {
-        return () ->
-                (random.nextFloat() < fastestWayProbability)
-                        ? fastestWayBidirectionalAStar
-                        : linearDistanceBidirectionalAStar;
-    }
-
-    @Override
-    public void reset() {
-        super.reset();
-        random.reset();
     }
 }

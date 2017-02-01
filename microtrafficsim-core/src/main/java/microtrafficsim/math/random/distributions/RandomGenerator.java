@@ -1,5 +1,6 @@
 package microtrafficsim.math.random.distributions;
 
+import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
 
@@ -8,24 +9,19 @@ import microtrafficsim.utils.Resettable;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface RandomGenerator extends Resettable {
+public interface RandomGenerator extends Resettable, Seeded {
 
+    /*
+    |================|
+    | (i) Resettable |
+    |================|
+    */
     /**
      * Should reset this {@code RandomGenerator} to initialization state. This means it can return the same numbers
      * in the same order as already returned.
      */
     @Override
     void reset();
-
-    /**
-     * Sets the seed to the given one and {@code resets} this class.
-     */
-    void setSeed(long seed);
-
-    /**
-     * @return Currently used seed
-     */
-    long getSeed();
 
     /*
     |=========|

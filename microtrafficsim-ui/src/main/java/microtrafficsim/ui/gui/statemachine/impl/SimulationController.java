@@ -7,13 +7,13 @@ import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.ui.gui.menues.MTSMenuBar;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
-import microtrafficsim.ui.gui.statemachine.ScenarioConstructor;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.PrefElement;
 import microtrafficsim.ui.preferences.impl.PreferencesFrame;
@@ -83,9 +83,8 @@ public class SimulationController implements GUIController {
     private       StreetGraph    streetgraph;
 
     /* simulation */
-    private Simulation          simulation;
-    private ScenarioConstructor scenarioConstructor;
-    private ScenarioBuilder     scenarioBuilder;
+    private Simulation      simulation;
+    private ScenarioBuilder scenarioBuilder;
 
     /* gui */
     private final JFrame     frame;
@@ -117,9 +116,8 @@ public class SimulationController implements GUIController {
         overlay          = buildSetup.overlay;
 
         /* simulation */
-        simulation          = buildSetup.simulation;
-        scenarioConstructor = buildSetup.scenarioConstructor;
-        scenarioBuilder     = buildSetup.scenarioBuilder;
+        simulation      = buildSetup.simulation;
+        scenarioBuilder = buildSetup.scenarioBuilder;
         overlay.setSimulation(simulation);
 
         /* gui */
@@ -562,7 +560,7 @@ public class SimulationController implements GUIController {
         simulation.removeCurrentScenario();
 
         /* create and prepare new scenario */
-        Scenario scenario = scenarioConstructor.instantiate(config, streetgraph);
+        Scenario scenario = new RandomRouteScenario(config.seed, config, streetgraph);
         try {
             scenarioBuilder.prepare(
                     scenario,

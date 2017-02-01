@@ -360,9 +360,9 @@ public class GraphConsistencyTest {
      * restricted by a restriction contained in the given set.
      *
      * @param restrictions the set of restrictions in which to search for.
-     * @param via          the ID of the node via which the connection runs.
-     * @param from         the ID of the way from which the connection originates.
-     * @param to           the ID of the way to which the connection runs.
+     * @param via          the id of the node via which the connection runs.
+     * @param from         the id of the way from which the connection originates.
+     * @param to           the id of the way to which the connection runs.
      * @return {@code true} if {@code restrictions} contains a restriction which
      * can be applied on the specified connection.
      */
@@ -442,9 +442,9 @@ public class GraphConsistencyTest {
      * IDs.
      *
      * @param set  the set in which to look for the {@code Connector}.
-     * @param via  the ID of the node via which the {@code Connector} runs.
-     * @param from the ID of the way from which the {@code Connector} originates.
-     * @param to   the ID of the way to which the {@code Connector} runs.
+     * @param via  the id of the node via which the {@code Connector} runs.
+     * @param from the id of the way from which the {@code Connector} originates.
+     * @param to   the id of the way to which the {@code Connector} runs.
      * @return {@code true} if {@code set} contains a {@code Connector} which can
      * be described by the given IDs.
      */
@@ -710,7 +710,7 @@ public class GraphConsistencyTest {
      *
      * @param a           the first {@code WaySliceMapping}
      * @param b           the second {@code WaySliceMapping}
-     * @param node        the ID of the node via which the connections run.
+     * @param node        the id of the node via which the connections run.
      * @param datasetFrom the {@code DataSet} corresponding to the {@code
      *                    from}-part of the slices.
      * @param datasetTo   the {@code DataSet} corresponding to the {@code to}-part

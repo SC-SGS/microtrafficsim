@@ -117,7 +117,6 @@ public class GeneralPanel extends PreferencesPanel {
         }
         try {
             config.seed = Long.parseLong(tfSeed.getText());
-            config.seedGenerator = new ConcurrentSeedGenerator(config.seed);
         } catch (NumberFormatException e) {
             exception.appendToMessage("\"Seed\" should be a long.\n");
             exceptionOccured = true;

@@ -5,6 +5,8 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.parser.processing.Ways.MergePoint;
 import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
 import microtrafficsim.core.parser.processing.sanitizer.OSMStreetGraphSanitizer;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.osm.parser.Parser;
 import microtrafficsim.osm.parser.Processor;
 import microtrafficsim.osm.parser.base.DataSet;

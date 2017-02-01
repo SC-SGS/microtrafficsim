@@ -43,6 +43,13 @@ public class StreetGraph implements ConfigUpdateListener, Resettable {
         return Collections.unmodifiableSet(nodes);
     }
 
+    /**
+     * @return instance of {@link java.util.Collections.UnmodifiableSet} of the edges in this graph
+     */
+    public Set<DirectedEdge> getEdges() {
+        return Collections.unmodifiableSet(edges);
+    }
+
     /*
     |==================|
     | change structure |
@@ -58,19 +65,6 @@ public class StreetGraph implements ConfigUpdateListener, Resettable {
         nodes.add(edge.getOrigin());
         nodes.add(edge.getDestination());
         edges.add(edge);
-    }
-
-    /**
-     * Calculates the edge indices for all nodes in this graph.
-     * <p>
-     * IMPORTANT:<br>
-     * This method must be called after all nodes and edges are added to the
-     * graph. Otherwise some edges would have no index and crossing logic would
-     * be unpredictable.
-     * </p>
-     */
-    public void calcEdgeIndicesPerNode() {
-        nodes.forEach(Node::calculateEdgeIndices);
     }
 
     @Override

@@ -1,7 +1,11 @@
 package logic.validation;
 
 import com.jogamp.newt.event.KeyEvent;
-import logic.validation.scenarios.PlusCrossroadFullScenario;
+import logic.validation.scenarios.MotorwaySlipRoadScenario;
+import logic.validation.scenarios.RoundaboutScenario;
+import logic.validation.scenarios.TCrossroadScenario;
+import logic.validation.scenarios.pluscrossroad.FullPlusCrossroadScenario;
+import logic.validation.scenarios.pluscrossroad.PartialPlusCrossroadScenario;
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
@@ -37,15 +41,15 @@ public class UIValidation {
 
     public static void main(String[] args) {
 
-        /* build setup: scenario and style */
+        /* build setup: scenario */
         String osmFilename = new String[]{
                 "T_crossroad.osm",
                 "roundabout.osm",
                 "plus_crossroad.osm",
-                "motorway_slip-road.osm"}[2];
-        Consumer<ScenarioConfig> setupConfig    = PlusCrossroadFullScenario::setupConfig;
+                "motorway_slip-road.osm"}[0];
+        Consumer<ScenarioConfig> setupConfig    = TCrossroadScenario::setupConfig;
         ScenarioConstructor scenarioConstructor = (config, graph, visVehicleFactory) -> {
-            QueueScenarioSmall scenario = new PlusCrossroadFullScenario(config, graph, visVehicleFactory);
+            QueueScenarioSmall scenario = new TCrossroadScenario(config, graph, visVehicleFactory);
             scenario.setLooping(true);
             return scenario;
         };

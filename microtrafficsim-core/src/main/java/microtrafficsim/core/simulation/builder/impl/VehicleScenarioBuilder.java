@@ -2,127 +2,95 @@ package microtrafficsim.core.simulation.builder.impl;
 
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.Route;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.impl.Car;
-import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.interesting.progressable.ProgressListener;
+import microtrafficsim.math.random.Seeded;
+import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.StringUtils;
 import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.concurrency.delegation.StaticThreadDelegator;
 import microtrafficsim.utils.concurrency.delegation.ThreadDelegator;
+import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
+import microtrafficsim.utils.id.ConcurrentSeedGenerator;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
- * This class is an implementation of {@link ScenarioBuilder} for {@link AbstractVehicle}s.
- *
  * @author Dominic Parga Cacheiro
  */
-public class VehicleScenarioBuilder implements ScenarioBuilder {
+public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettable {
 
     private Logger logger = new EasyMarkableLogger(VehicleScenarioBuilder.class);
 
-    // used for printing vehicle creation process
-    private int           lastPercentage;
-    private final Integer percentageDelta; // > 0 !!!
-    // used for vehicle creation
-    private final BiFunction<Scenario, Route<Node>, AbstractVehicle> vehicleFactory;
+    /** Used for printing vehicle creation process */
+    private int lastPercentage = 0;
+
+    protected final ConcurrentLongIDGenerator idGenerator;
+    protected final ConcurrentSeedGenerator   seedGenerator;
+
+    private final Supplier<VisualizationVehicleEntity> visVehicleFactory;
+
 
     /**
-     * Calls {@link VehicleScenarioBuilder#VehicleScenarioBuilder(Supplier, BiFunction)} with basic
-     * logic vehicle factory returning {@link Car}s.
-     */
-    public VehicleScenarioBuilder(Supplier<VisualizationVehicleEntity> visVehicleFactory) {
-        this(visVehicleFactory, (scenario, route) -> {
-            ScenarioConfig config   = scenario.getConfig();
-            long ID                 = config.longIDGenerator.next();
-            long vehicleSeed        = config.seedGenerator.next();
-
-            Car car = new Car(ID, vehicleSeed, route, config.visualization.style);
-            car.addStateListener(scenario.getVehicleContainer());
-            return car;
-        });
-    }
-
-    /**
-     * Default constructor linking created vehicles (by the given vehicle factories) using {@link VehicleEntity}. The
-     * {@code logicVehicleFactory} must be not null, the {@code visVehicleFactory} can be null, which means vehicles are
-     * not visualized.
+     * Default constructor. The {@code visVehicleFactory} can be null, which means vehicles are not visualized.
      *
+     * @param seed              Used for {@link ConcurrentSeedGenerator}
      * @param visVehicleFactory Creates the visualization part of the vehicle entity
-     * @param logicVehicleFactory Creates the logic part of the vehicle entity
      */
-    public VehicleScenarioBuilder(Supplier<VisualizationVehicleEntity> visVehicleFactory,
-                                  BiFunction<Scenario, Route<Node>, AbstractVehicle> logicVehicleFactory) {
-        /* general setup */
-        lastPercentage  = 0;
-        percentageDelta = 5;
+    public VehicleScenarioBuilder(long seed, Supplier<VisualizationVehicleEntity> visVehicleFactory) {
 
-        /* vehicle factory */
-        if (visVehicleFactory != null) {
-            vehicleFactory = (scenario, route) -> {
-                // create vehicle components
-                AbstractVehicle logicVehicle;
-                synchronized (logicVehicleFactory) {
-                    logicVehicle = logicVehicleFactory.apply(scenario, route);
-                }
-                VisualizationVehicleEntity visVehicle;
-                synchronized (visVehicleFactory) {
-                    visVehicle = visVehicleFactory.get();
-                }
+        idGenerator   = new ConcurrentLongIDGenerator();
+        seedGenerator = new ConcurrentSeedGenerator(seed);
 
-                // create vehicle entity
-                VehicleEntity entity = new VehicleEntity(logicVehicle, visVehicle);
-                logicVehicle.setEntity(entity);
-                visVehicle.setEntity(entity);
-
-                return logicVehicle;
-            };
-        } else {
-            vehicleFactory = (scenario, route) -> {
-                // create vehicle components
-                AbstractVehicle logicVehicle;
-                synchronized (logicVehicleFactory) {
-                    logicVehicle = logicVehicleFactory.apply(scenario, route);
-                }
-
-                // create vehicle entity
-                VehicleEntity entity = new VehicleEntity(logicVehicle, null);
-                logicVehicle.setEntity(entity);
-
-                return logicVehicle;
-            };
-        }
+        this.visVehicleFactory = visVehicleFactory;
     }
 
-    /**
-     * Default constructor.
-     *
-     * @param vehicleFactory is used for creating the vehicle. If a visualization is wished, it is important to link
-     *                       the logic part of the vehicle ({@code AbstractVehicle}) with the visualization part
-     *                       using a {@link VehicleEntity}. If you are not sure about this, use
-     *                       {@link #VehicleScenarioBuilder(Supplier, BiFunction)} without linking.
-     */
-    public VehicleScenarioBuilder(BiFunction<Scenario, Route<Node>, AbstractVehicle> vehicleFactory) {
 
-        /* general setup */
-        lastPercentage  = 0;
-        percentageDelta = 5;
+    protected AbstractVehicle createVehicle(Scenario scenario, Route<Node> route) {
 
-        /* vehicle factory */
-        this.vehicleFactory = vehicleFactory;
+        // create vehicle components
+        AbstractVehicle logicVehicle = createLogicVehicle(scenario, route);
+        VisualizationVehicleEntity visVehicle = null;
+        if (visVehicleFactory != null)
+            visVehicle = visVehicleFactory.get();
+
+        // create vehicle entity and link components
+        VehicleEntity entity = new VehicleEntity(logicVehicle, visVehicle);
+        logicVehicle.setEntity(entity);
+        if (visVehicle != null)
+            visVehicle.setEntity(entity);
+
+        return logicVehicle;
     }
 
+    protected AbstractVehicle createLogicVehicle(Scenario scenario, Route<Node> route) {
+
+        ScenarioConfig config   = scenario.getConfig();
+        long ID                 = idGenerator.next();
+        long vehicleSeed        = seedGenerator.next();
+
+        Car car = new Car(ID, vehicleSeed, route, config.visualization.style);
+        car.addStateListener(scenario.getVehicleContainer());
+
+        return car;
+    }
+
+
+    /*
+    |=====================|
+    | (i) ScenarioBuilder |
+    |=====================|
+    */
     @Override
     public Scenario prepare(final Scenario scenario, final ProgressListener listener) throws InterruptedException {
         logger.info("PREPARING SCENARIO started");
@@ -133,6 +101,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
             throw new InterruptedException();
 
         /* reset all */
+        reset();
         logger.info("RESETTING SCENARIO started");
         scenario.reset();
         logger.info("RESETTING SCENARIO finished");
@@ -199,7 +168,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
                     throw new InterruptedException();
 
                 Route<Node> route = new Route<>(start, end);
-                AbstractVehicle vehicle = vehicleFactory.apply(scenario, route);
+                AbstractVehicle vehicle = createVehicle(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
             }
         }
@@ -238,7 +207,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
                     throw new InterruptedException();
 
                 Route<Node> route = new Route<>(start, end);
-                AbstractVehicle vehicle = vehicleFactory.apply(scenario, route);
+                AbstractVehicle vehicle = createVehicle(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
                 scenario.getScoutFactory().get().findShortestPath(start, end, route);
                 vehicle.registerInGraph();
@@ -250,6 +219,8 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
     }
 
     private synchronized void logProgress(int finished, int total, ProgressListener listener) {
+        final int percentageDelta = 5;
+
         int percentage = (100 * finished) / total;
         if (percentage - lastPercentage >= percentageDelta) {
             logger.info(percentage + "% vehicles created.");
@@ -257,4 +228,34 @@ public class VehicleScenarioBuilder implements ScenarioBuilder {
             lastPercentage += percentageDelta;
         }
     }
+
+
+    /*
+    |================|
+    | (i) Resettable |
+    |================|
+    */
+    @Override
+    public void reset() {
+        logger.debug("reset");
+        idGenerator.reset();
+        seedGenerator.reset();
+    }
+
+
+    /*
+    |============|
+    | (i) Seeded |
+    |============|
+    */
+    @Override
+    public void setSeed(long seed) {
+        seedGenerator.setSeed(seed);
+    }
+
+    @Override
+    public long getSeed() {
+        return seedGenerator.getSeed();
+    }
 }
+

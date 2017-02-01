@@ -1,12 +1,10 @@
 package logic.validation.scenarios;
 
-import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.logic.vehicles.impl.Car;
-import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
 
@@ -26,19 +24,7 @@ public class RoundaboutScenario extends QueueScenarioSmall {
                               Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
         init();
-
-        setScenarioBuilder(new VehicleScenarioBuilder(
-                visVehicleFactory,
-                (scenario, route) -> {
-                    long ID        = scenario.getConfig().longIDGenerator.next();
-                    long seed      = scenario.getConfig().seedGenerator.next();
-                    int spawnDelay = getSpawnDelayMatrix().get(route.getStart(), route.getEnd());
-
-                    Car car = new Car(ID, seed, route, spawnDelay, config.visualization.style);
-                    car.addStateListener(getVehicleContainer());
-                    return car;
-                }
-        ));
+        setScenarioBuilder(new VehicleQueueScenarioBuilder(config.seed, visVehicleFactory));
     }
 
     /**
@@ -75,7 +61,7 @@ public class RoundaboutScenario extends QueueScenarioSmall {
         });
 
         //    for (Node n : sortedNodes) {
-        //      System.out.println("Node(" + n.ID + ").coord = " + n.getCoordinate());
+        //      System.out.println("Node(" + n.id + ").coord = " + n.getCoordinate());
         //    }
 
         // node IDs in processing-file, sorted by lat ascending:

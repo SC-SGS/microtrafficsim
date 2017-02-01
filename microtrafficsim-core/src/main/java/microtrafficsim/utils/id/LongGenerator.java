@@ -4,7 +4,7 @@ package microtrafficsim.utils.id;
 import microtrafficsim.utils.Resettable;
 
 /**
- * Simple interface for a generator returning long-values (e.g. as ID).
+ * Simple interface for a generator returning long-values (e.g. as id).
  *
  * @author Maximilian Luz, Dominic Parga Cacheiro
  */

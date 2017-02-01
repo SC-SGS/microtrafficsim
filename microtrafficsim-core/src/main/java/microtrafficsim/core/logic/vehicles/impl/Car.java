@@ -45,7 +45,7 @@ public class Car extends AbstractVehicle {
     /**
      * Default constructor.
      *
-     * @param ID unique ID
+     * @param ID unique id
      * @param seed seed for {@link Random}, e.g. used for dawdling
      * @param route you only use the vehicle to drive a route
      */
@@ -58,7 +58,7 @@ public class Car extends AbstractVehicle {
     /**
      * Default constructor.
      *
-     * @param ID unique ID
+     * @param ID unique id
      * @param seed seed for {@link Random}, e.g. used for dawdling
      * @param route you only use the vehicle to drive a route
      * @param spawnDelay This vehicle spawns after this delay

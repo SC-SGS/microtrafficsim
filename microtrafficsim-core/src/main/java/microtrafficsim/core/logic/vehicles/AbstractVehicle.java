@@ -65,7 +65,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
 
 
     /**
-     * Calls {@code AbstractVehicle(ID, seed, route, 0)}
+     * Calls {@code AbstractVehicle(id, seed, route, 0)}
      *
      * @see #AbstractVehicle(long, long, Route, int, VehicleStyleSheet)
      */
@@ -135,7 +135,7 @@ public abstract class AbstractVehicle implements LogicVehicleEntity, Hulk {
     }
 
     /**
-     * @return hashcode depending only on ID
+     * @return hashcode depending only on id
      */
     @Override
     public int hashCode() {

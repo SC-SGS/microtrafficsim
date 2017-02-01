@@ -1,5 +1,6 @@
 package microtrafficsim.utils.id;
 
+import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 
 /**
@@ -10,7 +11,7 @@ import microtrafficsim.math.random.distributions.impl.Random;
  *
  * @author Dominic Parga Cacheiro
  */
-public class BasicSeedGenerator implements LongGenerator {
+public class BasicSeedGenerator implements LongGenerator, Seeded {
 
     private Random seeds;
 
@@ -21,6 +22,16 @@ public class BasicSeedGenerator implements LongGenerator {
      */
     public BasicSeedGenerator(long seed) {
         seeds = new Random(seed);
+    }
+
+    @Override
+    public void setSeed(long seed) {
+        seeds.setSeed(seed);
+    }
+
+    @Override
+    public long getSeed() {
+        return seeds.getSeed();
     }
 
     /**

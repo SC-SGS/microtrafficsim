@@ -3,9 +3,6 @@ package microtrafficsim.core.simulation.configs;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.osm.parser.features.streets.info.StreetType;
 import microtrafficsim.utils.Resettable;
-import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
-import microtrafficsim.utils.id.ConcurrentSeedGenerator;
-import microtrafficsim.utils.id.LongGenerator;
 
 import java.util.LinkedList;
 import java.util.function.Function;
@@ -14,13 +11,9 @@ import java.util.function.Function;
 /**
  * <p>
  * This class contains the following simulation parameters/constants like the street priorities. <br>
- * &bull {@link #longIDGenerator} <br>
- * &bull {@link #seedGenerator} depends on seed; if you want to set the seed, you also should probably set this
- * attribute <br>
  * &bull {@link #speedup} a simple factor defining, how many steps should be calculated per second (depending on the cpu etc.,
  * the real speedup could be less) <br>
- * &bull {@link #seed} this seed should be used for random variables and similar tasks; {@link #seedGenerator} also depends on
- * it per default <br>
+ * &bull {@link #seed} this seed should be used for random variables and similar tasks
  * &bull {@link #visualization} This configuration object contains attributes relevant for the visualization <br>
  * &bull {@link #crossingLogic} This configuration object contains attributes relevant for the crossing logic <br>
  * &bull {@link #maxVehicleCount} The initial number of vehicles on the streetgraph <br>
@@ -34,8 +27,6 @@ public final class ScenarioConfig implements Resettable {
     private LinkedList<ConfigUpdateListener> updateListeners;
 
     // general
-    public LongGenerator longIDGenerator;
-    public LongGenerator seedGenerator;
     public float         metersPerCell;
     public int           globalMaxVelocity;
     // todo private int cellNumberScale; (depending on meters per cell!)
@@ -92,31 +83,28 @@ public final class ScenarioConfig implements Resettable {
         streetPriorityLevel = streetType -> {
             byte prioLevel = 0;
             switch (streetType) {
-            case ROUNDABOUT: prioLevel++;
-            case MOTORWAY: prioLevel++;
-            case MOTORWAY_LINK: prioLevel++;
-            case TRUNK: prioLevel++;
-            case TRUNK_LINK: prioLevel++;
-            case PRIMARY: prioLevel++;
-            case PRIMARY_LINK: prioLevel++;
-            case SECONDARY: prioLevel++;
+            case ROUNDABOUT:     prioLevel++;
+            case MOTORWAY:       prioLevel++;
+            case MOTORWAY_LINK:  prioLevel++;
+            case TRUNK:          prioLevel++;
+            case TRUNK_LINK:     prioLevel++;
+            case PRIMARY:        prioLevel++;
+            case PRIMARY_LINK:   prioLevel++;
+            case SECONDARY:      prioLevel++;
             case SECONDARY_LINK: prioLevel++;
-            case TERTIARY: prioLevel++;
-            case TERTIARY_LINK: prioLevel++;
-            case UNCLASSIFIED: prioLevel++;
-            case RESIDENTIAL: prioLevel++;
-            case LIVING_STREET: prioLevel++;
-            case SERVICE: prioLevel++;
-            case TRACK: prioLevel++;
-            case ROAD: prioLevel++;
+            case TERTIARY:       prioLevel++;
+            case TERTIARY_LINK:  prioLevel++;
+            case UNCLASSIFIED:   prioLevel++;
+            case RESIDENTIAL:    prioLevel++;
+            case LIVING_STREET:  prioLevel++;
+            case SERVICE:        prioLevel++;
+            case TRACK:          prioLevel++;
+            case ROAD:           prioLevel++;
             }
             return prioLevel;
         };
         // multithreading
         multiThreading.reset();
-        // general
-        longIDGenerator = new ConcurrentLongIDGenerator();
-        seedGenerator = new ConcurrentSeedGenerator(seed);
     }
 
     /*
@@ -134,7 +122,6 @@ public final class ScenarioConfig implements Resettable {
      */
     public void update(ScenarioConfig config) {
         // general
-        longIDGenerator   = config.longIDGenerator;
         metersPerCell     = config.metersPerCell;
         globalMaxVelocity = config.globalMaxVelocity;
         speedup           = config.speedup;

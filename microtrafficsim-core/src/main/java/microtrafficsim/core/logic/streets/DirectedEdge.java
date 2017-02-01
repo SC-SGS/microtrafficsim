@@ -10,6 +10,7 @@ import microtrafficsim.core.simulation.configs.ConfigUpdateListener;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.Resettable;
+import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,32 +35,21 @@ public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, Log
     private Lane[] lanes;
 
     /**
-     * In addition to standard initialization, this constructor also calculates
-     * the number of cells of this edge and adds this edge to the origin node's
-     * leaving edges.
-     *
-     * @param config Just used for ID generation and meters-per-cell
-     * @param lengthInMeters Real length of this edge in meters
-     * @param originDirection direction vector of this edge leaving its origin node
-     * @param destinationDirection direction vector of this edge entering its destination node
-     * @param origin         Origin node of this edge
-     * @param destination    Destination node of this edge
-     * @param noOfLines      Number of lines that will be created in this constructor
-     * @param maxVelocity    The max velocity of this edge. It's valid for all lanes.
-     * @param priorityLevel the priority used for the crossing logic; smaller means higher priority
+     * @see #DirectedEdge(RawStreetInfo)
      */
-    public DirectedEdge(ScenarioConfig config,
+    public DirectedEdge(long id,
                         float lengthInMeters,
                         Vec2d originDirection,
                         Vec2d destinationDirection,
                         Node origin,
                         Node destination,
+                        float metersPerCell,
                         int noOfLines,
                         float maxVelocity,
                         byte priorityLevel) {
         this(new RawStreetInfo(
-                config, lengthInMeters, originDirection, destinationDirection, origin, destination,
-                noOfLines, maxVelocity, priorityLevel
+                id, lengthInMeters, originDirection, destinationDirection, origin, destination,
+                metersPerCell, noOfLines, maxVelocity, priorityLevel
         ));
     }
 
@@ -67,6 +57,9 @@ public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, Log
      * In addition to standard initialization, this constructor also calculates
      * the number of cells of this edge and adds this edge to the origin node's
      * leaving edges.
+     *
+     * For detailed parameter information
+     * see {@link RawStreetInfo#RawStreetInfo(long, float, Vec2d, Vec2d, Node, Node, float, int, float, byte)}
      *
      * @param rawStreetInfo contains all relevant, "persistent" information about this edge
      */
@@ -80,7 +73,12 @@ public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, Log
 
     @Override
     public int hashCode() {
-        return Long.hashCode(streetInfo.ID);
+        return new FNVHashBuilder()
+                .add(streetInfo.raw.id)
+                // origin and destination needed because the id is used by forward and backward edge of the same street
+                .add(streetInfo.raw.origin)
+                .add(streetInfo.raw.destination)
+                .getHash();
     }
 
     public Collection<Lane> getLanes() {
@@ -107,8 +105,8 @@ public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, Log
 
     @Override
     public String toString() {
-        return "ID=" + streetInfo.ID + ";hash=" + hashCode() + ":(" + streetInfo.raw.origin.ID + " -" +
-                streetInfo.numberOfCells + "-> " + streetInfo.raw.destination.ID + ")";
+        return "id=" + streetInfo.raw.id + ";hash=" + hashCode() + ":(" + streetInfo.raw.origin.id + " -" +
+                streetInfo.numberOfCells + "-> " + streetInfo.raw.destination.id + ")";
     }
 
     /**

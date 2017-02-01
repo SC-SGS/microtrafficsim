@@ -85,9 +85,7 @@ public abstract class QueueScenarioSmall implements Scenario {
     public static ScenarioConfig setupConfig(ScenarioConfig config) {
 
         config.metersPerCell           = 7.5f;
-        config.longIDGenerator         = new ConcurrentLongIDGenerator();
         config.seed                    = 1455374755807L;
-        config.seedGenerator           = new ConcurrentSeedGenerator(config.seed);
         config.multiThreading.nThreads = 1;
 
         config.speedup                                 = 5;

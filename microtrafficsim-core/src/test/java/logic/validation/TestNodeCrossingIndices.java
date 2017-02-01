@@ -1,11 +1,11 @@
 package logic.validation;
 
-import logic.validation.scenarios.PlusCrossroadFullScenario;
+import logic.validation.scenarios.pluscrossroad.AbstractPlusCrossroadScenario;
+import logic.validation.scenarios.pluscrossroad.FullPlusCrossroadScenario;
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.logic.Direction;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -36,7 +36,7 @@ public class TestNodeCrossingIndices {
 
             /* setup config */
             ScenarioConfig config = new ScenarioConfig();
-            PlusCrossroadFullScenario.setupConfig(config);
+            AbstractPlusCrossroadScenario.setupConfig(config);
             config.speedup = 100;
             config.crossingLogic.drivingOnTheRight = priorityRun == 0; // first right-before-left
 
@@ -49,7 +49,7 @@ public class TestNodeCrossingIndices {
             logger.debug("\n" + graph);
 
             /* setup simulation and scenario */
-            PlusCrossroadFullScenario scenario = new PlusCrossroadFullScenario(config, graph, null);
+            AbstractPlusCrossroadScenario scenario = new FullPlusCrossroadScenario(config, graph, null);
 
             Simulation sim = new VehicleSimulation();
             scenario.prepare();
@@ -68,13 +68,13 @@ public class TestNodeCrossingIndices {
                     vehicles[i++] = vehicle;
 
                 /* check only if both are registered in mid */
-                if (!scenario.getMid().isRegistered(vehicles[0]) || !scenario.getMid().isRegistered(vehicles[1]))
+                if (!scenario.mid.isRegistered(vehicles[0]) || !scenario.mid.isRegistered(vehicles[1]))
                     continue;
 
                 /* get vehicles' position relative to each other */
                 Direction direction = Geometry.calcCurveDirection(
                         vehicles[0].getRoute().getEnd().getCoordinate(),
-                        scenario.getMid().getCoordinate(),
+                        scenario.mid.getCoordinate(),
                         vehicles[1].getRoute().getEnd().getCoordinate());
 
                 // swap vehicles if priority is left-before-right instead of right-before-left
@@ -85,8 +85,8 @@ public class TestNodeCrossingIndices {
                 }
 
                 // assert correct priority-to-the-right
-                boolean permissionToV0 = scenario.getMid().permissionToCross(vehicles[0]);
-                boolean permissionToV1 = scenario.getMid().permissionToCross(vehicles[1]);
+                boolean permissionToV0 = scenario.mid.permissionToCross(vehicles[0]);
+                boolean permissionToV1 = scenario.mid.permissionToCross(vehicles[1]);
                 boolean anyPermission = permissionToV0 || permissionToV1;
                 assertEquals(direction == Direction.LEFT && anyPermission, permissionToV0);
                 assertEquals(direction == Direction.RIGHT && anyPermission, permissionToV1);
