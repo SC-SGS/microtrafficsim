@@ -14,6 +14,8 @@ import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.view.OrthographicView;
@@ -34,8 +36,13 @@ import java.nio.FloatBuffer;
  * @author Maximilian Luz
  */
 public class TileGridOverlay implements Overlay {
-    private static final Resource VERTEX_SHADER   = new PackagedResource(TileGridOverlay.class, "/shaders/basic.vs");
-    private static final Resource FRAGMENT_SHADER = new PackagedResource(TileGridOverlay.class, "/shaders/basic.fs");
+
+    private static final ShaderProgramSource SHADER_PROG_SRC = new ShaderProgramSource(
+            "/shaders/basic",
+            new ShaderSource(GL3.GL_VERTEX_SHADER, new PackagedResource(TileGridOverlay.class, "/shaders/basic.vs")),
+            new ShaderSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(TileGridOverlay.class, "/shaders/basic.fs"))
+    );
+
     private static final Color COLOR              = Color.fromRGB(0xFF0000);
 
     private OrthographicView view;
@@ -44,6 +51,7 @@ public class TileGridOverlay implements Overlay {
     private TilingScheme scheme;
 
     private ShaderProgram shader;
+    private UniformVec4f uColor;
 
     private BufferStorage     vbo;
     private VertexArrayObject vao;
@@ -65,32 +73,19 @@ public class TileGridOverlay implements Overlay {
 
 
     @Override
-    public void init(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
+    public void initialize(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         /* load shaders */
-        Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "basic.vs")
-                .loadFromResource(VERTEX_SHADER)
-                .compile(gl);
-
-        Shader fs = Shader.create(gl, GL3.GL_FRAGMENT_SHADER, "basic.fs")
-                .loadFromResource(FRAGMENT_SHADER)
-                .compile(gl);
-
-        shader = ShaderProgram.create(context, "basic")
-                .attach(gl, vs, fs)
-                .link(gl)
-                .detach(gl);
-
-        UniformVec4f color = (UniformVec4f) shader.getUniform("u_color");
-        color.set(COLOR);
+        shader = context.getShaderManager().load(SHADER_PROG_SRC);
+        uColor = (UniformVec4f) shader.getUniform("u_color");
 
         /* create vbo */
         vbo = BufferStorage.create(gl, GL3.GL_ARRAY_BUFFER);
 
         /* create vao */
         VertexAttributePointer ptrPosition = VertexAttributePointer.
-                create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, vbo, 0, 0);
+                create(VertexAttributes.POSITION3, DataTypes.FLOAT_2, vbo, 0, 0);
 
         assert ptrPosition != null;
 
@@ -132,8 +127,8 @@ public class TileGridOverlay implements Overlay {
         int nVertices = 2 * (tx + ty);
 
         vbo.bind(gl);
-        gl.glBufferData(vbo.target, nVertices * 3 * 4L, null, GL3.GL_DYNAMIC_DRAW);
-        FloatBuffer vertices = gl.glMapBufferRange(vbo.target, 0, nVertices * 3 * 4L,
+        gl.glBufferData(vbo.target, nVertices * 2 * 4L, null, GL3.GL_DYNAMIC_DRAW);
+        FloatBuffer vertices = gl.glMapBufferRange(vbo.target, 0, nVertices * 2 * 4L,
                                                    GL3.GL_MAP_WRITE_BIT | GL3.GL_MAP_INVALIDATE_BUFFER_BIT)
                                        .asFloatBuffer();
 
@@ -143,10 +138,8 @@ public class TileGridOverlay implements Overlay {
 
             vertices.put((float) a.x);
             vertices.put((float) a.y);
-            vertices.put(0);
             vertices.put((float) b.x);
             vertices.put((float) b.y);
-            vertices.put(0);
         }
 
         for (int y = tiles.ymin; y <= tiles.ymax + 1; y++) {
@@ -155,14 +148,17 @@ public class TileGridOverlay implements Overlay {
 
             vertices.put((float) a.x);
             vertices.put((float) a.y);
-            vertices.put(0);
             vertices.put((float) b.x);
             vertices.put((float) b.y);
-            vertices.put(0);
         }
 
         gl.glUnmapBuffer(vbo.target);
         vbo.unbind(gl);
+
+        uColor.set(COLOR);
+
+        context.Lines.setLineWidth(gl, 1.f);
+        context.Lines.setLineSmoothEnabled(gl, false);
 
         /* draw */
         shader.bind(gl);

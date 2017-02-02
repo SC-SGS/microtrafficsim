@@ -44,48 +44,7 @@ public class FeatureStyle {
      * @throws ShaderLinkException    if the shader-program of this style fails to link.
      */
     public void initialize(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
-        ShaderManager       manager = context.getShaderManager();
-        ShaderProgramSource psrc    = style.getShader();
-
-        // get program, create if necessary
-        program = manager.getProgram(psrc.getName());
-        if (program == null) {
-            GL2ES2 gl = context.getDrawable().getGL().getGL2ES2();
-
-            program = ManagedShaderProgram.create(context, psrc.getName());
-
-            ArrayList<ManagedShader> shaders = new ArrayList<>();
-
-            for (ShaderSource ssrc : psrc.getSources()) {
-                String        name   = ssrc.resource.getUniqueName();
-                ManagedShader shader = manager.getShader(name);
-
-                if (shader == null) {
-                    shader = ManagedShader.create(gl, ssrc.type, name)
-                            .loadFromResource(ssrc.resource)
-                            .compile(gl);
-                }
-
-                shaders.add(shader);
-                manager.putShader(name, shader);
-            }
-
-            for (Shader s : shaders) {
-                program.attach(gl, s);
-
-                if (s instanceof ManagedShader)
-                    s.dispose(gl);
-            }
-
-            program.link(gl);
-
-            /* NOTE:
-             * 	Shaders are not detached to keep them in memory and avoid re-compilation.
-             */
-
-            manager.putProgram(psrc.getName(), program);
-        }
-
+        program = context.getShaderManager().load(style.getShader());
         uniforms = UniformValueBinding.create(style, program.getActiveUniforms());
     }
 

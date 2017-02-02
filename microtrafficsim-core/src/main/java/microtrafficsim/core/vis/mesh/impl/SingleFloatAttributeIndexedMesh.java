@@ -5,9 +5,11 @@ import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.mesh.Mesh;
 import microtrafficsim.core.vis.mesh.MeshBucket;
 import microtrafficsim.core.vis.opengl.BufferStorage;
+import microtrafficsim.core.vis.opengl.DataType;
 import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
+import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttribute;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
 import microtrafficsim.core.vis.opengl.utils.LifeTimeObserver;
@@ -23,15 +25,17 @@ import java.util.Set;
 // TODO: generalize?
 
 /**
- * Index-based mesh containing 3-component position vectors.
+ * Index-based mesh containing a single (multi-component) single-precision floating-point vertex attribute.
  *
  * @author Maximilian Luz
  */
-public class Pos3IndexedMesh implements Mesh {
+public class SingleFloatAttributeIndexedMesh implements Mesh {
     private State state;
 
     private int usage;
     private int mode;
+    private VertexAttribute attribute;
+    private DataType datatype;
 
     private FloatBuffer vertices;
     private IntBuffer   indices;
@@ -50,16 +54,23 @@ public class Pos3IndexedMesh implements Mesh {
     /**
      * Creates a new mesh with the given properties.
      *
-     * @param usage    the OpenGL usage of the mesh.
-     * @param mode     the OpenGL draw-mode of the mesh.
-     * @param vertices the vertex buffer.
-     * @param indices  the index buffer.
+     * @param usage     the OpenGL usage of the mesh.
+     * @param mode      the OpenGL draw-mode of the mesh.
+     * @param attribute the attribute stored in the vertex-buffer of this mesh, must be a float compatible attribute.
+     * @param datatype  the OpenGL data-type of the data to be drawn, must be a single-precision floating-point type
+     *                  compatible with {@code attribute}.
+     * @param vertices  the vertex buffer.
+     * @param indices   the index buffer.
      */
-    public Pos3IndexedMesh(int usage, int mode, FloatBuffer vertices, IntBuffer indices) {
+    public SingleFloatAttributeIndexedMesh(int usage, int mode, VertexAttribute attribute, DataType datatype,
+                                           FloatBuffer vertices, IntBuffer indices)
+    {
         this.state = State.UNINITIALIZED;
 
         this.usage = usage;
         this.mode  = mode;
+        this.attribute = attribute;
+        this.datatype = datatype;
 
         this.vertices = vertices;
         this.indices  = indices;
@@ -68,6 +79,35 @@ public class Pos3IndexedMesh implements Mesh {
         this.ibo = null;
 
         this.ltObservers = new HashSet<>();
+    }
+
+
+    /**
+     * Creates a new mesh with the given properties, using {@code VertexAttributes.POSITION2} as attribute and
+     * {@code DataTypes.FLOAT_2} as data-type.
+     *
+     * @param usage     the OpenGL usage of the mesh.
+     * @param mode      the OpenGL draw-mode of the mesh.
+     * @param vertices  the vertex buffer.
+     * @param indices   the index buffer.
+     * @return the new mesh.
+     */
+    public static SingleFloatAttributeIndexedMesh newPos2Mesh(int usage, int mode, FloatBuffer vertices, IntBuffer indices) {
+        return new SingleFloatAttributeIndexedMesh(usage, mode, VertexAttributes.POSITION2, DataTypes.FLOAT_2, vertices, indices);
+    }
+
+    /**
+     * Creates a new mesh with the given properties, using {@code VertexAttributes.POSITION3} as attribute and
+     * {@code DataTypes.FLOAT_3} as data-type.
+     *
+     * @param usage     the OpenGL usage of the mesh.
+     * @param mode      the OpenGL draw-mode of the mesh.
+     * @param vertices  the vertex buffer.
+     * @param indices   the index buffer.
+     * @return the new mesh.
+     */
+    public static SingleFloatAttributeIndexedMesh newPos3Mesh(int usage, int mode, FloatBuffer vertices, IntBuffer indices) {
+        return new SingleFloatAttributeIndexedMesh(usage, mode, VertexAttributes.POSITION3, DataTypes.FLOAT_3, vertices, indices);
     }
 
 
@@ -112,7 +152,7 @@ public class Pos3IndexedMesh implements Mesh {
         ibo = BufferStorage.create(gl, GL2GL3.GL_ELEMENT_ARRAY_BUFFER);
         vao = VertexArrayObject.create(gl);
 
-        ptrPosition = VertexAttributePointer.create(VertexAttributes.POSITION3, DataTypes.FLOAT_3, vbo);
+        ptrPosition = VertexAttributePointer.create(attribute, datatype, vbo);
 
         state = State.INITIALIZED;
         return true;
@@ -160,6 +200,11 @@ public class Pos3IndexedMesh implements Mesh {
 
     @Override
     public void display(RenderContext context, ShaderProgram shader) {
+        display(context, shader, mode);
+    }
+
+    @Override
+    public void display(RenderContext context, ShaderProgram shader, int mode) {
         GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
 
         vao.bind(gl);
@@ -176,6 +221,11 @@ public class Pos3IndexedMesh implements Mesh {
 
     @Override
     public void display(RenderContext context, VertexArrayObject vao) {
+        display(context, vao, mode);
+    }
+
+    @Override
+    public void display(RenderContext context, VertexArrayObject vao, int mode) {
         GL2GL3 gl = context.getDrawable().getGL().getGL2GL3();
 
         vao.bind(gl);
@@ -227,7 +277,7 @@ public class Pos3IndexedMesh implements Mesh {
 
 
     /**
-     * {@code MeshBucket} implementation for the {@code Pos3IndexedMesh}.
+     * {@code MeshBucket} implementation for the {@code SingleFloatAttributeIndexedMesh}.
      */
     public class Bucket implements MeshBucket {
         private final float zIndex;

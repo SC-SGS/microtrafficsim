@@ -1,8 +1,6 @@
 package microtrafficsim.math.geometry.polygons;
 
 import microtrafficsim.math.Vec2d;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -121,9 +119,9 @@ public final class SweepLineTriangulator implements Triangulator {
     private static void addToEventQueue(PriorityQueue<Event> queue, Vec2d[] outline) {
         assert outline.length > 0: "Contract violation: zero-size outline.";
 
-        Vec2d a = outline[outline.length - 1];
+        Vec2d a = new Vec2d(outline[outline.length - 1]);
         for (int i = 0; i < outline.length; i++) {
-            Vec2d b = outline[i];
+            Vec2d b = new Vec2d(outline[i]);
 
             if (a.x != b.x || a.y != b.y) {
                 queue.add(new StartEvent(new Edge(a, b)));
@@ -515,6 +513,8 @@ public final class SweepLineTriangulator implements Triangulator {
                 edge.above  = null;
                 edge.below  = null;
             }
+
+            assert checkTreeConsistency();
         }
 
         /**
@@ -532,26 +532,31 @@ public final class SweepLineTriangulator implements Triangulator {
             // remove node from tree
             if (edge.cleft == null && edge.cright == null) {    // no child nodes: simply remove node
                 replace(edge, null);
+                assert checkTreeConsistency();
 
             } else if (edge.cleft == null) {                    // only right child: simple replace
                 replace(edge, edge.cright);
                 edge.cright.parent = edge.parent;
+                assert checkTreeConsistency();
 
             } else if (edge.cright == null) {                   // only left child: simple replace
                 replace(edge, edge.cleft);
                 edge.cleft.parent = edge.parent;
+                assert checkTreeConsistency();
 
             } else if (edge.cleft.cright == null) {             // left child has only one child: move it up
                 replace(edge, edge.cleft);
                 edge.cleft.parent = edge.parent;
                 edge.cleft.cright = edge.cright;
                 edge.cright.parent = edge.cleft;
+                assert checkTreeConsistency();
 
             } else if (edge.cright.cleft == null) {             // right child has only one child: move it up
                 replace(edge, edge.cright);
                 edge.cright.parent = edge.parent;
                 edge.cright.cleft = edge.cleft;
                 edge.cleft.parent = edge.cright;
+                assert checkTreeConsistency();
 
             } else {                                            // two children: search for replacement
                 Edge node;
@@ -562,10 +567,11 @@ public final class SweepLineTriangulator implements Triangulator {
 
                     replace(edge, node);
                     node.parent.cleft = node.cright;
-                    node.parent = edge.parent;
 
                     if (node.cright != null)
                         node.cright.parent = node.parent;
+
+                    node.parent = edge.parent;
 
                 } else {                                        // replacement is rightmost child in left subtree
                     node = edge.cleft.cright;
@@ -574,10 +580,11 @@ public final class SweepLineTriangulator implements Triangulator {
 
                     replace(edge, node);
                     node.parent.cright = node.cleft;
-                    node.parent = edge.parent;
 
                     if (node.cleft != null)
                         node.cleft.parent = node.parent;
+
+                    node.parent = edge.parent;
                 }
 
                 node.cright = edge.cright;
@@ -588,7 +595,6 @@ public final class SweepLineTriangulator implements Triangulator {
 
                 if (node.cleft != null)
                     node.cleft.parent = node;
-
             }
 
             // update neighbor references
@@ -605,6 +611,9 @@ public final class SweepLineTriangulator implements Triangulator {
             edge.cright = null;
             edge.above  = null;
             edge.below  = null;
+
+            assert checkTreeConsistency();
+            assert !contains(edge);
         }
 
         /**
@@ -671,6 +680,8 @@ public final class SweepLineTriangulator implements Triangulator {
 
             if (b.below != null)
                 b.below.above = b;
+
+            assert checkTreeConsistency();
         }
 
 
@@ -718,6 +729,8 @@ public final class SweepLineTriangulator implements Triangulator {
             stopped.clear();
 
             this.x = x;
+
+            assert checkTreeConsistency();
         }
 
         /**
@@ -847,14 +860,46 @@ public final class SweepLineTriangulator implements Triangulator {
         /**
          * Checks if the given node is contained in this sweep-line-tree.
          *
-         * @param node the edge/node to check for.
+         * @param edge the edge/node to check for.
          * @return {@code true} if the given edge is contained in this sweep-line-tree.
          */
-        private boolean contains(Edge node) {
-            while (node.parent != null)
-                node = node.parent;
+        private boolean contains(Edge edge) {
+            if (head == null) return false;
 
-            return node == head;
+            LinkedList<Edge> stack = new LinkedList<>();
+            stack.push(head);
+            while (!stack.isEmpty()) {
+                Edge node = stack.poll();
+                if (node == edge) return true;
+
+                if (node.cleft != null) stack.push(node.cleft);
+                if (node.cright != null) stack.push(node.cright);
+            }
+
+            return false;
+        }
+
+        private boolean checkTreeConsistency() {
+            if (head != null) {
+                LinkedList<Edge> stack = new LinkedList<>();
+                stack.push(head);
+                while (!stack.isEmpty()) {
+                    Edge node = stack.poll();
+
+                    if (node.parent == null) {
+                        if (node != head)
+                            return false;
+                    } else {
+                        if ((node.parent.cleft == node) == (node.parent.cright == node))
+                            return false;
+                    }
+
+                    if (node.cleft != null) stack.push(node.cleft);
+                    if (node.cright != null) stack.push(node.cright);
+                }
+            }
+
+            return true;
         }
 
         /**

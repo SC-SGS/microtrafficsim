@@ -66,12 +66,30 @@ public interface Mesh {
     void display(RenderContext context, ShaderProgram shader);
 
     /**
+     * Renders this mesh on the given context with the given {@code ShaderProgram}.
+     *
+     * @param context the context on which the mesh should be drawn.
+     * @param shader  the shader to use for rendering.
+     * @param mode    the primitive mode to use for rendering.
+     */
+    void display(RenderContext context, ShaderProgram shader, int mode);
+
+    /**
      * Renders this mesh on the given context with the given {@code VertexArrayObject}.
      *
      * @param context the context on which the mesh should be drawn.
      * @param vao     the vertex array object to render with.
      */
     void display(RenderContext context, VertexArrayObject vao);
+
+    /**
+     * Renders this mesh on the given context with the given {@code VertexArrayObject}.
+     *
+     * @param context the context on which the mesh should be drawn.
+     * @param vao     the vertex array object to render with.
+     * @param mode    the primitive mode to use for rendering.
+     */
+    void display(RenderContext context, VertexArrayObject vao, int mode);
 
     /**
      * Initializes this mesh. This call may not re-initialize the mesh if it already has been initialized.

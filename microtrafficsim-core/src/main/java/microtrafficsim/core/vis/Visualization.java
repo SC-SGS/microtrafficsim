@@ -3,6 +3,7 @@ package microtrafficsim.core.vis;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.core.vis.input.KeyController;
 
 import java.util.Collection;
 
@@ -28,14 +29,14 @@ public interface Visualization {
      *
      * @return the {@code MouseListener} used for this visualization.
      */
-    MouseListener getMouseController();
+    MouseListener getMouseListener();
 
     /**
      * Returns the {@code KeyListener} used for this visualization.
      *
      * @return the {@code KeyListener} used for this visualization.
      */
-    KeyListener   getKeyController();
+    KeyController getKeyController();
 
     /**
      * Returns the {@code RenderContext} used for this visualization.

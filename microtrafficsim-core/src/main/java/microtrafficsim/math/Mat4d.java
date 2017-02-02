@@ -4,23 +4,23 @@ import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 
 /**
- * A row-major 4x4 {@code float} matrix.
+ * A row-major 4x4 {@code double} matrix.
  *
  * @author Maximilian Luz
  */
-public class Mat4f {
-    private Mat4f() {}
+public class Mat4d {
+    private Mat4d() {}
 
-    private float[] raw = new float[16];
+    private double[] raw = new double[16];
 
 
     /**
      * Constructs a new matrix with the given properties.
      */
-    public Mat4f(float a11, float a12, float a13, float a14,
-                 float a21, float a22, float a23, float a24,
-                 float a31, float a32, float a33, float a34,
-                 float a41, float a42, float a43, float a44) {
+    public Mat4d(double a11, double a12, double a13, double a14,
+                 double a21, double a22, double a23, double a24,
+                 double a31, double a32, double a33, double a34,
+                 double a41, double a42, double a43, double a44) {
 
         raw[ 0] = a11;  raw[ 1] = a12;  raw[ 2] = a13;  raw[3] = a14;
         raw[ 4] = a21;  raw[ 5] = a22;  raw[ 6] = a23;  raw[7] = a24;
@@ -33,7 +33,7 @@ public class Mat4f {
      *
      * @param matrix the (at least) 16 element array from which the matrix should be created.
      */
-    public Mat4f(float[] matrix) {
+    public Mat4d(double[] matrix) {
         System.arraycopy(matrix, 0, this.raw, 0, 16);
     }
 
@@ -42,7 +42,7 @@ public class Mat4f {
      *
      * @param matrix the matrix to be copied.
      */
-    public Mat4f(Mat4f matrix) {
+    public Mat4d(Mat4d matrix) {
         this(matrix.raw);
     }
 
@@ -51,8 +51,15 @@ public class Mat4f {
      *
      * @return the array backing this matrix.
      */
-    public float[] getRaw() {
+    public double[] getRaw() {
         return raw;
+    }
+
+    public Mat4f toFloatMatrix() {
+        return new Mat4f((float) raw[ 0], (float) raw[ 1], (float) raw[ 2], (float) raw[ 3],
+                         (float) raw[ 4], (float) raw[ 5], (float) raw[ 6], (float) raw[ 7],
+                         (float) raw[ 8], (float) raw[ 9], (float) raw[10], (float) raw[11],
+                         (float) raw[12], (float) raw[13], (float) raw[14], (float) raw[15]);
     }
 
     /**
@@ -60,10 +67,10 @@ public class Mat4f {
      *
      * @return this matrix.
      */
-    public Mat4f set(float a11, float a12, float a13, float a14,
-                     float a21, float a22, float a23, float a24,
-                     float a31, float a32, float a33, float a34,
-                     float a41, float a42, float a43, float a44) {
+    public Mat4d set(double a11, double a12, double a13, double a14,
+                     double a21, double a22, double a23, double a24,
+                     double a31, double a32, double a33, double a34,
+                     double a41, double a42, double a43, double a44) {
 
         raw[ 0] = a11;  raw[ 1] = a12;  raw[ 2] = a13; raw[ 3] = a14;
         raw[ 4] = a21;  raw[ 5] = a22;  raw[ 6] = a23; raw[ 7] = a24;
@@ -79,7 +86,7 @@ public class Mat4f {
      * @param raw the (at least) 16 element array from which the matrix should be created.
      * @return this matrix.
      */
-    public Mat4f set(float[] raw) {
+    public Mat4d set(double[] raw) {
         System.arraycopy(raw, 0, this.raw, 0, 16);
         return this;
     }
@@ -90,7 +97,7 @@ public class Mat4f {
      * @param other the matrix to be copied.
      * @return this matrix.
      */
-    public Mat4f set(Mat4f other) {
+    public Mat4d set(Mat4d other) {
         System.arraycopy(other.raw, 0, this.raw, 0, 16);
         return this;
     }
@@ -100,8 +107,8 @@ public class Mat4f {
      *
      * @return this matrix.
      */
-    public Mat4f makeIdentity() {
-        System.arraycopy(Mat4f.identity, 0, this.raw, 0, 16);
+    public Mat4d makeIdentity() {
+        System.arraycopy(Mat4d.identity, 0, this.raw, 0, 16);
         return this;
     }
 
@@ -116,20 +123,20 @@ public class Mat4f {
      * @param far    the far plane.
      * @return this matrix.
      */
-    public Mat4f makeOrtho(float left, float right, float top, float bottom, float near, float far) {
-        this.raw[0] = 2.0f / (right - left);
+    public Mat4d makeOrtho(double left, double right, double top, double bottom, double near, double far) {
+        this.raw[0] = 2.0 / (right - left);
         this.raw[1] = 0;
         this.raw[2] = 0;
         this.raw[3] = -(right + left) / (right - left);
 
         this.raw[4] = 0;
-        this.raw[5] = 2.0f / (top - bottom);
+        this.raw[5] = 2.0 / (top - bottom);
         this.raw[6] = 0;
         this.raw[7] = -(top + bottom) / (top - bottom);
 
         this.raw[8]  = 0;
         this.raw[9]  = 0;
-        this.raw[10] = -2.0f / (far - near);
+        this.raw[10] = -2.0 / (far - near);
         this.raw[11] = -(far + near) / (far - near);
 
         this.raw[12] = 0;
@@ -144,13 +151,13 @@ public class Mat4f {
      * Sets this matrix to the perspective projection-matrix specified by the given parameters.
      *
      * @param fovy        the field-of-view.
-     * @param aspectRatio the aspect ratio (in degree).
+     * @param aspectRatio the aspect ratio.
      * @param zNear       the near plane.
      * @param zFar        the far plane.
      * @return this matrix.
      */
-    public Mat4f makePerspective(float fovy, float aspectRatio, float zNear, float zFar) {
-        float f = (float) (1 / Math.tan(Math.toRadians(fovy / 2)));
+    public Mat4d makePerspective(double fovy, double aspectRatio, double zNear, double zFar) {
+        double f = (1 / Math.tan(Math.toRadians(fovy / 2)));
 
         this.raw[1]  = 0;
         this.raw[2]  = 0;
@@ -182,8 +189,8 @@ public class Mat4f {
      * @param up     the vector indicating the upwards looking direction.
      * @return this matrix.
      */
-    public Mat4f makeLookAt(Vec3f eye, Vec3f center, Vec3f up) {
-        return makeLookInDirection(eye, Vec3f.sub(center, eye), up);
+    public Mat4d makeLookAt(Vec3d eye, Vec3d center, Vec3d up) {
+        return makeLookInDirection(eye, Vec3d.sub(center, eye), up);
     }
 
     /**
@@ -195,24 +202,24 @@ public class Mat4f {
      * @param up  the vector indicating the upwards looking direction.
      * @return this matrix.
      */
-    public Mat4f makeLookInDirection(Vec3f eye, Vec3f dir, Vec3f up) {
-        float abs = (float) Math.sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
-        float fwdX = dir.x / abs;
-        float fwdY = dir.y / abs;
-        float fwdZ = dir.z / abs;
+    public Mat4d makeLookInDirection(Vec3d eye, Vec3d dir, Vec3d up) {
+        double abs = Math.sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+        double fwdX = dir.x / abs;
+        double fwdY = dir.y / abs;
+        double fwdZ = dir.z / abs;
 
-        float sideX = up.z * fwdY - up.y * fwdZ;
-        float sideY = up.x * fwdZ - up.z * fwdX;
-        float sideZ = up.y * fwdX - up.x * fwdY;
+        double sideX = up.z * fwdY - up.y * fwdZ;
+        double sideY = up.x * fwdZ - up.z * fwdX;
+        double sideZ = up.y * fwdX - up.x * fwdY;
 
-        abs = (float) Math.sqrt(sideX * sideX + sideY * sideY + sideZ * sideZ);
+        abs = Math.sqrt(sideX * sideX + sideY * sideY + sideZ * sideZ);
         sideX /= abs;
         sideY /= abs;
         sideZ /= abs;
 
-        float upX = sideY * fwdZ - sideZ * fwdY;
-        float upY = sideZ * fwdX - sideX * fwdZ;
-        float upZ = sideX * fwdY - sideY * fwdX;
+        double upX = sideY * fwdZ - sideZ * fwdY;
+        double upY = sideZ * fwdX - sideX * fwdZ;
+        double upZ = sideX * fwdY - sideY * fwdX;
 
         this.raw[ 0] = sideX;  this.raw[ 1] = sideY;  this.raw[2] = sideZ; this.raw[3] = 0;
         this.raw[ 4] =   upX;  this.raw[ 5] =   upY;  this.raw[6] = upZ; this.raw[7] = 0;
@@ -227,11 +234,10 @@ public class Mat4f {
      *
      * @return the calculated determinant of the upper left 3x3 sub-matrix.
      */
-    public float det3() {
-        // TODO: test!!
+    public double det3() {
         return raw[0] * (raw[5] * raw[10] - raw[6] * raw[9])
-                - raw[1] * (raw[4] * raw[10] - raw[6] * raw[8])
-                + raw[2] * (raw[4] * raw[9] - raw[5] * raw[8]);
+             - raw[1] * (raw[4] * raw[10] - raw[6] * raw[8])
+             + raw[2] * (raw[4] * raw[ 9] - raw[5] * raw[8]);
     }
 
     /**
@@ -239,15 +245,15 @@ public class Mat4f {
      *
      * @return the calculated determinant.
      */
-    public float det() {
+    public double det() {
         // TODO: test!!
         // 2x2 determinants enumerated from left to right
-        float d1 = raw[8] * raw[13] - raw[9] * raw[12];
-        float d2 = raw[8] * raw[14] - raw[10] * raw[12];
-        float d3 = raw[8] * raw[15] - raw[11] * raw[12];
-        float d4 = raw[9] * raw[14] - raw[10] * raw[13];
-        float d5 = raw[9] * raw[15] - raw[11] * raw[13];
-        float d6 = raw[10] * raw[15] - raw[11] * raw[14];
+        double d1 = raw[8] * raw[13] - raw[9] * raw[12];
+        double d2 = raw[8] * raw[14] - raw[10] * raw[12];
+        double d3 = raw[8] * raw[15] - raw[11] * raw[12];
+        double d4 = raw[9] * raw[14] - raw[10] * raw[13];
+        double d5 = raw[9] * raw[15] - raw[11] * raw[13];
+        double d6 = raw[10] * raw[15] - raw[11] * raw[14];
 
         return raw[0] * (raw[5] * d6 - raw[6] * d5 + raw[7] * d4)
                 - raw[1] * (raw[4] * d6 - raw[6] * d3 + raw[7] * d2)
@@ -261,7 +267,7 @@ public class Mat4f {
      * @return {@code true} iff this matrix is affine.
      */
     public boolean isAffine() {
-        return raw[12] == 0.f && raw[13] == 0.f && raw[14] == 0.f && raw[15] == 1.f;
+        return raw[12] == 0.0 && raw[13] == 0.0 && raw[14] == 0.0 && raw[15] == 1.0;
     }
 
     /**
@@ -270,7 +276,7 @@ public class Mat4f {
      * @param other the matrix to add.
      * @return this matrix.
      */
-    public Mat4f add(Mat4f other) {
+    public Mat4d add(Mat4d other) {
         raw[ 0] += other.raw[ 0];  raw[ 1] += other.raw[ 1];  raw[ 2] += other.raw[ 2];  raw[ 3] += other.raw[ 3];
         raw[ 4] += other.raw[ 4];  raw[ 5] += other.raw[ 5];  raw[ 6] += other.raw[ 6];  raw[ 7] += other.raw[ 7];
         raw[ 8] += other.raw[ 8];  raw[ 9] += other.raw[ 9];  raw[10] += other.raw[10];  raw[11] += other.raw[11];
@@ -284,7 +290,7 @@ public class Mat4f {
      * @param other the matrix to subtract.
      * @return this matrix.
      */
-    public Mat4f sub(Mat4f other) {
+    public Mat4d sub(Mat4d other) {
         raw[ 0] -= other.raw[ 0];  raw[ 1] -= other.raw[ 1];  raw[ 2] -= other.raw[ 2];  raw[ 3] -= other.raw[ 3];
         raw[ 4] -= other.raw[ 4];  raw[ 5] -= other.raw[ 5];  raw[ 6] -= other.raw[ 6];  raw[ 7] -= other.raw[ 7];
         raw[ 8] -= other.raw[ 8];  raw[ 9] -= other.raw[ 9];  raw[10] -= other.raw[10];  raw[11] -= other.raw[11];
@@ -298,8 +304,8 @@ public class Mat4f {
      * @param other the matrix to multiply with.
      * @return this matrix.
      */
-    public Mat4f mul(Mat4f other) {
-        this.raw = new float[] {
+    public Mat4d mul(Mat4d other) {
+        this.raw = new double[] {
                 this.raw[ 0] * other.raw[0] + this.raw[ 1] * other.raw[4] + this.raw[ 2] * other.raw[ 8] + this.raw[ 3] * other.raw[12],
                 this.raw[ 0] * other.raw[1] + this.raw[ 1] * other.raw[5] + this.raw[ 2] * other.raw[ 9] + this.raw[ 3] * other.raw[13],
                 this.raw[ 0] * other.raw[2] + this.raw[ 1] * other.raw[6] + this.raw[ 2] * other.raw[10] + this.raw[ 3] * other.raw[14],
@@ -327,8 +333,8 @@ public class Mat4f {
      * @param v the vector to multiply with.
      * @return the product of this matrix and the specified vectors.
      */
-    public Vec4f mul(Vec4f v) {
-        return new Vec4f(this.raw[ 0] * v.x + this.raw[ 1] * v.y + this.raw[ 2] * v.z + this.raw[ 3] * v.w,
+    public Vec4d mul(Vec4d v) {
+        return new Vec4d(this.raw[ 0] * v.x + this.raw[ 1] * v.y + this.raw[ 2] * v.z + this.raw[ 3] * v.w,
                          this.raw[ 4] * v.x + this.raw[ 5] * v.y + this.raw[ 6] * v.z + this.raw[ 7] * v.w,
                          this.raw[ 8] * v.x + this.raw[ 9] * v.y + this.raw[10] * v.z + this.raw[11] * v.w,
                          this.raw[12] * v.x + this.raw[13] * v.y + this.raw[14] * v.z + this.raw[15] * v.w);
@@ -340,7 +346,7 @@ public class Mat4f {
      * @param scalar the scalar value to multiply with.
      * @return this matrix.
      */
-    public Mat4f mul(float scalar) {
+    public Mat4d mul(double scalar) {
         raw[ 0] *= scalar;  raw[ 1] *= scalar;  raw[ 2] *= scalar;  raw[ 3] *= scalar;
         raw[ 4] *= scalar;  raw[ 5] *= scalar;  raw[ 6] *= scalar;  raw[ 7] *= scalar;
         raw[ 8] *= scalar;  raw[ 9] *= scalar;  raw[10] *= scalar;  raw[11] *= scalar;
@@ -348,7 +354,6 @@ public class Mat4f {
         return this;
     }
 
-    // M * T
 
     /**
      * Applies the specified translation to this matrix as if by multiplying this matrix with the according translation
@@ -357,12 +362,8 @@ public class Mat4f {
      * @param vec the vector specifying the translation.
      * @return this matrix.
      */
-    public Mat4f translate(Vec3f vec) {
-        this.raw[ 3] = this.raw[ 0] * vec.x + this.raw[ 1] * vec.y + this.raw[ 2] * vec.z + this.raw[ 3];
-        this.raw[ 7] = this.raw[ 4] * vec.x + this.raw[ 5] * vec.y + this.raw[ 6] * vec.z + this.raw[ 7];
-        this.raw[11] = this.raw[ 8] * vec.x + this.raw[ 9] * vec.y + this.raw[10] * vec.z + this.raw[11];
-        this.raw[15] = this.raw[12] * vec.x + this.raw[13] * vec.y + this.raw[14] * vec.z + this.raw[15];
-        return this;
+    public Mat4d translate(Vec3d vec) {
+        return translate(vec.x, vec.y, vec.z);
     }
 
     /**
@@ -374,7 +375,7 @@ public class Mat4f {
      * @param z the z-axis translation component.
      * @return this matrix.
      */
-    public Mat4f translate(float x, float y, float z) {
+    public Mat4d translate(double x, double y, double z) {
         this.raw[ 3] = this.raw[ 0] * x + this.raw[ 1] * y + this.raw[ 2] * z + this.raw[ 3];
         this.raw[ 7] = this.raw[ 4] * x + this.raw[ 5] * y + this.raw[ 6] * z + this.raw[ 7];
         this.raw[11] = this.raw[ 8] * x + this.raw[ 9] * y + this.raw[10] * z + this.raw[11];
@@ -389,12 +390,8 @@ public class Mat4f {
      * @param vec the vector specifying the scale-transformation.
      * @return this matrix.
      */
-    public Mat4f scale(Vec3f vec) {
-        this.raw[ 0] *= vec.x;  this.raw[ 1] *= vec.y;  this.raw[ 2] *= vec.z;
-        this.raw[ 4] *= vec.x;  this.raw[ 5] *= vec.y;  this.raw[ 6] *= vec.z;
-        this.raw[ 8] *= vec.x;  this.raw[ 9] *= vec.y;  this.raw[10] *= vec.z;
-        this.raw[12] *= vec.x;  this.raw[13] *= vec.y;  this.raw[14] *= vec.z;
-        return this;
+    public Mat4d scale(Vec3d vec) {
+        return scale(vec.x, vec.y, vec.z);
     }
 
     /**
@@ -406,7 +403,7 @@ public class Mat4f {
      * @param sz the z-axis scale component.
      * @return this matrix.
      */
-    public Mat4f scale(float sx, float sy, float sz) {
+    public Mat4d scale(double sx, double sy, double sz) {
         this.raw[ 0] *= sx;  this.raw[ 1] *= sy;  this.raw[ 2] *= sz;
         this.raw[ 4] *= sx;  this.raw[ 5] *= sy;  this.raw[ 6] *= sz;
         this.raw[ 8] *= sx;  this.raw[ 9] *= sy;  this.raw[10] *= sz;
@@ -422,51 +419,8 @@ public class Mat4f {
      * @param angle the angle (in radians) specifying the rotation.
      * @return this matrix.
      */
-    public Mat4f rotate(Vec3f axis, float angle) {
-        float s   = (float) Math.sin(angle);
-        float c   = (float) Math.cos(angle);
-        float omc = 1.f - c;
-
-        float xx = axis.x * axis.x;
-        float xy = axis.x * axis.y;
-        float xz = axis.x * axis.z;
-        float yy = axis.y * axis.y;
-        float yz = axis.y * axis.z;
-        float zz = axis.z * axis.z;
-        float xs = axis.x * s;
-        float ys = axis.y * s;
-        float zs = axis.z * s;
-
-        float r0  = xx * omc + c;
-        float r1  = xy * omc - zs;
-        float r2  = xz * omc + ys;
-        float r4  = xy * omc + zs;
-        float r5  = yy * omc + c;
-        float r6  = yz * omc - xs;
-        float r8  = xz * omc - ys;
-        float r9  = yz * omc + xs;
-        float r10 = zz * omc + c;
-
-        this.raw = new float[] {
-                this.raw[0] * r0 + this.raw[1] * r4 + this.raw[2] * r8,
-                this.raw[0] * r1 + this.raw[1] * r5 + this.raw[2] * r9,
-                this.raw[0] * r2 + this.raw[1] * r6 + this.raw[2] * r10,
-                this.raw[3],
-                this.raw[4] * r0 + this.raw[5] * r4 + this.raw[6] * r8,
-                this.raw[4] * r1 + this.raw[5] * r5 + this.raw[6] * r9,
-                this.raw[4] * r2 + this.raw[5] * r6 + this.raw[6] * r10,
-                this.raw[7],
-                this.raw[8] * r0 + this.raw[9] * r4 + this.raw[10] * r8,
-                this.raw[8] * r1 + this.raw[9] * r5 + this.raw[10] * r9,
-                this.raw[8] * r2 + this.raw[9] * r6 + this.raw[10] * r10,
-                this.raw[11],
-                this.raw[12] * r0 + this.raw[13] * r4 + this.raw[14] * r8,
-                this.raw[12] * r1 + this.raw[13] * r5 + this.raw[14] * r9,
-                this.raw[12] * r2 + this.raw[13] * r6 + this.raw[14] * r10,
-                this.raw[15]
-        };
-
-        return this;
+    public Mat4d rotate(Vec3d axis, double angle) {
+        return this.rotate(axis.x, axis.y, axis.z, angle);
     }
 
     /**
@@ -479,32 +433,32 @@ public class Mat4f {
      * @param angle the angle (in radians) specifying the rotation.
      * @return this matrix.
      */
-    public Mat4f rotate(float x, float y, float z, float angle) {
-        float s   = (float) Math.sin(angle);
-        float c   = (float) Math.cos(angle);
-        float omc = 1.f - c;
+    public Mat4d rotate(double x, double y, double z, double angle) {
+        double s   = Math.sin(angle);
+        double c   = Math.cos(angle);
+        double omc = 1.0 - c;
 
-        float xx = x * x;
-        float xy = x * y;
-        float xz = x * z;
-        float yy = y * y;
-        float yz = y * z;
-        float zz = z * z;
-        float xs = x * s;
-        float ys = y * s;
-        float zs = z * s;
+        double xx = x * x;
+        double xy = x * y;
+        double xz = x * z;
+        double yy = y * y;
+        double yz = y * z;
+        double zz = z * z;
+        double xs = x * s;
+        double ys = y * s;
+        double zs = z * s;
 
-        float r0  = xx * omc + c;
-        float r1  = xy * omc - zs;
-        float r2  = xz * omc + ys;
-        float r4  = xy * omc + zs;
-        float r5  = yy * omc + c;
-        float r6  = yz * omc - xs;
-        float r8  = xz * omc - ys;
-        float r9  = yz * omc + xs;
-        float r10 = zz * omc + c;
+        double r0  = xx * omc + c;
+        double r1  = xy * omc - zs;
+        double r2  = xz * omc + ys;
+        double r4  = xy * omc + zs;
+        double r5  = yy * omc + c;
+        double r6  = yz * omc - xs;
+        double r8  = xz * omc - ys;
+        double r9  = yz * omc + xs;
+        double r10 = zz * omc + c;
 
-        this.raw = new float[] {
+        this.raw = new double[] {
                 this.raw[0] * r0 + this.raw[1] * r4 + this.raw[2] * r8,
                 this.raw[0] * r1 + this.raw[1] * r5 + this.raw[2] * r9,
                 this.raw[0] * r2 + this.raw[1] * r6 + this.raw[2] * r10,
@@ -533,11 +487,11 @@ public class Mat4f {
      * @param angle the angle (in radians) specifying the rotation around the {@code x}-axis.
      * @return this matrix.
      */
-    public Mat4f rotateX(float angle) {
-        float s = (float) Math.sin(angle);
-        float c = (float) Math.cos(angle);
+    public Mat4d rotateX(double angle) {
+        double s = Math.sin(angle);
+        double c = Math.cos(angle);
 
-        this.raw = new float[] {
+        this.raw = new double[] {
                 this.raw[ 0], this.raw[ 1] * c + this.raw[ 2] * s, -this.raw[ 1] * s + this.raw[ 2] * c, this.raw[ 3],
                 this.raw[ 4], this.raw[ 5] * c + this.raw[ 6] * s, -this.raw[ 5] * s + this.raw[ 6] * c, this.raw[ 7],
                 this.raw[ 8], this.raw[ 9] * c + this.raw[10] * s, -this.raw[ 9] * s + this.raw[10] * c, this.raw[11],
@@ -554,11 +508,11 @@ public class Mat4f {
      * @param angle the angle (in radians) specifying the rotation around the {@code y}-axis.
      * @return this matrix.
      */
-    public Mat4f rotateY(float angle) {
-        float s = (float) Math.sin(angle);
-        float c = (float) Math.cos(angle);
+    public Mat4d rotateY(double angle) {
+        double s = Math.sin(angle);
+        double c = Math.cos(angle);
 
-        this.raw = new float[] {
+        this.raw = new double[] {
                 this.raw[ 0] * c - this.raw[ 2] * s, this.raw[ 1], this.raw[ 0] * s + this.raw[ 2] * c, this.raw[ 3],
                 this.raw[ 4] * c - this.raw[ 6] * s, this.raw[ 5], this.raw[ 4] * s + this.raw[ 6] * c, this.raw[ 7],
                 this.raw[ 8] * c - this.raw[10] * s, this.raw[ 9], this.raw[ 8] * s + this.raw[10] * c, this.raw[11],
@@ -575,11 +529,11 @@ public class Mat4f {
      * @param angle the angle (in radians) specifying the rotation around the {@code z}-axis.
      * @return this matrix.
      */
-    public Mat4f rotateZ(float angle) {
-        float s = (float) Math.sin(angle);
-        float c = (float) Math.cos(angle);
+    public Mat4d rotateZ(double angle) {
+        double s = Math.sin(Math.toRadians(angle));
+        double c = Math.cos(Math.toRadians(angle));
 
-        this.raw = new float[] {
+        this.raw = new double[] {
                 this.raw[ 0] * c + this.raw[ 1] * s, -this.raw[ 0] * s + this.raw[ 1] * c, this.raw[ 2], this.raw[ 3],
                 this.raw[ 4] * c + this.raw[ 5] * s, -this.raw[ 4] * s + this.raw[ 5] * c, this.raw[ 6], this.raw[ 7],
                 this.raw[ 8] * c + this.raw[ 9] * s, -this.raw[ 8] * s + this.raw[ 9] * c, this.raw[10], this.raw[11],
@@ -594,8 +548,8 @@ public class Mat4f {
      *
      * @return this matrix.
      */
-    public Mat4f transpose() {
-        float swp;
+    public Mat4d transpose() {
+        double swp;
 
         swp         = this.raw[1];
         this.raw[1] = this.raw[4];
@@ -625,11 +579,34 @@ public class Mat4f {
     }
 
     /**
+     * Transposes the upper left 3x3 matrix, leaving all other elements as they are.
+     *
+     * @return this matrix.
+     */
+    public Mat4d transpose3() {
+        double swp;
+
+        swp         = this.raw[1];
+        this.raw[1] = this.raw[4];
+        this.raw[4] = swp;
+
+        swp         = this.raw[2];
+        this.raw[2] = this.raw[8];
+        this.raw[8] = swp;
+
+        swp         = this.raw[6];
+        this.raw[6] = this.raw[9];
+        this.raw[9] = swp;
+
+        return this;
+    }
+
+    /**
      * Inverts this matrix.
      *
      * @return this matrix.
      */
-    public Mat4f invert() {
+    public Mat4d invert() {
         if (isAffine())
             return invertAffine();
         else
@@ -641,19 +618,19 @@ public class Mat4f {
      *
      * @return this matrix.
      */
-    public Mat4f invertAffine() {
+    public Mat4d invertAffine() {
         // calculate inverse of upper 3x3 matrix
-        float m0 = raw[5] * raw[10] - raw[6] * raw[ 9];
-        float m1 = raw[2] * raw[ 9] - raw[1] * raw[10];
-        float m2 = raw[1] * raw[ 6] - raw[2] * raw[ 5];
-        float m3 = raw[6] * raw[ 8] - raw[4] * raw[10];
-        float m4 = raw[0] * raw[10] - raw[2] * raw[ 8];
-        float m5 = raw[2] * raw[ 4] - raw[0] * raw[ 6];
-        float m6 = raw[4] * raw[ 9] - raw[5] * raw[ 8];
-        float m7 = raw[1] * raw[ 8] - raw[0] * raw[ 9];
-        float m8 = raw[0] * raw[ 5] - raw[1] * raw[ 4];
+        double m0 = raw[5] * raw[10] - raw[6] * raw[ 9];
+        double m1 = raw[2] * raw[ 9] - raw[1] * raw[10];
+        double m2 = raw[1] * raw[ 6] - raw[2] * raw[ 5];
+        double m3 = raw[6] * raw[ 8] - raw[4] * raw[10];
+        double m4 = raw[0] * raw[10] - raw[2] * raw[ 8];
+        double m5 = raw[2] * raw[ 4] - raw[0] * raw[ 6];
+        double m6 = raw[4] * raw[ 9] - raw[5] * raw[ 8];
+        double m7 = raw[1] * raw[ 8] - raw[0] * raw[ 9];
+        double m8 = raw[0] * raw[ 5] - raw[1] * raw[ 4];
 
-        float det = raw[0] * m0 + raw[1] * (-m3) + raw[2] * m6;
+        double det = raw[0] * m0 + raw[1] * (-m3) + raw[2] * m6;
         if (det == 0) return null;
 
         m0 /= det;
@@ -667,48 +644,48 @@ public class Mat4f {
         m8 /= det;
 
         // calculate product of inverse upper 3x3 matrix and translation part
-        float tx = m0 * (-raw[3]) + m1 * (-raw[7]) + m2 * (-raw[11]);
-        float ty = m3 * (-raw[3]) + m4 * (-raw[7]) + m5 * (-raw[11]);
-        float tz = m6 * (-raw[3]) + m7 * (-raw[7]) + m8 * (-raw[11]);
+        double tx = m0 * (-raw[3]) + m1 * (-raw[7]) + m2 * (-raw[11]);
+        double ty = m3 * (-raw[3]) + m4 * (-raw[7]) + m5 * (-raw[11]);
+        double tz = m6 * (-raw[3]) + m7 * (-raw[7]) + m8 * (-raw[11]);
 
         // assemble inverse matrix
-        this.raw = new float[] {
+        this.raw = new double[] {
                 m0, m1, m2, tx,
                 m3, m4, m5, ty,
                 m6, m7, m8, tz,
-                0,  0,  0,  1
+                 0,  0,  0,  1
         };
 
         return this;
     }
 
     /**
-     * Inverts this matrix. See {@link Mat4f#invert()} for a possibly more performant version, depending on the content
+     * Inverts this matrix. See {@link Mat4d#invert()} for a possibly more performant version, depending on the content
      * of the matrix.
      *
      * @return this matrix.
      */
-    public Mat4f invertGeneral() {
-        float d10d15 = this.raw[10] * this.raw[15] - this.raw[11] * this.raw[14];
-        float d06d15 = this.raw[ 6] * this.raw[15] - this.raw[ 7] * this.raw[14];
-        float d06d11 = this.raw[ 6] * this.raw[11] - this.raw[ 7] * this.raw[10];
-        float d02d15 = this.raw[ 2] * this.raw[15] - this.raw[ 3] * this.raw[14];
-        float d02d11 = this.raw[ 2] * this.raw[11] - this.raw[ 3] * this.raw[10];
-        float d02d07 = this.raw[ 2] * this.raw[ 7] - this.raw[ 3] * this.raw[ 6];
-        float d09d15 = this.raw[ 9] * this.raw[15] - this.raw[11] * this.raw[13];
-        float d05d15 = this.raw[ 5] * this.raw[15] - this.raw[ 7] * this.raw[13];
-        float d05d11 = this.raw[ 5] * this.raw[11] - this.raw[ 7] * this.raw[ 9];
-        float d01d15 = this.raw[ 1] * this.raw[15] - this.raw[ 3] * this.raw[13];
-        float d01d11 = this.raw[ 1] * this.raw[11] - this.raw[ 3] * this.raw[ 9];
-        float d01d07 = this.raw[ 1] * this.raw[ 7] - this.raw[ 3] * this.raw[ 5];
-        float d09d14 = this.raw[ 9] * this.raw[14] - this.raw[10] * this.raw[13];
-        float d05d14 = this.raw[ 5] * this.raw[14] - this.raw[ 6] * this.raw[13];
-        float d05d10 = this.raw[ 5] * this.raw[10] - this.raw[ 6] * this.raw[ 9];
-        float d01d14 = this.raw[ 1] * this.raw[14] - this.raw[ 2] * this.raw[13];
-        float d01d10 = this.raw[ 1] * this.raw[10] - this.raw[ 2] * this.raw[ 9];
-        float d01d06 = this.raw[ 1] * this.raw[ 6] - this.raw[ 2] * this.raw[ 5];
+    public Mat4d invertGeneral() {
+        double d10d15 = this.raw[10] * this.raw[15] - this.raw[11] * this.raw[14];
+        double d06d15 = this.raw[ 6] * this.raw[15] - this.raw[ 7] * this.raw[14];
+        double d06d11 = this.raw[ 6] * this.raw[11] - this.raw[ 7] * this.raw[10];
+        double d02d15 = this.raw[ 2] * this.raw[15] - this.raw[ 3] * this.raw[14];
+        double d02d11 = this.raw[ 2] * this.raw[11] - this.raw[ 3] * this.raw[10];
+        double d02d07 = this.raw[ 2] * this.raw[ 7] - this.raw[ 3] * this.raw[ 6];
+        double d09d15 = this.raw[ 9] * this.raw[15] - this.raw[11] * this.raw[13];
+        double d05d15 = this.raw[ 5] * this.raw[15] - this.raw[ 7] * this.raw[13];
+        double d05d11 = this.raw[ 5] * this.raw[11] - this.raw[ 7] * this.raw[ 9];
+        double d01d15 = this.raw[ 1] * this.raw[15] - this.raw[ 3] * this.raw[13];
+        double d01d11 = this.raw[ 1] * this.raw[11] - this.raw[ 3] * this.raw[ 9];
+        double d01d07 = this.raw[ 1] * this.raw[ 7] - this.raw[ 3] * this.raw[ 5];
+        double d09d14 = this.raw[ 9] * this.raw[14] - this.raw[10] * this.raw[13];
+        double d05d14 = this.raw[ 5] * this.raw[14] - this.raw[ 6] * this.raw[13];
+        double d05d10 = this.raw[ 5] * this.raw[10] - this.raw[ 6] * this.raw[ 9];
+        double d01d14 = this.raw[ 1] * this.raw[14] - this.raw[ 2] * this.raw[13];
+        double d01d10 = this.raw[ 1] * this.raw[10] - this.raw[ 2] * this.raw[ 9];
+        double d01d06 = this.raw[ 1] * this.raw[ 6] - this.raw[ 2] * this.raw[ 5];
 
-        float[] tmp = {
+        double[] tmp = {
                  this.raw[5] * d10d15 - this.raw[9] * d06d15 + this.raw[13] * d06d11,
                 -this.raw[1] * d10d15 + this.raw[9] * d02d15 - this.raw[13] * d02d11,
                  this.raw[1] * d06d15 - this.raw[5] * d02d15 + this.raw[13] * d02d07,
@@ -727,13 +704,13 @@ public class Mat4f {
                  this.raw[0] * d05d10 - this.raw[4] * d01d10 + this.raw[ 8] * d01d06
         };
 
-        float det = this.raw[0] * tmp[0] + this.raw[1] * tmp[4] + this.raw[2] * tmp[8] + this.raw[3] * tmp[12];
+        double det = this.raw[0] * tmp[0] + this.raw[1] * tmp[4] + this.raw[2] * tmp[8] + this.raw[3] * tmp[12];
         if (det == 0) return null;
 
-        det = 1.0f / det;
         for (int i = 0; i < 16; i++)
-            tmp[i] *= det;
+            tmp[i] /= det;
 
+        raw = tmp;
         return this;
     }
 
@@ -742,8 +719,8 @@ public class Mat4f {
      *
      * @return a new identity matrix.
      */
-    public static Mat4f identity() {
-        return new Mat4f(identity);
+    public static Mat4d identity() {
+        return new Mat4d(identity);
     }
 
     /**
@@ -757,21 +734,21 @@ public class Mat4f {
      * @param far    the far plane.
      * @return the created projection-matrix.
      */
-    public static Mat4f ortho(float left, float right, float top, float bottom, float near, float far) {
-        return new Mat4f().makeOrtho(left, right, top, bottom, near, far);
+    public static Mat4d ortho(double left, double right, double top, double bottom, double near, double far) {
+        return new Mat4d().makeOrtho(left, right, top, bottom, near, far);
     }
 
     /**
      * Creates a new perspective projection-matrix.
      *
      * @param fovy        the field-of-view.
-     * @param aspectRatio the aspect ratio (in degree).
+     * @param aspectRatio the aspect ratio.
      * @param zNear       the near plane.
      * @param zFar        the far plane.
      * @return the created projection-matrix.
      */
-    public static Mat4f perspecive(float fovy, float aspectRatio, float zNear, float zFar) {
-        return new Mat4f().makePerspective(fovy, aspectRatio, zNear, zFar);
+    public static Mat4d perspecive(double fovy, double aspectRatio, double zNear, double zFar) {
+        return new Mat4d().makePerspective(fovy, aspectRatio, zNear, zFar);
     }
 
     /**
@@ -783,8 +760,8 @@ public class Mat4f {
      * @param up     the vector indicating the upwards looking direction.
      * @return the created look-at matrix.
      */
-    public static Mat4f lookAt(Vec3f eye, Vec3f center, Vec3f up) {
-        return new Mat4f().makeLookAt(eye, center, up);
+    public static Mat4d lookAt(Vec3d eye, Vec3d center, Vec3d up) {
+        return new Mat4d().makeLookAt(eye, center, up);
     }
 
     /**
@@ -796,8 +773,8 @@ public class Mat4f {
      * @param up  the vector indicating the upwards looking direction.
      * @return this matrix.
      */
-    public static Mat4f lookInDirection(Vec3f eye, Vec3f dir, Vec3f up) {
-        return new Mat4f().makeLookInDirection(eye, dir, up);
+    public static Mat4d lookInDirection(Vec3d eye, Vec3d dir, Vec3d up) {
+        return new Mat4d().makeLookInDirection(eye, dir, up);
     }
 
     /**
@@ -807,8 +784,8 @@ public class Mat4f {
      * @param b the second matrix.
      * @return the result of this addition, i.e. {@code a + b}.
      */
-    public static Mat4f add(Mat4f a, Mat4f b) {
-        return new Mat4f(a).add(b);
+    public static Mat4d add(Mat4d a, Mat4d b) {
+        return new Mat4d(a).add(b);
     }
 
     /**
@@ -818,8 +795,8 @@ public class Mat4f {
      * @param b the matrix to subtract.
      * @return the result of this subtraction, i.e. {@code a - b}.
      */
-    public static Mat4f sub(Mat4f a, Mat4f b) {
-        return new Mat4f(a).sub(b);
+    public static Mat4d sub(Mat4d a, Mat4d b) {
+        return new Mat4d(a).sub(b);
     }
 
     /**
@@ -829,8 +806,8 @@ public class Mat4f {
      * @param b the second matrix.
      * @return the result of this multiplication, i.e. {@code a * b}.
      */
-    public static Mat4f mul(Mat4f a, Mat4f b) {
-        return new Mat4f(a).mul(b);
+    public static Mat4d mul(Mat4d a, Mat4d b) {
+        return new Mat4d(a).mul(b);
     }
 
     /**
@@ -840,11 +817,11 @@ public class Mat4f {
      * @param v the vector to multiply with.
      * @return {@code v}.
      */
-    public static Vec4f mulInPlace(Mat4f m, Vec4f v) {
-        float x = m.raw[ 0] * v.x + m.raw[ 1] * v.y + m.raw[ 2] * v.z + m.raw[ 3] * v.w;
-        float y = m.raw[ 4] * v.x + m.raw[ 5] * v.y + m.raw[ 6] * v.z + m.raw[ 7] * v.w;
-        float z = m.raw[ 8] * v.x + m.raw[ 9] * v.y + m.raw[10] * v.z + m.raw[11] * v.w;
-        float w = m.raw[12] * v.x + m.raw[13] * v.y + m.raw[14] * v.z + m.raw[15] * v.w;
+    public static Vec4d mulInPlace(Mat4d m, Vec4d v) {
+        double x = m.raw[ 0] * v.x + m.raw[ 1] * v.y + m.raw[ 2] * v.z + m.raw[ 3] * v.w;
+        double y = m.raw[ 4] * v.x + m.raw[ 5] * v.y + m.raw[ 6] * v.z + m.raw[ 7] * v.w;
+        double z = m.raw[ 8] * v.x + m.raw[ 9] * v.y + m.raw[10] * v.z + m.raw[11] * v.w;
+        double w = m.raw[12] * v.x + m.raw[13] * v.y + m.raw[14] * v.z + m.raw[15] * v.w;
 
         v.x = x;
         v.y = y;
@@ -861,8 +838,8 @@ public class Mat4f {
      * @param scalar the scalar value to multiply with.
      * @return the result of this multiplication, i.e. {@code m * scalar}.
      */
-    public static Mat4f mul(Mat4f m, float scalar) {
-        return new Mat4f(m).mul(scalar);
+    public static Mat4d mul(Mat4d m, double scalar) {
+        return new Mat4d(m).mul(scalar);
     }
 
     /**
@@ -873,8 +850,8 @@ public class Mat4f {
      * @param v the vector specifying the translation.
      * @return the result of this transformation.
      */
-    public static Mat4f translate(Mat4f m, Vec3f v) {
-        return new Mat4f(m).translate(v);
+    public static Mat4d translate(Mat4d m, Vec3d v) {
+        return new Mat4d(m).translate(v);
     }
 
     /**
@@ -887,8 +864,8 @@ public class Mat4f {
      * @param z the z-axis translation component.
      * @return the result of this transformation.
      */
-    public static Mat4f translate(Mat4f m, float x, float y, float z) {
-        return new Mat4f(m).translate(x, y, z);
+    public static Mat4d translate(Mat4d m, double x, double y, double z) {
+        return new Mat4d(m).translate(x, y, z);
     }
 
     /**
@@ -899,8 +876,8 @@ public class Mat4f {
      * @param v the vector specifying the scale-transformation.
      * @return the result of this transformation.
      */
-    public static Mat4f scale(Mat4f m, Vec3f v) {
-        return new Mat4f(m).scale(v);
+    public static Mat4d scale(Mat4d m, Vec3d v) {
+        return new Mat4d(m).scale(v);
     }
 
     /**
@@ -913,8 +890,8 @@ public class Mat4f {
      * @param z the z-axis scale component.
      * @return the result of this transformation.
      */
-    public static Mat4f scale(Mat4f m, float x, float y, float z) {
-        return new Mat4f(m).scale(x, y, z);
+    public static Mat4d scale(Mat4d m, double x, double y, double z) {
+        return new Mat4d(m).scale(x, y, z);
     }
 
     /**
@@ -926,8 +903,8 @@ public class Mat4f {
      * @param angle the angle (in radians) specifying the rotation.
      * @return the result of this transformation.
      */
-    public static Mat4f rotate(Mat4f m, Vec3f axis, float angle) {
-        return new Mat4f(m).rotate(axis, angle);
+    public static Mat4d rotate(Mat4d m, Vec3d axis, double angle) {
+        return new Mat4d(m).rotate(axis, angle);
     }
 
     /**
@@ -941,8 +918,8 @@ public class Mat4f {
      * @param angle the angle (in radians) specifying the rotation.
      * @return the result of this transformation.
      */
-    public static Mat4f rotate(Mat4f m, float x, float y, float z, float angle) {
-        return new Mat4f(m).rotate(x, y, z, angle);
+    public static Mat4d rotate(Mat4d m, double x, double y, double z, double angle) {
+        return new Mat4d(m).rotate(x, y, z, angle);
     }
 
     /**
@@ -953,8 +930,8 @@ public class Mat4f {
      * @param angle the angle (in radians) specifying the rotation around the {@code x}-axis.
      * @return the result of this transformation.
      */
-    public static Mat4f rotateX(Mat4f m, float angle) {
-        return new Mat4f(m).rotateX(angle);
+    public static Mat4d rotateX(Mat4d m, double angle) {
+        return new Mat4d(m).rotateX(angle);
     }
 
     /**
@@ -965,8 +942,8 @@ public class Mat4f {
      * @param angle the angle (in radians) specifying the rotation around the {@code y}-axis.
      * @return the result of this transformation.
      */
-    public static Mat4f rotateY(Mat4f m, float angle) {
-        return new Mat4f(m).rotateY(angle);
+    public static Mat4d rotateY(Mat4d m, double angle) {
+        return new Mat4d(m).rotateY(angle);
     }
 
     /**
@@ -977,8 +954,8 @@ public class Mat4f {
      * @param angle the angle (in radians) specifying the rotation around the {@code z}-axis.
      * @return the result of this transformation.
      */
-    public static Mat4f rotateZ(Mat4f m, float angle) {
-        return new Mat4f(m).rotateZ(angle);
+    public static Mat4d rotateZ(Mat4d m, double angle) {
+        return new Mat4d(m).rotateZ(angle);
     }
 
     /**
@@ -987,8 +964,8 @@ public class Mat4f {
      * @param m the matrix to be transposed.
      * @return the transposed matrix.
      */
-    public static Mat4f transpose(Mat4f m) {
-        return new Mat4f(m).transpose();
+    public static Mat4d transpose(Mat4d m) {
+        return new Mat4d(m).transpose();
     }
 
     /**
@@ -997,8 +974,8 @@ public class Mat4f {
      * @param m the matrix to be transposed.
      * @return the inverted matrix.
      */
-    public static Mat4f invert(Mat4f m) {
-        return new Mat4f(m).invert();
+    public static Mat4d invert(Mat4d m) {
+        return new Mat4d(m).invert();
     }
 
     /**
@@ -1007,27 +984,27 @@ public class Mat4f {
      * @param m the matrix to be transposed.
      * @return the inverted matrix.
      */
-    public static Mat4f invertAffine(Mat4f m) {
-        return new Mat4f(m).invertAffine();
+    public static Mat4d invertAffine(Mat4d m) {
+        return new Mat4d(m).invertAffine();
     }
 
     /**
-     * Inverts the specified matrix and returns the result as new matrix. See {@link Mat4f#invert(Mat4f)} for a
+     * Inverts the specified matrix and returns the result as new matrix. See {@link Mat4d#invert(Mat4d)} for a
      * possibly more efficient version, depending on the contents of the matrix.
      *
      * @param m the matrix to be transposed.
      * @return the inverted matrix.
      */
-    public static Mat4f invertGeneral(Mat4f m) {
-        return new Mat4f(m).invertGeneral();
+    public static Mat4d invertGeneral(Mat4d m) {
+        return new Mat4d(m).invertGeneral();
     }
 
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Mat4f)) return false;
+        if (!(obj instanceof Mat4d)) return false;
 
-        Mat4f other = (Mat4f) obj;
+        Mat4d other = (Mat4d) obj;
         return this.raw[0] == other.raw[0]
                 && this.raw[ 1] == other.raw[ 1]
                 && this.raw[ 2] == other.raw[ 2]
@@ -1060,10 +1037,10 @@ public class Mat4f {
     /**
      * Identity matrix as array. Do not modify!
      */
-    private static final float[] identity = {
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f,
+    private static final double[] identity = {
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
     };
 }

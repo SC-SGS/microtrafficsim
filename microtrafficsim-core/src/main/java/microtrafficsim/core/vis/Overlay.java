@@ -1,7 +1,7 @@
 package microtrafficsim.core.vis;
 
-import com.jogamp.newt.event.KeyEvent;
-import com.jogamp.newt.event.MouseEvent;
+import com.jogamp.newt.event.KeyListener;
+import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.view.OrthographicView;
 
@@ -26,7 +26,7 @@ public interface Overlay {
      * @param context the {@code RenderContext} with which this overlay will be displayed.
      * @throws Exception if any exception occurs during initializing.
      */
-    void init(RenderContext context) throws Exception;
+    void initialize(RenderContext context) throws Exception;
 
     /**
      * Dispose this overlay.
@@ -72,7 +72,7 @@ public interface Overlay {
      *
      * @return the {@code KeyListener} handling the key-events for this overlay or {@code null} if none is present.
      */
-    default KeyListener getKeyListeners() {
+    default KeyListener getKeyListener() {
         return null;
     }
 
@@ -85,110 +85,6 @@ public interface Overlay {
         return null;
     }
 
-
-    /**
-     * Key-listener for the {@code Overlay}.
-     */
-    interface KeyListener {
-
-        /**
-         * Called when a key is being pressed.
-         *
-         * @param e the {@code KeyEvent} for this action.
-         * @return true if this listener consumed this event, i.e. no overlay further down the event-chain should be
-         * notified of this event.
-         */
-        default boolean keyPressed(KeyEvent e) { return false; }
-
-        /**
-         * Called when a key is being released.
-         *
-         * @param e the {@code KeyEvent} for this action.
-         * @return true if this listener consumed this event, i.e. no overlay further down the event-chain should be
-         * notified of this event.
-         */
-        default boolean keyReleased(KeyEvent e) { return false; }
-    }
-
-    /**
-     * Mouse-listener for the {@code Overlay}.
-     */
-    interface MouseListener {
-
-        /**
-         * Called when a mouse-button is being clicked.
-         *
-         * @param e the {@code MouseEvent} for this action.
-         * @return {@code true} if this listener consumed this event, i.e. no overlay further down the event-chain should be
-         * notified of this event.
-         */
-        default boolean mouseClicked(MouseEvent e) { return false; }
-
-        /**
-         * Called when a mouse-button is being pressed.
-         *
-         * @param e the {@code MouseEvent} for this action.
-         * @return {@code true} if this listener consumed this event, i.e. no overlay further down the event-chain should be
-         * notified of this event.
-         */
-        default boolean mousePressed(MouseEvent e) { return false; }
-
-        /**
-         * Called when a mouse-button is being released.
-         *
-         * @param e the {@code MouseEvent} for this action.
-         * @return {@code true} if this listener consumed this event, i.e. no overlay further down the event-chain should be
-         * notified of this event.
-         */
-        default boolean mouseReleased(MouseEvent e) { return false; }
-
-        /**
-         * Called when the mouse is being moved.
-         *
-         * @param e the {@code MouseEvent} for this action.
-         * @return {@code true} if this listener consumed this event, i.e. no overlay further down the event-chain should be
-         * notified of this event.
-         */
-        default boolean mouseMoved(MouseEvent e) { return false; }
-
-        /**
-         * Called when the mouse is being dragged.
-         *
-         * @param e the {@code MouseEvent} for this action.
-         * @return true if this listener consumed this event, i.e. no overlay further down the event-chain should be
-         * notified of this event.
-         */
-        default boolean mouseDragged(MouseEvent e) { return false; }
-
-        /**
-         * Called when the mouse-wheel is being moved.
-         *
-         * @param e the {@code MouseEvent} for this action.
-         * @return {@code true} if this listener consumed this event, i.e. no overlay further down the event-chain should be
-         * notified of this event.
-         */
-        default boolean mouseWheelMoved(MouseEvent e) { return false; }
-
-        /**
-         * Called when the mouse entered this overlay.
-         *
-         * @param e the {@code MouseEvent} for this action.
-         * @return {@code true} if this listener consumed this event, i.e. no overlay further down the event-chain
-         * should be notified of this event. For this event-type, the event should normally not be consumed, thus the
-         * method should always return false.
-         */
-        default boolean mouseEntered(MouseEvent e) { return false; }
-
-        /**
-         * Called when the mouse left this overlay.
-         *
-         * @param e the {@code MouseEvent} for this action.
-         * @return {@code true} if this listener consumed this event, i.e. no overlay further down the event-chain
-         * should be notified of this event. For this event-type, the event should normally not be consumed, thus the
-         * method should always return false.
-         */
-        default boolean mouseExited(MouseEvent e) { return false; }
-    }
 
     /**
      * Render-buffer for the map being displayed.

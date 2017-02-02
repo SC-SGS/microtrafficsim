@@ -44,8 +44,8 @@ public class Vec2d {
      *
      * @param xy the vector from which the values should be copied.
      */
-    public Vec2d(Vec2i xy) {
-        this(xy.x, xy.y);
+    public static Vec2d from(Vec2i xy) {
+        return new Vec2d(xy.x, xy.y);
     }
 
     /**

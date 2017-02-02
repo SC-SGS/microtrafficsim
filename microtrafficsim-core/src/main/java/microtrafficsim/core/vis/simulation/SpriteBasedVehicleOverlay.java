@@ -2,8 +2,8 @@ package microtrafficsim.core.vis.simulation;
 
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.entities.street.StreetEntity;
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
@@ -12,21 +12,20 @@ import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.opengl.BufferStorage;
 import microtrafficsim.core.vis.opengl.DataTypes;
-import microtrafficsim.core.vis.opengl.shader.Shader;
 import microtrafficsim.core.vis.opengl.shader.ShaderCompileException;
 import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
-import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.opengl.utils.TextureData2D;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.Vec2i;
 import microtrafficsim.math.Vec3d;
 import microtrafficsim.utils.resources.PackagedResource;
-import microtrafficsim.utils.resources.Resource;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -50,11 +49,13 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
     private static final int TEX_UNIT_SPRITE    = 0;
     private static final int TEX_UNIT_MAP_DEPTH = 1;
 
-    private static final Resource SHADER_VERT = new PackagedResource(
-            ShaderBasedVehicleOverlay.class, "/shaders/overlay/vehicle/spritebased/vehicle_overlay.vs");
-
-    private static final Resource SHADER_FRAG = new PackagedResource(
-            ShaderBasedVehicleOverlay.class, "/shaders/overlay/vehicle/spritebased/vehicle_overlay.fs");
+    private static final ShaderProgramSource SHADER_PROG_SRC = new ShaderProgramSource(
+            "/shaders/overlay/vehicle/spritebased/vehicle_overlay",
+            new ShaderSource(GL3.GL_VERTEX_SHADER, new PackagedResource(SpriteBasedVehicleOverlay.class,
+                    "/shaders/overlay/vehicle/spritebased/vehicle_overlay.vs")),
+            new ShaderSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(SpriteBasedVehicleOverlay.class,
+                    "/shaders/overlay/vehicle/spritebased/vehicle_overlay.fs"))
+    );
 
     private final Supplier<VisualizationVehicleEntity> vehicleFactory;
 
@@ -106,24 +107,10 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
 
     @Override
-    public void init(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
+    public void initialize(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
-        Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "spritebased.vehicle_overlay.vs")
-                .loadFromResource(SHADER_VERT)
-                .compile(gl);
-
-        Shader fs = Shader.create(gl, GL3.GL_FRAGMENT_SHADER, "spritebased.vehicle_overlay.fs")
-                .loadFromResource(SHADER_FRAG)
-                .compile(gl);
-
-        prog = ShaderProgram.create(context, "spritebased.vehicle_overlay")
-                .attach(gl, vs, fs)
-                .link(gl)
-                .detach(gl, vs, fs);
-
-        vs.dispose(gl);
-        fs.dispose(gl);
+        prog = context.getShaderManager().load(SHADER_PROG_SRC);
 
         // set samplers
         UniformSampler2D uSpriteSampler = (UniformSampler2D) prog.getUniform("u_sprite_sampler");

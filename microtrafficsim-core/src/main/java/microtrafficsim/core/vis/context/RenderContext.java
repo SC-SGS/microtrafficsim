@@ -41,6 +41,7 @@ public class RenderContext implements GLEventListener {
     public final BlendMode        BlendMode;
     public final PrimitiveRestart PrimitiveRestart;
     public final PointState       Points;
+    public final LineState        Lines;
     public final ShaderState      ShaderState;
 
     private Renderer renderer;
@@ -63,6 +64,7 @@ public class RenderContext implements GLEventListener {
         BlendMode        = new BlendMode();
         PrimitiveRestart = new PrimitiveRestart();
         Points           = new PointState();
+        Lines            = new LineState();
         ShaderState      = new ShaderState();
     }
 
@@ -78,7 +80,7 @@ public class RenderContext implements GLEventListener {
         this.drawable = null;
         this.exhdlr   = null;
 
-        this.shaders    = new ShaderManager();
+        this.shaders    = new ShaderManager(this);
         this.uniforms   = new UniformManager();
         this.attributes = new VertexAttributeManager();
     }

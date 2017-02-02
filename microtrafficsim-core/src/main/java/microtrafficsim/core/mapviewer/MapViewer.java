@@ -1,6 +1,5 @@
 package microtrafficsim.core.mapviewer;
 
-import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.vis.Overlay;

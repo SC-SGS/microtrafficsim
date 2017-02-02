@@ -25,6 +25,20 @@ public class ShaderProgramSource {
         this.sources = new HashSet<>();
     }
 
+    /**
+     * Construct a new {@code ShaderProgramSource} with the given name and {@code ShaderSource}s.
+     *
+     * @param name    the name of the shader program.
+     * @param sources the shader-sources of this program-source.
+     */
+    public ShaderProgramSource(String name, ShaderSource... sources) {
+        this.name    = name;
+        this.sources = new HashSet<>();
+
+        for (ShaderSource src : sources)
+            this.sources.add(src);
+    }
+
 
     /**
      * Returns the name of the shader program.

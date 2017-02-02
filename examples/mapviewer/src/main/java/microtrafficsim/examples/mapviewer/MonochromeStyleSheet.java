@@ -268,10 +268,10 @@ class MonochromeStyleSheet implements MapStyleSheet {
      * @return the created shader-sources.
      */
     private ShaderProgramSource getPolygonShader() {
-        Resource vert = new PackagedResource(MonochromeStyleSheet.class, "/shaders/features/polygons/polygons.vs");
-        Resource frag = new PackagedResource(MonochromeStyleSheet.class, "/shaders/features/polygons/polygons.fs");
+        Resource vert = new PackagedResource(MonochromeStyleSheet.class, "/shaders/basic.vs");
+        Resource frag = new PackagedResource(MonochromeStyleSheet.class, "/shaders/basic.fs");
 
-        ShaderProgramSource prog = new ShaderProgramSource("polygons");
+        ShaderProgramSource prog = new ShaderProgramSource("/shaders/basic");
         prog.addSource(GL3.GL_VERTEX_SHADER, vert);
         prog.addSource(GL3.GL_FRAGMENT_SHADER, frag);
 

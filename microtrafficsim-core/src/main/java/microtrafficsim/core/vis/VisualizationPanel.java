@@ -45,7 +45,7 @@ public class VisualizationPanel extends JPanel {
 
         GLWindow window = GLWindow.create(config.glcapabilities);
         window.addGLEventListener(visualization.getRenderContext());
-        window.addMouseListener(visualization.getMouseController());
+        window.addMouseListener(visualization.getMouseListener());
         window.addKeyListener(visualization.getKeyController());
 
         animator = new FPSAnimator(window, config.fps, true);

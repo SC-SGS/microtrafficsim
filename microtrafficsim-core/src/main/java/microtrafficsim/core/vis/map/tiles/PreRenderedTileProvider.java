@@ -21,6 +21,8 @@ import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexArrayObject;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
+import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.Uniform1f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformMat4f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
@@ -50,10 +52,11 @@ public class PreRenderedTileProvider implements TileProvider {
 
     private static final Rect2d TILE_TARGET = new Rect2d(-1.0, -1.0, 1.0, 1.0);
 
-    private static final Resource TILE_COPY_SHADER_VS
-            = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tiles/tilecopy.vs");
-    private static final Resource TILE_COPY_SHADER_FS
-            = new PackagedResource(PreRenderedTileProvider.class, "/shaders/tiles/tilecopy.fs");
+    private static final ShaderProgramSource TILE_COPY_SHADER_SRC = new ShaderProgramSource(
+            "/shaders/tiles/tilecopy.vs",
+            new ShaderSource(GL3.GL_VERTEX_SHADER, new PackagedResource(PreRenderedTileProvider.class, "/shaders/tiles/tilecopy.vs")),
+            new ShaderSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(PreRenderedTileProvider.class, "/shaders/tiles/tilecopy.fs"))
+    );
 
     private static final int TEX_UNIT_TILE_COLOR = 0;
     private static final int TEX_UNIT_TILE_DEPTH = 1;
@@ -138,20 +141,7 @@ public class PreRenderedTileProvider implements TileProvider {
     public void initialize(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
         GL3 gl = context.getDrawable().getGL().getGL3();
 
-        Shader vs = Shader.create(gl, GL3.GL_VERTEX_SHADER, "tilecopy.vs")
-                .loadFromResource(TILE_COPY_SHADER_VS)
-                .compile(gl);
-
-        Shader fs = Shader.create(gl, GL3.GL_FRAGMENT_SHADER, "tilecopy.fs")
-                .loadFromResource(TILE_COPY_SHADER_FS)
-                .compile(gl);
-
-        tilecopy = ShaderProgram.create(context, "tilecopy")
-                .attach(gl, vs, fs).link(gl)
-                .detach(gl, vs, fs);
-
-        vs.dispose(gl);
-        fs.dispose(gl);
+        tilecopy = context.getShaderManager().load(TILE_COPY_SHADER_SRC);
 
         uTileCopyTransform = (UniformMat4f) tilecopy.getUniform("u_tilecopy");
         uProjection        = (UniformMat4f) context.getUniformManager().getGlobalUniform("u_projection");

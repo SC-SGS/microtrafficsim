@@ -1,5 +1,6 @@
 package microtrafficsim.math.geometry.polygons;
 
+import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.collections.ArrayUtils;
 
@@ -94,6 +95,10 @@ public class Polygon {
                 ArrayUtils.reverseInPlace(islands[i - 1]);
 
         return this;
+    }
+
+    public Rect2d bounds() {
+        return Rect2d.from(outline);
     }
 
 
