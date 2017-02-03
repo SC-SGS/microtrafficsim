@@ -1,6 +1,5 @@
 package microtrafficsim.core.vis;
 
-import com.jogamp.nativewindow.WindowClosingProtocol;
 import com.jogamp.newt.awt.NewtCanvasAWT;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.util.FPSAnimator;
