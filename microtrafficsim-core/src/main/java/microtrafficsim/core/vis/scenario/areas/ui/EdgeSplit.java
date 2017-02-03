@@ -1,5 +1,7 @@
 package microtrafficsim.core.vis.scenario.areas.ui;
 
+import com.jogamp.newt.event.KeyEvent;
+import com.jogamp.newt.event.KeyListener;
 import microtrafficsim.core.vis.glui.Component;
 import microtrafficsim.core.vis.glui.events.MouseAdapter;
 import microtrafficsim.core.vis.glui.events.MouseEvent;
@@ -29,37 +31,38 @@ public class EdgeSplit extends Component {
 
 
     private ScenarioAreaOverlay root;
-    protected Vec2d a;
-    protected Vec2d b;
+    protected AreaVertex a;
+    protected AreaVertex b;
     protected Vec2d pos;
 
     private boolean active;
 
 
-    EdgeSplit(ScenarioAreaOverlay root, Vec2d a, Vec2d b) {
+    EdgeSplit(ScenarioAreaOverlay root, AreaVertex a, AreaVertex b) {
         super(PASS_OUTER, PASS_INNER);
 
         this.root = root;
         this.a = a;
         this.b = b;
-        this.pos = Vec2d.add(a, b).mul(0.5);
+        this.pos = Vec2d.add(a.getPosition(), b.getPosition()).mul(0.5);
         this.focusable = false;
         this.active = false;
 
         addMouseListener(new MouseListenerImpl());
+        addKeyListener(new KeyListenerImpl());
     }
 
 
     @Override
     protected boolean contains(Vec2d p) {
         Vec2d h = getActiveHeightScale();
-        return ActiveArea.calculate(a, b, h).contains(p);
+        return ActiveArea.calculate(a.getPosition(), b.getPosition(), h).contains(p);
     }
 
     @Override
     protected void updateBounds() {
         Vec2d h = getActiveHeightScale();
-        this.aabb = ActiveArea.bounds(a, b, h);
+        this.aabb = ActiveArea.bounds(a.getPosition(), b.getPosition(), h);
     }
 
     @Override
@@ -84,52 +87,83 @@ public class EdgeSplit extends Component {
 
     @Override
     public void redraw(boolean recursive) {
-        pos = Vec2d.add(a, b).mul(0.5);
+        pos = Vec2d.add(a.getPosition(), b.getPosition()).mul(0.5);
         super.redraw(recursive);
     }
 
 
-    private class MouseListenerImpl extends MouseAdapter {
-        // TODO: only activate when shift is down
+    private void activate(boolean shift) {
+        AreaComponent inConstruction = root.getAreaInConstruction();
+        boolean activate = (inConstruction == null || inConstruction.getVertices().size() == 1)
+                && root.getActiveSplit() == null
+                && shift;
 
+        if (activate) {
+            active = true;
+            root.setActiveSplit(EdgeSplit.this);
+            root.abortAreaInConstruction();
+
+            redraw();
+        }
+    }
+
+    private void deactivate(boolean shift) {
+        active = false;
+
+        if (root.getActiveSplit() == EdgeSplit.this) {
+            root.setActiveSplit(null);
+
+            if (shift) {
+                root.startNewAreaInConstruction();
+            }
+        }
+
+        redraw();
+    }
+
+
+    private class MouseListenerImpl extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent e) {
             if (root.isAreaInConstruction()) return;
             if (root.getActiveSplit() != EdgeSplit.this) return;
 
-            // TODO
+            root.clearVertexSelection();
+            AreaComponent area = (AreaComponent) getParent();
+            area.insert(area.getVertices().indexOf(b), pos, true);
 
             e.setConsumed(true);
         }
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            if (!root.isAreaInConstruction() && root.getActiveSplit() == null) {
-                active = true;
-                root.setActiveSplit(EdgeSplit.this);
-
-                redraw();
-            }
+            activate(e.isShiftDown());
         }
 
         @Override
         public void mouseEntered(MouseEvent e) {
-            if (!root.isAreaInConstruction() && root.getActiveSplit() == null) {
-                active = true;
-                root.setActiveSplit(EdgeSplit.this);
-
-                redraw();
-            }
+            activate(e.isShiftDown());
         }
 
         @Override
         public void mouseExited(MouseEvent e) {
-            active = false;
+            deactivate(e.isShiftDown());
+        }
+    }
 
-            if (root.getActiveSplit() == EdgeSplit.this)
-                root.setActiveSplit(null);
+    private class KeyListenerImpl implements KeyListener {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                activate(true);
+            }
+        }
 
-            redraw();
+        @Override
+        public void keyReleased(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_SHIFT) {
+                deactivate(false);
+            }
         }
     }
 

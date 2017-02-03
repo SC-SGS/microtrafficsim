@@ -86,32 +86,24 @@ public class AreaComponent extends Component {
         addMouseListener(new MouseListenerImpl());
 
         if (area.outline.length > 0) {
-            Vec2d a = area.outline[area.outline.length - 1];
-            AreaVertex prev = null;
-            EdgeSplit first = null;
-
             for (Vec2d b : area.outline) {
-                EdgeSplit edge = new EdgeSplit(root, a, b);
-                if (first == null)
-                    first = edge;
-
                 AreaVertex c = new AreaVertex(root, b);
                 c.setVisible(selected);
-                edge.setVisible(selected);
-
-                c.left = edge;
-                if (prev != null)
-                    prev.right = edge;
-
                 this.add(c);
-                this.add(edge);
                 vertices.add(c);
+            }
 
-                prev = c;
+            AreaVertex a = vertices.get(vertices.size() - 1);
+            for (AreaVertex b : vertices) {
+                EdgeSplit split = new EdgeSplit(root, a, b);
+
+                a.right = split;
+                b.left = split;
+                this.add(split);
+
                 a = b;
             }
 
-            prev.right = first;
         }
 
         updateBounds();
@@ -152,43 +144,44 @@ public class AreaComponent extends Component {
     }
 
     public void add(Vec2d vertex, boolean select) {
+        insert(vertices.size(), vertex, select);
+    }
+
+    public void insert(int index, Vec2d vertex, boolean select) {
         Vec2d v = new Vec2d(vertex);
 
         Vec2d[] outline = new Vec2d[area.outline.length + 1];
-        System.arraycopy(area.outline, 0, outline, 0, area.outline.length);
-        outline[area.outline.length] = v;
+        System.arraycopy(area.outline, 0, outline, 0, index);
+        System.arraycopy(area.outline, index, outline, index + 1, area.outline.length - index);
+        outline[index] = v;
         area.outline = outline;
 
-        if (vertices.size() >= 2) {
-            AreaVertex left = vertices.get(vertices.size() - 1);
-            left.right.b = v;
+        AreaVertex av = new AreaVertex(root, v);
+        vertices.add(index, av);
+        super.add(av);
 
-            AreaVertex right = vertices.get(0);
+        if (vertices.size() >= 3) {
+            int leftIndex = (index - 1) >= 0 ? index - 1 : index - 1 + vertices.size();
+            int rightIndex = (index + 1) < vertices.size() ? index + 1 : index + 1 - vertices.size();
 
-            AreaVertex av = new AreaVertex(root, v);
-            EdgeSplit edge = new EdgeSplit(root, av.getPosition(), right.getPosition());
+            AreaVertex left = vertices.get(leftIndex);
+            AreaVertex right = vertices.get(rightIndex);
 
+            EdgeSplit edge = new EdgeSplit(root, av, right);
+
+            left.right.b = av;
             right.left = edge;
             av.right = edge;
             av.left = left.right;
 
             if (select) root.select(av);
-
-            super.add(av);
             super.add(edge);
-            vertices.add(av);
 
-        } else if (vertices.size() == 1) {
-            AreaVertex av = new AreaVertex(root, v);
-            AreaVertex other = vertices.get(0);
+        } else if (vertices.size() == 2) {
+            AreaVertex other = vertices.get((index + 1) % vertices.size());
 
-            EdgeSplit e1 = new EdgeSplit(root, av.getPosition(), other.getPosition());
-            EdgeSplit e2 = new EdgeSplit(root, other.getPosition(), av.getPosition());
-
-            super.add(av);
-            super.add(e1);
-            super.add(e2);
-            vertices.add(av);
+            EdgeSplit e1 = new EdgeSplit(root, av, other);
+            EdgeSplit e2 = new EdgeSplit(root, other, av);
 
             av.left = e2;
             av.right = e1;
@@ -196,17 +189,13 @@ public class AreaComponent extends Component {
             other.left = e1;
             other.right = e2;
 
-        } else {
-            AreaVertex av = new AreaVertex(root, v);
-            super.add(av);
-            vertices.add(av);
+            super.add(e1);
+            super.add(e2);
         }
     }
 
     public void remove(AreaVertex vertex) {
         int index = vertices.indexOf(vertex);
-
-        System.out.println("index = " + index);
 
         Vec2d[] outline = new Vec2d[area.outline.length - 1];
         System.arraycopy(area.outline, 0, outline, 0, index);
@@ -216,7 +205,7 @@ public class AreaComponent extends Component {
         int iright = (index + 1) < vertices.size() ? index + 1 : index + 1 - vertices.size();
         AreaVertex right = vertices.get(iright);
 
-        vertex.left.b = right.getPosition();
+        vertex.left.b = right;
         right.left = vertex.left;
 
         vertices.remove(index);

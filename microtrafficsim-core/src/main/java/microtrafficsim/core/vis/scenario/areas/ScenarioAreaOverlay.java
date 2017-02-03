@@ -344,8 +344,12 @@ public class ScenarioAreaOverlay implements Overlay {
         construction = null;
     }
 
+    public void abortAreaInConstruction() {
+        if (construction == null) return;
 
-    private Vec2d lastmove = null;
+        ui.removeComponent(construction);
+        construction = null;
+    }
 
     public boolean isAreaInConstruction() {
         return construction != null;
@@ -360,6 +364,8 @@ public class ScenarioAreaOverlay implements Overlay {
         this.activeSplit = split;
     }
 
+
+    private Vec2d lastmove = null;
 
     private class MouseListenerImpl extends microtrafficsim.core.vis.glui.events.MouseAdapter {
 
@@ -427,7 +433,6 @@ public class ScenarioAreaOverlay implements Overlay {
                 if (e.isShiftDown()) return;
 
                 ui.getContext().addTask(c -> {
-                    System.out.println(selectedVertices.size());
                     if (!selectedVertices.isEmpty()) {      // remove vertices (or area, if not enough vertices are left)
                         assert selectedAreas.size() == 1;
 
