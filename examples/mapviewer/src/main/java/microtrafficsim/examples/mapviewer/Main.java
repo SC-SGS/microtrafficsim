@@ -62,7 +62,8 @@ public class Main {
         /* on close: stop the visualization and exit */
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                viewer.stop();
+                viewer.destroy();
+                frame.dispose();
                 System.exit(0);
             }
         });

@@ -191,6 +191,11 @@ public class ScenarioAreaOverlay implements Overlay {
     @Override
     public void dispose(RenderContext context) throws Exception {
         ui.dispose(context);
+
+        SwingUtilities.invokeLater(() -> {
+            properties.dispose();
+            properties = null;
+        });
     }
 
     @Override

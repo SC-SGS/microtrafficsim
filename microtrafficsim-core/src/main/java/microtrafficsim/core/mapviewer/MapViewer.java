@@ -1,9 +1,12 @@
 package microtrafficsim.core.mapviewer;
 
+import com.jogamp.newt.util.EDTUtil;
+import jogamp.newt.DefaultEDTUtil;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
+import microtrafficsim.core.vis.Visualization;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.map.projections.Projection;
@@ -51,6 +54,13 @@ public interface MapViewer {
 
     default void stop() {
         getVisualizationPanel().stop();
+    }
+
+    default void destroy() {
+        VisualizationPanel panel = getVisualizationPanel();
+        panel.stop();
+        panel.getParent().remove(panel);
+        panel.destroy();
     }
 
     /**
