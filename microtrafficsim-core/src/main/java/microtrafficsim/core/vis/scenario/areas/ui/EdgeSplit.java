@@ -101,7 +101,11 @@ public class EdgeSplit extends Component {
         if (activate) {
             active = true;
             root.setActiveSplit(EdgeSplit.this);
-            root.abortAreaInConstruction();
+
+            getUIManager().getContext().addTask(c -> {
+                root.abortAreaInConstruction();
+                return null;
+            });
 
             redraw();
         }
@@ -114,7 +118,10 @@ public class EdgeSplit extends Component {
             root.setActiveSplit(null);
 
             if (shift) {
-                root.startNewAreaInConstruction();
+                getUIManager().getContext().addTask(c -> {
+                    root.startNewAreaInConstruction();
+                    return null;
+                });
             }
         }
 
@@ -128,9 +135,12 @@ public class EdgeSplit extends Component {
             if (root.isAreaInConstruction()) return;
             if (root.getActiveSplit() != EdgeSplit.this) return;
 
-            root.clearVertexSelection();
-            AreaComponent area = (AreaComponent) getParent();
-            area.insert(area.getVertices().indexOf(b), pos, true);
+            getUIManager().getContext().addTask(c -> {
+                root.clearVertexSelection();
+                AreaComponent area = (AreaComponent) getParent();
+                area.insert(area.getVertices().indexOf(b), pos, true);
+                return null;
+            });
 
             e.setConsumed(true);
         }

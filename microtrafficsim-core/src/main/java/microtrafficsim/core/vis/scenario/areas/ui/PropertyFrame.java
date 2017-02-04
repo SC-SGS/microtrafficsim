@@ -1,6 +1,6 @@
 package microtrafficsim.core.vis.scenario.areas.ui;
 
-import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.core.vis.glui.UIManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,6 +11,7 @@ import java.util.Iterator;
 
 public class PropertyFrame extends JFrame {
 
+    private UIManager ui;
     private JComboBox<TypeComboBoxEntry> type;
     private JPanel panel;
 
@@ -18,8 +19,9 @@ public class PropertyFrame extends JFrame {
     private AreaComponent.Type lastSelectedType = AreaComponent.Type.ORIGIN;
 
 
-    public PropertyFrame() {
+    public PropertyFrame(UIManager ui) {
         super("Area Properties");
+        this.ui = ui;
         setupUI();
         pack();
     }
@@ -51,18 +53,18 @@ public class PropertyFrame extends JFrame {
             type.addActionListener(a -> {
                 if (areas.isEmpty()) return;
 
-                ArrayList<AreaComponent> selected = new ArrayList<>(areas);
-                AreaComponent.Type type = getSelectedType();
+                ui.getContext().addTask(c -> {
+                    ArrayList<AreaComponent> selected = new ArrayList<>(areas);
+                    AreaComponent.Type type = getSelectedType();
 
-                if (type != null) {
-                    selected.get(0).getUIManager().getContext().addTask(c -> {
+                    if (type != null) {
                         lastSelectedType = type;
                         for (AreaComponent area : selected)
                             area.setType(type);
+                    }
 
-                        return null;
-                    });
-                }
+                    return null;
+                });
             });
 
             GridBagConstraints gbc = new GridBagConstraints();
