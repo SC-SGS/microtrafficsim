@@ -1,6 +1,5 @@
 package microtrafficsim.core.vis.scenario.areas;
 
-
 import com.jogamp.newt.event.KeyAdapter;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
@@ -8,14 +7,13 @@ import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.core.vis.glui.Component;
 import microtrafficsim.core.vis.glui.DirectBatchUIOverlay;
 import microtrafficsim.core.vis.glui.events.MouseEvent;
 import microtrafficsim.core.vis.map.projections.Projection;
-import microtrafficsim.core.vis.scenario.areas.ui.AreaComponent;
-import microtrafficsim.core.vis.scenario.areas.ui.AreaVertex;
-import microtrafficsim.core.vis.scenario.areas.ui.EdgeSplit;
-import microtrafficsim.core.vis.scenario.areas.ui.PropertyFrame;
+import microtrafficsim.core.vis.scenario.areas.ui.*;
 import microtrafficsim.core.vis.view.OrthographicView;
+import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.geometry.polygons.Polygon;
 
@@ -23,8 +21,6 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-// TODO: edge-split-component
-// TODO: selection by rectangle
 // TODO: proper line rendering for area outline
 
 // TODO: pre-load shaders?
@@ -40,8 +36,9 @@ public class ScenarioAreaOverlay implements Overlay {
     private HashSet<AreaVertex> selectedVertices = new HashSet<>();
     private EdgeSplit activeSplit = null;
 
-    private AreaComponent construction = null;
     private PropertyFrame properties = null;
+    private SelectionRectangle rectangle = null;
+    private AreaComponent construction = null;
 
 
     public ScenarioAreaOverlay(Projection projection) {
@@ -57,6 +54,8 @@ public class ScenarioAreaOverlay implements Overlay {
                 properties.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
                 properties.setAlwaysOnTop(true);
         });
+
+        this.rectangle = new SelectionRectangle();
 
         loadTokyoTestingPolygons();
     }
@@ -186,11 +185,13 @@ public class ScenarioAreaOverlay implements Overlay {
     @Override
     public void initialize(RenderContext context) throws Exception {
         ui.initialize(context);
+        rectangle.initialize(context);
     }
 
     @Override
     public void dispose(RenderContext context) throws Exception {
         ui.dispose(context);
+        rectangle.dispose(context);
 
         SwingUtilities.invokeLater(() -> {
             properties.dispose();
@@ -206,6 +207,7 @@ public class ScenarioAreaOverlay implements Overlay {
     @Override
     public void display(RenderContext context, MapBuffer map) throws Exception {
         ui.display(context, map);
+        rectangle.display(context);
     }
 
     @Override
@@ -390,30 +392,75 @@ public class ScenarioAreaOverlay implements Overlay {
 
         @Override
         public void mousePressed(MouseEvent e) {
-            // TODO: selection-rectangle
+            if (e.getButton() != MouseEvent.BUTTON3) return;
+
+            ui.getContext().addTask(c -> {
+                rectangle.begin(e.getPointer());
+                return null;
+            });
+
+            e.setConsumed(true);
         }
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            // TODO: selection-rectangle
+            if (e.getButton() != MouseEvent.BUTTON3) return;
+            if (!rectangle.isSelectionValid()) return;
+
+            ui.getContext().addTask(ctx -> {
+                Rect2d rect = rectangle.end(e.getPointer());
+
+                if (!e.isControlDown()) {
+                    clearAreaSelection();
+                }
+
+                for (Component c : ui.getComponents()) {
+                    if (!(c instanceof AreaComponent)) continue;
+                    AreaComponent area = ((AreaComponent) c);
+
+                    if (area.getBounds().intersects(rect) && Polygon.intersects(area.getOutline(), rect)) {
+                        select(area);
+                    }
+                }
+
+                return null;
+            });
+
+            e.setConsumed(true);
         }
 
         @Override
         public void mouseMoved(MouseEvent e) {
             lastmove = e.getPointer();
-            if (!e.isShiftDown()) return;
 
             Vec2d pos = e.getPointer();
-            ui.getContext().addTask(c -> {
-                if (construction == null) return null;
+            if (e.isShiftDown()) {
+                ui.getContext().addTask(c -> {
+                    if (construction == null) return null;
 
-                ArrayList<AreaVertex> vertices = construction.getVertices();
-                vertices.get(vertices.size() - 1).setPosition(pos);
+                    ArrayList<AreaVertex> vertices = construction.getVertices();
+                    vertices.get(vertices.size() - 1).setPosition(pos);
 
-                return null;
-            });
+                    return null;
+                });
 
-            // TODO: selection-rectangle
+            }
+        }
+
+        @Override
+        public void mouseDragged(MouseEvent e) {
+            if (e.getButton() != MouseEvent.BUTTON3) return;
+
+            if (rectangle.isEnabled()) {
+                Vec2d pos = e.getPointer();
+
+                ui.getContext().addTask(c -> {
+                    rectangle.update(pos);
+                    return null;
+                });
+
+                e.setConsumed(true);
+            }
         }
     }
 

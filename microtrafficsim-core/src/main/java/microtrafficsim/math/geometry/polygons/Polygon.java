@@ -1,5 +1,6 @@
 package microtrafficsim.math.geometry.polygons;
 
+import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.collections.ArrayUtils;
@@ -154,6 +155,22 @@ public class Polygon {
         }
 
         return windings != 0;
+    }
+
+    public static boolean intersects(Vec2d[] outline, Rect2d aabb) {
+        for (Vec2d v : outline) {
+            if (aabb.contains(v)) {
+                return true;
+            }
+        }
+
+        for (Vec2d v : aabb.vertices()) {
+            if (contains(outline, v)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
