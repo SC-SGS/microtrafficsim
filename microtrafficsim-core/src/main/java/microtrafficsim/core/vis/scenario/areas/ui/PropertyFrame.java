@@ -1,6 +1,7 @@
 package microtrafficsim.core.vis.scenario.areas.ui;
 
 import microtrafficsim.core.vis.glui.UIManager;
+import microtrafficsim.core.vis.scenario.areas.Area;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +17,7 @@ public class PropertyFrame extends JFrame {
     private JPanel panel;
 
     private Collection<AreaComponent> areas = null;
-    private AreaComponent.Type lastSelectedType = AreaComponent.Type.ORIGIN;
+    private Area.Type lastSelectedType = Area.Type.ORIGIN;
 
 
     public PropertyFrame(UIManager ui) {
@@ -44,8 +45,8 @@ public class PropertyFrame extends JFrame {
 
         {
             final DefaultComboBoxModel<TypeComboBoxEntry> typemodel = new DefaultComboBoxModel<>();
-            typemodel.addElement(new TypeComboBoxEntry(AreaComponent.Type.ORIGIN, "Origin"));
-            typemodel.addElement(new TypeComboBoxEntry(AreaComponent.Type.DESTINATION, "Destination"));
+            typemodel.addElement(new TypeComboBoxEntry(Area.Type.ORIGIN, "Origin"));
+            typemodel.addElement(new TypeComboBoxEntry(Area.Type.DESTINATION, "Destination"));
 
             type = new JComboBox<>();
             type.setModel(typemodel);
@@ -55,7 +56,7 @@ public class PropertyFrame extends JFrame {
 
                 ui.getContext().addTask(c -> {
                     ArrayList<AreaComponent> selected = new ArrayList<>(areas);
-                    AreaComponent.Type type = getSelectedType();
+                    Area.Type type = getSelectedType();
 
                     if (type != null) {
                         lastSelectedType = type;
@@ -115,21 +116,21 @@ public class PropertyFrame extends JFrame {
         return areas;
     }
 
-    public AreaComponent.Type getSelectedType() {
+    public Area.Type getSelectedType() {
         TypeComboBoxEntry entry = (TypeComboBoxEntry) type.getSelectedItem();
         return entry != null ? entry.type : null;
     }
 
-    public AreaComponent.Type getLastSelectedType() {
+    public Area.Type getLastSelectedType() {
         return lastSelectedType;
     }
 
 
     private static class TypeComboBoxEntry {
-        AreaComponent.Type type;
+        Area.Type type;
         String name;
 
-        TypeComboBoxEntry(AreaComponent.Type type, String name) {
+        TypeComboBoxEntry(Area.Type type, String name) {
             this.type = type;
             this.name = name;
         }

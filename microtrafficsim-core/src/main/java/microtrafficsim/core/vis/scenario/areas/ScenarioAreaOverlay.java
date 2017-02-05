@@ -4,7 +4,6 @@ import com.jogamp.newt.event.KeyAdapter;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseListener;
-import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.glui.Component;
@@ -28,7 +27,6 @@ import java.util.HashSet;
 
 
 public class ScenarioAreaOverlay implements Overlay {
-
     private DirectBatchUIOverlay ui;
     private Projection projection;
 
@@ -56,6 +54,33 @@ public class ScenarioAreaOverlay implements Overlay {
         });
 
         this.rectangle = new SelectionRectangle();
+    }
+
+
+    public void addArea(Area area) {
+        ui.addComponent(new AreaComponent(this, area));
+    }
+
+    public void addRemove(Area area) {
+        for (Component c : ui.getComponents()) {
+            if (c instanceof AreaComponent) {
+                if (((AreaComponent) c).getArea() == area) {
+                    ui.removeComponent(c);
+                }
+            }
+        }
+    }
+
+    public ArrayList<Area> getAreas() {
+        ArrayList<Area> areas = new ArrayList<>();
+
+        for (Component c : ui.getComponents()) {
+            if (c instanceof AreaComponent) {
+                areas.add(((AreaComponent) c).getArea());
+            }
+        }
+
+        return areas;
     }
 
 
@@ -199,7 +224,7 @@ public class ScenarioAreaOverlay implements Overlay {
     public void startNewAreaInConstruction() {
         if (construction != null) return;
 
-        AreaComponent.Type type = properties != null ? properties.getLastSelectedType() : AreaComponent.Type.ORIGIN;
+        Area.Type type = properties != null ? properties.getLastSelectedType() : Area.Type.ORIGIN;
         construction = new AreaComponent(ScenarioAreaOverlay.this, type);
         construction.add(lastmove, true);
         ui.addComponent(construction);
