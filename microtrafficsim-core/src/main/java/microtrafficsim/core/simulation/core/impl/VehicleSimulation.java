@@ -1,14 +1,13 @@
 package microtrafficsim.core.simulation.core.impl;
 
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.StepListener;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.core.stepexecutors.impl.MultiThreadedVehicleStepExecutor;
 import microtrafficsim.core.simulation.core.stepexecutors.impl.SingleThreadedVehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.utils.StringUtils;
+import microtrafficsim.utils.strings.StringUtils;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
@@ -19,7 +18,7 @@ import java.util.TimerTask;
 
 
 /**
- * This class is an implementation of {@link Simulation} for {@link AbstractVehicle}s.
+ * This class is an implementation of {@link Simulation} for {@link Vehicle}s.
  *
  * @author Dominic Parga Cacheiro
  */

@@ -1,7 +1,7 @@
 package microtrafficsim.core.simulation.core.stepexecutors.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
@@ -16,9 +16,8 @@ public class SingleThreadedVehicleStepExecutor implements VehicleStepExecutor {
 
     @Override
     public void willMoveAll(final Scenario scenario) {
-        for (AbstractVehicle vehicle : scenario.getVehicleContainer().getSpawnedVehicles()) {
+        for (Vehicle vehicle : scenario.getVehicleContainer().getSpawnedVehicles()) {
             vehicle.accelerate();
-            vehicle.dash();
             try {
                 vehicle.brake();
             } catch (NagelSchreckenbergException e) {
@@ -30,19 +29,19 @@ public class SingleThreadedVehicleStepExecutor implements VehicleStepExecutor {
 
     @Override
     public void moveAll(final Scenario scenario) {
-        for (AbstractVehicle vehicle : scenario.getVehicleContainer().getSpawnedVehicles())
+        for (Vehicle vehicle : scenario.getVehicleContainer().getSpawnedVehicles())
             vehicle.move();
     }
 
     @Override
     public void didMoveAll(final Scenario scenario) {
-        for (AbstractVehicle vehicle : scenario.getVehicleContainer().getSpawnedVehicles())
+        for (Vehicle vehicle : scenario.getVehicleContainer().getSpawnedVehicles())
             vehicle.didMove();
     }
 
     @Override
     public void spawnAll(final Scenario scenario) {
-        for (AbstractVehicle vehicle : scenario.getVehicleContainer().getNotSpawnedVehicles())
+        for (Vehicle vehicle : scenario.getVehicleContainer().getNotSpawnedVehicles())
             vehicle.spawn();
     }
 

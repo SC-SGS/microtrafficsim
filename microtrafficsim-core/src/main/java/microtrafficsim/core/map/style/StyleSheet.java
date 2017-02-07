@@ -1,6 +1,6 @@
 package microtrafficsim.core.map.style;
 
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.vis.opengl.utils.Color;
 
 /**
@@ -30,7 +30,7 @@ public interface StyleSheet extends MapStyleSheet, VehicleStyleSheet {
      * @return {@link #getDefaultVehicleColor()}
      */
     @Override
-    default Color getColor(AbstractVehicle vehicle) {
+    default Color getColor(Vehicle vehicle) {
         return getDefaultVehicleColor();
     }
 }

@@ -1,16 +1,12 @@
 package microtrafficsim.core.simulation.scenarios.containers.impl;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 
 /**
@@ -21,7 +17,7 @@ import java.util.function.Supplier;
  */
 public class ConcurrentVehicleContainer implements VehicleContainer {
 
-    protected Set<AbstractVehicle> spawnedVehicles, notSpawnedVehicles, vehicles;
+    protected Set<Vehicle> spawnedVehicles, notSpawnedVehicles, vehicles;
 
     /**
      * Default constructor. It initializes the used sets as concurrent ones, so they can be edited while iterated.
@@ -38,7 +34,7 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
     |======================|
     */
     @Override
-    public synchronized void addVehicle(AbstractVehicle vehicle) {
+    public synchronized void addVehicle(Vehicle vehicle) {
         notSpawnedVehicles.add(vehicle);
         vehicles.add(vehicle);
     }
@@ -69,7 +65,7 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
      * Addition to superclass: Due to concurrency, this method returns a shallow copy created synchronized.
      */
     @Override
-    public synchronized Set<AbstractVehicle> getVehicles() {
+    public synchronized Set<Vehicle> getVehicles() {
         return new HashSet<>(vehicles);
     }
 
@@ -77,7 +73,7 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
      * Addition to superclass: Due to concurrency, this method returns a shallow copy created synchronized.
      */
     @Override
-    public synchronized Set<AbstractVehicle> getSpawnedVehicles() {
+    public synchronized Set<Vehicle> getSpawnedVehicles() {
         return new HashSet<>(vehicles);
     }
 
@@ -85,7 +81,7 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
      * Addition to superclass: Due to concurrency, this method returns a shallow copy created synchronized.
      */
     @Override
-    public synchronized Set<AbstractVehicle> getNotSpawnedVehicles() {
+    public synchronized Set<Vehicle> getNotSpawnedVehicles() {
         return new HashSet<>(vehicles);
     }
 
@@ -95,7 +91,7 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
     |==========================|
     */
     @Override
-    public synchronized void stateChanged(AbstractVehicle vehicle) {
+    public synchronized void stateChanged(Vehicle vehicle) {
         if (vehicle.getState() == VehicleState.DESPAWNED) {
             spawnedVehicles.remove(vehicle);
             notSpawnedVehicles.remove(vehicle);
@@ -112,7 +108,7 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
     |==============|
     */
     @Override
-    public Iterator<AbstractVehicle> iterator() {
+    public Iterator<Vehicle> iterator() {
         return getVehicles().iterator();
     }
 }

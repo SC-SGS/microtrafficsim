@@ -1,7 +1,7 @@
 package microtrafficsim.core.simulation.core.stepexecutors.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
@@ -33,14 +33,14 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
     public void willMoveAll(final Scenario scenario) {
         try {
             delegator.doTask(
-                    (AbstractVehicle v) -> {
+                    (Vehicle v) -> {
                         v.accelerate();
-                        v.dash();
                         try {
                             v.brake();
                         } catch (NagelSchreckenbergException e) {
                             e.printStackTrace();
                         }
+                        v.dawdle();
                     },
                     scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
                     scenario.getConfig().multiThreading.vehiclesPerRunnable
@@ -53,7 +53,7 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
     @Override
     public void moveAll(final Scenario scenario) {
         try {
-            delegator.doTask(AbstractVehicle::move,
+            delegator.doTask(Vehicle::move,
                     scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
                     scenario.getConfig().multiThreading.vehiclesPerRunnable
             );
@@ -65,7 +65,7 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
     @Override
     public void didMoveAll(final Scenario scenario) {
         try {
-            delegator.doTask(AbstractVehicle::didMove,
+            delegator.doTask(Vehicle::didMove,
                     scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
                     scenario.getConfig().multiThreading.vehiclesPerRunnable
             );
@@ -77,7 +77,7 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
     @Override
     public void spawnAll(final Scenario scenario) {
         try {
-            delegator.doTask(AbstractVehicle::spawn,
+            delegator.doTask(Vehicle::spawn,
                     scenario.getVehicleContainer().getNotSpawnedVehicles().iterator(),
                     scenario.getConfig().multiThreading.vehiclesPerRunnable
             );

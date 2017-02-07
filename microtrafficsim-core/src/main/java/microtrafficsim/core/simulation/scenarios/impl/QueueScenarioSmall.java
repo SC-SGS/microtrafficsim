@@ -1,7 +1,6 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.logic.vehicles.impl.Car;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
@@ -13,8 +12,6 @@ import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehic
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
 import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
-import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
-import microtrafficsim.utils.id.ConcurrentSeedGenerator;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
@@ -93,7 +90,6 @@ public abstract class QueueScenarioSmall implements Scenario {
         config.crossingLogic.edgePriorityEnabled       = true;
         config.crossingLogic.priorityToTheRightEnabled = true;
         config.crossingLogic.setOnlyOneVehicle(false);
-        Car.setDashAndDawdleFactor(0, 0);
 
         return config;
     }

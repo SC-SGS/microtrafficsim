@@ -1,13 +1,13 @@
 package logic.validation.scenarios;
 
-import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.logic.vehicles.impl.Car;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
@@ -25,7 +25,7 @@ public class TCrossroadScenario extends QueueScenarioSmall {
                               Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
         init();
-        setScenarioBuilder(new VehicleQueueScenarioBuilder(config.seed, visVehicleFactory));
+        setScenarioBuilder(new VehicleQueueScenarioBuilder(config.seed, visVehicleFactory, 1));
     }
 
     /**

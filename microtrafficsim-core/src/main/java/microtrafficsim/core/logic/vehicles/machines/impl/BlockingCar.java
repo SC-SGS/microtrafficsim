@@ -1,7 +1,5 @@
-package microtrafficsim.core.logic.vehicles.impl;
+package microtrafficsim.core.logic.vehicles.machines.impl;
 
-import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 
 
@@ -17,21 +15,15 @@ public class BlockingCar extends Car {
     /**
      * Default constructor.
      *
-     * @see Car#Car(long, long, Route)
+     * @see Car#Car(long, VehicleStyleSheet)
      */
-    public BlockingCar(long ID, long seed, Route<Node> route, VehicleStyleSheet style) {
-        super(ID, seed, route, style);
+    public BlockingCar(long id, VehicleStyleSheet style) {
+        super(id, style);
         blocking = false;
     }
 
-    /**
-     * Default constructor
-     *
-     * @see Car#Car(long, long, Route, int)
-     */
-    public BlockingCar(long ID, long seed, Route<Node> route, int spawnDelay, VehicleStyleSheet style) {
-        super(ID, seed, route, spawnDelay, style);
-        blocking = false;
+    public BlockingCar(long id, int maxVelocity, VehicleStyleSheet style) {
+        super(id, maxVelocity, style);
     }
 
     /**
@@ -61,23 +53,7 @@ public class BlockingCar extends Car {
      * Addition to super-description: while blocking is true, the max velocity is set to 0.
      */
     @Override
-    protected int getMaxVelocity() {
+    public int getMaxVelocity() {
         return blocking ? 0 : super.getMaxVelocity();
-    }
-
-    /**
-     * Addition to super-description: while blocking is true, the dash factor is set to 0.
-     */
-    @Override
-    protected float getDashFactor() {
-        return blocking ? 0 : super.getDashFactor();
-    }
-
-    /**
-     * Addition to super-description: while blocking is true, the dawdle factor is set to 1.
-     */
-    @Override
-    protected float getDawdleFactor() {
-        return blocking ? 1 : super.getDawdleFactor();
     }
 }

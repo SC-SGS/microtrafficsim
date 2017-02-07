@@ -4,8 +4,10 @@ import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-import microtrafficsim.core.logic.vehicles.impl.Car;
+import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
+import microtrafficsim.core.logic.vehicles.driver.Driver;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
+import microtrafficsim.core.logic.vehicles.machines.impl.Car;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -13,7 +15,7 @@ import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.utils.Resettable;
-import microtrafficsim.utils.StringUtils;
+import microtrafficsim.utils.strings.StringUtils;
 import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.concurrency.delegation.StaticThreadDelegator;
 import microtrafficsim.utils.concurrency.delegation.ThreadDelegator;
@@ -56,10 +58,10 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
     }
 
 
-    protected AbstractVehicle createVehicle(Scenario scenario, Route<Node> route) {
+    protected Vehicle createVehicle(Scenario scenario, Route<Node> route) {
 
         // create vehicle components
-        AbstractVehicle logicVehicle = createLogicVehicle(scenario, route);
+        Vehicle logicVehicle = createLogicVehicle(scenario, route);
         VisualizationVehicleEntity visVehicle = null;
         if (visVehicleFactory != null)
             visVehicle = visVehicleFactory.get();
@@ -73,13 +75,18 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
         return logicVehicle;
     }
 
-    protected AbstractVehicle createLogicVehicle(Scenario scenario, Route<Node> route) {
+    protected Vehicle createLogicVehicle(Scenario scenario, Route<Node> route) {
 
-        ScenarioConfig config   = scenario.getConfig();
-        long ID                 = idGenerator.next();
-        long vehicleSeed        = seedGenerator.next();
+        ScenarioConfig config = scenario.getConfig();
+        long id               = idGenerator.next();
+        long seed             = seedGenerator.next();
 
-        Car car = new Car(ID, vehicleSeed, route, config.visualization.style);
+        Vehicle car = new Car(id, config.visualization.style);
+        Driver driver = new BasicDriver(seed);
+        driver.setRoute(route);
+        driver.setVehicle(car);
+        car.setDriver(driver);
+
         car.addStateListener(scenario.getVehicleContainer());
 
         return car;
@@ -168,7 +175,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                     throw new InterruptedException();
 
                 Route<Node> route = new Route<>(start, end);
-                AbstractVehicle vehicle = createVehicle(scenario, route);
+                Vehicle vehicle = createVehicle(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
             }
         }
@@ -178,7 +185,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
         delegator.doTask(
                 vehicle -> {
                     ShortestPathAlgorithm scout = scenario.getScoutFactory().get();
-                    Route<Node> route = vehicle.getRoute();
+                    Route<Node> route = vehicle.getDriver().getRoute();
                     scout.findShortestPath(route.getStart(), route.getEnd(), route);
                     vehicle.registerInGraph();
                     int bla = finishedVehiclesCount.incrementAndGet();
@@ -207,7 +214,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                     throw new InterruptedException();
 
                 Route<Node> route = new Route<>(start, end);
-                AbstractVehicle vehicle = createVehicle(scenario, route);
+                Vehicle vehicle = createVehicle(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
                 scenario.getScoutFactory().get().findShortestPath(start, end, route);
                 vehicle.registerInGraph();

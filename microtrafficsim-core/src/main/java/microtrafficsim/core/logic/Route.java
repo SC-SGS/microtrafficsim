@@ -1,7 +1,12 @@
 package microtrafficsim.core.logic;
 
+import microtrafficsim.build.BuildSetup;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
+import microtrafficsim.utils.strings.builder.BasicStringBuilder;
+import microtrafficsim.utils.strings.builder.LevelStringBuilder;
+import microtrafficsim.utils.strings.builder.StringBuilder;
 
 import java.util.*;
 
@@ -13,8 +18,8 @@ import java.util.*;
  */
 public class Route<N extends ShortestPathNode> extends Stack<ShortestPathEdge> {
 
-    private N                start;
-    private N                end;
+    private N start;
+    private N end;
 
     /**
      * Default constructor.
@@ -25,6 +30,25 @@ public class Route<N extends ShortestPathNode> extends Stack<ShortestPathEdge> {
     public Route(N start, N end) {
         this.start = start;
         this.end   = end;
+    }
+
+    @Override
+    public synchronized String toString() {
+        LevelStringBuilder strBuilder = new LevelStringBuilder();
+        strBuilder.appendln("<route>");
+        strBuilder.incLevel();
+
+        if (isEmpty())
+            strBuilder.appendln("Route is empty.");
+        else {
+            strBuilder.appendln("start = " + start.toString());
+            strBuilder.appendln("end   = " + end.toString());
+            strBuilder.appendln("size  = " + size());
+        }
+
+        strBuilder.decLevel();
+        strBuilder.appendln("<\\route>");
+        return strBuilder.toString();
     }
 
     public N getStart() {

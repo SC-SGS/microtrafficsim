@@ -1,7 +1,5 @@
 package microtrafficsim.exceptions.core.logic;
 
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-
 /**
  * Represents an exception thrown while executing simulation steps of the Nagel-Schreckenberg-model.
  *
@@ -10,7 +8,7 @@ import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 public class NagelSchreckenbergException extends Exception {
 
     public enum Step {
-        accelerate, dash, brake, dawdle, move, didMove
+        accelerate, brake, dawdle, move, didMove
     }
 
     /**
@@ -27,7 +25,7 @@ public class NagelSchreckenbergException extends Exception {
         }
     }
 
-    private NagelSchreckenbergException(Step step, String message) {
+    public NagelSchreckenbergException(Step step, String message) {
         super("Exception occurred in step " + step + ". " + message);
     }
 }

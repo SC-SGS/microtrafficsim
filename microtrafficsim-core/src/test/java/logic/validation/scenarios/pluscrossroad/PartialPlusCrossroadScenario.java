@@ -2,13 +2,10 @@ package logic.validation.scenarios.pluscrossroad;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
-import microtrafficsim.core.logic.vehicles.impl.BlockingCar;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
+import microtrafficsim.core.logic.vehicles.machines.impl.BlockingCar;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.core.simulation.utils.ODMatrix;
-import microtrafficsim.core.simulation.utils.SparseODMatrix;
 import microtrafficsim.utils.Tuple;
 import microtrafficsim.utils.collections.Triple;
 
@@ -72,7 +69,7 @@ public class PartialPlusCrossroadScenario extends AbstractPlusCrossroadScenario 
     @Override
     public void didOneStep(Simulation simulation) {
         if (getVehicleContainer().getVehicleCount() == 2) {
-            for (AbstractVehicle vehicle : getVehicleContainer().getVehicles()) {
+            for (Vehicle vehicle : getVehicleContainer().getVehicles()) {
                 BlockingCar blockingCar = (BlockingCar) vehicle;
                 if (blockingCar.isBlocking())
                     blockingCar.toggleBlockMode();

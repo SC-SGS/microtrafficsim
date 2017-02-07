@@ -11,6 +11,7 @@ import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -105,8 +106,20 @@ public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, Log
 
     @Override
     public String toString() {
-        return "id=" + streetInfo.raw.id + ";hash=" + hashCode() + ":(" + streetInfo.raw.origin.id + " -" +
-                streetInfo.numberOfCells + "-> " + streetInfo.raw.destination.id + ")";
+        LevelStringBuilder stringBuilder = new LevelStringBuilder();
+        stringBuilder.appendln("<DirectedEdge>");
+        stringBuilder.incLevel();
+
+        stringBuilder.appendln("id = " + streetInfo.raw.id);
+        stringBuilder.appendln("hash = " + hashCode());
+        stringBuilder.appendln("info = ("
+                + streetInfo.raw.origin.id
+                + " -" + streetInfo.numberOfCells + "-> "
+                + streetInfo.raw.destination.id + ")");
+
+        stringBuilder.decLevel();
+        stringBuilder.appendln("<\\DirectedEdge>");
+        return stringBuilder.toString();
     }
 
     /**

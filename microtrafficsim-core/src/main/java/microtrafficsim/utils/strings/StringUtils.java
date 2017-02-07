@@ -1,4 +1,4 @@
-package microtrafficsim.utils;
+package microtrafficsim.utils.strings;
 
 /**
  * This class serves several methods for working with strings.

@@ -1,8 +1,8 @@
 package microtrafficsim.core.simulation.scenarios.containers;
 
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 
 import java.util.Collection;
 
@@ -23,14 +23,14 @@ import java.util.Collection;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface VehicleContainer extends VehicleStateListener, Iterable<AbstractVehicle> {
+public interface VehicleContainer extends VehicleStateListener, Iterable<Vehicle> {
 
     /**
      * Adds the vehicle as unspawned.
      *
      * @param vehicle Vehicle that has been added to the graph successfully.
      */
-    void addVehicle(AbstractVehicle vehicle);
+    void addVehicle(Vehicle vehicle);
 
     /**
      * Clears this container, so after this call it is empty.
@@ -56,7 +56,7 @@ public interface VehicleContainer extends VehicleStateListener, Iterable<Abstrac
      * @return All vehicles in a collection. The returned collection should be unmodifiable to guarantee
      * only this class makes deep changes.
      */
-    Collection<AbstractVehicle> getVehicles();
+    Collection<Vehicle> getVehicles();
 
     /**
      * Returns the list of spawned (i.e. visible and ready to drive) vehicles.
@@ -68,13 +68,13 @@ public interface VehicleContainer extends VehicleStateListener, Iterable<Abstrac
      * @return All spawned vehicles in a collection. The returned collection should be unmodifiable to guarantee
      * only this class makes deep changes.
      */
-    Collection<AbstractVehicle> getSpawnedVehicles();
+    Collection<Vehicle> getSpawnedVehicles();
 
     /**
      * @return All not spawned vehicles in a collection. The returned collection should be unmodifiable to guarantee
      * only this class makes deep changes.
      */
-    Collection<AbstractVehicle> getNotSpawnedVehicles();
+    Collection<Vehicle> getNotSpawnedVehicles();
 
     // probably unused :(
     //	/**

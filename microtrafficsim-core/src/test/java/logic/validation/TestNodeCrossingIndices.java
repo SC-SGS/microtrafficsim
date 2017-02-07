@@ -5,7 +5,7 @@ import logic.validation.scenarios.pluscrossroad.FullPlusCrossroadScenario;
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.logic.Direction;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -63,8 +63,8 @@ public class TestNodeCrossingIndices {
 
                 /* get vehicles */
                 int i = 0;
-                AbstractVehicle[] vehicles = new AbstractVehicle[2];
-                for (AbstractVehicle vehicle : scenario.getVehicleContainer())
+                Vehicle[] vehicles = new Vehicle[2];
+                for (Vehicle vehicle : scenario.getVehicleContainer())
                     vehicles[i++] = vehicle;
 
                 /* check only if both are registered in mid */
@@ -73,13 +73,13 @@ public class TestNodeCrossingIndices {
 
                 /* get vehicles' position relative to each other */
                 Direction direction = Geometry.calcCurveDirection(
-                        vehicles[0].getRoute().getEnd().getCoordinate(),
+                        vehicles[0].getDriver().getRoute().getEnd().getCoordinate(),
                         scenario.mid.getCoordinate(),
-                        vehicles[1].getRoute().getEnd().getCoordinate());
+                        vehicles[1].getDriver().getRoute().getEnd().getCoordinate());
 
                 // swap vehicles if priority is left-before-right instead of right-before-left
                 if (!config.crossingLogic.drivingOnTheRight) {
-                    AbstractVehicle tmp = vehicles[0];
+                    Vehicle tmp = vehicles[0];
                     vehicles[0] = vehicles[1];
                     vehicles[1] = tmp;
                 }

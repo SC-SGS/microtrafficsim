@@ -1,10 +1,12 @@
 package microtrafficsim.core.logic.streets;
 
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.HashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -14,13 +16,14 @@ import java.util.HashMap;
  */
 public class Lane implements Resettable {
 
-    public final Object  lock = new Object();
+    public final ReentrantLock lock;
     private DirectedEdge associatedEdge;
     private int          index;    // index in the list of lanes from the associated edge
-    private HashMap<Integer, AbstractVehicle> cells;
-    private AbstractVehicle lastVehicle;
+    private HashMap<Integer, Vehicle> cells;
+    private Vehicle lastVehicle;
 
     Lane(DirectedEdge container, int index) {
+        lock                = new ReentrantLock(true);
         this.associatedEdge = container;
         this.index          = index;
         cells               = new HashMap<>();
@@ -55,7 +58,16 @@ public class Lane implements Resettable {
 
     @Override
     public String toString() {
-        return associatedEdge + "." + index;
+        LevelStringBuilder stringBuilder = new LevelStringBuilder();
+        stringBuilder.appendln("<Lane>");
+        stringBuilder.incLevel();
+
+        stringBuilder.append(associatedEdge);
+        stringBuilder.appendln("lane index = " + index);
+
+        stringBuilder.decLevel();
+        stringBuilder.appendln("<\\Lane>");
+        return stringBuilder.toString();
     }
 
     /*
@@ -70,13 +82,13 @@ public class Lane implements Resettable {
             return lastVehicle.getCellPosition() - 1;
     }
 
-    public synchronized void moveVehicle(AbstractVehicle vehicle, int delta) {
+    public synchronized void moveVehicle(Vehicle vehicle, int delta) {
         if (delta > 0) cells.remove(vehicle.getCellPosition());
         cells.put(vehicle.getCellPosition() + delta, vehicle);
     }
 
-    public synchronized void insertVehicle(AbstractVehicle vehicle, int pos) {
-        AbstractVehicle removedVehicle = cells.put(pos, vehicle);
+    public synchronized void insertVehicle(Vehicle vehicle, int pos) {
+        Vehicle removedVehicle = cells.put(pos, vehicle);
         if (removedVehicle != null) try {
                 throw new Exception("Inserting (\n" + vehicle + "\n) to the lane removed vehicle (\n" + removedVehicle
                                     + "\n)");
@@ -84,8 +96,8 @@ public class Lane implements Resettable {
         lastVehicle = vehicle;
     }
 
-    public synchronized void removeVehicle(AbstractVehicle vehicle) {
-        AbstractVehicle removedVehicle = cells.remove(vehicle.getCellPosition());
+    public synchronized void removeVehicle(Vehicle vehicle) {
+        Vehicle removedVehicle = cells.remove(vehicle.getCellPosition());
         if (removedVehicle != vehicle) try {
                 throw new Exception("Removed vehicle (" + removedVehicle + ") in lane is not the expected one ("
                                     + vehicle + "). ");
@@ -93,7 +105,7 @@ public class Lane implements Resettable {
         if (cells.size() == 0) lastVehicle = null;
     }
 
-    public synchronized AbstractVehicle getLastVehicle() {
+    public synchronized Vehicle getLastVehicle() {
         return lastVehicle;
     }
 }

@@ -1,7 +1,6 @@
 package microtrafficsim.core.map.style;
 
 import com.jogamp.opengl.GL3;
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;

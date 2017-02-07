@@ -3,8 +3,8 @@ package microtrafficsim.core.logic.nodes;
 import microtrafficsim.core.logic.Direction;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
-import microtrafficsim.core.logic.vehicles.AbstractVehicle;
 import microtrafficsim.core.logic.vehicles.VehicleState;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
@@ -37,11 +37,11 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
     private      Random              random;
 
     // crossing logic
-    private PriorityQueue<AbstractVehicle>                 newRegisteredVehicles;
-    private HashMap<AbstractVehicle, Set<AbstractVehicle>> assessedVehicles;
-    private HashSet<AbstractVehicle>                       maxPrioVehicles;
-    private boolean                                        anyChangeSinceUpdate;
-    private HashMap<Lane, ArrayList<Lane>>                 restrictions;
+    private PriorityQueue<Vehicle>         newRegisteredVehicles;
+    private HashMap<Vehicle, Set<Vehicle>> assessedVehicles;
+    private HashSet<Vehicle>               maxPrioVehicles;
+    private boolean                        anyChangeSinceUpdate;
+    private HashMap<Lane, ArrayList<Lane>> restrictions;
 
     // edges
     private HashMap<DirectedEdge, Byte> leavingEdges;    // edge, index(for crossing logic)
@@ -60,7 +60,7 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
         random                = new Random();
         assessedVehicles      = new HashMap<>();
         maxPrioVehicles       = new HashSet<>();
-        newRegisteredVehicles = new PriorityQueue<>((v1, v2) -> Long.compare(v1.ID, v2.ID));
+        newRegisteredVehicles = new PriorityQueue<>((v1, v2) -> Long.compare(v1.getId(), v2.getId()));
         anyChangeSinceUpdate  = false;
 
         // edges
@@ -120,7 +120,7 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
      * @return an int > 0 if v1 has priority over v2; an int < 0 if v2 has priority over v1; an int = 0 if v1 and v2
      * have equal priorities
      */
-    private int compare(AbstractVehicle v1, AbstractVehicle v2) throws CrossingLogicException {
+    private int compare(Vehicle v1, Vehicle v2) throws CrossingLogicException {
         // main rules:
         // (1) two not-spawned vehicles are compared by their IDs. The greater id wins.
         // (2) spawned vehicles before not spawned vehicles
@@ -129,7 +129,7 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
         if (v1.getState() != VehicleState.SPAWNED) {
             if (v2.getState() != VehicleState.SPAWNED) {
                 // (1) v1 is NOT SPAWNED, v2 is NOT SPAWNED
-                return Long.compare(v1.ID, v2.ID);
+                return Long.compare(v1.getId(), v2.getId());
             } else {
                 // (2) v1 is NOT SPAWNED, v2 is SPAWNED
                 return -1;
@@ -141,9 +141,9 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
 
         // (3) both SPAWNED => there is always a current edge and a next edge per vehicle
         byte origin1        = incomingEdges.get(v1.getDirectedEdge());
-        byte destination1   = leavingEdges.get(v1.peekNextRouteSection());
+        byte destination1   = leavingEdges.get(v1.getDriver().peekRoute());
         byte origin2        = incomingEdges.get(v2.getDirectedEdge());
-        byte destination2   = leavingEdges.get(v2.peekNextRouteSection());
+        byte destination2   = leavingEdges.get(v2.getDriver().peekRoute());
         byte indicesPerNode = (byte) (incomingEdges.size() + leavingEdges.size());
 
 
@@ -154,8 +154,8 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
             boolean edgePriorityEnabled = config.edgePriorityEnabled;
             if (cmp == 0 || !edgePriorityEnabled) {
                 // compare priorities of destinations
-                cmp = (byte) (v1.peekNextRouteSection().getPriorityLevel()
-                        - v2.peekNextRouteSection().getPriorityLevel());
+                cmp = (byte) (v1.getDriver().peekRoute().getPriorityLevel()
+                        - v2.getDriver().peekRoute().getPriorityLevel());
                 if (cmp == 0 || !edgePriorityEnabled) {
                     // compare right before left (or left before right)
                     if (config.priorityToTheRightEnabled) {
@@ -188,12 +188,12 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
 
         /* add new registered vehicles */
         while (!newRegisteredVehicles.isEmpty()) { // invariant: all vehicles in this set are new at this point
-            AbstractVehicle newVehicle = newRegisteredVehicles.poll();
-            Set<AbstractVehicle> defeatedVehicles = new HashSet<>();
+            Vehicle newVehicle = newRegisteredVehicles.poll();
+            Set<Vehicle> defeatedVehicles = new HashSet<>();
 
             // calculate priority counter
-            newVehicle.resetPriorityCounter();
-            for (AbstractVehicle assessedVehicle : assessedVehicles.keySet()) {
+            newVehicle.getDriver().resetPriorityCounter();
+            for (Vehicle assessedVehicle : assessedVehicles.keySet()) {
                 int cmp;
 
                 try {
@@ -204,20 +204,20 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
                 }
 
                 if (cmp > 0) {
-                    newVehicle.incPriorityCounter();
+                    newVehicle.getDriver().incPriorityCounter();
                     defeatedVehicles.add(assessedVehicle);
 
-                    assessedVehicle.decPriorityCounter();
+                    assessedVehicle.getDriver().decPriorityCounter();
                 } else if (cmp < 0) {
-                    newVehicle.decPriorityCounter();
+                    newVehicle.getDriver().decPriorityCounter();
 
-                    assessedVehicle.incPriorityCounter();
+                    assessedVehicle.getDriver().incPriorityCounter();
                     assessedVehicles.get(assessedVehicle).add(newVehicle);
                 } else {
-                    newVehicle.incPriorityCounter();
+                    newVehicle.getDriver().incPriorityCounter();
                     defeatedVehicles.add(assessedVehicle);
 
-                    assessedVehicle.incPriorityCounter();
+                    assessedVehicle.getDriver().incPriorityCounter();
                     assessedVehicles.get(assessedVehicle).add(newVehicle);
                 }
             }
@@ -231,8 +231,8 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
 
             // get vehicles with max prio
             int maxPrio = Integer.MIN_VALUE;
-            for (AbstractVehicle vehicle : assessedVehicles.keySet()) {
-                if (maxPrio <= vehicle.getPriorityCounter()) {
+            for (Vehicle vehicle : assessedVehicles.keySet()) {
+                if (maxPrio <= vehicle.getDriver().getPriorityCounter()) {
                     // For all vehicles until now: the current vehicle is allowed to drive regarding priority.
                     // BUT: it is still NOT allowed if all of the following conditions are true
 
@@ -251,14 +251,14 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
                         // (3), different order than above for better performance
                         if (config.friendlyStandingInJamEnabled)
                             // (2), different order than above for better performance
-                            if (!(vehicle.peekNextRouteSection().getLane(0).getMaxInsertionIndex() >= 0))
+                            if (!(vehicle.getDriver().peekRoute().getLane(0).getMaxInsertionIndex() >= 0))
                                 continue;
                     }
 
                     // if priority is truly greater than current max => remove all current vehicles of max priority
-                    if (maxPrio < vehicle.getPriorityCounter()) {
+                    if (maxPrio < vehicle.getDriver().getPriorityCounter()) {
                         maxPrioVehicles.clear();
-                        maxPrio = vehicle.getPriorityCounter();
+                        maxPrio = vehicle.getDriver().getPriorityCounter();
                     }
                     maxPrioVehicles.add(vehicle);
                 }
@@ -274,10 +274,10 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
                 // => choose random vehicle
                 boolean tooManyVehicles = config.isOnlyOneVehicleEnabled() && maxPrioVehicles.size() > 1;
                 if (!allOthersBeaten || tooManyVehicles) {
-                    Iterator<AbstractVehicle> bla = maxPrioVehicles.iterator();
+                    Iterator<Vehicle> bla = maxPrioVehicles.iterator();
                     for (int i = 0; i < random.nextInt(maxPrioVehicles.size()); i++)
                         bla.next();
-                    AbstractVehicle prioritizedVehicle = bla.next();
+                    Vehicle prioritizedVehicle = bla.next();
                     maxPrioVehicles.clear();
                     maxPrioVehicles.add(prioritizedVehicle);
                 }
@@ -298,7 +298,7 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
      * @param newVehicle This vehicle gets registered in this node.
      * @return true, if the given vehicle is getting registered; false otherwise (e.g. if it is already registered)
      */
-    public synchronized boolean registerVehicle(AbstractVehicle newVehicle) {
+    public synchronized boolean registerVehicle(Vehicle newVehicle) {
 
         if (isRegistered(newVehicle))
             return false;
@@ -319,21 +319,21 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
      * @return true, if the given vehicle has been registered and is unregistered now; false, if it hasn't been
      * registered at this node
      */
-    public synchronized boolean unregisterVehicle(AbstractVehicle vehicle) {
+    public synchronized boolean unregisterVehicle(Vehicle vehicle) {
 
-        Set<AbstractVehicle> defeatedVehicles = assessedVehicles.remove(vehicle);
+        Set<Vehicle> defeatedVehicles = assessedVehicles.remove(vehicle);
         if (defeatedVehicles == null) {
             newRegisteredVehicles.remove(vehicle);
             return false;
         }
 
-        for (AbstractVehicle otherVehicle : assessedVehicles.keySet()) {
+        for (Vehicle otherVehicle : assessedVehicles.keySet()) {
             boolean otherWon = assessedVehicles.get(otherVehicle).remove(vehicle);
 
             if (otherWon)
-                otherVehicle.decPriorityCounter();
+                otherVehicle.getDriver().decPriorityCounter();
             else
-                otherVehicle.incPriorityCounter();
+                otherVehicle.getDriver().incPriorityCounter();
         }
 
         anyChangeSinceUpdate = true;
@@ -342,17 +342,17 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
 
     /**
      * <p>
-     * This method is synchronized because its return value depends on {@link #registerVehicle(AbstractVehicle)},
-     * {@link #unregisterVehicle(AbstractVehicle)} and {@link #update()}, which can be called concurrently.
+     * This method is synchronized because its return value depends on {@link #registerVehicle(Vehicle)},
+     * {@link #unregisterVehicle(Vehicle)} and {@link #update()}, which can be called concurrently.
      *
      * @param vehicle This vehicle asks whether it has permission to cross or not
      * @return true if the vehicle has permission to cross, false otherwise
      */
-    public synchronized boolean permissionToCross(AbstractVehicle vehicle) {
+    public synchronized boolean permissionToCross(Vehicle vehicle) {
         return maxPrioVehicles.contains(vehicle);
     }
 
-    public synchronized boolean isRegistered(AbstractVehicle vehicle) {
+    public synchronized boolean isRegistered(Vehicle vehicle) {
         return assessedVehicles.containsKey(vehicle) || newRegisteredVehicles.contains(vehicle);
     }
 
