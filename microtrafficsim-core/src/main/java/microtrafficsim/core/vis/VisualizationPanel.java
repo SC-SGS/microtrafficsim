@@ -16,6 +16,8 @@ import java.awt.*;
 public class VisualizationPanel extends JPanel {
     private static final long serialVersionUID = -3494671834324453286L;
 
+    private GLWindow window;
+    private NewtCanvasAWT canvas;
     private FPSAnimator animator;
     private Visualization visualization;
 
@@ -43,7 +45,7 @@ public class VisualizationPanel extends JPanel {
     public VisualizationPanel(Visualization visualization, VisualizerConfig config) {
         this.visualization = visualization;
 
-        GLWindow window = GLWindow.create(config.glcapabilities);
+        window = GLWindow.create(config.glcapabilities);
         window.addGLEventListener(visualization.getRenderContext());
         window.addMouseListener(visualization.getMouseListener());
         window.addKeyListener(visualization.getKeyController());
@@ -51,7 +53,7 @@ public class VisualizationPanel extends JPanel {
         animator = new FPSAnimator(window, config.fps, true);
         visualization.getRenderContext().setAnimator(animator);
 
-        NewtCanvasAWT canvas = new NewtCanvasAWT(window);
+        canvas = new NewtCanvasAWT(window);
 
         this.setLayout(new BorderLayout());
         this.add(canvas, BorderLayout.CENTER);
@@ -77,6 +79,10 @@ public class VisualizationPanel extends JPanel {
      */
     public void stop() {
         animator.stop();
+    }
+
+    public void destroy() {
+        canvas.destroy();
     }
 
     /**

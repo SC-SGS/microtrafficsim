@@ -53,6 +53,13 @@ public interface MapViewer {
         getVisualizationPanel().stop();
     }
 
+    default void destroy() {
+        VisualizationPanel panel = getVisualizationPanel();
+        panel.stop();
+        panel.getParent().remove(panel);
+        panel.destroy();
+    }
+
     /**
      * @throws UnsupportedFeatureException if not all required OpenGL features
      *                                     are available

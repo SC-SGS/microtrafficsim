@@ -18,6 +18,8 @@ import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.core.vis.opengl.utils.Colors;
+import microtrafficsim.core.vis.scenario.areas.Area;
+import microtrafficsim.core.vis.scenario.areas.Area.Type;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.math.Mat3d;
 import microtrafficsim.math.Rect2d;
@@ -57,12 +59,9 @@ public class AreaComponent extends Component {
     private static final FillPass RENDER_PASS_DEFAULT = new FillPass();
     private static final OutlinePass RENDER_PASS_SELECTED = new OutlinePass();
 
-    public enum Type { ORIGIN, DESTINATION }
-
     private ScenarioAreaOverlay root;
-    private Polygon area;
+    private Area area;
     private Triangulator.Result cached;
-    private Type type;
 
     private boolean selected = false;
     private boolean complete = false;
@@ -71,47 +70,38 @@ public class AreaComponent extends Component {
 
 
     public AreaComponent(ScenarioAreaOverlay root, Type type) {
-        this(root, new Polygon(new Vec2d[0]), type);
+        this(root, new Area(new Polygon(new Vec2d[0]), type));
     }
 
-    public AreaComponent(ScenarioAreaOverlay root, Polygon area, Type type) {
+    public AreaComponent(ScenarioAreaOverlay root, Area area) {
         super(RENDER_PASS_DEFAULT, RENDER_PASS_SELECTED);
 
         this.root = root;
         this.area = area;
-        this.type = type;
         this.focusable = false;
-        this.complete = area.outline.length >= 3;
+        this.complete = area.polygon.outline.length >= 3;
 
         addMouseListener(new MouseListenerImpl());
 
-        if (area.outline.length > 0) {
-            Vec2d a = area.outline[area.outline.length - 1];
-            AreaVertex prev = null;
-            EdgeSplit first = null;
-
-            for (Vec2d b : area.outline) {
-                EdgeSplit edge = new EdgeSplit(root, a, b);
-                if (first == null)
-                    first = edge;
-
+        if (area.polygon.outline.length > 0) {
+            for (Vec2d b : area.polygon.outline) {
                 AreaVertex c = new AreaVertex(root, b);
                 c.setVisible(selected);
-                edge.setVisible(selected);
-
-                c.left = edge;
-                if (prev != null)
-                    prev.right = edge;
-
                 this.add(c);
-                this.add(edge);
                 vertices.add(c);
+            }
 
-                prev = c;
+            AreaVertex a = vertices.get(vertices.size() - 1);
+            for (AreaVertex b : vertices) {
+                EdgeSplit split = new EdgeSplit(root, a, b);
+
+                a.right = split;
+                b.left = split;
+                this.add(split);
+
                 a = b;
             }
 
-            prev.right = first;
         }
 
         updateBounds();
@@ -144,7 +134,7 @@ public class AreaComponent extends Component {
 
 
     public void move(Vec2d delta) {
-        for (Vec2d v : area.outline)
+        for (Vec2d v : area.polygon.outline)
             v.add(delta);
 
         this.cached = null;
@@ -152,43 +142,44 @@ public class AreaComponent extends Component {
     }
 
     public void add(Vec2d vertex, boolean select) {
+        insert(vertices.size(), vertex, select);
+    }
+
+    public void insert(int index, Vec2d vertex, boolean select) {
         Vec2d v = new Vec2d(vertex);
 
-        Vec2d[] outline = new Vec2d[area.outline.length + 1];
-        System.arraycopy(area.outline, 0, outline, 0, area.outline.length);
-        outline[area.outline.length] = v;
-        area.outline = outline;
+        Vec2d[] outline = new Vec2d[area.polygon.outline.length + 1];
+        System.arraycopy(area.polygon.outline, 0, outline, 0, index);
+        System.arraycopy(area.polygon.outline, index, outline, index + 1, area.polygon.outline.length - index);
+        outline[index] = v;
+        area.polygon.outline = outline;
 
-        if (vertices.size() >= 2) {
-            AreaVertex left = vertices.get(vertices.size() - 1);
-            left.right.b = v;
+        AreaVertex av = new AreaVertex(root, v);
+        vertices.add(index, av);
+        super.add(av);
 
-            AreaVertex right = vertices.get(0);
+        if (vertices.size() >= 3) {
+            int leftIndex = (index - 1) >= 0 ? index - 1 : index - 1 + vertices.size();
+            int rightIndex = (index + 1) < vertices.size() ? index + 1 : index + 1 - vertices.size();
 
-            AreaVertex av = new AreaVertex(root, v);
-            EdgeSplit edge = new EdgeSplit(root, av.getPosition(), right.getPosition());
+            AreaVertex left = vertices.get(leftIndex);
+            AreaVertex right = vertices.get(rightIndex);
 
+            EdgeSplit edge = new EdgeSplit(root, av, right);
+
+            left.right.b = av;
             right.left = edge;
             av.right = edge;
             av.left = left.right;
 
             if (select) root.select(av);
-
-            super.add(av);
             super.add(edge);
-            vertices.add(av);
 
-        } else if (vertices.size() == 1) {
-            AreaVertex av = new AreaVertex(root, v);
-            AreaVertex other = vertices.get(0);
+        } else if (vertices.size() == 2) {
+            AreaVertex other = vertices.get((index + 1) % vertices.size());
 
-            EdgeSplit e1 = new EdgeSplit(root, av.getPosition(), other.getPosition());
-            EdgeSplit e2 = new EdgeSplit(root, other.getPosition(), av.getPosition());
-
-            super.add(av);
-            super.add(e1);
-            super.add(e2);
-            vertices.add(av);
+            EdgeSplit e1 = new EdgeSplit(root, av, other);
+            EdgeSplit e2 = new EdgeSplit(root, other, av);
 
             av.left = e2;
             av.right = e1;
@@ -196,27 +187,23 @@ public class AreaComponent extends Component {
             other.left = e1;
             other.right = e2;
 
-        } else {
-            AreaVertex av = new AreaVertex(root, v);
-            super.add(av);
-            vertices.add(av);
+            super.add(e1);
+            super.add(e2);
         }
     }
 
     public void remove(AreaVertex vertex) {
         int index = vertices.indexOf(vertex);
 
-        System.out.println("index = " + index);
-
-        Vec2d[] outline = new Vec2d[area.outline.length - 1];
-        System.arraycopy(area.outline, 0, outline, 0, index);
-        System.arraycopy(area.outline, index + 1, outline, index, area.outline.length - index - 1);
-        area.outline = outline;
+        Vec2d[] outline = new Vec2d[area.polygon.outline.length - 1];
+        System.arraycopy(area.polygon.outline, 0, outline, 0, index);
+        System.arraycopy(area.polygon.outline, index + 1, outline, index, area.polygon.outline.length - index - 1);
+        area.polygon.outline = outline;
 
         int iright = (index + 1) < vertices.size() ? index + 1 : index + 1 - vertices.size();
         AreaVertex right = vertices.get(iright);
 
-        vertex.left.b = right.getPosition();
+        vertex.left.b = right;
         right.left = vertex.left;
 
         vertices.remove(index);
@@ -236,23 +223,27 @@ public class AreaComponent extends Component {
     }
 
 
+    public Area getArea() {
+        return area;
+    }
+
     public Vec2d[] getOutline() {
-        return area.outline;
+        return area.polygon.outline;
     }
 
     public Type getType() {
-        return type;
+        return area.type;
     }
 
     public void setType(Type type) {
-        this.type = type;
+        this.area.type = type;
         redraw();
     }
 
 
     @Override
     public boolean contains(Vec2d p) {
-        return area.contains(p);
+        return area.polygon.contains(p);
     }
 
     @Override
@@ -264,7 +255,7 @@ public class AreaComponent extends Component {
     @Override
     protected void updateBounds() {
         if (!selected)
-            this.aabb = area.bounds();
+            this.aabb = area.polygon.bounds();
         else
             super.updateBounds();
     }
@@ -474,7 +465,7 @@ public class AreaComponent extends Component {
 
         @Override
         public boolean isActiveFor(Component component) {
-            return (component instanceof AreaComponent) && ((AreaComponent) component).area.outline.length >= 3;
+            return (component instanceof AreaComponent) && ((AreaComponent) component).area.polygon.outline.length >= 3;
         }
 
         @Override
@@ -484,7 +475,7 @@ public class AreaComponent extends Component {
 
 
         Color getColor(AreaComponent area) {
-            switch (area.type) {
+            switch (area.area.type) {
                 case ORIGIN:      return FILL_COLOR_ORIGIN;
                 case DESTINATION: return FILL_COLOR_DESTINATION;
             }
@@ -494,7 +485,7 @@ public class AreaComponent extends Component {
 
         Triangulator.Result getPolygon(AreaComponent area) {
             if (area.cached == null)
-                area.cached = triangulator.triangulate(area.area);
+                area.cached = triangulator.triangulate(area.area.polygon);
 
             return area.cached;
         }
@@ -596,7 +587,7 @@ public class AreaComponent extends Component {
                     complete = new ArrayList<>();
                 }
 
-                Vec2d[] outline = area.area.outline.clone();
+                Vec2d[] outline = area.area.polygon.outline.clone();
                 for (int i = 0; i < outline.length; i++) {
                     Vec3d v = transform.mul(new Vec3d(outline[i].x, outline[i].y, 1.0));
                     outline[i] = new Vec2d(v.x / v.z, v.y / v.z);

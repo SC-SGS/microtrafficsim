@@ -128,24 +128,21 @@ public class Rect2d {
     }
 
 
+    public Vec2d[] vertices() {
+        return new Vec2d[] {
+                new Vec2d(xmin, ymin),
+                new Vec2d(xmin, ymax),
+                new Vec2d(xmax, ymax),
+                new Vec2d(xmax, ymin)
+        };
+    }
+
     public boolean contains(Vec2d p) {
         return xmin <= p.x && p.x <= xmax && ymin <= p.y && p.y <= ymax;
     }
 
-
-    /**
-     * Projects the given point from the given source rectangle to the given target rectangle.
-     *
-     * @param from the rectangle indicating the source coordinate system.
-     * @param to   the rectangle indicating the target coordinate system.
-     * @param p    the point to project.
-     * @return     {@code p} projected from {@code from} to {@code to}.
-     */
-    public static Vec2d project(Rect2d from, Rect2d to, Vec2d p) {
-        return new Vec2d(
-            to.xmin + (p.x - from.xmin) / (from.xmax - from.xmin) * (to.xmax - to.xmin),
-            to.ymin + (p.y - from.ymin) / (from.ymax - from.ymin) * (to.ymax - to.ymin)
-        );
+    public boolean intersects(Rect2d other) {
+        return !(xmax < other.xmin || xmin > other.xmax || ymax < other.ymin || ymin > other.ymax);
     }
 
 
@@ -173,6 +170,22 @@ public class Rect2d {
     @Override
     public String toString() {
         return this.getClass() + " {" + xmin + ", " + ymin + ", " + xmax + ", " + ymax + "}";
+    }
+
+
+    /**
+     * Projects the given point from the given source rectangle to the given target rectangle.
+     *
+     * @param from the rectangle indicating the source coordinate system.
+     * @param to   the rectangle indicating the target coordinate system.
+     * @param p    the point to project.
+     * @return     {@code p} projected from {@code from} to {@code to}.
+     */
+    public static Vec2d project(Rect2d from, Rect2d to, Vec2d p) {
+        return new Vec2d(
+                to.xmin + (p.x - from.xmin) / (from.xmax - from.xmin) * (to.xmax - to.xmin),
+                to.ymin + (p.y - from.ymin) / (from.ymax - from.ymin) * (to.ymax - to.ymin)
+        );
     }
 
     public static Rect2d transform(Mat3d transform, Rect2d bounds) {

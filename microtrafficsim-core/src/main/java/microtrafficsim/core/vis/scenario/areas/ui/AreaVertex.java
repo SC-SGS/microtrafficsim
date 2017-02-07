@@ -237,7 +237,6 @@ public class AreaVertex extends Component {
                 return null;
             });
 
-
             e.setConsumed(true);
         }
     }
