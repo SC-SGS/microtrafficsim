@@ -173,72 +173,100 @@ public class LevelStringBuilder implements StringBuilder {
 
     @Override
     public LevelStringBuilder appendln(Object obj) {
-        return append(obj).append("\n");
+        append(obj);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(String str) {
-        return append(str).append("\n");
+        append(str);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(StringBuffer sb) {
-        return append(sb).append("\n");
+        append(sb);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(CharSequence s) {
-        return append(s).append("\n");
+        append(s);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(CharSequence s, int start, int end) {
-        return append(s, start, end).append("\n");
+        append(s, start, end);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(char[] str) {
-        return append(str).append("\n");
+        append(str);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(char[] str, int offset, int len) {
-        return append(str, offset, len).append("\n");
+        append(str, offset, len);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(boolean b) {
-        return append(b).append("\n");
+        append(b);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(char c) {
-        return append(c).append("\n");
+        append(c);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(int i) {
-        return append(i).append("\n");
+        append(i);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(long lng) {
-        return append(lng).append("\n");
+        append(lng);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(float f) {
-        return append(f).append("\n");
+        append(f);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendln(double d) {
-        return append(d).append("\n");
+        append(d);
+        stringBuilder.append("\n");
+        return this;
     }
 
     @Override
     public LevelStringBuilder appendlnCodePoint(int codePoint) {
-        return append(codePoint).append("\n");
+        append(codePoint);
+        stringBuilder.append("\n");
+        return this;
     }
 
 
