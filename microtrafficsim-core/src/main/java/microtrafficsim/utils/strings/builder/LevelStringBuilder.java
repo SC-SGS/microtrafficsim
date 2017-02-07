@@ -40,8 +40,10 @@ public class LevelStringBuilder implements StringBuilder {
 
     public void decLevel() {
         level--;
-        if (level < 0)
-            level = 0;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
     }
 
     private LevelStringBuilder appendLevelSeparator(int level) {

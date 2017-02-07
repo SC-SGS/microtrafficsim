@@ -4,6 +4,7 @@ import microtrafficsim.build.BuildSetup;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
 import microtrafficsim.ui.gui.statemachine.impl.SimulationController;
+import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import javax.swing.*;
 import java.awt.*;
