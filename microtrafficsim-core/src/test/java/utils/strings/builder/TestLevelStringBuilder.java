@@ -12,7 +12,6 @@ public class TestLevelStringBuilder {
 
     @Test
     public void simpleTest() {
-        LevelStringBuilder stringBuilder = new LevelStringBuilder();
 
         LevelStringBuilder innerBuilder = new LevelStringBuilder();
         innerBuilder.setLevelSubString("....");
