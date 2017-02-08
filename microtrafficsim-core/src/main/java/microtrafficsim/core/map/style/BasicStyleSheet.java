@@ -15,6 +15,7 @@ import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.utils.Color;
 import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.primitives.Way;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
@@ -30,6 +31,8 @@ import java.util.function.Predicate;
  * @author Dominic Parga Cacheiro
  */
 public abstract class BasicStyleSheet implements StyleSheet {
+
+    private final EasyMarkableLogger logger = new EasyMarkableLogger(BasicStyleSheet.class);
 
     private static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
 
@@ -154,15 +157,36 @@ public abstract class BasicStyleSheet implements StyleSheet {
             case "residential":
             case "road":
                 return zoom >= 12;
-            case "living-street":
+            case "living_street":
                 return zoom >= 13;
             default:
+                logger.info("It is not defined whether " + streetFeatureName + " has an active outline.");
                 return false;
         }
     }
 
     protected boolean isInlineActive(String streetFeatureName, int zoom) {
-        return isOutlineActive(streetFeatureName, zoom);
+
+        switch (streetFeatureName) {
+            case "motorway":
+                return true;
+            case "trunk":
+                return zoom >= 5;
+            case "primary":
+                return zoom >= 7;
+            case "secondary":
+            case "tertiary":
+                return zoom >= 9;
+            case "unclassified":
+            case "residential":
+            case "road":
+                return zoom >= 12;
+            case "living_street":
+                return zoom >= 13;
+            default:
+                logger.info("It is not defined whether " + streetFeatureName + " has an active inline.");
+                return false;
+        }
     }
 
     protected abstract Color getColorOutline(String streetFeatureName);

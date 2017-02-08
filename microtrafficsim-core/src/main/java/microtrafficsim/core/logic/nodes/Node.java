@@ -8,7 +8,6 @@ import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
-import microtrafficsim.core.simulation.configs.ConfigUpdateListener;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.exceptions.core.logic.CrossingLogicException;
@@ -23,18 +22,18 @@ import java.util.*;
 
 
 /**
- * This class represents one crossing point of two or more @DirectedEdge#s.
+ * This class represents one crossing point of two or more {@link DirectedEdge}s.
  * <p>
- * ShortestPathNode serves functionality for shortest path calculations.
+ * {@code ShortestPathNode} serves functionality for shortest path calculations.
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable, Seeded {
+public class Node implements ShortestPathNode, Resettable, Seeded {
 
-    public final long id;
-    private      CrossingLogicConfig config;
-    private      Coordinate          coordinate;
-    private      Random              random;
+    public final long           id;
+    private Coordinate          coordinate;
+    private CrossingLogicConfig config;
+    private final Random        random;
 
     // crossing logic
     private PriorityQueue<Vehicle>         newRegisteredVehicles;
@@ -57,7 +56,7 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
         this.config     = config;
 
         // crossing logic
-        random                = new Random();
+        random                = new Random();  // set later for determinism
         assessedVehicles      = new HashMap<>();
         maxPrioVehicles       = new HashSet<>();
         newRegisteredVehicles = new PriorityQueue<>((v1, v2) -> Long.compare(v1.getId(), v2.getId()));
@@ -76,24 +75,9 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
 
     @Override
     public String toString() {
-        String output = "Node id = " + id + " at " + coordinate.toString();
-
-        //		for (Lane start : restrictions.keySet())
-        //			for (Lane end : restrictions.get(start))
-        //				output += start + " to " + end + "\n";
-
-        return output;
+        return "Node id = " + id + " at " + coordinate.toString();
     }
 
-    /*
-    |==========================|
-    | (i) ConfigUpdateListener |
-    |==========================|
-    */
-    @Override
-    public void configDidUpdate(ScenarioConfig updatedConfig) {
-        // TODO
-    }
 
     /*
     |================|
@@ -437,7 +421,9 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
         HashMap<Vec2d, ArrayList<DirectedEdge>> edges = new HashMap<>();
         Vec2d zero = null;
 
-        /* get all vectors for sorting */
+
+        /* get all vectors for sorting later */
+        /* collect all leaving edges */
         for (DirectedEdge edge : leavingEdges.keySet()) {
             // invert leaving XOR incoming edges
             Vec2d v = Vec2d.mul(edge.getOriginDirection(), -1);
@@ -455,6 +441,8 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
             vectorsEdges.add(edge);
         }
 
+
+        /* collect all incoming edges */
         for (DirectedEdge edge : incomingEdges.keySet()) {
             Vec2d v = new Vec2d(edge.getDestinationDirection());
 
@@ -471,7 +459,8 @@ public class Node implements ConfigUpdateListener, ShortestPathNode, Resettable,
             vectorsEdges.add(edge);
         }
 
-        /* now: all vectors are keys */
+
+        /* now: all vectors are keys and can be sorted*/
         Queue<Vec2d> sortedVectors
                 = Geometry.sortClockwiseAsc(zero, edges.keySet(), !config.drivingOnTheRight);
         byte nextCrossingIndex = 0;

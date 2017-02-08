@@ -2,8 +2,8 @@ package microtrafficsim.core.logic;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.simulation.configs.ConfigUpdateListener;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.builder.MapInitializer;
+import microtrafficsim.core.simulation.builder.impl.StreetGraphInitializer;
 import microtrafficsim.utils.Resettable;
 
 import java.util.Collections;
@@ -18,11 +18,12 @@ import java.util.Set;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class StreetGraph implements ConfigUpdateListener, Resettable {
+public class StreetGraph implements MapInitializer, Resettable {
 
     public final float            minLat, maxLat, minLon, maxLon;
     private HashSet<Node>         nodes;
     private HashSet<DirectedEdge> edges;
+    private MapInitializer        initializer;
 
     /**
      * Just a standard constructor.
@@ -34,6 +35,8 @@ public class StreetGraph implements ConfigUpdateListener, Resettable {
         this.maxLon = maxLon;
         nodes       = new HashSet<>();
         edges       = new HashSet<>();
+
+        initializer = new StreetGraphInitializer();
     }
 
     /**
@@ -86,6 +89,37 @@ public class StreetGraph implements ConfigUpdateListener, Resettable {
         return output;
     }
 
+
+    /*
+    |====================|
+    | (i) MapInitializer |
+    |====================|
+    */
+    /**
+     * Calls {@link #postprocessFreshStreetGraph(StreetGraph, long) postprocessFreshStreetGraph(this, seed)}
+     */
+    public StreetGraph postprocessFresh(long seed) {
+        return postprocessFreshStreetGraph(this, seed);
+    }
+
+    /**
+     * Calls {@link #postprocessStreetGraph(StreetGraph, long) postprocessStreetGraph(this, seed)}
+     */
+    public StreetGraph postprocess(long seed) {
+        return postprocessStreetGraph(this, seed);
+    }
+
+    @Override
+    public StreetGraph postprocessFreshStreetGraph(StreetGraph protoGraph, long seed) {
+        return initializer.postprocessFreshStreetGraph(protoGraph, seed);
+    }
+
+    @Override
+    public StreetGraph postprocessStreetGraph(StreetGraph protoGraph, long seed) {
+        return initializer.postprocessStreetGraph(protoGraph, seed);
+    }
+
+
     /*
     |================|
     | (i) Resettable |
@@ -99,16 +133,5 @@ public class StreetGraph implements ConfigUpdateListener, Resettable {
     public void reset() {
         nodes.forEach(Node::reset);
         edges.forEach(DirectedEdge::reset);
-    }
-
-    /*
-    |==========================|
-    | (i) ConfigUpdateListener |
-    |==========================|
-    */
-    @Override
-    public void configDidUpdate(ScenarioConfig updatedConfig) {
-        nodes.forEach(node -> node.configDidUpdate(updatedConfig));
-        edges.forEach(edge -> edge.configDidUpdate(updatedConfig));
     }
 }

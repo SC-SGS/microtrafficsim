@@ -6,7 +6,6 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.information.FullStreetInfo;
 import microtrafficsim.core.logic.streets.information.RawStreetInfo;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
-import microtrafficsim.core.simulation.configs.ConfigUpdateListener;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.Resettable;
@@ -24,7 +23,7 @@ import java.util.Collection;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, LogicStreetEntity, Resettable {
+public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity, Resettable {
 
     /* street information */
     private FullStreetInfo streetInfo;
@@ -104,6 +103,16 @@ public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, Log
         return streetInfo.raw.priorityLevel;
     }
 
+    /**
+     * Sets the value {@code metersPerCell} to the given one and calls {@link #reset()} afterwards.
+     *
+     * @param metersPerCell new value
+     */
+    public void setMetersPerCell(float metersPerCell) {
+        streetInfo.raw.metersPerCell = metersPerCell;
+        reset();
+    }
+
     @Override
     public String toString() {
         LevelStringBuilder stringBuilder = new LevelStringBuilder();
@@ -122,11 +131,18 @@ public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, Log
         return stringBuilder.toString();
     }
 
+
+    /*
+    |================|
+    | (i) Resettable |
+    |================|
+    */
     /**
-     * Resets all lanes.
+     * Resets the {@code streetInfo} and all lanes.
      */
     @Override
     public void reset() {
+        streetInfo.reset();
         for (Lane lane : lanes)
             lane.reset();
     }
@@ -184,15 +200,5 @@ public class DirectedEdge implements ConfigUpdateListener, ShortestPathEdge, Log
     @Override
     public void setEntity(StreetEntity entity) {
         this.entity = entity;
-    }
-
-    /*
-    |==========================|
-    | (i) ConfigUpdateListener |
-    |==========================|
-    */
-    @Override
-    public void configDidUpdate(ScenarioConfig updatedConfig) {
-//        System.err.println("Yay ConfigUpdateListener");
     }
 }

@@ -1,5 +1,6 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
+import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;

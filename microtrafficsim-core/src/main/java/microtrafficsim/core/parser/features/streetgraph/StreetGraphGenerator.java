@@ -40,8 +40,6 @@ import java.util.Set;
 public class StreetGraphGenerator implements FeatureGenerator {
     private static Logger logger = new EasyMarkableLogger(StreetGraphGenerator.class);
 
-    private MapInitializer initializer;
-
     private ScenarioConfig     config;
     private StreetGraph        graph;
     private DistanceCalculator distcalc;
@@ -68,8 +66,6 @@ public class StreetGraphGenerator implements FeatureGenerator {
      *                 streets.
      */
     public StreetGraphGenerator(ScenarioConfig config, DistanceCalculator distcalc) {
-
-        this.initializer = new StreetGraphInitializer();
 
         this.config      = config;
         this.distcalc    = distcalc;
@@ -134,7 +130,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
             node.remove(StreetGraphNodeComponent.class);
 
         // finish
-        this.graph = initializer.postprocessCreatedStreetGraph(graph, config.seed);
+        this.graph = graph.postprocessFresh(config.seed);
         logger.info("finished generating StreetGraph");
     }
 

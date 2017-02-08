@@ -2,6 +2,7 @@ package microtrafficsim.core.map.style.impl;
 
 import microtrafficsim.core.map.style.BasicStyleSheet;
 import microtrafficsim.core.vis.opengl.utils.Color;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 
 
 /**
@@ -10,6 +11,8 @@ import microtrafficsim.core.vis.opengl.utils.Color;
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public class MonochromeStyleSheet extends BasicStyleSheet {
+
+    private final EasyMarkableLogger logger = new EasyMarkableLogger(MonochromeStyleSheet.class);
 
     /**
      * @author Maximilian Luz
@@ -64,9 +67,10 @@ public class MonochromeStyleSheet extends BasicStyleSheet {
                 return Color.fromRGB(0x646464);
             case "road":
                 return Color.fromRGB(0x5A5A5A);
-            case "living-street":
+            case "living_street":
                 return Color.fromRGB(0x505050);
             default: // should be never reached
+                logger.info("The inline color of " + streetFeatureName + " is not defined.");
                 return getBackgroundColor();
         }
     }
@@ -94,10 +98,12 @@ public class MonochromeStyleSheet extends BasicStyleSheet {
                 offset = 30.f;
                 exp1   = 1.15f;
                 break;
-            case "living-street":
+            case "living_street":
                 offset = 25.f;
                 exp1   = 1.10f;
                 break;
+            default:
+                logger.info("The outline line width of " + streetFeatureName + " is not defined.");
         }
 
         return lineWidthBase.get(offset, 20.f, exp1, 0.75f, zoom);
@@ -126,10 +132,12 @@ public class MonochromeStyleSheet extends BasicStyleSheet {
                 offset = 25.f;
                 exp1   = 1.17f;
                 break;
-            case "living-street":
+            case "living_street":
                 offset = 20.f;
                 exp1   = 1.12f;
                 break;
+            default:
+                logger.info("The inline line width of " + streetFeatureName + " is not defined.");
         }
 
         return lineWidthBase.get(offset, 20.f, exp1, 0.3f, zoom);

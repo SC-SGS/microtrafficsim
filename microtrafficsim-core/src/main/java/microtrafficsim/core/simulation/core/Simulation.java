@@ -1,7 +1,6 @@
 package microtrafficsim.core.simulation.core;
 
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.configs.ConfigUpdateListener;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
 import java.util.Timer;

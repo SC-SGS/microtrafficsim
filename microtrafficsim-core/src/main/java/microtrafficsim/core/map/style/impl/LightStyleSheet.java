@@ -2,6 +2,7 @@ package microtrafficsim.core.map.style.impl;
 
 import microtrafficsim.core.map.style.BasicStyleSheet;
 import microtrafficsim.core.vis.opengl.utils.Color;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 
 
 /**
@@ -10,6 +11,8 @@ import microtrafficsim.core.vis.opengl.utils.Color;
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public class LightStyleSheet extends BasicStyleSheet {
+
+    private final EasyMarkableLogger logger = new EasyMarkableLogger(LightStyleSheet.class);
 
     @Override
     public Color getBackgroundColor() {
@@ -27,11 +30,12 @@ public class LightStyleSheet extends BasicStyleSheet {
             case "tertiary":
             case "unclassified":
             case "residential":
-            case "living-street":
+            case "living_street":
                 return zoom >= 16;
             case "road":
                 return zoom >= 17;
             default: // should be never reached
+                logger.info("It is not defined whether " + streetFeatureName + " has an active inline.");
                 return false;
         }
     }
@@ -56,9 +60,10 @@ public class LightStyleSheet extends BasicStyleSheet {
                 return Color.from(124, 111, 100);
             case "road":
                 return Color.from(146, 131, 116);
-            case "living-street":
+            case "living_street":
                 return Color.from(146, 131, 116);
             default: // should be never reached
+                logger.info("The outline color of " + streetFeatureName + " is not defined.");
                 return getBackgroundColor();
         }
     }
@@ -120,13 +125,14 @@ public class LightStyleSheet extends BasicStyleSheet {
                 if (zoom >= 14)
                     return 60.f;
                 return 75.f;
-            case "living-street":
+            case "living_street":
                 if (zoom >= 16)
                     return 32.f;
                 if (zoom >= 14)
                     return 45.f;
                 return 60.f;
             default: // should be never reached
+                logger.info("The outline line width of " + streetFeatureName + " is not defined.");
                 return 0;
         }
     }
@@ -153,10 +159,11 @@ public class LightStyleSheet extends BasicStyleSheet {
                 case "road":
                     if (zoom >= 17)
                         return 30.f;
-                case "living-street":
+                case "living_street":
                     return 24.f;
             }
         }
+        logger.info("The inline line width of " + streetFeatureName + " is not defined.");
         return 0;
     }
 }

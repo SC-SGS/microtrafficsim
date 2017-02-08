@@ -23,7 +23,8 @@ import org.slf4j.Logger;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
@@ -288,17 +289,34 @@ public class SimulationController implements GUIController {
             case ACCEPT:
                 scenarioBuildThread = new Thread(() -> {
                     if (isBuildingScenario.compareAndSet(false, true)) {
-                        if (updateScenarioConfig()) {
-                            closePreferences();
 
-                            if (newSim) {
-                                startNewSimulation();
-                                newSim = false;
-                            }
+                        /* get new config */
+                        ScenarioConfig newConfig = null;
+                        try {
+                            newConfig = preferences.getCorrectSettings();
+                        } catch (IncorrectSettingsException e) {
+                            JOptionPane.showMessageDialog(
+                                    null,
+                                    e.getMessage(),
+                                    "Error: wrong preferences values",
+                                    JOptionPane.ERROR_MESSAGE);
                         }
 
-                        updateMenuBar();
-                        isExecuting.set(false);
+                        /* process new config if correct input */
+                        if (newConfig != null) {
+                            closePreferences();
+                            config.update(newConfig);
+
+                            if (newSim) {
+                                startNewScenario();
+                                newSim = false;
+                            } else {
+                                updateScenario();
+                            }
+
+                            updateMenuBar();
+                            isExecuting.set(false);
+                        }
 
                         isBuildingScenario.set(false);
                     }
@@ -548,16 +566,24 @@ public class SimulationController implements GUIController {
         simulation.cancel();
     }
 
-    private void startNewSimulation() {
-//        mapviewer.createParser(config);
-        // todo set config of streetgraph and simulation
+    private void startNewScenario() {
 
         String oldTitle = frame.getTitle();
+        EventQueue.invokeLater(() -> frame.setTitle("Starting new scenario"));
+
+
+        /* update streetgraph */
+        // mapviewer.createParser(config) is not needed because the mapviewer gets the final config-reference
+        streetgraph.postprocess(config.seed);
+
+
+        /* create new scenario */
         EventQueue.invokeLater(() -> frame.setTitle("Calculating vehicle routes 0%"));
 
+
         /* remove old scenario */
-        config.removeUpdateListener(simulation.getScenario());
         simulation.removeCurrentScenario();
+
 
         /* create and prepare new scenario */
         Scenario scenario = new RandomRouteScenario(config.seed, config, streetgraph);
@@ -568,15 +594,21 @@ public class SimulationController implements GUIController {
                         frame.setTitle("Calculating vehicle routes " + currentInPercent + "%");
                     }));
 
+
             /* initialize the scenario */
             simulation.setAndInitPreparedScenario(scenario);
-            config.addUpdateListener(scenario);
             simulation.runOneStep();
         } catch (InterruptedException ignored) {
             logger.info("Scenario building interrupted by user");
         }
 
+
+        /* finish creation */
         EventQueue.invokeLater(() -> frame.setTitle(oldTitle));
+    }
+
+    private void updateScenario() {
+        // todo update scenario although it is not new => activate PrefElements
     }
 
     private void cancelScenarioBuilding() {
@@ -623,32 +655,6 @@ public class SimulationController implements GUIController {
         /* show */
         preferences.setVisible(true);
         preferences.toFront();
-    }
-
-    /**
-     * @return True if the settings were correct; false otherwise
-     */
-    private boolean updateScenarioConfig() {
-
-        /* get new config */
-        ScenarioConfig newConfig = null;
-        try {
-            newConfig = preferences.getCorrectSettings();
-        } catch (IncorrectSettingsException e) {
-            JOptionPane.showMessageDialog(
-                    null,
-                    e.getMessage(),
-                    "Error: wrong preferences values",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-
-        /* check if new config is set */
-        if (newConfig == null)
-            return false;
-
-        /* if yes => update */
-        config.update(newConfig);
-        return true;
     }
 
     private void closePreferences() {

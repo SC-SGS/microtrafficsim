@@ -63,7 +63,7 @@ class MonochromeStyleSheet implements MapStyleSheet {
                 Color.fromRGB(0x000000),      // unclassified
                 Color.fromRGB(0x000000),      // residential
                 Color.fromRGB(0x000000),      // road
-                Color.fromRGB(0x000000),      // living-street
+                Color.fromRGB(0x000000),      // living_street
         };
 
         Color[] colorsInline = {
@@ -75,7 +75,7 @@ class MonochromeStyleSheet implements MapStyleSheet {
                 Color.fromRGB(0x6E6E6E),      // unclassified
                 Color.fromRGB(0x646464),      // residential
                 Color.fromRGB(0x5A5A5A),      // road
-                Color.fromRGB(0x505050),      // living-street
+                Color.fromRGB(0x505050),      // living_street
         };
 
         /* line width */

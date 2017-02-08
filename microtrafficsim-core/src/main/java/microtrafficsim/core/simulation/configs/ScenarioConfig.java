@@ -4,7 +4,6 @@ import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.osm.parser.features.streets.info.StreetType;
 import microtrafficsim.utils.Resettable;
 
-import java.util.LinkedList;
 import java.util.function.Function;
 
 
@@ -24,14 +23,11 @@ import java.util.function.Function;
  */
 public final class ScenarioConfig implements Resettable {
 
-    private LinkedList<ConfigUpdateListener> updateListeners;
-
     // general
-    public float         metersPerCell;
-    public int           globalMaxVelocity;
-    // todo private int cellNumberScale; (depending on meters per cell!)
-    public int            speedup;
-    public long           seed;// TODO
+    public float metersPerCell;
+    public int   globalMaxVelocity;
+    public int   speedup;
+    public long  seed;
 
     // visualization
     public final VisualizationConfig visualization;
@@ -52,11 +48,10 @@ public final class ScenarioConfig implements Resettable {
      * Just calls {@link #reset()}.
      */
     public ScenarioConfig() {
-        updateListeners = new LinkedList<>();
 
-        visualization  = new VisualizationConfig();
-        crossingLogic  = new CrossingLogicConfig();
-        multiThreading = new MultiThreadingConfig();
+        visualization   = new VisualizationConfig();
+        crossingLogic   = new CrossingLogicConfig();
+        multiThreading  = new MultiThreadingConfig();
         reset();
     }
 
@@ -136,16 +131,5 @@ public final class ScenarioConfig implements Resettable {
         streetPriorityLevel = config.streetPriorityLevel;
         // multithreading
         multiThreading.update(config.multiThreading);
-
-        for (ConfigUpdateListener listener : updateListeners)
-            listener.configDidUpdate(this);
-    }
-
-    public void addUpdateListener(ConfigUpdateListener updateListener) {
-        updateListeners.add(updateListener);
-    }
-
-    public void removeUpdateListener(ConfigUpdateListener updateListener) {
-        updateListeners.remove(updateListener);
     }
 }

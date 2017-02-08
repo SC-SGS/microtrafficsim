@@ -10,13 +10,17 @@ import microtrafficsim.utils.id.ConcurrentSeedGenerator;
  */
 public class StreetGraphInitializer implements MapInitializer {
 
-    /*
-    |====================|
-    | (i) MapInitializer |
-    |====================|
-    */
-    @Override
-    public StreetGraph postprocessCreatedStreetGraph(StreetGraph protoGraph, long seed) {
+    public StreetGraph postprocessFreshStreetGraph(StreetGraph protoGraph, long seed) {
+
+        /* prepare crossing logic */
+        postprocessStreetGraph(protoGraph, seed).getNodes().forEach(Node::calculateEdgeIndices);
+
+        return protoGraph;
+    }
+
+    public StreetGraph postprocessStreetGraph(StreetGraph protoGraph, long seed) {
+
+        protoGraph.reset();
 
         /* init */
         ConcurrentSeedGenerator seedGenerator = new ConcurrentSeedGenerator(seed);
@@ -24,9 +28,6 @@ public class StreetGraphInitializer implements MapInitializer {
         /* set seeds deterministically */
         for (Node node : protoGraph.getNodes())
             node.setSeed(seedGenerator.next());
-
-        /* prepare crossing logic */
-        protoGraph.getNodes().forEach(Node::calculateEdgeIndices);
 
         return protoGraph;
     }

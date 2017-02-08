@@ -3,7 +3,6 @@ package microtrafficsim.core.simulation.scenarios;
 import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.configs.ConfigUpdateListener;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.StepListener;
@@ -27,7 +26,7 @@ import java.util.function.Supplier;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface Scenario extends ConfigUpdateListener, StepListener, Resettable {
+public interface Scenario extends StepListener, Resettable {
 
     /*
     |=========|
@@ -79,15 +78,6 @@ public interface Scenario extends ConfigUpdateListener, StepListener, Resettable
      */
     Supplier<ShortestPathAlgorithm> getScoutFactory();
 
-    /*
-    |==========================|
-    | (i) ConfigUpdateListener |
-    |==========================|
-    */
-    @Override
-    default void configDidUpdate(ScenarioConfig updatedConfig) {
-        getGraph().configDidUpdate(updatedConfig);
-    }
 
     /*
     |==================|
@@ -98,6 +88,7 @@ public interface Scenario extends ConfigUpdateListener, StepListener, Resettable
     default void didOneStep(Simulation simulation) {
 
     }
+
 
     /*
     |================|
