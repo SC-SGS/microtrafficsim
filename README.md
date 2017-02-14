@@ -6,7 +6,7 @@ with OpenStreetMap data.
 ## News
 After a huge redesign of the simulations/scenarios and the vehicle logic, we want to implement contraction hierarchies for faster route calculations before we are going to make the simulation execution deterministic by guarantee. For now, the determinism should be (almost) given but it is not formally tested yet.
 
-Finishing these (hopefully in the end of February 2017), we start developing multilane logic. This is used in a bachelor thesis for traffic jam cause research.
+By finishing these (hopefully in the end of February 2017), we will start developing multilane logic. This will be used in a bachelor thesis for traffic jam cause research.
 
 The implementation of polygon triangulation for a more complex visualization has been finished. In future, we want to use this for defining own scenarios by selecting polygonal start areas. In addition, buildings should be visualized as well (already done in subbranch).
 
