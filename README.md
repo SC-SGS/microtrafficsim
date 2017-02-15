@@ -4,31 +4,25 @@ with OpenStreetMap data.
 ![Teaser: New York](teaser.png "Teaser: New York")
 
 ## News
-We are cleaning up the existing project. This includes detailed Javadocs,
-removing quick fixes or creating branches for them.
+After a huge redesign of the simulations/scenarios and the vehicle logic, we want to implement contraction hierarchies for faster route calculations before we are going to make the simulation execution deterministic by guarantee. For now, the determinism should be (almost) given but it is not formally tested yet.
 
-The simulation package is redesigned! The next step is making it deterministic.
+By finishing these (hopefully in the end of February 2017), we will start developing multilane logic. This will be used in a bachelor thesis for traffic jam cause research.
+
+The implementation of polygon triangulation for a more complex visualization has been finished. In future, we want to use this for defining own scenarios by selecting polygonal start areas. In addition, buildings should be visualized as well (already done in subbranch).
 
 
 ## Demonstration and Examples
-Demonstrations and examples can be executed using `gradle`. All OpenStreetMap
-(OSM) files need to be in the OSM XML format, as, for example, provided by the
-[OpenStreetMap web interface](https://www.openstreetmap.org). A (somewhat)
-stable demonstration can be executed from the `master`-branch (see Main UI).
+Demonstrations and examples can be executed using `gradle`. All OpenStreetMap (OSM) files need to be in the OSM XML format, as, for example, provided by the [OpenStreetMap web interface](https://www.openstreetmap.org). A (somewhat) stable demonstration can be executed from the `master`-branch (see Main UI).
 
 #### Main UI
-The main UI provides an overview of the simulation. The scenario is currently
-fixed (random routes), however various simulation parameters, as well as the
-number of vehicles and the used map, can be adjusted
+The main UI provides an overview of the simulation. The scenario is currently fixed (random routes), however various simulation parameters, as well as the number of vehicles and the used map, can be adjusted
 
 ```shell
 ./gradlew :microtrafficsim-ui:run
 ```
 
 #### Fixed Simulation Example
-The fixed simulation example features a fixed scenario and fixed parameters, It
-represents a former state of development, therefore the simulation parameters
-can't be changed without changing code. It can be executed using
+The fixed simulation example features a fixed scenario and fixed parameters, It represents a former state of development, therefore the simulation parameters can't be changed without changing code. It can be executed using
 ```shell
 ./gradlew :examples:simulation:run -Dexec.args="<path to OSM-XML file>"
 ```
