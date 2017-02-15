@@ -1,7 +1,7 @@
 package logic.validation.scenarios.pluscrossroad;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.BlockingCar;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 public class PartialPlusCrossroadScenario extends AbstractPlusCrossroadScenario {
 
     public PartialPlusCrossroadScenario(ScenarioConfig config,
-                                        StreetGraph graph,
+                                        Graph graph,
                                         Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph, visVehicleFactory);
     }

@@ -487,12 +487,12 @@ public class Node implements ShortestPathNode, Resettable, Seeded {
     |======================|
     */
     @Override
-    public Set<ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming) {
+    public Set<DirectedEdge> getLeavingEdges(ShortestPathEdge incoming) {
 
         if (incoming == null)
             return Collections.unmodifiableSet(leavingEdges.keySet());
 
-        HashSet<ShortestPathEdge> returnEdges = new HashSet<>();
+        HashSet<DirectedEdge> returnEdges = new HashSet<>();
 
         for (Lane incomingLane : ((DirectedEdge) incoming).getLanes()) {
             ArrayList<Lane> restrictedLeavingLanes = restrictions.get(incomingLane);
@@ -507,7 +507,7 @@ public class Node implements ShortestPathNode, Resettable, Seeded {
     }
 
     @Override
-    public Set<ShortestPathEdge> getIncomingEdges() {
+    public Set<DirectedEdge> getIncomingEdges() {
         return new HashSet<>(incomingEdges.keySet());
     }
 

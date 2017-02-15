@@ -1,15 +1,14 @@
 package microtrafficsim.core.parser.features.streetgraph;
 
 import microtrafficsim.core.logic.Direction;
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.parser.processing.Connector;
 import microtrafficsim.core.parser.processing.GraphWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
-import microtrafficsim.core.simulation.builder.MapInitializer;
-import microtrafficsim.core.simulation.builder.impl.StreetGraphInitializer;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.DistanceCalculator;
@@ -41,7 +40,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
     private static Logger logger = new EasyMarkableLogger(StreetGraphGenerator.class);
 
     private ScenarioConfig     config;
-    private StreetGraph        graph;
+    private Graph              graph;
     private DistanceCalculator distcalc;
 
     /**
@@ -78,7 +77,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
      *
      * @return the generated StreetGraph.
      */
-    public StreetGraph getStreetGraph() {
+    public Graph getStreetGraph() {
         return graph;
     }
 
@@ -105,7 +104,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
 
         logger.info("generating StreetGraph");
         this.graph        = null;
-        StreetGraph graph = new StreetGraph((float) dataset.bounds.minlat,
+        Graph graph = new StreetGraph((float) dataset.bounds.minlat,
                                             (float) dataset.bounds.maxlat,
                                             (float) dataset.bounds.minlon,
                                             (float) dataset.bounds.maxlon);
@@ -142,7 +141,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * @param graph   the StreetGraph to which the generated edges should be added.
      * @param way     the {@code WayEntity} for which the edges should be generated.
      */
-    private void createAndAddEdges(DataSet dataset, StreetGraph graph, WayEntity way, ScenarioConfig config) {
+    private void createAndAddEdges(DataSet dataset, Graph graph, WayEntity way, ScenarioConfig config) {
         NodeEntity      node0          = dataset.nodes.get(way.nodes[0]);
         NodeEntity      node1          = dataset.nodes.get(way.nodes[1]);
         NodeEntity      secondLastNode = dataset.nodes.get(way.nodes[way.nodes.length - 2]);

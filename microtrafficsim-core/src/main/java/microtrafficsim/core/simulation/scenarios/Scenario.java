@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.scenarios;
 
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -41,7 +41,7 @@ public interface Scenario extends StepListener, Resettable {
     /**
      * @return streetgraph used in this scenario
      */
-    StreetGraph getGraph();
+    Graph getGraph();
 
     /**
      * @return the vehicle container managing (not) spawned vehicles of this scenario
@@ -105,7 +105,7 @@ public interface Scenario extends StepListener, Resettable {
      * @see #getVehicleContainer()
      * @see VehicleContainer#clearAll()
      * @see #getGraph()
-     * @see StreetGraph#reset()
+     * @see Graph#reset()
      */
     @Override
     default void reset() {

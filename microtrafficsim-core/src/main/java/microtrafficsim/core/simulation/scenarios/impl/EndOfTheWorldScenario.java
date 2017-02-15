@@ -1,16 +1,12 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.area.Area;
 import microtrafficsim.core.map.area.polygons.RectangleArea;
-import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
-import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
-import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
 import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -19,7 +15,6 @@ import org.slf4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * <p>
@@ -39,14 +34,14 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
 
     public EndOfTheWorldScenario(long seed,
                                  ScenarioConfig config,
-                                 StreetGraph graph,
+                                 Graph graph,
                                  VehicleContainer vehicleContainer) {
         this(new Random(seed), config, graph, vehicleContainer);
     }
 
     public EndOfTheWorldScenario(Random random,
                                  ScenarioConfig config,
-                                 StreetGraph graph,
+                                 Graph graph,
                                  VehicleContainer vehicleContainer) {
         super(random, config, graph, vehicleContainer);
 
@@ -57,12 +52,28 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
         rightNodes  = new ArrayList<>();
         topNodes    = new ArrayList<>();
         // define areas for filling node lists
-        float latLength   = Math.min(0.01f, 0.1f * (graph.maxLat - graph.minLat));
-        float lonLength   = Math.min(0.01f, 0.1f * (graph.maxLon - graph.minLon));
-        Area leftBorder   = new RectangleArea(graph.minLat, graph.minLon, graph.maxLat, graph.minLon + lonLength);
-        Area bottomBorder = new RectangleArea(graph.minLat, graph.minLon, graph.minLat + latLength, graph.maxLon);
-        Area rightBorder  = new RectangleArea(graph.minLat, graph.maxLon - lonLength, graph.maxLat, graph.maxLon);
-        Area topBorder    = new RectangleArea(graph.maxLat - latLength, graph.minLon, graph.maxLat, graph.maxLon);
+        float latLength   = Math.min(0.01f, 0.1f * (graph.getMaxLat() - graph.getMinLat()));
+        float lonLength   = Math.min(0.01f, 0.1f * (graph.getMaxLon() - graph.getMinLon()));
+        Area leftBorder   = new RectangleArea(
+                graph.getMinLat(),
+                graph.getMinLon(),
+                graph.getMaxLat(),
+                graph.getMinLon() + lonLength);
+        Area bottomBorder = new RectangleArea(
+                graph.getMinLat(),
+                graph.getMinLon(),
+                graph.getMinLat() + latLength,
+                graph.getMaxLon());
+        Area rightBorder  = new RectangleArea(
+                graph.getMinLat(),
+                graph.getMaxLon() - lonLength,
+                graph.getMaxLat(),
+                graph.getMaxLon());
+        Area topBorder    = new RectangleArea(
+                graph.getMaxLat() - latLength,
+                graph.getMinLon(),
+                graph.getMaxLat(),
+                graph.getMaxLon());
 
         // fill node lists
         for (Node node : nodes) {
@@ -105,15 +116,15 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
             Node origin = getRandomNode.apply(nodes);
 
             // get end node depending on start node's position
-            StreetGraph graph      = getGraph();
+            Graph graph    = getGraph();
             final float
-                    minlat         = graph.minLat,
-                    maxlat         = graph.maxLat,
-                    minlon         = graph.minLon,
-                    maxlon         = graph.maxLon;
+                    minlat = graph.getMinLat(),
+                    maxlat = graph.getMaxLat(),
+                    minlon = graph.getMinLon(),
+                    maxlon = graph.getMaxLon();
             Coordinate
-                    center         = new Coordinate((maxlat + minlat) / 2, (maxlon + minlon) / 2),
-                    originCoord    = origin.getCoordinate();
+                    center      = new Coordinate((maxlat + minlat) / 2, (maxlon + minlon) / 2),
+                    originCoord = origin.getCoordinate();
             // set data relevant for distance calculation
             Coordinate
                     latProjection = new Coordinate(0, originCoord.lon),

@@ -1,8 +1,9 @@
 package logic.shortestpath;
 
+import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.StreetGraph;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
@@ -43,7 +44,7 @@ public class TestShortestPathAlgorithms {
     private final int                   maxVelocity = 1;
     private Stack<ShortestPathEdge>     shortestPath;
     private Stack<DirectedEdge>         correctShortestPath;
-    private StreetGraph                 graph;
+    private Graph                       graph;
     private Node start, end;
     private Coordinate                  uselessPosition = new Coordinate(0, 0);
     private long                        uselessId = -1;

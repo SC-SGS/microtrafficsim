@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
@@ -23,14 +23,14 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
 
     protected BasicRandomScenario(long seed,
                                   ScenarioConfig config,
-                                  StreetGraph graph,
+                                  Graph graph,
                                   VehicleContainer vehicleContainer) {
         this(new Random(seed), config, graph, vehicleContainer);
     }
 
     protected BasicRandomScenario(Random random,
                                   ScenarioConfig config,
-                                  StreetGraph graph,
+                                  Graph graph,
                                   VehicleContainer vehicleContainer) {
         super(config, graph, vehicleContainer);
 

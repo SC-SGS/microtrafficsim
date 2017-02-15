@@ -2,7 +2,7 @@ package microtrafficsim.examples.simulation;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.build.BuildSetup;
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
@@ -78,7 +78,7 @@ public class Main {
             /* parse osm map */
             String oldTitle = frame.getTitle();
             frame.setTitle("Parsing new map, please wait...");
-            StreetGraph graph = null;
+            Graph graph = null;
             try {
             /* parse file and create tiled provider */
                 OSMParser.Result result = mapviewer.parse(file);
@@ -172,7 +172,7 @@ public class Main {
     }
 
     private static Simulation createAndInitSimulation(ScenarioConfig config,
-                                                      StreetGraph graph,
+                                                      Graph graph,
                                                       VehicleOverlay overlay) {
 
         /* initialize the simulation */

@@ -1,6 +1,6 @@
 package microtrafficsim.examples.parser;
 
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.parser.*;
@@ -56,7 +56,7 @@ public class ParserExample {
 
         // do stuff with parsed data
         MapSegment  segment     = result.segment;
-        StreetGraph streetgraph = result.streetgraph;
+        Graph       streetgraph = result.streetgraph;
 
         System.out.println(segment.getBounds().toString());
         System.out.println(segment.require("streets").getData().length);

@@ -182,7 +182,6 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity, Resett
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Node getDestination() {
         return streetInfo.raw.destination;
     }

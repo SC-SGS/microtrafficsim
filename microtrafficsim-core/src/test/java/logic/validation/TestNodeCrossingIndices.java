@@ -4,7 +4,7 @@ import logic.validation.scenarios.pluscrossroad.AbstractPlusCrossroadScenario;
 import logic.validation.scenarios.pluscrossroad.FullPlusCrossroadScenario;
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.logic.Direction;
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
@@ -44,7 +44,7 @@ public class TestNodeCrossingIndices {
             File file = new PackagedResource(UIValidation.class, "plus_crossroad.osm").asTemporaryFile();
             MapViewer mapviewer = new TileBasedMapViewer(config.visualization.style);
             mapviewer.createParser(config);
-            StreetGraph graph = mapviewer.parse(file).streetgraph;
+            Graph graph = mapviewer.parse(file).streetgraph;
 
             logger.debug("\n" + graph);
 

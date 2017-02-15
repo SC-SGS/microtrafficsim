@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.builder.impl;
 
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.simulation.builder.MapInitializer;
 import microtrafficsim.utils.id.ConcurrentSeedGenerator;
@@ -10,15 +10,17 @@ import microtrafficsim.utils.id.ConcurrentSeedGenerator;
  */
 public class StreetGraphInitializer implements MapInitializer {
 
-    public StreetGraph postprocessFreshStreetGraph(StreetGraph protoGraph, long seed) {
+    @Override
+    public Graph postprocessFreshGraph(Graph protoGraph, long seed) {
 
         /* prepare crossing logic */
-        postprocessStreetGraph(protoGraph, seed).getNodes().forEach(Node::calculateEdgeIndices);
+        postprocessGraph(protoGraph, seed).getNodes().forEach(Node::calculateEdgeIndices);
 
         return protoGraph;
     }
 
-    public StreetGraph postprocessStreetGraph(StreetGraph protoGraph, long seed) {
+    @Override
+    public Graph postprocessGraph(Graph protoGraph, long seed) {
 
         protoGraph.reset();
 

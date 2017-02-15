@@ -1,17 +1,17 @@
 package logic.validation.scenarios;
 
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Route;
+import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.Car;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
+import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
 
@@ -32,10 +32,10 @@ public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
      * Initializes the matrices (for routes and spawn delays). For this, it has to sort the few nodes to guarantee
      * determinism independent of complicated coordinate calculations.
      *
-     * @see QueueScenarioSmall#QueueScenarioSmall(ScenarioConfig, StreetGraph)
+     * @see QueueScenarioSmall#QueueScenarioSmall(ScenarioConfig, Graph)
      */
     public MotorwaySlipRoadScenario(ScenarioConfig config,
-                                    StreetGraph graph,
+                                    Graph graph,
                                     Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
         init();

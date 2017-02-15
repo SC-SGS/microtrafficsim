@@ -21,6 +21,13 @@ import java.util.Stack;
 public interface ShortestPathAlgorithm {
 
     /**
+     * @return Hence this implementation needs no preprocessing, this method returns true.
+     */
+    default boolean isPreprocessed() {
+        return true;
+    }
+
+    /**
      * Is needed for some algorithms for preparations needed for faster shortest path finding. It is implemented
      * empty per default.
      */

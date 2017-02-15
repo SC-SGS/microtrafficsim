@@ -1,6 +1,6 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
@@ -26,7 +26,7 @@ public abstract class QueueScenarioSmall implements Scenario {
 
     /* general */
     private final ScenarioConfig config;
-    private final StreetGraph graph;
+    private final Graph graph;
     private final VehicleContainer vehicleContainer;
     private ShortestPathAlgorithm scout;
     private boolean isPrepared;
@@ -48,7 +48,7 @@ public abstract class QueueScenarioSmall implements Scenario {
      * @param vehicleContainer stores and manages vehicles running in this scenario
      */
     protected QueueScenarioSmall(ScenarioConfig config,
-                                 StreetGraph graph,
+                                 Graph graph,
                                  VehicleContainer vehicleContainer) {
 
         /* general */
@@ -68,10 +68,9 @@ public abstract class QueueScenarioSmall implements Scenario {
      * Just calls {@code QueueScenario(config, graph, new ConcurrentVehicleContainer())}.
      *
      * @see ConcurrentVehicleContainer
-     * @see QueueScenarioSmall#QueueScenarioSmall(ScenarioConfig, StreetGraph, VehicleContainer)
+     * @see QueueScenarioSmall#QueueScenarioSmall(ScenarioConfig, Graph, VehicleContainer)
      */
-    protected QueueScenarioSmall(ScenarioConfig config,
-                                 StreetGraph graph) {
+    protected QueueScenarioSmall(ScenarioConfig config, Graph graph) {
         this(config, graph, new ConcurrentVehicleContainer());
     }
 
@@ -183,7 +182,7 @@ public abstract class QueueScenarioSmall implements Scenario {
     }
 
     @Override
-    public final StreetGraph getGraph() {
+    public final Graph getGraph() {
         return graph;
     }
 

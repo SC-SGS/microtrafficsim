@@ -65,14 +65,6 @@ public class AStar implements ShortestPathAlgorithm {
     | (i) ShortestPathAlgorithm |
     |===========================|
     */
-    /**
-     * This method is not needed in this algorithm and thus its empty.
-     */
-    @Override
-    public void preprocess() {
-
-    }
-
     @Override
     public void findShortestPath(ShortestPathNode start, ShortestPathNode end, Stack<ShortestPathEdge> shortestPath) {
 

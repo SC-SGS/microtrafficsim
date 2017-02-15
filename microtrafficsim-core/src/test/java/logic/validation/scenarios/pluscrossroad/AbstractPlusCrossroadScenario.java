@@ -1,7 +1,7 @@
 package logic.validation.scenarios.pluscrossroad;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
@@ -23,7 +23,7 @@ public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
     private final HashMap<Node, Integer> lengthToMid;
 
     public AbstractPlusCrossroadScenario(ScenarioConfig config,
-                                         StreetGraph graph,
+                                         Graph graph,
                                          Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
 

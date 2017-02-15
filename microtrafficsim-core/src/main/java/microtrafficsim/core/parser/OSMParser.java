@@ -1,6 +1,6 @@
 package microtrafficsim.core.parser;
 
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Feature;
 import microtrafficsim.core.map.MapSegment;
@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.stream.Collector;
 
 
 /**
@@ -133,7 +132,7 @@ public class OSMParser {
         }
 
         // get StreetGraph
-        StreetGraph streetgraph = null;
+        Graph streetgraph = null;
         if (config.streetgraph != null)
             streetgraph = config.streetgraph
                     .getGenerator()
@@ -282,7 +281,7 @@ public class OSMParser {
         /**
          * The parsed street-graph.
          */
-        public final StreetGraph streetgraph;
+        public final Graph streetgraph;
 
         /**
          * Constructs a new {@code Result} based on the given parameters.
@@ -290,7 +289,7 @@ public class OSMParser {
          * @param segment     the parsed map-segment.
          * @param streetgraph the parsed street-graph.
          */
-        private Result(MapSegment segment, StreetGraph streetgraph) {
+        private Result(MapSegment segment, Graph streetgraph) {
             this.segment     = segment;
             this.streetgraph = streetgraph;
         }

@@ -1,14 +1,10 @@
 package microtrafficsim.core.logic;
 
-import microtrafficsim.build.BuildSetup;
-import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
-import microtrafficsim.utils.strings.builder.BasicStringBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
-import microtrafficsim.utils.strings.builder.StringBuilder;
 
-import java.util.*;
+import java.util.Stack;
 
 
 /**

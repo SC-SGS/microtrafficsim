@@ -1,6 +1,6 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
@@ -81,7 +81,7 @@ public class SimulationController implements GUIController {
     /* visualization and parsing */
     private final MapViewer      mapviewer;
     private final VehicleOverlay overlay;
-    private       StreetGraph    streetgraph;
+    private       Graph          streetgraph;
 
     /* simulation */
     private Simulation      simulation;

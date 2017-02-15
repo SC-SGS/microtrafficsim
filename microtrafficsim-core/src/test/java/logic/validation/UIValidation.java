@@ -1,14 +1,10 @@
 package logic.validation;
 
 import com.jogamp.newt.event.KeyEvent;
-import logic.validation.scenarios.MotorwaySlipRoadScenario;
-import logic.validation.scenarios.RoundaboutScenario;
 import logic.validation.scenarios.TCrossroadScenario;
-import logic.validation.scenarios.pluscrossroad.FullPlusCrossroadScenario;
-import logic.validation.scenarios.pluscrossroad.PartialPlusCrossroadScenario;
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.StreetGraph;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
@@ -29,7 +25,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -124,7 +119,7 @@ public class UIValidation {
             /* parse osm map */
             String oldTitle = frame.getTitle();
             frame.setTitle("Parsing new map, please wait...");
-            StreetGraph graph = null;
+            Graph graph = null;
             try {
                 /* parse file and create tiled provider */
                 OSMParser.Result result = mapviewer.parse(file);
@@ -174,7 +169,7 @@ public class UIValidation {
 
     private interface ScenarioConstructor {
         QueueScenarioSmall instantiate(ScenarioConfig config,
-                                       StreetGraph graph,
+                                       Graph graph,
                                        Supplier<VisualizationVehicleEntity> visVehicleFactory);
     }
 }
