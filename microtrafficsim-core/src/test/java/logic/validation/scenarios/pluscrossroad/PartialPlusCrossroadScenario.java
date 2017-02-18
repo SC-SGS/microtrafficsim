@@ -6,7 +6,7 @@ import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.BlockingCar;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.utils.Tuple;
+import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.collections.Triple;
 
 import java.util.function.Supplier;

@@ -1,10 +1,10 @@
 package logic.validation.scenarios.pluscrossroad;
 
 import logic.validation.scenarios.VehicleQueueScenarioBuilder;
-import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.impl.BlockingCar;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 

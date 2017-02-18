@@ -2,7 +2,6 @@ package microtrafficsim.core.shortestpath;
 
 import microtrafficsim.core.map.Mappable;
 
-import java.util.Iterator;
 import java.util.Set;
 
 

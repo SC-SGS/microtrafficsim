@@ -1,4 +1,4 @@
-package microtrafficsim.utils;
+package microtrafficsim.utils.collections;
 
 /**
  * Java has no tuples..

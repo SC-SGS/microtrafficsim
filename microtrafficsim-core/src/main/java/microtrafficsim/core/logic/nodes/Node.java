@@ -486,8 +486,15 @@ public class Node implements ShortestPathNode, Resettable, Seeded {
     | (i) ShortestPathNode |
     |======================|
     */
+    /**
+     * @param incoming The leaving edges are depending on the incoming edge. Therefore, this parameter is needed. Has
+     *                 to be an instance of {@code DirectedEdge}
+     * @return All leaving edges depending on the incoming edge.
+     */
     @Override
     public Set<DirectedEdge> getLeavingEdges(ShortestPathEdge incoming) {
+
+        // todo optimization: remember already calculated incoming edges
 
         if (incoming == null)
             return Collections.unmodifiableSet(leavingEdges.keySet());

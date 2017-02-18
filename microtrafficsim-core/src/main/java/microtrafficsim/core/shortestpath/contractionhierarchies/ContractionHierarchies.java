@@ -43,17 +43,19 @@ public class ContractionHierarchies implements ShortestPathAlgorithm {
             basicSPA.preprocess();
 
         // todo impl start
-        // give nodes contraction priority
-
+        // give all nodes initial proto-priority
+        // loop {
+        //     select next node depending on contraction-priority
+        //     give selected node fix priority
+        //     update proto-priority of neighbors
+        // }
         // todo impl end
 
         isPreprocessed = true;
     }
 
     @Override
-    public void findShortestPath(ShortestPathNode start,
-                                 ShortestPathNode end,
-                                 Stack<ShortestPathEdge> shortestPath) {
+    public void findShortestPath(ShortestPathNode start, ShortestPathNode end, Stack<ShortestPathEdge> shortestPath) {
         basicSPA.findShortestPath(start, end, shortestPath);
     }
 }

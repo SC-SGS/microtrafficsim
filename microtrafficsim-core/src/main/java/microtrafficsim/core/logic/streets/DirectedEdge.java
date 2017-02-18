@@ -6,7 +6,6 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.information.FullStreetInfo;
 import microtrafficsim.core.logic.streets.information.RawStreetInfo;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.hashing.FNVHashBuilder;

@@ -7,7 +7,7 @@ import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
-import microtrafficsim.utils.Tuple;
+import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.collections.Triple;
 
 import java.util.ArrayList;

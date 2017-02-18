@@ -13,7 +13,6 @@ import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.mesh.Mesh;
 import microtrafficsim.core.vis.mesh.impl.SingleFloatAttributeIndexedMesh;
 import microtrafficsim.core.vis.mesh.style.Style;
-import microtrafficsim.core.vis.opengl.DataTypes;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.collections.HashMultiMap;

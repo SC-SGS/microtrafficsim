@@ -4,7 +4,9 @@ import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.PriorityQueue;
+import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -64,9 +66,7 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
     |===========================|
     */
     @Override
-    public void findShortestPath(ShortestPathNode start,
-                                 ShortestPathNode end,
-                                 Stack<ShortestPathEdge> shortestPath) {
+    public void findShortestPath(ShortestPathNode start, ShortestPathNode end, Stack<ShortestPathEdge> shortestPath) {
 
         if (start == end)
             return;

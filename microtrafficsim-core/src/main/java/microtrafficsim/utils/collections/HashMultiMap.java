@@ -1,7 +1,6 @@
 package microtrafficsim.utils.collections;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 /**
  * A fully hash-based multimap. Using a HashMap as map and HashSets as collections.

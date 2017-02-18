@@ -2,9 +2,7 @@ package microtrafficsim.core.shortestpath;
 
 
 /**
- * This interface guarantees a unified access to needed edge functions for a shortest path algorithm. You can specify in
- * your extension of @AbstractAStarAlgorithm which weight method you want to use. Therefore it is okay to set one of the
- * weight methods to 0 if you don't use it.
+ * This interface guarantees a unified access to needed edge functions for a shortest path algorithm.
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */

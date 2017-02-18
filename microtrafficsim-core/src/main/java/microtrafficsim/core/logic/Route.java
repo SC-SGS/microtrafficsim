@@ -12,10 +12,10 @@ import java.util.Stack;
  *
  * @author Dominic Parga Cacheiro
  */
-public class Route<N extends ShortestPathNode> extends Stack<ShortestPathEdge> {
+public class Route<NodeType extends ShortestPathNode> extends Stack<ShortestPathEdge> {
 
-    private N start;
-    private N end;
+    private NodeType start;
+    private NodeType end;
 
     /**
      * Default constructor.
@@ -23,7 +23,7 @@ public class Route<N extends ShortestPathNode> extends Stack<ShortestPathEdge> {
      * @param start Start node of this route.
      * @param end End node of this route (on the ground of the stack)
      */
-    public Route(N start, N end) {
+    public Route(NodeType start, NodeType end) {
         this.start = start;
         this.end   = end;
     }
@@ -47,13 +47,11 @@ public class Route<N extends ShortestPathNode> extends Stack<ShortestPathEdge> {
         return strBuilder.toString();
     }
 
-    public N getStart() {
+    public NodeType getStart() {
         return start;
     }
 
-    public N getEnd() {
+    public NodeType getEnd() {
         return end;
     }
-
-
 }
