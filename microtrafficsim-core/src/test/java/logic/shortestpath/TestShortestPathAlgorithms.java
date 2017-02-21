@@ -15,6 +15,8 @@ import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
 import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.utils.id.BasicLongIDGenerator;
+import microtrafficsim.utils.id.LongGenerator;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -36,23 +38,27 @@ import static org.junit.Assert.assertTrue;
  * @author Dominic Parga Cacheiro
  */
 public class TestShortestPathAlgorithms {
+
     private static final Logger logger = new EasyMarkableLogger(TestShortestPathAlgorithms.class);
 
-    private static ScenarioConfig config;
+    private static ScenarioConfig        config;
     private static ShortestPathAlgorithm shortestPathAlgorithm;
-    private static Vec2d rubbishVec2d;
-    private final int                   maxVelocity = 1;
-    private Stack<ShortestPathEdge>     shortestPath;
-    private Stack<DirectedEdge>         correctShortestPath;
-    private Graph                       graph;
-    private Node start, end;
-    private Coordinate                  uselessPosition = new Coordinate(0, 0);
-    private long                        uselessId = -1;
+    private static Vec2d                 rubbishVec2d;
+    private static LongGenerator         idGenerator;
+
+    private final int               maxVelocity = 1;
+    private Stack<ShortestPathEdge> shortestPath;
+    private Stack<DirectedEdge>     correctShortestPath;
+    private Graph                   graph;
+    private Node                    start;
+    private Node                    end;
+    private Coordinate              uselessPosition = new Coordinate(0, 0);
 
     @BeforeClass
     public static void setupClass() {
-        config = new ScenarioConfig();
+        config       = new ScenarioConfig();
         rubbishVec2d = new Vec2d(1.0f, 1.0f);
+        idGenerator  = new BasicLongIDGenerator();
     }
 
     @Before
@@ -146,7 +152,7 @@ public class TestShortestPathAlgorithms {
     */
     private DirectedEdge createEdge(int lengthInCells, Node origin, Node destination, int noOfLines) {
         return new DirectedEdge(
-                uselessId,
+                idGenerator.next(),
                 lengthInCells * config.metersPerCell,
                 rubbishVec2d,
                 rubbishVec2d,
@@ -173,11 +179,11 @@ public class TestShortestPathAlgorithms {
      */
     private void isDangerous() {
         // create nodes
-        Node a = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node b = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node c = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node d = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node e = new Node(uselessId, uselessPosition, config.crossingLogic);
+        Node a = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node b = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node c = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node d = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node e = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
 
         // create edges and add them to the nodes
         DirectedEdge ab = createEdge(1, a, b, 1);
@@ -247,7 +253,7 @@ public class TestShortestPathAlgorithms {
         assertEquals(graphBefore, graphAfter);
 
         logger.info("Test: Correct if no path exists?");
-        Node f = new Node(uselessId, uselessPosition, config.crossingLogic);
+        Node f = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
         shortestPath.clear();
         shortestPathAlgorithm.findShortestPath(start, f, shortestPath);
         assertTrue(shortestPath.isEmpty());
@@ -260,14 +266,14 @@ public class TestShortestPathAlgorithms {
      */
     private void isShortestPathCorrect() {
         // create nodes
-        Node a = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node b = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node c = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node d = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node e = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node f = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node g = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node h = new Node(uselessId, uselessPosition, config.crossingLogic);
+        Node a = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node b = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node c = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node d = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node e = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node f = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node g = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node h = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
 
         // create edges and add them to the nodes
         DirectedEdge ab = createEdge(1, a, b, 1);
@@ -371,14 +377,14 @@ public class TestShortestPathAlgorithms {
      */
     private void multipleCorrectPathsPossible() {
         // create nodes
-        Node a = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node b = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node c = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node d = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node e = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node f = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node g = new Node(uselessId, uselessPosition, config.crossingLogic);
-        Node h = new Node(uselessId, uselessPosition, config.crossingLogic);
+        Node a = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node b = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node c = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node d = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node e = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node f = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node g = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        Node h = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
 
         // create edges and add them to the nodes
         DirectedEdge ab = createEdge(1, a, b, 1);

@@ -30,7 +30,7 @@ class SkipNode<T> {
         StringBuilder builder = new BasicStringBuilder();
 
         builder.append("tower.height = " + getTowerHeight());
-        builder.appendln(" || value = " + value);
+        builder.append(" || value = " + value);
 
         return builder.toString();
     }

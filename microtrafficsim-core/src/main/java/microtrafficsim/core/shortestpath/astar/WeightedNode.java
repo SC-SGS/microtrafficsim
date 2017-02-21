@@ -37,9 +37,12 @@ class WeightedNode implements Comparable<WeightedNode> {
     }
 
     @Override
+    public String toString() {
+        return node.toString() + "; g = " + g + "; f = " + f;
+    }
+
+    @Override
     public int compareTo(WeightedNode o) {
-        if (f < o.f) return -1;
-        if (f > o.f) return 1;
-        return 0;
+        return Float.compare(f, o.f);
     }
 }
