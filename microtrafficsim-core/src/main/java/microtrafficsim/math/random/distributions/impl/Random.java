@@ -21,11 +21,15 @@ public class Random implements RandomGenerator {
      * Modelled after the OpenJDK Random implementation.
      */
     public Random() {
-        this(++seedUniquifier + System.nanoTime());
+        this(createSeed());
     }
 
     public Random(long seed) {
         setSeed(seed);
+    }
+
+    public static long createSeed() {
+        return ++seedUniquifier + System.nanoTime();
     }
 
     /*
@@ -53,8 +57,17 @@ public class Random implements RandomGenerator {
     }
 
     /**
+     * @see java.util.Random#nextBoolean()
+     */
+    @Override
+    public boolean nextBoolean() {
+        return random.nextBoolean();
+    }
+
+    /**
      * @see java.util.Random#nextBytes(byte[])
      */
+    @Override
     public byte nextByte() {
         byte[] b = new byte[1];
         random.nextBytes(b);
@@ -64,6 +77,7 @@ public class Random implements RandomGenerator {
     /**
      * @see java.util.Random#nextBytes(byte[])
      */
+    @Override
     public byte[] nextByte(int count) {
         byte[] b = new byte[count];
         random.nextBytes(b);
@@ -73,6 +87,7 @@ public class Random implements RandomGenerator {
     /**
      * @see java.util.Random#nextBytes(byte[])
      */
+    @Override
     public void nextByte(byte[] b) {
         random.nextBytes(b);
     }

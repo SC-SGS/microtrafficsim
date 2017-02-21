@@ -23,11 +23,14 @@ public interface RandomGenerator extends Resettable, Seeded {
     @Override
     void reset();
 
-    /*
-    |=========|
-    | numbers |
-    |=========|
-    */
+    boolean nextBoolean();
+
+    byte nextByte();
+
+    byte[] nextByte(int count);
+
+    void nextByte(byte[] b);
+
     /**
      * @return next integer due to the currently used seed
      */
