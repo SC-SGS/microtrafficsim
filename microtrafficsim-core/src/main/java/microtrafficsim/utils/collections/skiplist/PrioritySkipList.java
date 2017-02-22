@@ -119,7 +119,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
         if (isEmpty())
             return null;
         Skipnode<E> infimum = findInfimumOf(obj);
-        return equal(infimum.getValue(), obj) ? infimum.getValue() : null;
+        return equal(infimum.value, obj) ? infimum.value : null;
     }
 
     @Override
@@ -134,43 +134,48 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
             // do nothing if element is already in this list
             if (infimum != head)
-                if (equal(newNode.getValue(), infimum.getValue()))
+                if (equal(newNode.value, infimum.value))
                     return false;
 
-            Skipnode<E> supremum = infimum.getNext();
+            Skipnode<E> supremum = infimum.tower.getNext();
+
+
+            /* set ground level out of loop for performance issues */
+            infimum.tower.setNext(newNode);
+            supremum.tower.setPrev(newNode);
+            newNode.tower.add(infimum, supremum);
 
 
             /* create and fill tower */
             int towerHeight = throwCoinUntilFalse();
-
-            for (int towerLevel = 0; towerLevel <= towerHeight; towerLevel++) {
+            for (int towerLevel = 1; towerLevel <= towerHeight; towerLevel++) {
 
                 /* set infimum's pointer */
-                while (infimum.getTowerHeight() < towerLevel) {
+                while (infimum.tower.getHeight() < towerLevel) {
                     // if head: increase tower height
                     if (infimum == head)
-                        infimum.addToTower(head, head);
+                        infimum.tower.add(head, head);
                     // if not head: jump to previous element
                     else
-                        infimum = infimum.getPrev(towerLevel - 1);
+                        infimum = infimum.tower.getPrev(towerLevel - 1);
                 }
-                infimum.setNext(towerLevel, newNode);
+                infimum.tower.setNext(towerLevel, newNode);
 
 
                 /* set supremum's pointer */
-                while (supremum.getTowerHeight() < towerLevel) {
+                while (supremum.tower.getHeight() < towerLevel) {
                     // if head: increase tower height
                     if (supremum == head)
-                        supremum.addToTower(head, head);
+                        supremum.tower.add(head, head);
                     // if not head: jump to next element
                     else
-                        supremum = supremum.getNext(towerLevel - 1);
+                        supremum = supremum.tower.getNext(towerLevel - 1);
                 }
-                supremum.setPrev(towerLevel, newNode);
+                supremum.tower.setPrev(towerLevel, newNode);
 
 
                 /* set new node's pointer */
-                newNode.addToTower(infimum, supremum);
+                newNode.tower.add(infimum, supremum);
             }
         }
 
@@ -189,7 +194,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
         Skipnode<E> infimum = findInfimumOf(obj);
         if (infimum == head)
             return false;
-        if (equal(infimum.getValue(), obj)) {
+        if (equal(infimum.value, obj)) {
             removeExistingNode(infimum);
             return true;
         }
@@ -205,23 +210,23 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
     @Override
     public E poll() {
-        Skipnode<E> first = head.getNext();
+        Skipnode<E> first = head.tower.getNext();
         removeExistingNode(first);
-        return first.getValue();
+        return first.value;
     }
 
     @Override
     public E element() {
         if (isEmpty())
             throw new NoSuchElementException(isEmptyMsg());
-        return head.getNext().getValue();
+        return head.tower.getNext().value;
     }
 
     @Override
     public E peek() {
         if (isEmpty())
             return null;
-        return head.getNext().getValue();
+        return head.tower.getNext().value;
     }
 
     @Override
@@ -239,7 +244,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
         Skipnode<E> infimum = findInfimumOf(obj);
         if (infimum == head)
             return false;
-        return equal(infimum.getValue(), obj);
+        return equal(infimum.value, obj);
     }
 
     @Override
@@ -298,8 +303,8 @@ public class PrioritySkipList<E> implements SkipList<E> {
      */
     @Override
     public void clear() {
-        head = new Skipnode<>();
-        head.addToTower(head, head);
+        head = new Skipnode<>(null);
+        head.tower.add(head, head);
         size = 0;
     }
 
@@ -310,19 +315,19 @@ public class PrioritySkipList<E> implements SkipList<E> {
     */
     private Skipnode<E> findInfimumOf(Object value) {
 
-        int curTowerLevel = head.getTowerHeight();
+        int curTowerLevel = head.tower.getHeight();
         Skipnode<E> curNode = head;
         Skipnode<E> nextNode;
 
         // from highest level to bottom level
         while (curTowerLevel >= 0) {
-            nextNode = curNode.getNext(curTowerLevel);
+            nextNode = curNode.tower.getNext(curTowerLevel);
             if (nextNode == head) {
                 curTowerLevel--;
                 continue;
             }
 
-            int cmp = compare(nextNode.getValue(), value);
+            int cmp = compare(nextNode.value, value);
             if (cmp > 0)
                 curTowerLevel--;
             else if (cmp == 0)
@@ -357,11 +362,11 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
     private void removeExistingNode(Skipnode<E> node) {
 
-        for (int towerLevel = 0; towerLevel <= node.getTowerHeight(); towerLevel++) {
-            Skipnode<E> next = node.getNext(towerLevel);
-            Skipnode<E> prev = node.getPrev(towerLevel);
-            prev.setNext(towerLevel, next);
-            next.setPrev(towerLevel, prev);
+        for (int towerLevel = 0; towerLevel <= node.tower.getHeight(); towerLevel++) {
+            Skipnode<E> next = node.tower.getNext(towerLevel);
+            Skipnode<E> prev = node.tower.getPrev(towerLevel);
+            prev.tower.setNext(towerLevel, next);
+            next.tower.setPrev(towerLevel, prev);
         }
 
         cleanupHead();
@@ -369,8 +374,8 @@ public class PrioritySkipList<E> implements SkipList<E> {
     }
 
     private void cleanupHead() {
-        while (head.getTowerHeight() > 0 && head.getNext(head.getTowerHeight()) == head)
-            head.removeHighest();
+        while (head.tower.getHeight() > 0 && head.tower.getNext(head.tower.getHeight()) == head)
+            head.tower.removeHighest();
     }
 
     /*
@@ -397,13 +402,13 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
         @Override
         public boolean hasNext() {
-            return currentNode.getNext() != head;
+            return currentNode.tower.getNext() != head;
         }
 
         @Override
         public E next() {
-            currentNode = currentNode.getNext();
-            return currentNode.getValue();
+            currentNode = currentNode.tower.getNext();
+            return currentNode.value;
         }
     }
 
@@ -417,13 +422,13 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
         @Override
         public boolean hasNext() {
-            return currentNode.getPrev() != head;
+            return currentNode.tower.getPrev() != head;
         }
 
         @Override
         public E next() {
-            currentNode = currentNode.getPrev();
-            return currentNode.getValue();
+            currentNode = currentNode.tower.getPrev();
+            return currentNode.value;
         }
     }
 
@@ -437,12 +442,12 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
         @Override
         public boolean hasNext() {
-            return currentNode.getNext() != head;
+            return currentNode.tower.getNext() != head;
         }
 
         @Override
         public Skipnode<E> next() {
-            currentNode = currentNode.getNext();
+            currentNode = currentNode.tower.getNext();
             return currentNode;
         }
     }

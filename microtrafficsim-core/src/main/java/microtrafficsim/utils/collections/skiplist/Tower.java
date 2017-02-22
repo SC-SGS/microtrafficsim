@@ -60,20 +60,53 @@ class Tower<T> {
     }
 
 
+    public Skipnode<T> getNext() {
+        return getNext(0);
+    }
+
     public Skipnode<T> getNext(int towerLevel) {
         return skipnodes.get(getNextIdx(towerLevel));
+    }
+
+    public void setNext(Skipnode<T> next) {
+        setNext(0, next);
     }
 
     public void setNext(int towerLevel, Skipnode<T> next) {
         skipnodes.set(getNextIdx(towerLevel), next);
     }
 
+    public Skipnode<T> getPrev() {
+        return getPrev(0);
+    }
+
     public Skipnode<T> getPrev(int towerLevel) {
         return skipnodes.get(getPrevIdx(towerLevel));
     }
 
+    public void setPrev(Skipnode<T> prev) {
+        setPrev(0, prev);
+    }
+
     public void setPrev(int towerLevel, Skipnode<T> prev) {
         skipnodes.set(getPrevIdx(towerLevel), prev);
+    }
+
+
+    public int getNextLinkLength(int towerLevel) {
+        return linkLengths.get(getNextIdx(towerLevel));
+    }
+
+    public void setNextLinkLength(int towerLevel, int linkLength) {
+        linkLengths.set(getNextIdx(towerLevel), linkLength);
+    }
+
+    public int getPrevLinkLength(int towerLevel) {
+        return linkLengths.get(getPrevIdx(towerLevel));
+    }
+
+    public void setPrevLinkLength(int towerLevel, int linkLength) {
+        linkLengths.set(getPrevIdx(towerLevel), linkLength);
     }
 
 
