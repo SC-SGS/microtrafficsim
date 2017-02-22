@@ -57,26 +57,66 @@ public class TestPrioritySkipList implements TestSkipList {
     @Override
     @Test
     public void testGetIndex() {
-        List<Integer> expected = new ArrayList<>();
-        addRandomly(fillCount, skipList, expected);
 
+        /* check before adding */
+        for (int i = 0; i < fillCount; i++)
+            assertEquals(null, skipList.get(i));
+
+        /* add */
+        List<Integer> expected = new ArrayList<>();
+        List<Integer> remain   = new ArrayList<>();
+        List<Integer> remove   = new ArrayList<>();
+        int halfFillCount = fillCount / 2;
+        addRandomly(halfFillCount, skipList, expected, remain);
+        addRandomly(fillCount - halfFillCount, skipList, expected, remove);
+
+        /* check after adding, before moving */
         expected.sort(Integer::compareTo);
-        for (Integer i : expected) {
-            int index = i;
+        for (int index = 0; index < expected.size(); index++) {
+            Integer i = expected.get(index);
             assertEquals(i, skipList.get(index));
             assertEquals(i, skipList.get(index + expected.size()));
             assertEquals(i, skipList.get(index - expected.size()));
         }
+
+        /* remove */
+        for (Integer i : remove)
+            skipList.remove(i);
+
+        /* check after removing */
+        remain.sort(Integer::compareTo);
+        for (Integer i : remain)
+            assertEquals(i, skipList.get(i));
     }
 
     @Override
     @Test
     public void testGetObj() {
-        List<Integer> expected = new ArrayList<>();
-        addRandomly(fillCount, skipList, expected);
 
+        /* check before adding */
+        for (int i = 0; i < fillCount; i++)
+            assertEquals(null, skipList.get((Integer) i));
+
+        /* add */
+        List<Integer> expected = new ArrayList<>();
+        List<Integer> remain   = new ArrayList<>();
+        List<Integer> remove   = new ArrayList<>();
+        int halfFillCount = fillCount / 2;
+        addRandomly(halfFillCount, skipList, expected, remain);
+        addRandomly(fillCount - halfFillCount, skipList, expected, remove);
+
+        /* check after adding, before moving */
         expected.sort(Integer::compareTo);
         for (Integer i : expected)
+            assertEquals(i, skipList.get(i));
+
+        /* remove */
+        for (Integer i : remove)
+            skipList.remove(i);
+
+        /* check after removing */
+        remain.sort(Integer::compareTo);
+        for (Integer i : remain)
             assertEquals(i, skipList.get(i));
     }
 
@@ -118,6 +158,38 @@ public class TestPrioritySkipList implements TestSkipList {
             skipList.remove();
             fail(msgNoSuchElementException("remove()", true));
         } catch (NoSuchElementException ignored) {}
+    }
+
+    @Override
+    @Test
+    public void testRemoveObj() {
+
+        List<Integer> expected = new ArrayList<>();
+        addRandomly(fillCount, skipList, expected);
+        expected.sort(Integer::compareTo);
+
+        while (!expected.isEmpty()) {
+            int rdmIdx = random.nextInt(expected.size());
+            Integer removed = expected.remove(rdmIdx);
+            assertTrue(skipList.remove(removed));
+            checkForWeakEquality(expected, skipList);
+        }
+    }
+
+    @Override
+    @Test
+    public void testRemoveIndex() {
+
+        List<Integer> expected = new ArrayList<>();
+        addRandomly(fillCount, skipList, expected);
+        expected.sort(Integer::compareTo);
+
+        while (!expected.isEmpty()) {
+            int rdmIdx = random.nextInt(expected.size());
+            int removed = expected.remove(rdmIdx);
+            assertTrue(skipList.remove(removed));
+            checkForWeakEquality(expected, skipList);
+        }
     }
 
     @Override
@@ -204,8 +276,12 @@ public class TestPrioritySkipList implements TestSkipList {
 
         /* check size after removing */
         assertEquals(fillCount, skipList.size());
-        for (int i = fillCount - 1; i >= 0; i--) {
+        for (int i = fillCount - 1; i > fillCount / 2; i--) {
             skipList.remove(i);
+            assertEquals(i, skipList.size());
+        }
+        for (int i = fillCount / 2; i >= 0; i--) {
+            skipList.remove((Integer) i);
             assertEquals(i, skipList.size());
         }
     }
@@ -292,22 +368,6 @@ public class TestPrioritySkipList implements TestSkipList {
                 checkForWeakEquality(expectedArray, queueSetArray, expectedArray.length);
             else
                 checkForStrongEquality(expectedArray, queueSetArray);
-        }
-    }
-
-    @Override
-    @Test
-    public void testRemoveObj() {
-
-        List<Integer> expected = new ArrayList<>();
-        addRandomly(fillCount, skipList, expected);
-        expected.sort(Integer::compareTo);
-
-        while (!expected.isEmpty()) {
-            int rdmIdx = random.nextInt(expected.size());
-            Integer removed = expected.remove(rdmIdx);
-            assertTrue(skipList.remove(removed));
-            checkForWeakEquality(expected, skipList);
         }
     }
 

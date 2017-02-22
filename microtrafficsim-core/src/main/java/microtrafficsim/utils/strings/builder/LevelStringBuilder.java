@@ -172,6 +172,12 @@ public class LevelStringBuilder implements StringBuilder {
 
 
     @Override
+    public LevelStringBuilder appendln() {
+        stringBuilder.append("\n");
+        return this;
+    }
+
+    @Override
     public LevelStringBuilder appendln(Object obj) {
         append(obj);
         stringBuilder.append("\n");

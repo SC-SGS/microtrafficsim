@@ -22,6 +22,7 @@ public interface StringBuilder {
     StringBuilder append(double d);
     StringBuilder appendCodePoint(int codePoint);
 
+    StringBuilder appendln();
     StringBuilder appendln(Object obj);
     StringBuilder appendln(String str);
     StringBuilder appendln(StringBuffer sb);

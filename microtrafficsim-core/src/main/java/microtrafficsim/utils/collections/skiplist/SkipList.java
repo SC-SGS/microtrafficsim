@@ -18,6 +18,8 @@ public interface SkipList<E> extends Queue<E>, Set<E> {
 
     E get(int index);
 
+    boolean remove(int index);
+
     E get(Object obj);
 
     Iterator<E> iteratorAsc();

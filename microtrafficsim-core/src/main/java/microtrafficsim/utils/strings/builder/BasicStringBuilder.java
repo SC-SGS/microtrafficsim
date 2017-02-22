@@ -119,6 +119,11 @@ public class BasicStringBuilder implements StringBuilder {
 
 
     @Override
+    public StringBuilder appendln() {
+        return append("\n");
+    }
+
+    @Override
     public StringBuilder appendln(Object obj) {
         return append(obj).append("\n");
     }

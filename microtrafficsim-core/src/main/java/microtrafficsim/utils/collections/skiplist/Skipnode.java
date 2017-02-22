@@ -1,18 +1,17 @@
 package microtrafficsim.utils.collections.skiplist;
 
-import microtrafficsim.utils.strings.builder.BasicStringBuilder;
-import microtrafficsim.utils.strings.builder.StringBuilder;
+import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 /**
  * @author Dominic Parga Cacheiro
  */
-class Skipnode<T> {
+class Skipnode<E> {
 
-    public final T        value;
-    public final Tower<T> tower;
+    public final E        value;
+    public final Tower<E> tower;
 
 
-    public Skipnode(T value) {
+    public Skipnode(E value) {
         this.value = value;
         tower      = new Tower<>();
     }
@@ -20,10 +19,16 @@ class Skipnode<T> {
 
     @Override
     public String toString() {
-        StringBuilder builder = new BasicStringBuilder();
+        LevelStringBuilder builder = new LevelStringBuilder();
+        builder.appendln("<skipnode>");
+        builder.incLevel();
 
-        builder.append(tower + " || value = " + value);
+        builder.appendln("value:");
+        builder.appendln(value == null ? "null" : value.toString());
+        builder.appendln(tower);
 
+        builder.decLevel();
+        builder.append("</skipnode>");
         return builder.toString();
     }
 

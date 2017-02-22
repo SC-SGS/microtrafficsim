@@ -65,9 +65,16 @@ public class PrioritySkipList<E> implements SkipList<E> {
     public String toString() {
         StringBuilder builder = new BasicStringBuilder();
 
+        /* values */
+        builder.appendln("VALUES STORED IN THIS SKIP LIST IN ASCENDING (PRIORITY) ORDER");
         Iterator<Skipnode<E>> iterator = new AscendingNodeIterator(head);
-        while (iterator.hasNext())
+        builder.append("<HEAD>");
+        builder.append(head);
+        builder.append("</HEAD>");
+        while (iterator.hasNext()) {
+            builder.appendln();
             builder.append(iterator.next());
+        }
 
         return builder.toString();
     }
@@ -104,10 +111,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
      */
     @Override
     public E get(int index) {
-        if (isEmpty())
-            return null;
-        // todo
-        return null;
+        return find(index).value;
     }
 
     /**
@@ -140,21 +144,23 @@ public class PrioritySkipList<E> implements SkipList<E> {
             Skipnode<E> supremum = infimum.tower.getNext();
 
 
-            /* set ground level out of loop for performance issues */
+            /* init for tower level 0 */
             infimum.tower.setNext(newNode);
             supremum.tower.setPrev(newNode);
             newNode.tower.add(infimum, supremum);
-
+            newNode.tower.addLinkLength(1);
 
             /* create and fill tower */
-            int towerHeight = throwCoinUntilFalse();
+            int towerHeight = throwCoinUntilFalse(); // todo delete
             for (int towerLevel = 1; towerLevel <= towerHeight; towerLevel++) {
 
                 /* set infimum's pointer */
                 while (infimum.tower.getHeight() < towerLevel) {
                     // if head: increase tower height
-                    if (infimum == head)
+                    if (infimum == head) {
                         infimum.tower.add(head, head);
+                        infimum.tower.addLinkLength(0);
+                    }
                     // if not head: jump to previous element
                     else
                         infimum = infimum.tower.getPrev(towerLevel - 1);
@@ -165,8 +171,10 @@ public class PrioritySkipList<E> implements SkipList<E> {
                 /* set supremum's pointer */
                 while (supremum.tower.getHeight() < towerLevel) {
                     // if head: increase tower height
-                    if (supremum == head)
+                    if (supremum == head) {
                         supremum.tower.add(head, head);
+                        infimum.tower.addLinkLength(0);
+                    }
                     // if not head: jump to next element
                     else
                         supremum = supremum.tower.getNext(towerLevel - 1);
@@ -176,8 +184,13 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
                 /* set new node's pointer */
                 newNode.tower.add(infimum, supremum);
+                int nextLinkLength = countLinkLength(newNode, supremum, towerLevel - 1);
+                newNode.tower.addLinkLength(nextLinkLength);
             }
+
+            updateLinkLengths(newNode);
         }
+
 
         size++;
         return true;
@@ -186,6 +199,16 @@ public class PrioritySkipList<E> implements SkipList<E> {
     @Override
     public boolean offer(E e) {
         return add(e);
+    }
+
+    @Override
+    public boolean remove(int index) {
+
+        Skipnode<E> node = find(index);
+        if (node == head)
+            return false;
+        removeExistingNode(node);
+        return true;
     }
 
     @Override
@@ -305,6 +328,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
     public void clear() {
         head = new Skipnode<>(null);
         head.tower.add(head, head);
+        head.tower.addLinkLength(0);
         size = 0;
     }
 
@@ -315,21 +339,21 @@ public class PrioritySkipList<E> implements SkipList<E> {
     */
     private Skipnode<E> findInfimumOf(Object value) {
 
-        int curTowerLevel = head.tower.getHeight();
+        int towerLevel = head.tower.getHeight();
         Skipnode<E> curNode = head;
         Skipnode<E> nextNode;
 
         // from highest level to bottom level
-        while (curTowerLevel >= 0) {
-            nextNode = curNode.tower.getNext(curTowerLevel);
+        while (towerLevel >= 0) {
+            nextNode = curNode.tower.getNext(towerLevel);
             if (nextNode == head) {
-                curTowerLevel--;
+                towerLevel--;
                 continue;
             }
 
             int cmp = compare(nextNode.value, value);
             if (cmp > 0)
-                curTowerLevel--;
+                towerLevel--;
             else if (cmp == 0)
                 return nextNode;
             else
@@ -337,6 +361,50 @@ public class PrioritySkipList<E> implements SkipList<E> {
         }
 
         return curNode;
+    }
+
+    private Skipnode<E> find(int index) {
+
+        if (isEmpty())
+            return head;
+        index = claimIndex(index);
+
+        int towerLevel = head.tower.getHeight();
+        Skipnode<E> curNode = head;
+
+        while (towerLevel >= 0) {
+            int newIndex = index - curNode.tower.getLinkLength(towerLevel);
+            if (newIndex >= 0) {
+                index = newIndex;
+                curNode = curNode.tower.getNext(towerLevel);
+            } else
+                towerLevel--;
+        }
+        return curNode;
+    }
+
+    private int countLinkLength(Skipnode<E> from, Skipnode<E> to, int towerLevel) {
+
+        Skipnode<E> current = from;
+        int linkLength = 0;
+        while (current != to) {
+            linkLength += current.tower.getLinkLength(towerLevel);
+            current = current.tower.getNext(towerLevel);
+        }
+
+        return linkLength;
+    }
+
+    private void updateLinkLengths(Skipnode<E> newNode) {
+
+        Skipnode<E> from = newNode.tower.getPrev();
+        for (int towerLevel = 1; towerLevel <= head.tower.getHeight(); towerLevel++) {
+            while (from.tower.getHeight() < towerLevel)
+                from = from.tower.getPrev(towerLevel - 1);
+            Skipnode<E> to = from.tower.getNext(towerLevel);
+            int linkLength = countLinkLength(from, to, towerLevel - 1);
+            from.tower.setLinkLength(towerLevel, linkLength);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -376,6 +444,13 @@ public class PrioritySkipList<E> implements SkipList<E> {
     private void cleanupHead() {
         while (head.tower.getHeight() > 0 && head.tower.getNext(head.tower.getHeight()) == head)
             head.tower.removeHighest();
+    }
+
+    private int claimIndex(int index) {
+        index = index % size;
+        if (index < 0)
+            index += size;
+        return index;
     }
 
     /*
