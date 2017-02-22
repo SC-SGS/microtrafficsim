@@ -5,5 +5,7 @@ package utils.collections;
  */
 public interface TestSkipList extends TestQueue, TestSet {
 
+    void testGetIndex();
+
     void testGetObj();
 }

@@ -1,6 +1,9 @@
 package microtrafficsim.utils.collections.skiplist;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Queue;
+import java.util.Set;
 
 /**
  * This data structure works like a {@code PriorityQueue}. The difference is: a {@code QueueSet} detects double
@@ -8,38 +11,39 @@ import java.util.*;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface SkipList<T> extends Queue<T>, Set<T> {
+public interface SkipList<E> extends Queue<E>, Set<E> {
 
-    // todo get(index)
 
     long getSeed();
 
-    T get(Object obj);
+    E get(int index);
 
-    Iterator<T> iteratorAsc();
+    E get(Object obj);
 
-    Iterator<T> iteratorDesc();
+    Iterator<E> iteratorAsc();
+
+    Iterator<E> iteratorDesc();
 
     @Override
-    default boolean containsAll(Collection<?> c) {
-        for (Object obj : c)
+    default boolean containsAll(Collection<?> collection) {
+        for (Object obj : collection)
             if (!contains(obj))
                 return false;
         return true;
     }
 
     @Override
-    default boolean addAll(Collection<? extends T> c) {
+    default boolean addAll(Collection<? extends E> collection) {
         boolean changed = false;
-        for (T t : c)
-            changed |= add(t);
+        for (E e : collection)
+            changed |= add(e);
         return changed;
     }
 
     @Override
-    default boolean removeAll(Collection<?> c) {
+    default boolean removeAll(Collection<?> collection) {
         boolean changed = false;
-        for (Object obj : c)
+        for (Object obj : collection)
             changed |= remove(obj);
         return changed;
     }

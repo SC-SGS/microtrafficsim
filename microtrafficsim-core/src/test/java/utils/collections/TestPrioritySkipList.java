@@ -56,6 +56,21 @@ public class TestPrioritySkipList implements TestSkipList {
     */
     @Override
     @Test
+    public void testGetIndex() {
+        List<Integer> expected = new ArrayList<>();
+        addRandomly(fillCount, skipList, expected);
+
+        expected.sort(Integer::compareTo);
+        for (Integer i : expected) {
+            int index = i;
+            assertEquals(i, skipList.get(index));
+            assertEquals(i, skipList.get(index + expected.size()));
+            assertEquals(i, skipList.get(index - expected.size()));
+        }
+    }
+
+    @Override
+    @Test
     public void testGetObj() {
         List<Integer> expected = new ArrayList<>();
         addRandomly(fillCount, skipList, expected);

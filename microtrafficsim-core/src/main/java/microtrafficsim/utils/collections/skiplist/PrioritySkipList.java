@@ -16,14 +16,14 @@ import java.util.*;
  *
  * @author Dominic Parga Cacheiro
  */
-public class PrioritySkipList<T> implements SkipList<T> {
+public class PrioritySkipList<E> implements SkipList<E> {
 
     // todo wikipedia says, the runtime complexity could be repaired in cases of O(n)
     // todo store link width for get(index) in O(logn)
 
-    private SkipNode<T>                 head;
+    private Skipnode<E> head;
     private final Random                random;
-    private final Comparator<? super T> comparator;
+    private final Comparator<? super E> comparator;
     private int                         size;
 
     /**
@@ -43,7 +43,7 @@ public class PrioritySkipList<T> implements SkipList<T> {
     /**
      * Calls {@link #PrioritySkipList(long, Comparator) PrioritySkipList(Random.createSeed(), comparator)}
      */
-    public PrioritySkipList(Comparator<? super T> comparator) {
+    public PrioritySkipList(Comparator<? super E> comparator) {
         this(Random.createSeed(), comparator);
     }
 
@@ -55,7 +55,7 @@ public class PrioritySkipList<T> implements SkipList<T> {
      *
      * @see Random#createSeed()
      */
-    public PrioritySkipList(long seed, Comparator<? super T> comparator) {
+    public PrioritySkipList(long seed, Comparator<? super E> comparator) {
         clear();
         random          = new Random(seed);
         this.comparator = comparator;
@@ -65,7 +65,7 @@ public class PrioritySkipList<T> implements SkipList<T> {
     public String toString() {
         StringBuilder builder = new BasicStringBuilder();
 
-        Iterator<SkipNode<T>> iterator = new AscendingNodeIterator(head);
+        Iterator<Skipnode<E>> iterator = new AscendingNodeIterator(head);
         while (iterator.hasNext())
             builder.append(iterator.next());
 
@@ -98,47 +98,52 @@ public class PrioritySkipList<T> implements SkipList<T> {
     }
 
     /**
+     * @param index This index is allowed to be out of range and interpreted like out of range. E.g. -1 gives the last
+     *              element of the list.
+     * @return the stored value at the specified index; null, if the element is not contained in this list
+     */
+    @Override
+    public E get(int index) {
+        if (isEmpty())
+            return null;
+        // todo
+        return null;
+    }
+
+    /**
      * @return the stored value equal to the given one using the defined comparator; null, if the element is not
      * contained in this list
      */
     @Override
-    public T get(Object obj) {
+    public E get(Object obj) {
         if (isEmpty())
             return null;
-        SkipNode<T> infimum = findInfimumOf(obj);
+        Skipnode<E> infimum = findInfimumOf(obj);
         return equal(infimum.getValue(), obj) ? infimum.getValue() : null;
     }
 
     @Override
-    public boolean add(T t) {
+    public boolean add(E e) {
 
-        if (t == null)
+        if (e == null)
             return false;
         else {
             /* find position for new node and check whether it already is in this list */
-            SkipNode<T> newNode = new SkipNode<>(t);
-            SkipNode<T> infimum = findInfimumOf(t);
+            Skipnode<E> newNode = new Skipnode<>(e);
+            Skipnode<E> infimum = findInfimumOf(e);
 
             // do nothing if element is already in this list
             if (infimum != head)
                 if (equal(newNode.getValue(), infimum.getValue()))
                     return false;
 
-            SkipNode<T> supremum = infimum.getNext();
+            Skipnode<E> supremum = infimum.getNext();
 
 
-            /* set neighbours */
-            infimum.setNext(newNode);
-            newNode.setPrev(infimum);
-            newNode.setNext(supremum);
-            supremum.setPrev(newNode);
-
-
-            /* create tower */
+            /* create and fill tower */
             int towerHeight = throwCoinUntilFalse();
 
-            /* fill tower */
-            for (int towerLevel = 1; towerLevel <= towerHeight; towerLevel++) {
+            for (int towerLevel = 0; towerLevel <= towerHeight; towerLevel++) {
 
                 /* set infimum's pointer */
                 while (infimum.getTowerHeight() < towerLevel) {
@@ -149,7 +154,7 @@ public class PrioritySkipList<T> implements SkipList<T> {
                     else
                         infimum = infimum.getPrev(towerLevel - 1);
                 }
-                infimum.setNext(newNode, towerLevel);
+                infimum.setNext(towerLevel, newNode);
 
 
                 /* set supremum's pointer */
@@ -161,7 +166,7 @@ public class PrioritySkipList<T> implements SkipList<T> {
                     else
                         supremum = supremum.getNext(towerLevel - 1);
                 }
-                supremum.setPrev(newNode, towerLevel);
+                supremum.setPrev(towerLevel, newNode);
 
 
                 /* set new node's pointer */
@@ -174,14 +179,14 @@ public class PrioritySkipList<T> implements SkipList<T> {
     }
 
     @Override
-    public boolean offer(T t) {
-        return add(t);
+    public boolean offer(E e) {
+        return add(e);
     }
 
     @Override
     public boolean remove(Object obj) {
 
-        SkipNode<T> infimum = findInfimumOf(obj);
+        Skipnode<E> infimum = findInfimumOf(obj);
         if (infimum == head)
             return false;
         if (equal(infimum.getValue(), obj)) {
@@ -192,28 +197,28 @@ public class PrioritySkipList<T> implements SkipList<T> {
     }
 
     @Override
-    public T remove() {
+    public E remove() {
         if (isEmpty())
             throw new NoSuchElementException(isEmptyMsg());
         return poll();
     }
 
     @Override
-    public T poll() {
-        SkipNode<T> first = head.getNext();
+    public E poll() {
+        Skipnode<E> first = head.getNext();
         removeExistingNode(first);
         return first.getValue();
     }
 
     @Override
-    public T element() {
+    public E element() {
         if (isEmpty())
             throw new NoSuchElementException(isEmptyMsg());
         return head.getNext().getValue();
     }
 
     @Override
-    public T peek() {
+    public E peek() {
         if (isEmpty())
             return null;
         return head.getNext().getValue();
@@ -231,24 +236,24 @@ public class PrioritySkipList<T> implements SkipList<T> {
 
     @Override
     public boolean contains(Object obj) {
-        SkipNode<T> infimum = findInfimumOf(obj);
+        Skipnode<E> infimum = findInfimumOf(obj);
         if (infimum == head)
             return false;
         return equal(infimum.getValue(), obj);
     }
 
     @Override
-    public Iterator<T> iterator() {
+    public Iterator<E> iterator() {
         return iteratorAsc();
     }
 
     @Override
-    public Iterator<T> iteratorAsc() {
+    public Iterator<E> iteratorAsc() {
         return new AscendingIterator(head);
     }
 
     @Override
-    public Iterator<T> iteratorDesc() {
+    public Iterator<E> iteratorDesc() {
         return new DescendingIterator(head);
     }
 
@@ -273,11 +278,11 @@ public class PrioritySkipList<T> implements SkipList<T> {
      * {@link ArrayList#sort(Comparator)} using the comparator defined by this {@code QueueSet}.
      */
     @Override
-    public boolean retainAll(Collection<?> c) {
+    public boolean retainAll(Collection<?> collection) {
 
         // fill new list with all elements of me equal to an element of c
-        PrioritySkipList<T> newList = new PrioritySkipList<>(getSeed(), comparator);
-        for (Object obj : c)
+        PrioritySkipList<E> newList = new PrioritySkipList<>(getSeed(), comparator);
+        for (Object obj : collection)
             newList.add(get(obj));
 
         boolean changed = newList.size != size;
@@ -293,7 +298,8 @@ public class PrioritySkipList<T> implements SkipList<T> {
      */
     @Override
     public void clear() {
-        head = new SkipNode<>();
+        head = new Skipnode<>();
+        head.addToTower(head, head);
         size = 0;
     }
 
@@ -302,11 +308,11 @@ public class PrioritySkipList<T> implements SkipList<T> {
     | utils |
     |=======|
     */
-    private SkipNode<T> findInfimumOf(Object value) {
+    private Skipnode<E> findInfimumOf(Object value) {
 
         int curTowerLevel = head.getTowerHeight();
-        SkipNode<T> curNode = head;
-        SkipNode<T> nextNode;
+        Skipnode<E> curNode = head;
+        Skipnode<E> nextNode;
 
         // from highest level to bottom level
         while (curTowerLevel >= 0) {
@@ -331,10 +337,10 @@ public class PrioritySkipList<T> implements SkipList<T> {
     @SuppressWarnings("unchecked")
     private int compare(Object o1, Object o2) {
         if (comparator != null)
-            return comparator.compare((T) o1, (T) o2);
+            return comparator.compare((E) o1, (E) o2);
 
-        Comparable<? super T> t1 = (Comparable<? super T>) o1;
-        return t1.compareTo((T) o2);
+        Comparable<? super E> e1 = (Comparable<? super E>) o1;
+        return e1.compareTo((E) o2);
     }
 
     private boolean equal(Object o1, Object o2) {
@@ -349,13 +355,13 @@ public class PrioritySkipList<T> implements SkipList<T> {
         return counter;
     }
 
-    private void removeExistingNode(SkipNode<T> node) {
+    private void removeExistingNode(Skipnode<E> node) {
 
         for (int towerLevel = 0; towerLevel <= node.getTowerHeight(); towerLevel++) {
-            SkipNode<T> next = node.getNext(towerLevel);
-            SkipNode<T> prev = node.getPrev(towerLevel);
-            prev.setNext(next, towerLevel);
-            next.setPrev(prev, towerLevel);
+            Skipnode<E> next = node.getNext(towerLevel);
+            Skipnode<E> prev = node.getPrev(towerLevel);
+            prev.setNext(towerLevel, next);
+            next.setPrev(towerLevel, prev);
         }
 
         cleanupHead();
@@ -381,11 +387,11 @@ public class PrioritySkipList<T> implements SkipList<T> {
     | iterator |
     |==========|
     */
-    private class AscendingIterator implements Iterator<T> {
+    private class AscendingIterator implements Iterator<E> {
 
-        private SkipNode<T> currentNode;
+        private Skipnode<E> currentNode;
 
-        public AscendingIterator(SkipNode<T> startNode) {
+        public AscendingIterator(Skipnode<E> startNode) {
             currentNode = startNode;
         }
 
@@ -395,17 +401,17 @@ public class PrioritySkipList<T> implements SkipList<T> {
         }
 
         @Override
-        public T next() {
+        public E next() {
             currentNode = currentNode.getNext();
             return currentNode.getValue();
         }
     }
 
-    private class DescendingIterator implements Iterator<T> {
+    private class DescendingIterator implements Iterator<E> {
 
-        private SkipNode<T> currentNode;
+        private Skipnode<E> currentNode;
 
-        public DescendingIterator(SkipNode<T> startNode) {
+        public DescendingIterator(Skipnode<E> startNode) {
             currentNode = startNode;
         }
 
@@ -415,17 +421,17 @@ public class PrioritySkipList<T> implements SkipList<T> {
         }
 
         @Override
-        public T next() {
+        public E next() {
             currentNode = currentNode.getPrev();
             return currentNode.getValue();
         }
     }
 
-    private class AscendingNodeIterator implements Iterator<SkipNode<T>> {
+    private class AscendingNodeIterator implements Iterator<Skipnode<E>> {
 
-        private SkipNode<T> currentNode;
+        private Skipnode<E> currentNode;
 
-        public AscendingNodeIterator(SkipNode<T> startNode) {
+        public AscendingNodeIterator(Skipnode<E> startNode) {
             currentNode = startNode;
         }
 
@@ -435,7 +441,7 @@ public class PrioritySkipList<T> implements SkipList<T> {
         }
 
         @Override
-        public SkipNode<T> next() {
+        public Skipnode<E> next() {
             currentNode = currentNode.getNext();
             return currentNode;
         }
