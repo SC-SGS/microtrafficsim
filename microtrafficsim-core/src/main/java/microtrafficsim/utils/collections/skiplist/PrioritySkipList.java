@@ -298,8 +298,11 @@ public class PrioritySkipList<E> implements SkipList<E> {
     }
 
     /**
-     * This method calls {@link ArrayList#retainAll(Collection)} and sorts the list afterwards by calling
-     * {@link ArrayList#sort(Comparator)} using the comparator defined by this {@code QueueSet}.
+     * <p>
+     * Creates a new PrioritySkipList with my seed and comparator and adds all elements of my list to this new list
+     * if these elements are equal to an element of the given collection. So the runtime complexity is
+     * in {@code O(m * log(n))} where {@code m == collection.size()} and {@code n == this.size()}. {@code O(logn)} is
+     * determined by the runtime of {@link #get(E)} and is expected with high probability.
      */
     @Override
     public boolean retainAll(Collection<?> collection) {
@@ -401,17 +404,61 @@ public class PrioritySkipList<E> implements SkipList<E> {
      */
     private void updateLinkLengths(Skipnode<E> concernedNode) {
 
-        Skipnode<E> from = concernedNode.tower.getPrev();
-        for (int towerLevel = 1; towerLevel <= head.tower.getHeight(); towerLevel++) {
-            // go back until there is a node with expected tower level to update
-            while (from.tower.getHeight() < towerLevel)
-                from = from.tower.getPrev(towerLevel - 1);
+        // simple implementation but iterates twice over some nodes
+        // Skipnode<E> from = concernedNode.tower.getPrev();
+        // for (int towerLevel = 1; towerLevel <= head.tower.getHeight(); towerLevel++) {
+        // // go back until there is a node with expected tower level to update
+        // while (from.tower.getHeight() < towerLevel)
+        // from = from.tower.getPrev(towerLevel - 1);
+        //
+        // // destination is next of current from (with correct level
+        // Skipnode<E> to = from.tower.getNext(towerLevel);
+        // int linkLength = countLinkLength(from, to, towerLevel - 1);
+        // from.tower.setLinkLength(towerLevel, linkLength);
+        // }
 
-            // destination is next of current from (with correct level
+        // midFrom is the first node that should be updated
+        Skipnode<E> midFrom = concernedNode.tower.getPrev();
+        for (int towerLevel = 1; towerLevel <= head.tower.getHeight(); towerLevel++) {
+            // copy "midFrom" into "from";
+            // "from" is used to find the next node with expected tower level to update.
+            // A new variable "from" is used because "midFrom" has to be remembered in cases, where you have to
+            // calculate from "midFrom" to "to" as mentioned here:
+            //
+            // | from | -----------------------?------------------------> | to |
+            // | from | -1-> | node | -1-> | midFrom | -1-> | node | -1-> | to |
+            Skipnode<E> from = midFrom;
+
+            int linkLength = 0;
+            // go back from "midFrom" to "from" and count link lengths
+            while (from.tower.getHeight() < towerLevel) {
+                from        = from.tower.getPrev(towerLevel - 1);
+                linkLength += from.tower.getLinkLength(towerLevel - 1);
+            }
+
+            // "to" is next of current "from" (with correct level)
             Skipnode<E> to = from.tower.getNext(towerLevel);
-            int linkLength = countLinkLength(from, to, towerLevel - 1);
+            // count remaining link lengths from "midFrom" to "to"
+            linkLength += countLinkLength(midFrom, to, towerLevel - 1);
             from.tower.setLinkLength(towerLevel, linkLength);
+            // update midFrom for next loop run
+            midFrom = from;
         }
+    }
+
+    private void removeExistingNode(Skipnode<E> node) {
+
+        Skipnode<E> concernedNode = node.tower.getNext();
+        for (int towerLevel = 0; towerLevel <= node.tower.getHeight(); towerLevel++) {
+            Skipnode<E> next = node.tower.getNext(towerLevel);
+            Skipnode<E> prev = node.tower.getPrev(towerLevel);
+            prev.tower.setNext(towerLevel, next);
+            next.tower.setPrev(towerLevel, prev);
+        }
+
+        cleanupHead();
+        updateLinkLengths(concernedNode);
+        size--;
     }
 
     @SuppressWarnings("unchecked")
@@ -433,21 +480,6 @@ public class PrioritySkipList<E> implements SkipList<E> {
         while (random.nextBoolean())
             counter++;
         return counter;
-    }
-
-    private void removeExistingNode(Skipnode<E> node) {
-
-        Skipnode<E> concernedNode = node.tower.getNext();
-        for (int towerLevel = 0; towerLevel <= node.tower.getHeight(); towerLevel++) {
-            Skipnode<E> next = node.tower.getNext(towerLevel);
-            Skipnode<E> prev = node.tower.getPrev(towerLevel);
-            prev.tower.setNext(towerLevel, next);
-            next.tower.setPrev(towerLevel, prev);
-        }
-
-        cleanupHead();
-        updateLinkLengths(concernedNode);
-        size--;
     }
 
     private void cleanupHead() {
@@ -480,7 +512,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
         private Skipnode<E> currentNode;
 
-        public AscendingIterator(Skipnode<E> startNode) {
+        AscendingIterator(Skipnode<E> startNode) {
             currentNode = startNode;
         }
 
@@ -500,7 +532,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
         private Skipnode<E> currentNode;
 
-        public DescendingIterator(Skipnode<E> startNode) {
+        DescendingIterator(Skipnode<E> startNode) {
             currentNode = startNode;
         }
 
@@ -520,7 +552,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
         private Skipnode<E> currentNode;
 
-        public AscendingNodeIterator(Skipnode<E> startNode) {
+        AscendingNodeIterator(Skipnode<E> startNode) {
             currentNode = startNode;
         }
 
