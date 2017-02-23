@@ -12,6 +12,11 @@ import java.util.*;
  * It compares elements using their {@link Comparable natural order} per default.
  *
  * <p>
+ * This class does NOT store duplicates. In case two objects have the same priority, they are compared using
+ * {@link Long#compare(long, long) Long.compare(o1.hashCode(), o2.hashCode())}. Only if this comparison returns 0
+ * (<=> both objects are equal), two objects are interpreted as duplicates.
+ *
+ * <p>
  * This implementation is not thread-safe.
  *
  * @author Dominic Parga Cacheiro
@@ -463,11 +468,19 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
     @SuppressWarnings("unchecked")
     private int compare(Object o1, Object o2) {
-        if (comparator != null)
-            return comparator.compare((E) o1, (E) o2);
+        int cmp = 0;
 
-        Comparable<? super E> e1 = (Comparable<? super E>) o1;
-        return e1.compareTo((E) o2);
+        if (comparator != null)
+            cmp = comparator.compare((E) o1, (E) o2);
+        else {
+            Comparable<? super E> e1 = (Comparable<? super E>) o1;
+            cmp = e1.compareTo((E) o2);
+        }
+
+        if (cmp == 0)
+            cmp = Long.compare(o1.hashCode(), o2.hashCode());
+
+        return cmp;
     }
 
     private boolean equal(Object o1, Object o2) {

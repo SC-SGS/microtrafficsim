@@ -37,6 +37,11 @@ class WeightedNode implements Comparable<WeightedNode> {
     }
 
     @Override
+    public int hashCode() {
+        return node.hashCode();
+    }
+
+    @Override
     public String toString() {
         return node.toString() + "; g = " + g + "; f = " + f;
     }
