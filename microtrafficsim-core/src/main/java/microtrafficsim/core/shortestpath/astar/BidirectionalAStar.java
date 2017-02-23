@@ -3,9 +3,11 @@ package microtrafficsim.core.shortestpath.astar;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
+import microtrafficsim.utils.collections.skiplist.PrioritySkipList;
+import microtrafficsim.utils.collections.skiplist.PrioritySkipListSet;
+import microtrafficsim.utils.collections.skiplist.SkipList;
 
 import java.util.HashMap;
-import java.util.PriorityQueue;
 import java.util.Stack;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -80,11 +82,11 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
         float estimation = estimationFunction.apply(start, end);
         // forward
         HashMap<ShortestPathNode, WeightedNode> forwardVisitedNodes = new HashMap<>();
-        PriorityQueue<WeightedNode>             forwardQueue        = new PriorityQueue<>();
+        SkipList<WeightedNode>                  forwardQueue        = new PrioritySkipListSet<>();
         forwardQueue.add(new WeightedNode(start, null, null, 0f, estimation));
         // backward
         HashMap<ShortestPathNode, WeightedNode> backwardVisitedNodes = new HashMap<>();
-        PriorityQueue<WeightedNode>             backwardQueue        = new PriorityQueue<>();
+        SkipList<WeightedNode>                  backwardQueue        = new PrioritySkipList<>();
         backwardQueue.add(new WeightedNode(end, null, null, 0f, estimation));
 
         /*

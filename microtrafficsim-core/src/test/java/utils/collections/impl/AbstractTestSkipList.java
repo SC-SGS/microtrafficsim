@@ -1,4 +1,4 @@
-package utils.collections;
+package utils.collections.impl;
 
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.math.random.distributions.impl.Random;
@@ -8,8 +8,10 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
+import utils.collections.TestSkipList;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.*;
 
@@ -18,16 +20,23 @@ import static org.junit.Assert.*;
  *
  * @author Dominic Parga Cacheiro
  */
-public class TestPrioritySkipList implements TestSkipList {
+public abstract class AbstractTestSkipList implements TestSkipList {
 
     private static final Logger logger = new EasyMarkableLogger(TestPrioritySkipList.class);
     static {
         BuildSetup.DEBUG_ENABLED = true;
     }
 
-    private final Random      random    = new Random();
-    private final int         fillCount = 1000;
-    private SkipList<Integer> skipList;
+    private final Random                random    = new Random();
+    private final int                   fillCount = 1000;
+    private SkipList<Integer>           skipList;
+    private Supplier<SkipList<Integer>> skipListFactory;
+
+
+    public AbstractTestSkipList(Supplier<SkipList<Integer>> skipListFactory) {
+        this.skipListFactory = skipListFactory;
+    }
+
 
     @Before
     public void prepareForTest() {
@@ -36,7 +45,7 @@ public class TestPrioritySkipList implements TestSkipList {
 
     private void resetAttributes() {
         random.reset();
-        skipList = new PrioritySkipList<>();
+        skipList = skipListFactory.get();
         logger.debug("random seed    = " + random.getSeed());
         logger.debug("skip list seed = " + skipList.getSeed());
     }
