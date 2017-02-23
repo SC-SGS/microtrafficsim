@@ -25,7 +25,7 @@ public class TestPrioritySkipList implements TestSkipList {
         BuildSetup.DEBUG_ENABLED = true;
     }
 
-    private final Random      random    = new Random(8685533621925346L);
+    private final Random      random    = new Random();
     private final int         fillCount = 1000;
     private SkipList<Integer> skipList;
 
@@ -37,6 +37,7 @@ public class TestPrioritySkipList implements TestSkipList {
     private void resetAttributes() {
         random.reset();
         skipList = new PrioritySkipList<>();
+        logger.debug("random seed    = " + random.getSeed());
         logger.debug("skip list seed = " + skipList.getSeed());
     }
 
@@ -186,8 +187,8 @@ public class TestPrioritySkipList implements TestSkipList {
 
         while (!expected.isEmpty()) {
             int rdmIdx = random.nextInt(expected.size());
-            int removed = expected.remove(rdmIdx);
-            assertTrue(skipList.remove(removed));
+            Integer removed = expected.remove(rdmIdx);
+            assertEquals(removed, skipList.remove(rdmIdx));
             checkForWeakEquality(expected, skipList);
         }
     }

@@ -1,9 +1,6 @@
 package microtrafficsim.utils.collections.skiplist;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This data structure works like a {@code PriorityQueue}. The difference is: a {@code QueueSet} detects double
@@ -18,7 +15,7 @@ public interface SkipList<E> extends Queue<E>, Set<E> {
 
     E get(int index);
 
-    boolean remove(int index);
+    E remove(int index);
 
     E get(Object obj);
 
