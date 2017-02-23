@@ -1,4 +1,4 @@
-package utils.collections.impl;
+package utils.collections;
 
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.math.random.distributions.impl.Random;
@@ -8,7 +8,6 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
-import utils.collections.TestSkipList;
 
 import java.util.*;
 import java.util.function.Supplier;

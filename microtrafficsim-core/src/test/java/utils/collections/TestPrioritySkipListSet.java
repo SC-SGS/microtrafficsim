@@ -1,4 +1,4 @@
-package utils.collections.impl;
+package utils.collections;
 
 import microtrafficsim.utils.collections.skiplist.PrioritySkipListSet;
 import microtrafficsim.utils.collections.skiplist.SkipList;
