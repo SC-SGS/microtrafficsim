@@ -6,6 +6,7 @@ import microtrafficsim.core.map.features.Polygon;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.math.geometry.Lines;
 
 import static microtrafficsim.math.MathUtils.clamp;
 
@@ -80,37 +81,48 @@ public class TileIntersectors {
      * @return {@code true} if the projected polygon intersects with the given tile.
      */
     public static boolean intersect(Polygon polygon, Rect2d tile, Projection projection) {
-        boolean x = false;      // x-axis coverage flag
-        boolean y = false;      // y-axis coverage flag
+        Vec2d[] outline = new Vec2d[polygon.outline.length];
+        Rect2d aabb = new Rect2d(Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE);
 
-        Vec2d a = projection.project(polygon.outline[0]);
-        for (int i = 1; i < polygon.outline.length; i++) {
-            Vec2d b = projection.project(polygon.outline[i]);
+        // calculate bounding box and project vertices
+        for (int i = 0; i < outline.length; i++) {
+            outline[i] = projection.project(polygon.outline[i]);
 
-            // if completely out of bounds, continue
-            if ((a.x < tile.xmin && b.x < tile.xmin) || (a.x > tile.xmax && b.x > tile.xmax)) continue;
-            if ((a.y < tile.ymin && b.y < tile.ymin) || (a.y > tile.ymax && b.y > tile.ymax)) continue;
+            if (aabb.xmin > outline[i].x) aabb.xmin = outline[i].x;
+            if (aabb.xmax < outline[i].x) aabb.xmax = outline[i].x;
+            if (aabb.ymin > outline[i].y) aabb.ymin = outline[i].y;
+            if (aabb.ymax < outline[i].y) aabb.ymax = outline[i].y;
+        }
 
-            // clamp outline-segment to tile
-            double cxa = clamp(a.x, tile.xmin, tile.xmax);
-            double cxb = clamp(b.x, tile.xmin, tile.xmax);
-            double cya = clamp(a.y, tile.ymin, tile.ymax);
-            double cyb = clamp(b.y, tile.ymin, tile.ymax);
+        // check if bounding boxes intersect
+        if (!aabb.intersects(tile)) {
+            return false;
+        }
 
-            // transform the clamped coordinates to line coordinates
-            double sxa = (cxa - a.x) / (b.x - a.x);
-            double sxb = (cxb - a.x) / (b.x - a.x);
-            double sya = (cya - a.y) / (b.y - a.y);
-            double syb = (cyb - a.y) / (b.y - a.y);
+        // check if any point of the polygon is inside of the AABB
+        for (Vec2d v : outline) {
+            if (tile.contains(v)) {
+                return true;
+            }
+        }
 
-            // set x/y-axis coverage flags
-            x |= sxb >= sxa;
-            y |= syb >= sya;
+        // check if any edge of the polygon intersects any edge of the AABB
+        Vec2d pa = outline[outline.length - 1];
+        for (Vec2d pb : outline) {
+            Vec2d b0 = new Vec2d(tile.xmin, tile.ymin);
+            Vec2d b1 = new Vec2d(tile.xmin, tile.ymax);
+            Vec2d b2 = new Vec2d(tile.xmax, tile.ymax);
+            Vec2d b3 = new Vec2d(tile.xmax, tile.ymin);
 
-            // if the outline covers both the x- and y-axis of the rectangle, the polygon intersects the rectangle.
-            if (x && y) return true;
-
-            a = b;
+            if (Lines.segmentIntersectsNonCoincidental(pa, pb, b0, b1)) {
+                return true;
+            } else if (Lines.segmentIntersectsNonCoincidental(pa, pb, b1, b2)) {
+                return true;
+            } else if (Lines.segmentIntersectsNonCoincidental(pa, pb, b2, b3)) {
+                return true;
+            } else if (Lines.segmentIntersectsNonCoincidental(pa, pb, b3, b0)) {
+                return true;
+            }
         }
 
         return false;
