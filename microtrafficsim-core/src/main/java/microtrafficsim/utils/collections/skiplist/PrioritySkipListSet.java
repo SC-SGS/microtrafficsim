@@ -7,12 +7,15 @@ import java.util.*;
 /**
  * <p>
  * The difference to a {@link PrioritySkipList} is the fact that this class checks duplicates only by their hashcode.
- *
- * <p>
- * Important note: This class uses a skip list as priority queue (sorting the objects by their priority + hashcode).
+ * This class uses a skip list as priority queue (sorting the objects by their priority + hashcode).
  * For finding a duplicate only by its hashcode, this class uses a {@link HashMap} to remember an object stored in the
  * skip list only by its hashcode. Thus if you change the priority or hashcode of an object in the queue, it could
  * not be found anymore.
+ *
+ * <p>Important note: <br>
+ * Hence this class uses a {@link HashMap}, {@link Object#equals(Object)} is used in case two objects has two
+ * identical hashcodes. Be careful <b>not</b> to use the object's priority to calculate {@code equality}; otherwise
+ * this class cannot detect objects correctly.
  *
  * <p>
  * This implementation is not thread-safe.
@@ -112,7 +115,7 @@ public class PrioritySkipListSet<E> implements SkipList<E> {
     public boolean add(E e) {
 
         // get old value and remove it
-        E storedValue = storedValues.remove(e);
+        E storedValue = storedValues.get(e);
         if (storedValue != null)
             priorityQueue.remove(storedValue);
 

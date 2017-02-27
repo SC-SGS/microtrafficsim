@@ -13,9 +13,19 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * This class represents an bidirectional A* algorithm. You can use the constructor for own implementations of the
+ * <p>
+ * This class represents an bidirectional A* algorithm. You can use the constructor for own
+ * implementations of the
  * weight and estimation function, but you can also use {@link #createShortestWayDijkstra()} for a standard
  * implementation of Dijkstra's algorithm (bidirectional).
+ *
+ * <p>
+ * Important note:<br>
+ * Hence this class is a {@code bidirectional A}*, it uses two priority queues (forward and backward search). For
+ * better performance, {@link #findShortestPath(ShortestPathNode, ShortestPathNode, Stack) findShortestPath(...)}
+ * stops searching for the shortest path if <b>at least</b> one queue is empty, <b>not both</b>. This
+ * could cause incorrect shortest paths if the forward queue iterates over different edges/nodes than the backward
+ * queue (e.g. in {@code contraction hierarchies}).
  *
  * @author Dominic Parga Cacheiro
  */
@@ -67,6 +77,14 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
     | (i) ShortestPathAlgorithm |
     |===========================|
     */
+    /**
+     * <p>
+     * Important note:<br>
+     * Hence this class is a {@code bidirectional A}*, it uses two priority queues (forward and backward search). For
+     * better performance, this method stops searching for the shortest path if <b>at least</b> one queue is empty,
+     * <b>not both</b>. This could cause incorrect shortest paths if the forward queue iterates over different
+     * edges/nodes than the backward queue (e.g. in {@code contraction hierarchies}).
+     */
     @Override
     public void findShortestPath(ShortestPathNode start, ShortestPathNode end, Stack<ShortestPathEdge> shortestPath) {
 
@@ -96,7 +114,7 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
         */
         WeightedNode meetingNode = null;
         // while at least one is not empty
-        while (!(forwardQueue.isEmpty() && backwardQueue.isEmpty())) {
+        while (!forwardQueue.isEmpty() && !backwardQueue.isEmpty()) {
             // one step forwards
             if (!forwardQueue.isEmpty()) {
                 WeightedNode current = forwardQueue.poll();

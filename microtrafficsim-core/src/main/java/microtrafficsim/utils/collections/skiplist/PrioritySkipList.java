@@ -13,8 +13,8 @@ import java.util.*;
  *
  * <p>
  * This class does NOT store duplicates. In case two objects have the same priority, they are compared using
- * {@link Long#compare(long, long) Long.compare(o1.hashCode(), o2.hashCode())}. Only if this comparison returns 0
- * (<=> both objects are equal), two objects are interpreted as duplicates.
+ * {@link Long#compare(long, long) Long.compare(o1.hashCode(), o2.hashCode())}. Only if this comparison returns 0,
+ * two objects are interpreted as duplicates.
  *
  * <p>
  * This implementation is not thread-safe.
@@ -25,10 +25,10 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
     // todo wikipedia says, the runtime complexity could be repaired in cases of O(n)
 
-    private Skipnode<E> head;
-    private final Random                random;
-    private final Comparator<? super E> comparator;
-    private int                         size;
+    private         Skipnode<E>           head;
+    private final   Random                random;
+    protected final Comparator<? super E> comparator;
+    private         int                   size;
 
     /**
      * Calls {@link #PrioritySkipList(long, Comparator) PrioritySkipList(Random.createSeed(), null)}
@@ -154,47 +154,8 @@ public class PrioritySkipList<E> implements SkipList<E> {
             newNode.tower.add(infimum, supremum);
             newNode.tower.addLinkLength(1);
 
-            /* create and fill tower */
-            int towerHeight = throwCoinUntilFalse();
-            for (int towerLevel = 1; towerLevel <= towerHeight; towerLevel++) {
-
-                /* set infimum's pointer */
-                while (infimum.tower.getHeight() < towerLevel) {
-                    // if head: increase tower height
-                    if (infimum == head) {
-                        infimum.tower.add(head, head);
-                        infimum.tower.addLinkLength(0);
-                    }
-                    // if not head: jump to previous element
-                    else
-                        infimum = infimum.tower.getPrev(towerLevel - 1);
-                }
-                infimum.tower.setNext(towerLevel, newNode);
-
-
-                /* set supremum's pointer */
-                while (supremum.tower.getHeight() < towerLevel) {
-                    // if head: increase tower height
-                    if (supremum == head) {
-                        supremum.tower.add(head, head);
-                        infimum.tower.addLinkLength(0);
-                    }
-                    // if not head: jump to next element
-                    else
-                        supremum = supremum.tower.getNext(towerLevel - 1);
-                }
-                supremum.tower.setPrev(towerLevel, newNode);
-
-
-                /* set new node's pointer */
-                newNode.tower.add(infimum, supremum);
-                int nextLinkLength = countLinkLength(newNode, supremum, towerLevel - 1);
-                newNode.tower.addLinkLength(nextLinkLength);
-            }
-
-            updateLinkLengths(newNode);
+            createAndFillTower(infimum, newNode, supremum);
         }
-
 
         size++;
         return true;
@@ -207,9 +168,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
     @Override
     public E remove(int index) {
-        Skipnode<E> node = find(index);
-        removeExistingNode(node);
-        return node.value;
+        return removeExistingNode(find(index)).value;
     }
 
     @Override
@@ -234,9 +193,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
     @Override
     public E poll() {
-        Skipnode<E> first = head.tower.getNext();
-        removeExistingNode(first);
-        return first.value;
+        return removeExistingNode(head.tower.getNext()).value;
     }
 
     @Override
@@ -451,24 +408,135 @@ public class PrioritySkipList<E> implements SkipList<E> {
         }
     }
 
-    private void removeExistingNode(Skipnode<E> node) {
+    /**
+     * Removes the given node. In worst case, you could remove nodes with equal tower size and the runtime complexity
+     * would be in O(n). Preventing this, a new tower for the given node's successor is calculated as well.
+     *
+     * @param node that will be removed from this list
+     * @return given node (just for practical purposes)
+     */
+    private Skipnode<E> removeExistingNode(Skipnode<E> node) {
 
-        Skipnode<E> concernedNode = node.tower.getNext();
-        for (int towerLevel = 0; towerLevel <= node.tower.getHeight(); towerLevel++) {
+        removeTower(node, 0);
+        size--;
+
+        /* recalculate tower */
+        Skipnode<E> next = node.tower.getNext();
+        if (next != head) {
+            removeTower(next, 1);
+            createAndFillTower(next.tower.getPrev(), next, next.tower.getNext());
+        }
+
+        return node;
+    }
+
+    /**
+     * Does <b>not</b> update {@code size} if {@code bottomTowerLevel} is 0.
+     *
+     * @param node
+     * @param bottomTowerLevel if 0, this node is fully removed from the list
+     */
+    private void removeTower(Skipnode<E> node, int bottomTowerLevel) {
+
+        /* set links */
+        for (int towerLevel = bottomTowerLevel; towerLevel <= node.tower.getHeight(); towerLevel++) {
             Skipnode<E> next = node.tower.getNext(towerLevel);
             Skipnode<E> prev = node.tower.getPrev(towerLevel);
             prev.tower.setNext(towerLevel, next);
             next.tower.setPrev(towerLevel, prev);
         }
 
+        /* remove tower levels if node is not fully removed */
+        if (bottomTowerLevel > 0)
+            while (node.tower.getHeight() > 0)
+                node.tower.removeHighest();
+
         cleanupHead();
-        updateLinkLengths(concernedNode);
-        size--;
+        updateLinkLengths(node);
     }
 
+    /**
+     * <p>
+     * Throws the coin ({@link #throwCoinUntilFalse()}) and fills the tower at level 1 and above if coin count is
+     * greater than 0.
+     *
+     * <p>
+     * Important note:<br>
+     * This method does <b>only add</b> a tower to a node without tower. If the parameter {@code newNode} already has
+     * a tower, this method does not work correctly.
+     */
+    private void createAndFillTower(Skipnode<E> infimum, Skipnode<E> node, Skipnode<E> supremum) {
+
+        int towerHeight = throwCoinUntilFalse();
+//        int towerHeight = coinCount; // todo remove
+        for (int towerLevel = 1; towerLevel <= towerHeight; towerLevel++) {
+
+                /* set infimum's pointer */
+            while (infimum.tower.getHeight() < towerLevel) {
+                // if head: increase tower height
+                if (infimum == head) {
+                    infimum.tower.add(head, head);
+                    infimum.tower.addLinkLength(0);
+                }
+                // if not head: jump to previous element
+                else
+                    infimum = infimum.tower.getPrev(towerLevel - 1);
+            }
+            infimum.tower.setNext(towerLevel, node);
+
+
+                /* set supremum's pointer */
+            while (supremum.tower.getHeight() < towerLevel) {
+                // if head: increase tower height
+                if (supremum == head) {
+                    supremum.tower.add(head, head);
+                    infimum.tower.addLinkLength(0);
+                }
+                // if not head: jump to next element
+                else
+                    supremum = supremum.tower.getNext(towerLevel - 1);
+            }
+            supremum.tower.setPrev(towerLevel, node);
+
+
+                /* set new node's pointer */
+            node.tower.add(infimum, supremum);
+            int nextLinkLength = countLinkLength(node, supremum, towerLevel - 1);
+            node.tower.addLinkLength(nextLinkLength);
+        }
+        updateLinkLengths(node);
+    }
+
+    private static int coinCount;
+    public static void main(String[] args) {
+
+        SkipList<Integer> skipList = new PrioritySkipList<>();
+        coinCount = 2;
+        skipList.add(0);
+        coinCount = 0;
+        skipList.add(1);
+        coinCount = 1;
+        skipList.add(2);
+        skipList.remove(1);
+        System.out.println(skipList);
+    }
+
+    /**
+     * <p>
+     * This method is used to compare two objects in this class. A subclass has access to {@code my protected final
+     * comparator}.
+     *
+     * <p>
+     * Default implementation compares in this order:<br>
+     * &bull if ({@code my comparator != null}) => cast objects to {@code E} and use the comparator<br>
+     * &bull else => cast objects to {@link Comparable Comparable<? super E>} and use
+     * {@link Comparable#compareTo(Object) compareTo(E e)}<br>
+     * &bull if ({@code cmp-result == 0}) => use
+     * {@link Long#compare(long, long) Long.compare(o1.hashCode(), o2.hashCode())}
+     */
     @SuppressWarnings("unchecked")
-    private int compare(Object o1, Object o2) {
-        int cmp = 0;
+    protected int compare(Object o1, Object o2) {
+        int cmp;
 
         if (comparator != null)
             cmp = comparator.compare((E) o1, (E) o2);
@@ -483,6 +551,9 @@ public class PrioritySkipList<E> implements SkipList<E> {
         return cmp;
     }
 
+    /**
+     * @return {@link #compare(Object, Object) compare(o1, o2)} == 0
+     */
     private boolean equal(Object o1, Object o2) {
         return compare(o1, o2) == 0;
     }
