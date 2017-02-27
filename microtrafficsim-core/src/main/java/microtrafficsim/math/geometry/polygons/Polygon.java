@@ -3,6 +3,7 @@ package microtrafficsim.math.geometry.polygons;
 import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
+import microtrafficsim.math.geometry.Lines;
 import microtrafficsim.utils.collections.ArrayUtils;
 
 
@@ -158,20 +159,35 @@ public class Polygon {
     }
 
     public static boolean intersects(Vec2d[] outline, Rect2d aabb) {
+        // check if any point of the polygon is inside of the AABB
         for (Vec2d v : outline) {
             if (aabb.contains(v)) {
                 return true;
             }
         }
 
-        for (Vec2d v : aabb.vertices()) {
-            if (contains(outline, v)) {
+        // check if any edge of the polygon intersects any edge of the AABB
+        Vec2d pa = outline[outline.length - 1];
+        for (Vec2d pb : outline) {
+            Vec2d b0 = new Vec2d(aabb.xmin, aabb.ymin);
+            Vec2d b1 = new Vec2d(aabb.xmin, aabb.ymax);
+            Vec2d b2 = new Vec2d(aabb.xmax, aabb.ymax);
+            Vec2d b3 = new Vec2d(aabb.xmax, aabb.ymin);
+
+            if (Lines.segmentIntersectsNonCoincidental(pa, pb, b0, b1)) {
+                return true;
+            } else if (Lines.segmentIntersectsNonCoincidental(pa, pb, b1, b2)) {
+                return true;
+            } else if (Lines.segmentIntersectsNonCoincidental(pa, pb, b2, b3)) {
+                return true;
+            } else if (Lines.segmentIntersectsNonCoincidental(pa, pb, b3, b0)) {
                 return true;
             }
         }
 
         return false;
     }
+
 
     /**
      * Calculates the signed double area enclosed by the given outline.
