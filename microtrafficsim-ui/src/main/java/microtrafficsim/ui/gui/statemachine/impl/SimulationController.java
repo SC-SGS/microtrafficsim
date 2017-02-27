@@ -473,15 +473,17 @@ public class SimulationController implements GUIController {
 
     private void exit() {
         int choice = JOptionPane.showConfirmDialog(frame,
-                "Are you sure to exit?", "Really exit?",
+                "Do you really want to exit?", "Close Program",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
+
         if (choice == JOptionPane.YES_OPTION) {
             if (parsingThread != null)
                 parsingThread.interrupt();
             if (scenarioBuildThread != null)
                 scenarioBuildThread.interrupt();
-            mapviewer.stop();
+            mapviewer.destroy();
+            frame.dispose();
             System.exit(0);
         }
     }
