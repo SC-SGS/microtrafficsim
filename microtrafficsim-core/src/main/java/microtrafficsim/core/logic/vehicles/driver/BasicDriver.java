@@ -18,7 +18,7 @@ public class BasicDriver implements Driver {
 
     /* general */
     private final ReentrantLock lock_priorityCounter;
-    private final Random random;
+    private final Random        random;
 
     /* variable information */
     private Route<Node> route;
@@ -28,12 +28,12 @@ public class BasicDriver implements Driver {
     private int priorityCounter;    // for crossing logic
     /* Hulk */
     private final int maxAnger;
-    private int anger;
-    private int totalAnger;
+    private       int anger;
+    private       int totalAnger;
 
     /* fix information */
-    private Vehicle vehicle;
-    private final float dawdleFactor;
+    private       Vehicle vehicle;
+    private final float   dawdleFactor;
 
     /**
      * Calls {@link #BasicDriver(long, int) BasicDriver(seed, 0)}
@@ -65,7 +65,7 @@ public class BasicDriver implements Driver {
 
         /* general */
         lock_priorityCounter = new ReentrantLock(true);
-        random = new Random(seed);
+        random               = new Random(seed);
 
         /* variable information */
         route = null;
@@ -73,12 +73,12 @@ public class BasicDriver implements Driver {
         /* dynamic information */
         this.travellingTime = -spawndelay;
         resetPriorityCounter();
-        maxAnger = Integer.MAX_VALUE;
-        anger = 0;
+        maxAnger   = Integer.MAX_VALUE;
+        anger      = 0;
         totalAnger = 0;
 
         /* fix information */
-        vehicle           = null;
+        vehicle         = null;
         String errorMsg = null;
         if (dawdleFactor > 1) {
             this.dawdleFactor = 1;

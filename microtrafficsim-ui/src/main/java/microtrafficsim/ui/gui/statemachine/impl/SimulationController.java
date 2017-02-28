@@ -88,10 +88,10 @@ public class SimulationController implements GUIController {
     private ScenarioBuilder scenarioBuilder;
 
     /* gui */
-    private final JFrame     frame;
-    private final MTSMenuBar menubar;
+    private final JFrame           frame;
+    private final MTSMenuBar       menubar;
     private final PreferencesFrame preferences;
-    private final JFileChooser mapfileChooser;
+    private final JFileChooser     mapfileChooser;
 
     public SimulationController() {
         this(new BuildSetup());
@@ -646,8 +646,8 @@ public class SimulationController implements GUIController {
 
         /* concurrency */
         preferences.setEnabled(PrefElement.nThreads,            newSim);
-        preferences.setEnabled(PrefElement.vehiclesPerRunnable, newSim);
-        preferences.setEnabled(PrefElement.nodesPerThread,      newSim);
+        preferences.setEnabled(PrefElement.vehiclesPerRunnable, true);
+        preferences.setEnabled(PrefElement.nodesPerThread,      true);
 
         /* init values */
         preferences.setSettings(config);

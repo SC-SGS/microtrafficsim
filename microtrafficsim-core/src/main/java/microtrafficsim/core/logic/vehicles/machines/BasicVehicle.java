@@ -27,15 +27,15 @@ public abstract class BasicVehicle implements Vehicle {
 
     /* dynamic information */
     private VehicleState state;
-    private int cellPosition;
-    private int velocity;
-    private boolean lastVelocityWasZero;
-    private Vehicle vehicleInFront;
-    private Vehicle vehicleInBack;
+    private int          cellPosition;
+    private int          velocity;
+    private boolean      lastVelocityWasZero;
+    private Vehicle      vehicleInFront;
+    private Vehicle      vehicleInBack;
 
     /* fix information */
-    public final long id;
-    private Function<Integer, Integer> accelerate;
+    public final long                       id;
+    private      Function<Integer, Integer> accelerate;
 
     /* visualization */
     private final VehicleStyleSheet style;
