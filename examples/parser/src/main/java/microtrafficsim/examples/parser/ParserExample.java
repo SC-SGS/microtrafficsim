@@ -150,6 +150,6 @@ public class ParserExample {
                 .putWayInitializer(StreetComponent.class, new StreetComponentFactory())
                 .putWayInitializer(SanitizerWayComponent.class, new SanitizerWayComponentFactory())
                 .putRelationInitializer("restriction", new RestrictionRelationFactory())
-                .createParser();
+                .build();
     }
 }

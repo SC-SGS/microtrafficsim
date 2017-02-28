@@ -1,4 +1,4 @@
-package microtrafficsim.core.mapviewer;
+package microtrafficsim.core.convenience;
 
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -90,28 +90,5 @@ public interface MapViewer {
      */
     void createVisualizationPanel() throws UnsupportedFeatureException;
 
-    /**
-     * @see #createParser(ScenarioConfig)
-     */
-    default void createParser() {
-        createParser(null);
-    }
-
-    /**
-     * Creates and sets up the parser used to parse OSM files. The parser
-     * processes the file in two major steps: first a simple extraction,
-     * based on the feature set requested (using {@code putMapFeatureDefinition},
-     * and second a transformation of the extracted data to the final
-     * representation, using the {@code FeatureGenerator}s associated with
-     * the feature definition. {@code FeatureGenerator}s may require the
-     * presence of certain components for ways and nodes (such as the
-     * {@code StreetComponent}), or factories to initialize relations
-     * (such as the {@code RestrictionRelationFactory}). The in this example
-     * provided components and initializers are enough for most use-cases.
-     */
-    void createParser(ScenarioConfig simconfig);
-
     void changeMap(OSMParser.Result result) throws InterruptedException;
-
-    OSMParser.Result parse(File file) throws Exception;
 }

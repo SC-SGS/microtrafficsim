@@ -265,7 +265,7 @@ public class OSMParser {
          * @return the created parser.
          * @see OSMParser#create(Config)
          */
-        public OSMParser createParser() {
+        public OSMParser build() {
             return OSMParser.create(this);
         }
     }

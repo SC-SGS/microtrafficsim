@@ -1,7 +1,8 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
+import microtrafficsim.core.convenience.DefaultParserConfig;
 import microtrafficsim.core.logic.StreetGraph;
-import microtrafficsim.core.mapviewer.MapViewer;
+import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -81,6 +82,7 @@ public class SimulationController implements GUIController {
     /* visualization and parsing */
     private final MapViewer      mapviewer;
     private final VehicleOverlay overlay;
+    private       OSMParser      parser;
     private       StreetGraph    streetgraph;
 
     /* simulation */
@@ -418,6 +420,8 @@ public class SimulationController implements GUIController {
             mapviewer.create(config);
         } catch (UnsupportedFeatureException e) { e.printStackTrace(); }
 
+        parser = DefaultParserConfig.get(config).build();
+
         /* create preferences */
         preferences.create();
         preferences.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -509,7 +513,7 @@ public class SimulationController implements GUIController {
 
         try {
             /* parse file and create tiled provider */
-            result = mapviewer.parse(file);
+            result = parser.parse(file);
         } catch (InterruptedException e) {
             logger.info("Parsing interrupted by user");
             result = null; // might be unnecessary here

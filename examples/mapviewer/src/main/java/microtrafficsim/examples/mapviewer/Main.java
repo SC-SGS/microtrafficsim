@@ -1,8 +1,10 @@
 package microtrafficsim.examples.mapviewer;
 
+import microtrafficsim.core.convenience.DefaultParserConfig;
 import microtrafficsim.core.map.style.MapStyleSheet;
-import microtrafficsim.core.mapviewer.MapViewer;
-import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
+import microtrafficsim.core.convenience.MapViewer;
+import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 
@@ -45,7 +47,8 @@ public class Main {
         // viewer.addOverlay(1, new TileGridOverlay(viewer.getTilingScheme()));
 
         /* parse the OSM file asynchronously and update the sources */
-        asyncParse(viewer, file);
+        OSMParser parser = DefaultParserConfig.get(STYLE).build();
+        asyncParse(viewer, parser, file);
 
         /* create and initialize the JFrame */
         JFrame frame = new JFrame("MicroTrafficSim - OSM MapViewer Example");
@@ -81,10 +84,10 @@ public class Main {
      * @param file   the file to be parsed
      *               layers are set to the parsed result
      */
-    private static void asyncParse(MapViewer viewer, File file) {
+    private static void asyncParse(MapViewer viewer, OSMParser parser, File file) {
         new Thread(() -> {
             try {
-                viewer.changeMap(viewer.parse(file));
+                viewer.changeMap(parser.parse(file));
             } catch (Exception e) {
                 e.printStackTrace();
                 Runtime.getRuntime().halt(1);
