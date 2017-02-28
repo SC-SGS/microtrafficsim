@@ -23,8 +23,6 @@ import java.util.*;
  */
 public class PrioritySkipList<E> implements SkipList<E> {
 
-    // todo wikipedia says, the runtime complexity could be repaired in cases of O(n)
-
     private         Skipnode<E>           head;
     private final   Random                random;
     protected final Comparator<? super E> comparator;

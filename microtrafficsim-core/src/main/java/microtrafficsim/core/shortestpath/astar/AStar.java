@@ -3,9 +3,6 @@ package microtrafficsim.core.shortestpath.astar;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
-import microtrafficsim.utils.collections.PriorityQueueSet;
-import microtrafficsim.utils.collections.skiplist.PrioritySkipListSet;
-import microtrafficsim.utils.collections.skiplist.SkipList;
 
 import java.util.HashMap;
 import java.util.PriorityQueue;
