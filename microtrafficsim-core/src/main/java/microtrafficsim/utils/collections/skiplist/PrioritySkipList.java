@@ -418,13 +418,19 @@ public class PrioritySkipList<E> implements SkipList<E> {
     private Skipnode<E> removeExistingNode(Skipnode<E> node) {
 
         removeTower(node, 0);
+        cleanupHead();
+        updateLinkLengths(node);
         size--;
 
         /* recalculate tower */
-        Skipnode<E> next = node.tower.getNext();
-        if (next != head) {
-            removeTower(next, 1);
-            createAndFillTower(next.tower.getPrev(), next, next.tower.getNext());
+        if (node.tower.getHeight() == head.tower.getHeight()) {
+            Skipnode<E> next = node.tower.getNext();
+            if (next != head) {
+                removeTower(next, 1);
+                cleanupHead();
+                updateLinkLengths(node);
+                createAndFillTower(next.tower.getPrev(), next, next.tower.getNext());
+            }
         }
 
         return node;
@@ -450,9 +456,6 @@ public class PrioritySkipList<E> implements SkipList<E> {
         if (bottomTowerLevel > 0)
             while (node.tower.getHeight() > 0)
                 node.tower.removeHighest();
-
-        cleanupHead();
-        updateLinkLengths(node);
     }
 
     /**
