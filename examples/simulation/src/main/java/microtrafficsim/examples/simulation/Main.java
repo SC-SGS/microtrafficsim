@@ -3,9 +3,10 @@ package microtrafficsim.examples.simulation;
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.convenience.DefaultParserConfig;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
-import microtrafficsim.core.mapviewer.MapViewer;
-import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
+import microtrafficsim.core.convenience.MapViewer;
+import microtrafficsim.core.convenience.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
@@ -72,6 +73,8 @@ public class Main {
             }
             mapviewer.addOverlay(0, overlay);
 
+            OSMParser parser = DefaultParserConfig.get(config).build();
+
             JFrame frame = setupFrameAndShow(mapviewer);
 
 
@@ -81,7 +84,7 @@ public class Main {
             Graph graph = null;
             try {
             /* parse file and create tiled provider */
-                OSMParser.Result result = mapviewer.parse(file);
+                OSMParser.Result result = parser.parse(file);
                 graph = result.streetgraph;
 
                 mapviewer.changeMap(result);

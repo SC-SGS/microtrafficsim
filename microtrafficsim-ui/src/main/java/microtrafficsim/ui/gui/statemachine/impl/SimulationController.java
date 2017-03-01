@@ -1,7 +1,8 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
+import microtrafficsim.core.convenience.DefaultParserConfig;
+import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.mapviewer.MapViewer;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -81,6 +82,7 @@ public class SimulationController implements GUIController {
     /* visualization and parsing */
     private final MapViewer      mapviewer;
     private final VehicleOverlay overlay;
+    private       OSMParser      parser;
     private       Graph          streetgraph;
 
     /* simulation */
@@ -418,6 +420,8 @@ public class SimulationController implements GUIController {
             mapviewer.create(config);
         } catch (UnsupportedFeatureException e) { e.printStackTrace(); }
 
+        parser = DefaultParserConfig.get(config).build();
+
         /* create preferences */
         preferences.create();
         preferences.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -473,15 +477,17 @@ public class SimulationController implements GUIController {
 
     private void exit() {
         int choice = JOptionPane.showConfirmDialog(frame,
-                "Are you sure to exit?", "Really exit?",
+                "Do you really want to exit?", "Close Program",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
+
         if (choice == JOptionPane.YES_OPTION) {
             if (parsingThread != null)
                 parsingThread.interrupt();
             if (scenarioBuildThread != null)
                 scenarioBuildThread.interrupt();
-            mapviewer.stop();
+            mapviewer.destroy();
+            frame.dispose();
             System.exit(0);
         }
     }
@@ -507,7 +513,7 @@ public class SimulationController implements GUIController {
 
         try {
             /* parse file and create tiled provider */
-            result = mapviewer.parse(file);
+            result = parser.parse(file);
         } catch (InterruptedException e) {
             logger.info("Parsing interrupted by user");
             result = null; // might be unnecessary here

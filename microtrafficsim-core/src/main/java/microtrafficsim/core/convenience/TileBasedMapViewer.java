@@ -1,4 +1,4 @@
-package microtrafficsim.core.mapviewer.impl;
+package microtrafficsim.core.convenience;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.map.layers.LayerDefinition;
@@ -8,8 +8,7 @@ import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TilingScheme;
-import microtrafficsim.core.mapviewer.BasicMapViewer;
-import microtrafficsim.core.mapviewer.utils.Utils;
+import microtrafficsim.core.convenience.utils.Utils;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.vis.AbstractVisualization;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
@@ -159,9 +158,6 @@ public class TileBasedMapViewer extends BasicMapViewer {
 
         /* set an exception handler, catching all unhandled exceptions on the render thread (for debugging purposes) */
         visualization.getRenderContext().setUncaughtExceptionHandler(new Utils.DebugExceptionHandler());
-
-        /* add an overlay (the TileGridOverlay is used to display tile borders, so mainly for debugging) */
-        // vis.putOverlay(0, new TileGridOverlay(provider.getTilingScheme()));
     }
 
     /**

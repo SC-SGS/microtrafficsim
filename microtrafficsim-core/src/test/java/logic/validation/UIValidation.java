@@ -3,10 +3,11 @@ package logic.validation;
 import com.jogamp.newt.event.KeyEvent;
 import logic.validation.scenarios.TCrossroadScenario;
 import microtrafficsim.build.BuildSetup;
+import microtrafficsim.core.convenience.DefaultParserConfig;
+import microtrafficsim.core.convenience.MapViewer;
+import microtrafficsim.core.convenience.TileBasedMapViewer;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.mapviewer.MapViewer;
-import microtrafficsim.core.mapviewer.impl.TileBasedMapViewer;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
@@ -75,6 +76,7 @@ public class UIValidation {
 
 
         SwingUtilities.invokeLater(() -> {
+            OSMParser parser = DefaultParserConfig.get(config).build();
 
             /* visualization */
             MapViewer mapviewer    = new TileBasedMapViewer(config.visualization.style);
@@ -122,7 +124,7 @@ public class UIValidation {
             Graph graph = null;
             try {
                 /* parse file and create tiled provider */
-                OSMParser.Result result = mapviewer.parse(file);
+                OSMParser.Result result = parser.parse(file);
                 graph = result.streetgraph;
 
                 mapviewer.changeMap(result);
