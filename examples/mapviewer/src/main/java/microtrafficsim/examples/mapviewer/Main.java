@@ -1,9 +1,10 @@
 package microtrafficsim.examples.mapviewer;
 
+import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
@@ -39,7 +40,7 @@ public class Main {
      * @param file the file to parse
      * @throws UnsupportedFeatureException if not all required OpenGL features are available
      */
-    private static void show(File file) throws UnsupportedFeatureException {
+    private static void run(File file) throws UnsupportedFeatureException {
         TileBasedMapViewer viewer = new TileBasedMapViewer(STYLE);
         viewer.create();
 
@@ -48,7 +49,8 @@ public class Main {
 
         /* parse the OSM file asynchronously and update the sources */
         OSMParser parser = DefaultParserConfig.get(STYLE).build();
-        asyncParse(viewer, parser, file);
+        if (file != null)
+            asyncParse(viewer, parser, file);
 
         /* create and initialize the JFrame */
         JFrame frame = new JFrame("MicroTrafficSim - OSM MapViewer Example");
@@ -68,6 +70,15 @@ public class Main {
                 viewer.destroy();
                 frame.dispose();
                 System.exit(0);
+            }
+        });
+
+        JFileChooser fc = new JFileChooser();
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_E, (e) -> {
+            int status = fc.showOpenDialog(frame);
+            if (status == JFileChooser.APPROVE_OPTION) {
+                File f = fc.getSelectedFile();
+                asyncParse(viewer, parser, f);
             }
         });
 
@@ -102,7 +113,7 @@ public class Main {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        File file;
+        File file = null;
 
         if (args.length == 1) {
             switch (args[0]) {
@@ -114,12 +125,10 @@ public class Main {
             default:
                 file = new File(args[0]);
             }
-        } else {
-            file = new File("map.processing");
         }
 
         try {
-            show(file);
+            run(file);
         } catch (UnsupportedFeatureException e) {
             System.out.println("It seems that your PC does not meet the requirements for this software.");
             System.out.println("Please make sure that your graphics driver is up to date.");
@@ -139,7 +148,7 @@ public class Main {
         System.out.println("MicroTrafficSim - OSM Main Example.");
         System.out.println("");
         System.out.println("Usage:");
-        System.out.println("  mapviewer                Run this example with the default map-file");
+        System.out.println("  mapviewer                Run this example without any map-file");
         System.out.println("  mapviewer <file>         Run this example with the specified map-file");
         System.out.println("  mapviewer --help | -h    Show this help message.");
         System.out.println("");
