@@ -97,7 +97,8 @@ public interface Simulation {
 
     /**
      * <p>
-     * This method does one simulation step if the simulation is prepared.
+     * This method does one simulation step. The simulation has to be prepared for this. This method does not check
+     * this condition.
      *
      * <p>
      * Calls {@link #willRunOneStep()} before a step and {@link #didRunOneStep()} after it.

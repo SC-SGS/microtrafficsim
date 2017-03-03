@@ -144,7 +144,7 @@ public class VehicleSimulation implements Simulation {
                     doRunOneStep();
                 }
             };
-            timer.schedule(timerTask, 0, 1000 / scenario.getConfig().speedup);
+            timer.schedule(timerTask, 0, Math.max(1, 1000 / scenario.getConfig().speedup));
             paused = false;
         }
     }

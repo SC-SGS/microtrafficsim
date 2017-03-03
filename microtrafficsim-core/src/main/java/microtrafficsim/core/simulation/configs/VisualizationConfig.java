@@ -2,7 +2,6 @@ package microtrafficsim.core.simulation.configs;
 
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
-import microtrafficsim.utils.Resettable;
 
 /**
  * This class isolates the visualization configs from the other config
@@ -10,22 +9,21 @@ import microtrafficsim.utils.Resettable;
  *
  * @author Dominic Parga Cacheiro
  */
-public final class VisualizationConfig implements Resettable {
+public final class VisualizationConfig {
 
     public StyleSheet style;
 
     /**
-     * Just calls {@link #reset()}.
+     * Just calls {@link #setup()}.
      */
     public VisualizationConfig() {
-        reset();
+        setup();
     }
 
     /**
      * Resets the parameter of this config file.
      */
-    @Override
-    public void reset() {
+    public void setup() {
         style = new DarkStyleSheet();
     }
 

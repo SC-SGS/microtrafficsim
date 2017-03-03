@@ -39,7 +39,6 @@ public class TestNodeCrossingIndices {
             /* setup config */
             ScenarioConfig config = new ScenarioConfig();
             AbstractPlusCrossroadScenario.setupConfig(config);
-            config.speedup = 100;
             config.crossingLogic.drivingOnTheRight = priorityRun == 0; // first right-before-left
 
             /* setup graph */
