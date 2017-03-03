@@ -12,7 +12,7 @@ The implementation of polygon triangulation for a more complex visualization has
 
 
 ## Demonstration and Examples
-Demonstrations and examples can be executed using `gradle`. All OpenStreetMap (OSM) files need to be in the OSM XML format, as, for example, provided by the [OpenStreetMap web interface](https://www.openstreetmap.org). A (somewhat) stable demonstration can be executed from the `master`-branch (see Main UI).
+Demonstrations and examples can be executed using `gradle`. All OpenStreetMap (OSM) files need to be in the OSM XML format, as, for example, provided by the [OpenStreetMap web interface](https://www.openstreetmap.org). If your file is too large for OSM, you can use our python-script to download it (`osm_get_xml.py`). A (somewhat) stable demonstration can be executed from the `master`-branch (see Main UI).
 
 #### Main UI
 The main UI provides an overview of the simulation. The scenario is currently fixed (random routes), however various simulation parameters, as well as the number of vehicles and the used map, can be adjusted
