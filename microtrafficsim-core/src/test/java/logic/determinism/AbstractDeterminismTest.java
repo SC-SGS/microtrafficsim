@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 
+import java.util.Iterator;
 import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
@@ -96,11 +97,24 @@ public abstract class AbstractDeterminismTest {
     @Test
     public void testDeterminism() throws Exception {
 
+        /* setup */
+        int checks = 10;
+        int maxStep = 1000;
+        Iterator<Integer> steps = MathUtils.createSigmoidSequence(1, maxStep, checks - 2);
+
         // todo
         rememberStart();
+        int currentCheck = 1;
+        int lastStep     = 0;
+        while (steps.hasNext()) {
 
-        simulate(10);
-        compareWithStart();
+            int currentStep = steps.next();
+            logger.info("Check #" + currentCheck++ + " after " + currentStep + " steps.");
+            simulate(currentStep - lastStep);
+            lastStep = currentStep;
+
+            compareWithStart();
+        }
     }
 
     /*
