@@ -30,7 +30,7 @@ public class RandomScenarioDeterminismTest extends AbstractDeterminismTest {
         /* setup graph */
         Graph graph;
         try {
-            File file = new PackagedResource(RandomScenarioDeterminismTest.class, "map.osm").asTemporaryFile();
+            File file = new PackagedResource(RandomScenarioDeterminismTest.class, "Backnang.osm").asTemporaryFile();
             OSMParser parser = DefaultParserConfig.get(config).build();
             graph = parser.parse(file).streetgraph;
         } catch (Exception e) {
