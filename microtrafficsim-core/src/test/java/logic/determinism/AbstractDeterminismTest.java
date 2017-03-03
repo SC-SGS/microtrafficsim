@@ -97,11 +97,10 @@ public abstract class AbstractDeterminismTest {
     public void testDeterminism() throws Exception {
 
         // todo
-//        rememberStart();
-//
-//        simulate(1000);
-//        compareWithStart();
+        rememberStart();
 
+        simulate(10);
+        compareWithStart();
     }
 
     /*
@@ -115,8 +114,8 @@ public abstract class AbstractDeterminismTest {
         /* build setup: logging */
         BuildSetup.TRACE_ENABLED = false;
         BuildSetup.DEBUG_ENABLED = false;
-        BuildSetup.INFO_ENABLED  = false;
-        BuildSetup.WARN_ENABLED  = false;
-        BuildSetup.ERROR_ENABLED = false;
+        BuildSetup.INFO_ENABLED  = true;
+        BuildSetup.WARN_ENABLED  = true;
+        BuildSetup.ERROR_ENABLED = true;
     }
 }

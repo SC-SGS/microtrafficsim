@@ -2,6 +2,8 @@ package logic.determinism;
 
 import microtrafficsim.core.convenience.DefaultParserConfig;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
@@ -28,8 +30,9 @@ public class RandomScenarioDeterminismTest extends AbstractDeterminismTest {
         /* setup graph */
         Graph graph;
         try {
-            File file = new PackagedResource(RandomScenarioDeterminismTest.class, "Stuttgart.osm").asTemporaryFile();
-            graph = DefaultParserConfig.get(config).build().parse(file).streetgraph;
+            File file = new PackagedResource(RandomScenarioDeterminismTest.class, "map.osm").asTemporaryFile();
+            OSMParser parser = DefaultParserConfig.get(config).build();
+            graph = parser.parse(file).streetgraph;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -38,6 +41,15 @@ public class RandomScenarioDeterminismTest extends AbstractDeterminismTest {
         logger.debug("\n" + graph);
 
 
-        return new RandomRouteScenario(config.seed, config, graph);
+        /* setup scenario */
+        Scenario scenario = new RandomRouteScenario(config.seed, config, graph);
+        VehicleScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(config.seed);
+        try {
+            scenarioBuilder.prepare(scenario);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return scenario;
     }
 }
