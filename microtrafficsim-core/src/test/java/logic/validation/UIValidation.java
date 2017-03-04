@@ -2,7 +2,6 @@ package logic.validation;
 
 import com.jogamp.newt.event.KeyEvent;
 import logic.validation.scenarios.TCrossroadScenario;
-import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.convenience.DefaultParserConfig;
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
@@ -17,6 +16,7 @@ import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
+import microtrafficsim.utils.logging.LoggingLevel;
 import microtrafficsim.utils.resources.PackagedResource;
 import org.slf4j.Logger;
 
@@ -51,12 +51,7 @@ public class UIValidation {
             return scenario;
         };
 
-        /* build setup: logging */
-        BuildSetup.TRACE_ENABLED = false;
-        BuildSetup.DEBUG_ENABLED = true;
-        BuildSetup.INFO_ENABLED  = true;
-        BuildSetup.WARN_ENABLED  = true;
-        BuildSetup.ERROR_ENABLED = true;
+        LoggingLevel.setEnabledGlobally(false, true, true, true, true);
 
 
 

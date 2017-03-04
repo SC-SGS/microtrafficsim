@@ -1,24 +1,33 @@
 package microtrafficsim.utils.logging;
 
-import microtrafficsim.build.BuildSetup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
 /**
  * <p>
- * This class uses a logger of the {@link LoggerFactory} for its implementation, but serves public static
- * attributes for deciding whether the method should log or not. These attributes are considered in calculating
- * whether logging for a certain marker is allowed or not.
+ * This class uses a {@link Logger logger} of the {@link LoggerFactory} for its implementation, but serves attributes
+ * for deciding whether the method should log or not, both locally and statically. <br>
+ * {@code level is enabled <=> level is statically enabled and locally enabled}
  *
  * <p>
- * Per default, all attributes are true.
+ * Possible attributes: trace, debug, info, warn, error
+ *
+ * <p>
+ * Per default, the logger level is set to trace, all local attributes are true and all static attributes above debug
+ * (info, warn and error) are true. This means, per default, this logger logs info, warn and error messages.
  *
  * @author Dominic Parga Cacheiro
  */
-public class EasyMarkableLogger implements Logger{
+public class EasyMarkableLogger implements Logger {
 
-    private Logger logger;
+    public Logger logger;
+    public final LoggingLevel TRACE = LoggingLevel.createLevel(LoggingLevel.Type.TRACE);
+    public final LoggingLevel DEBUG = LoggingLevel.createLevel(LoggingLevel.Type.DEBUG);
+    public final LoggingLevel INFO = LoggingLevel.createLevel(LoggingLevel.Type.INFO);
+    public final LoggingLevel WARN = LoggingLevel.createLevel(LoggingLevel.Type.WARN);
+    public final LoggingLevel ERROR = LoggingLevel.createLevel(LoggingLevel.Type.ERROR);
+
 
     /**
      * Default constructor
@@ -38,6 +47,10 @@ public class EasyMarkableLogger implements Logger{
         logger = LoggerFactory.getLogger(clazz);
     }
 
+    public static void setEnabledGlobally(boolean trace, boolean debug, boolean info, boolean warn, boolean error) {
+        LoggingLevel.setEnabledGlobally(trace, debug, info, warn, error);
+    }
+
     /*
     |============|
     | (i) Logger |
@@ -50,351 +63,351 @@ public class EasyMarkableLogger implements Logger{
 
     @Override
     public boolean isTraceEnabled() {
-        return BuildSetup.TRACE_ENABLED && logger.isTraceEnabled();
+        return TRACE.isEnabled() && logger.isTraceEnabled();
     }
 
     @Override
     public void trace(String msg) {
-        if (BuildSetup.TRACE_ENABLED)
+        if (isTraceEnabled())
             logger.trace(msg);
     }
 
     @Override
     public void trace(String format, Object arg) {
-        if (BuildSetup.TRACE_ENABLED)
+        if (isTraceEnabled())
             logger.trace(format, arg);
     }
 
     @Override
     public void trace(String format, Object arg1, Object arg2) {
-        if (BuildSetup.TRACE_ENABLED)
+        if (isTraceEnabled())
             logger.trace(format, arg1, arg2);
     }
 
     @Override
     public void trace(String format, Object... arguments) {
-        if (BuildSetup.TRACE_ENABLED)
+        if (isTraceEnabled())
             logger.trace(format, arguments);
     }
 
     @Override
     public void trace(String msg, Throwable t) {
-        if (BuildSetup.TRACE_ENABLED)
+        if (isTraceEnabled())
             logger.trace(msg, t);
     }
 
     @Override
     public boolean isTraceEnabled(Marker marker) {
-        return BuildSetup.TRACE_ENABLED && logger.isTraceEnabled(marker);
+        return TRACE.isEnabled() && logger.isTraceEnabled(marker);
     }
 
     @Override
     public void trace(Marker marker, String msg) {
-        if (BuildSetup.TRACE_ENABLED)
+        if (isTraceEnabled())
             logger.trace(marker, msg);
     }
 
     @Override
     public void trace(Marker marker, String format, Object arg) {
-        if (BuildSetup.TRACE_ENABLED)
+        if (isTraceEnabled())
             logger.trace(marker, format, arg);
     }
 
     @Override
     public void trace(Marker marker, String format, Object arg1, Object arg2) {
-        if (BuildSetup.TRACE_ENABLED)
+        if (isTraceEnabled())
             logger.trace(marker, format, arg1, arg2);
     }
 
     @Override
     public void trace(Marker marker, String format, Object... argArray) {
-        if (BuildSetup.TRACE_ENABLED)
+        if (isTraceEnabled())
             logger.trace(marker, format, argArray);
     }
 
     @Override
     public void trace(Marker marker, String msg, Throwable t) {
-        if (BuildSetup.TRACE_ENABLED)
+        if (isTraceEnabled())
             logger.trace(marker, msg, t);
     }
 
     @Override
     public boolean isDebugEnabled() {
-        return BuildSetup.DEBUG_ENABLED && logger.isDebugEnabled();
+        return DEBUG.isEnabled() && logger.isDebugEnabled();
     }
 
     @Override
     public void debug(String msg) {
-        if (BuildSetup.DEBUG_ENABLED)
+        if (isDebugEnabled())
             logger.debug(msg);
     }
 
     @Override
     public void debug(String format, Object arg) {
-        if (BuildSetup.DEBUG_ENABLED)
+        if (isDebugEnabled())
             logger.debug(format, arg);
     }
 
     @Override
     public void debug(String format, Object arg1, Object arg2) {
-        if (BuildSetup.DEBUG_ENABLED)
+        if (isDebugEnabled())
             logger.debug(format, arg1, arg2);
     }
 
     @Override
     public void debug(String format, Object... arguments) {
-        if (BuildSetup.DEBUG_ENABLED)
+        if (isDebugEnabled())
             logger.debug(format, arguments);
     }
 
     @Override
     public void debug(String msg, Throwable t) {
-        if (BuildSetup.DEBUG_ENABLED)
+        if (isDebugEnabled())
             logger.debug(msg, t);
     }
 
     @Override
     public boolean isDebugEnabled(Marker marker) {
-        return BuildSetup.DEBUG_ENABLED && logger.isDebugEnabled(marker);
+        return DEBUG.isEnabled() && logger.isDebugEnabled(marker);
     }
 
     @Override
     public void debug(Marker marker, String msg) {
-        if (BuildSetup.DEBUG_ENABLED)
+        if (isDebugEnabled())
             logger.debug(marker, msg);
     }
 
     @Override
     public void debug(Marker marker, String format, Object arg) {
-        if (BuildSetup.DEBUG_ENABLED)
+        if (isDebugEnabled())
             logger.debug(marker, format, arg);
     }
 
     @Override
     public void debug(Marker marker, String format, Object arg1, Object arg2) {
-        if (BuildSetup.DEBUG_ENABLED)
+        if (isDebugEnabled())
             logger.debug(marker, format, arg1, arg2);
     }
 
     @Override
     public void debug(Marker marker, String format, Object... arguments) {
-        if (BuildSetup.DEBUG_ENABLED)
+        if (isDebugEnabled())
             logger.debug(marker, format, arguments);
     }
 
     @Override
     public void debug(Marker marker, String msg, Throwable t) {
-        if (BuildSetup.DEBUG_ENABLED)
+        if (isDebugEnabled())
             logger.debug(marker, msg, t);
     }
 
     @Override
     public boolean isInfoEnabled() {
-        return BuildSetup.INFO_ENABLED && logger.isInfoEnabled();
+        return INFO.isEnabled() && logger.isInfoEnabled();
     }
 
     @Override
     public void info(String msg) {
-        if (BuildSetup.INFO_ENABLED)
+        if (isInfoEnabled())
             logger.info(msg);
     }
 
     @Override
     public void info(String format, Object arg) {
-        if (BuildSetup.INFO_ENABLED)
+        if (isInfoEnabled())
             logger.info(format, arg);
     }
 
     @Override
     public void info(String format, Object arg1, Object arg2) {
-        if (BuildSetup.INFO_ENABLED)
+        if (isInfoEnabled())
             logger.info(format, arg1, arg2);
     }
 
     @Override
     public void info(String format, Object... arguments) {
-        if (BuildSetup.INFO_ENABLED)
+        if (isInfoEnabled())
             logger.info(format, arguments);
     }
 
     @Override
     public void info(String msg, Throwable t) {
-        if (BuildSetup.INFO_ENABLED)
+        if (isInfoEnabled())
             logger.info(msg, t);
     }
 
     @Override
     public boolean isInfoEnabled(Marker marker) {
-        return BuildSetup.INFO_ENABLED && logger.isInfoEnabled(marker);
+        return INFO.isEnabled() && logger.isInfoEnabled(marker);
     }
 
     @Override
     public void info(Marker marker, String msg) {
-        if (BuildSetup.INFO_ENABLED)
+        if (isInfoEnabled())
             logger.info(marker, msg);
     }
 
     @Override
     public void info(Marker marker, String format, Object arg) {
-        if (BuildSetup.INFO_ENABLED)
+        if (isInfoEnabled())
             logger.info(marker, format, arg);
     }
 
     @Override
     public void info(Marker marker, String format, Object arg1, Object arg2) {
-        if (BuildSetup.INFO_ENABLED)
+        if (isInfoEnabled())
             logger.info(marker, format, arg1, arg2);
     }
 
     @Override
     public void info(Marker marker, String format, Object... arguments) {
-        if (BuildSetup.INFO_ENABLED)
+        if (isInfoEnabled())
             logger.info(marker, format, arguments);
     }
 
     @Override
     public void info(Marker marker, String msg, Throwable t) {
-        if (BuildSetup.INFO_ENABLED)
+        if (isInfoEnabled())
             logger.info(marker, msg, t);
     }
 
     @Override
     public boolean isWarnEnabled() {
-        return BuildSetup.WARN_ENABLED && logger.isWarnEnabled();
+        return WARN.isEnabled() && logger.isWarnEnabled();
     }
 
     @Override
     public void warn(String msg) {
-        if (BuildSetup.WARN_ENABLED)
+        if (isWarnEnabled())
             logger.warn(msg);
     }
 
     @Override
     public void warn(String format, Object arg) {
-        if (BuildSetup.WARN_ENABLED)
+        if (isWarnEnabled())
             logger.warn(format, arg);
     }
 
     @Override
     public void warn(String format, Object... arguments) {
-        if (BuildSetup.WARN_ENABLED)
+        if (isWarnEnabled())
             logger.warn(format, arguments);
     }
 
     @Override
     public void warn(String format, Object arg1, Object arg2) {
-        if (BuildSetup.WARN_ENABLED)
+        if (isWarnEnabled())
             logger.warn(format, arg1, arg2);
     }
 
     @Override
     public void warn(String msg, Throwable t) {
-        if (BuildSetup.WARN_ENABLED)
+        if (isWarnEnabled())
             logger.warn(msg, t);
     }
 
     @Override
     public boolean isWarnEnabled(Marker marker) {
-        return BuildSetup.WARN_ENABLED && logger.isWarnEnabled(marker);
+        return WARN.isEnabled() && logger.isWarnEnabled(marker);
     }
 
     @Override
     public void warn(Marker marker, String msg) {
-        if (BuildSetup.WARN_ENABLED)
+        if (isWarnEnabled())
             logger.warn(marker, msg);
     }
 
     @Override
     public void warn(Marker marker, String format, Object arg) {
-        if (BuildSetup.WARN_ENABLED)
+        if (isWarnEnabled())
             logger.warn(marker, format, arg);
     }
 
     @Override
     public void warn(Marker marker, String format, Object arg1, Object arg2) {
-        if (BuildSetup.WARN_ENABLED)
+        if (isWarnEnabled())
             logger.warn(marker, format, arg1, arg2);
     }
 
     @Override
     public void warn(Marker marker, String format, Object... arguments) {
-        if (BuildSetup.WARN_ENABLED)
+        if (isWarnEnabled())
             logger.warn(marker, format, arguments);
     }
 
     @Override
     public void warn(Marker marker, String msg, Throwable t) {
-        if (BuildSetup.WARN_ENABLED)
+        if (isWarnEnabled())
             logger.warn(marker, msg, t);
     }
 
     @Override
     public boolean isErrorEnabled() {
-        return BuildSetup.ERROR_ENABLED && logger.isErrorEnabled();
+        return ERROR.isEnabled() && logger.isErrorEnabled();
     }
 
     @Override
     public void error(String msg) {
-        if (BuildSetup.ERROR_ENABLED)
+        if (isErrorEnabled())
             logger.error(msg);
     }
 
     @Override
     public void error(String format, Object arg) {
-        if (BuildSetup.ERROR_ENABLED)
+        if (isErrorEnabled())
             logger.error(format, arg);
     }
 
     @Override
     public void error(String format, Object arg1, Object arg2) {
-        if (BuildSetup.ERROR_ENABLED)
+        if (isErrorEnabled())
             logger.error(format, arg1, arg2);
     }
 
     @Override
     public void error(String format, Object... arguments) {
-        if (BuildSetup.ERROR_ENABLED)
+        if (isErrorEnabled())
             logger.error(format, arguments);
     }
 
     @Override
     public void error(String msg, Throwable t) {
-        if (BuildSetup.ERROR_ENABLED)
+        if (isErrorEnabled())
             logger.error(msg, t);
     }
 
     @Override
     public boolean isErrorEnabled(Marker marker) {
-        return BuildSetup.ERROR_ENABLED && logger.isErrorEnabled(marker);
+        return ERROR.isEnabled() && logger.isErrorEnabled(marker);
     }
 
     @Override
     public void error(Marker marker, String msg) {
-        if (BuildSetup.ERROR_ENABLED)
+        if (isErrorEnabled())
             logger.error(marker, msg);
     }
 
     @Override
     public void error(Marker marker, String format, Object arg) {
-        if (BuildSetup.ERROR_ENABLED)
+        if (isErrorEnabled())
             logger.error(marker, format, arg);
     }
 
     @Override
     public void error(Marker marker, String format, Object arg1, Object arg2) {
-        if (BuildSetup.ERROR_ENABLED)
+        if (isErrorEnabled())
             logger.error(marker, format, arg1, arg2);
     }
 
     @Override
     public void error(Marker marker, String format, Object... arguments) {
-        if (BuildSetup.ERROR_ENABLED)
+        if (isErrorEnabled())
             logger.error(marker, format, arguments);
     }
 
     @Override
     public void error(Marker marker, String msg, Throwable t) {
-        if (BuildSetup.ERROR_ENABLED)
+        if (isErrorEnabled())
             logger.error(marker, msg, t);
     }
 }

@@ -1,12 +1,11 @@
 package microtrafficsim.examples.simulation;
 
 import com.jogamp.newt.event.KeyEvent;
-import microtrafficsim.build.BuildSetup;
-import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
@@ -19,6 +18,7 @@ import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.logging.LoggingLevel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -52,11 +52,7 @@ public class Main {
         /* create configuration for scenarios */
         ScenarioConfig config = createConfig();
         /* build setup: logging */
-        BuildSetup.TRACE_ENABLED = false;
-        BuildSetup.DEBUG_ENABLED = false;
-        BuildSetup.INFO_ENABLED  = true;
-        BuildSetup.WARN_ENABLED  = true;
-        BuildSetup.ERROR_ENABLED = true;
+        LoggingLevel.setEnabledGlobally(false, false, true, true, true);
 
 
         SwingUtilities.invokeLater(() -> {

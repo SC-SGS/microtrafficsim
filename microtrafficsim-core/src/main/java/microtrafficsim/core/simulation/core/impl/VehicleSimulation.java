@@ -153,7 +153,7 @@ public class VehicleSimulation implements Simulation {
     public void willRunOneStep() {
         if (logger.isTraceEnabled()) {
 
-            logger.trace("########## ########## ########## ########## ##");
+            logger.trace("########## ###d####### ########## ########## ##");
 
             if (scenario.isPrepared()) {
                 logger.trace("NEW SIMULATION STEP");

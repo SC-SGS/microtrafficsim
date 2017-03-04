@@ -1,17 +1,16 @@
 package logic.determinism;
 
-import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.math.MathUtils;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
+import microtrafficsim.utils.logging.LoggingLevel;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
-import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -124,12 +123,6 @@ public abstract class AbstractDeterminismTest {
     */
     @BeforeClass
     public static void buildSetup() {
-
-        /* build setup: logging */
-        BuildSetup.TRACE_ENABLED = false;
-        BuildSetup.DEBUG_ENABLED = false;
-        BuildSetup.INFO_ENABLED  = true;
-        BuildSetup.WARN_ENABLED  = true;
-        BuildSetup.ERROR_ENABLED = true;
+        LoggingLevel.setEnabledGlobally(false, false, true, true, true);
     }
 }
