@@ -18,7 +18,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        LoggingLevel.setEnabledGlobally(false, false, true, true, true);
+        LoggingLevel.setEnabledGlobally(true, false, true, true, true);
 
         /* handle input arguments */
         final File file;

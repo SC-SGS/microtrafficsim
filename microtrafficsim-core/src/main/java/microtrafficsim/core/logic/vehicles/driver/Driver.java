@@ -118,6 +118,9 @@ public interface Driver extends Hulk {
     | dynamic information |
     |=====================|
     */
+    /**
+     * @return the number of steps this driver is already driving.
+     */
     int getTravellingTime();
 
     void incTravellingTime();

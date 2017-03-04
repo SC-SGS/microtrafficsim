@@ -37,9 +37,14 @@ public interface Simulation {
     Scenario getScenario();
 
     /**
+     * <p>
      * Sets the scenario being executed. The simulation should be paused for this call. The scenario is initialized
      * by updating all graph nodes, so the scenario has to be prepared for this. Furthermore, this simulation adds
      * the scenario as step listener.
+     *
+     * <p>
+     * If another scenario is already added, the old scenario is getting removed from this simulation and the given
+     * scenario is added.
      *
      * @param scenario This scenario is being executed
      */

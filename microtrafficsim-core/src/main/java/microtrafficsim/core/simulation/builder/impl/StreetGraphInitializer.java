@@ -1,7 +1,7 @@
 package microtrafficsim.core.simulation.builder.impl;
 
-import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.simulation.builder.MapInitializer;
 import microtrafficsim.utils.id.ConcurrentSeedGenerator;
