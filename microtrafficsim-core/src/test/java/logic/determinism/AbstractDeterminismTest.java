@@ -24,7 +24,7 @@ import static org.junit.Assert.assertEquals;
  * for determinism as well as resetting the old graph and re-preparing the old scenario.
  *
  * <p>
- * The only difference between above described tests is the number of simulation steps per simulation run. The
+ * The only difference between above mentioned tests is the number of simulation steps per simulation run. The
  * <b>parsing/creating-test</b> is executing the initial step and compares them once, the <b>refurbish-test</b>
  * executes multiple scenario steps and compares several states. The refurbish-test is described more detailed below.
  *
@@ -38,8 +38,8 @@ import static org.junit.Assert.assertEquals;
  * the test fails early. Concentration in the end is a compromise: The longer the simulation executes, the higher is
  * the test precision, but more vehicles are disappeared as well. <br>
  * A state check compares for a certain simulation step:<br>
- * &bull for every vehicle: {@code (vehicle's id, vehicle's street, vehicle's cell position)} is identical.<br>
- * &bull correct number of vehicles.
+ * &bull for every vehicle: {@code (vehicle's id, vehicle's street, vehicle's cell position)} is identical<br>
+ * &bull correct number of vehicles
  *
  * @author Dominic Parga Cacheiro
  */

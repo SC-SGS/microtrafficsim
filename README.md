@@ -34,19 +34,28 @@ The map-viewer example can be executed using
 ```
 
 
-## Supported traffic attributes
+## Supported features
+#### Traffic attributes
 * different vehicle types (inclusive different max velocities, acceleration
   functions etc.)
 * static routing: fastest vs. shortest route
 * streets' max velocity
 * single laned streets
+* driver behaviour (e.g. in acceleration) limited by the vehicles "physical" behaviour
 
+#### Crossing logic
 All following attributes can be en-/disabled.
-
-* crossing logic: street priorities
-* crossing logic: right-before-left XOR left-before-right XOR random
+* street priorities
+* right-before-left XOR left-before-right XOR random
+* more than one vehicle can cross a crossroad if the are not intersecting eachother's ways
 * "friendly-standing-in-jam": If a vehicle has to wait at a crossroad, it
   relinquishes its right of way for an other vehicle that has not to wait.
+
+#### Main-ui features
+* parse any map file in OSM MAP format
+* interrupt parsing or route calculations without exiting the main-ui
+* different style sheets can be used (the preferred style sheet has to be chosen in code)
+* different vehicle colors depending on the vehicle's attributes (e.g. anger of its driver)
 
 
 ## Please Note
