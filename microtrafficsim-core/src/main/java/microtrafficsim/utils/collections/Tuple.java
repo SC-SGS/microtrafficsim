@@ -24,13 +24,14 @@ public class Tuple<U, V> {
 
     @Override
     public boolean equals(Object obj) {
+
         if (obj == this)
             return true;
 
-        if (!(obj instanceof Triple))
+        if (!(obj instanceof Tuple))
             return false;
 
-        Triple<?, ?, ?> other = (Triple<?, ?, ?>) obj;
+        Tuple<?, ?> other = (Tuple<?, ?>) obj;
         return obj0.equals(other.obj0) && obj1.equals(other.obj1);
     }
 }

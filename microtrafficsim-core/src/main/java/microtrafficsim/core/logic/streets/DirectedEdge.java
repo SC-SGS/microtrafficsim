@@ -80,6 +80,23 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity, Resett
                 .getHash();
     }
 
+    /**
+     * In addition to basic equality-checks (e.g. same instance), this method checks equality using the hashcode.
+     */
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj == this)
+            return true;
+
+        if (!(obj instanceof DirectedEdge))
+            return false;
+
+        DirectedEdge other = (DirectedEdge) obj;
+
+        return hashCode() == other.hashCode();
+    }
+
     public Collection<Lane> getLanes() {
         return Arrays.asList(lanes);
     }

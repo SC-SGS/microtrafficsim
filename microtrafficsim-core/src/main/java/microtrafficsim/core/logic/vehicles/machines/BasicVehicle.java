@@ -9,6 +9,7 @@ import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
 import microtrafficsim.math.MathUtils;
+import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.LinkedList;
@@ -97,6 +98,11 @@ public abstract class BasicVehicle implements Vehicle {
         strBuilder.decLevel();
         strBuilder.appendln("<\\vehicle>");
         return strBuilder.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return new FNVHashBuilder().add(id).getHash();
     }
 
     public void setDriver(Driver driver) {

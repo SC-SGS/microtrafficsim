@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.interesting.emotions.Hulk;
+import microtrafficsim.utils.Resettable;
 
 /**
  * <p>
@@ -24,7 +25,7 @@ import microtrafficsim.interesting.emotions.Hulk;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface Driver extends Hulk {
+public interface Driver extends Hulk, Resettable {
 
     /*
     |==========|

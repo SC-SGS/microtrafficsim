@@ -15,11 +15,41 @@ import org.slf4j.Logger;
 import java.io.File;
 
 /**
+ * <p>
+ * Tests {@link RandomRouteScenario}. For detailed information about the test itself, see superclass.
+ *
+ * <p>
+ * &bull {@code Number of runs = } {@value simulationRuns}<br>
+ * &bull {@code Number of steps = } {@value maxStep}<br>
+ * &bull {@code Number of checks = } {@value checks}
+ *
  * @author Dominic Parga Cacheiro
  */
 public class RandomScenarioDeterminismTest extends AbstractDeterminismTest {
 
     private static final Logger logger = new EasyMarkableLogger(RandomScenarioDeterminismTest.class);
+
+
+    /* testing parameters */
+    private static final int checks = 10;
+    private static final int maxStep = 3000;
+    private static final int simulationRuns = 3;
+
+
+    @Override
+    protected int getChecks() {
+        return checks;
+    }
+
+    @Override
+    protected int getMaxStep() {
+        return maxStep;
+    }
+
+    @Override
+    protected int getSimulationRuns() {
+        return simulationRuns;
+    }
 
     @Override
     protected ScenarioConfig createConfig() {
@@ -63,10 +93,14 @@ public class RandomScenarioDeterminismTest extends AbstractDeterminismTest {
 
     @Override
     protected Scenario createScenario(ScenarioConfig config, Graph graph) {
+        return new RandomRouteScenario(config.seed, config, graph);
+    }
 
-        /* setup scenario */
-        Scenario scenario = new RandomRouteScenario(config.seed, config, graph);
+    @Override
+    protected Scenario prepareScenario(ScenarioConfig config, Scenario scenario) {
+
         VehicleScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(config.seed);
+
         try {
             scenarioBuilder.prepare(scenario);
         } catch (InterruptedException e) {
