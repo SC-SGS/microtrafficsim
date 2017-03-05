@@ -61,10 +61,10 @@ public class RandomScenarioDeterminismTest extends AbstractDeterminismTest {
         config.seed              = new Random().getSeed();
         // crossing logic
         config.crossingLogic.drivingOnTheRight            = true;
-        config.crossingLogic.edgePriorityEnabled          = true;
-        config.crossingLogic.priorityToTheRightEnabled    = true;
+        config.crossingLogic.edgePriorityEnabled          = false;
+        config.crossingLogic.priorityToTheRightEnabled    = false;
         config.crossingLogic.friendlyStandingInJamEnabled = true;
-        config.crossingLogic.setOnlyOneVehicle(true);
+        config.crossingLogic.onlyOneVehicleEnabled        = false;
         // vehicles
         config.maxVehicleCount = 4000;
         // multithreading

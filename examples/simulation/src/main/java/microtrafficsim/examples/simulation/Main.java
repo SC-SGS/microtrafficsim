@@ -134,7 +134,7 @@ public class Main {
         config.crossingLogic.edgePriorityEnabled          = true;
         config.crossingLogic.priorityToTheRightEnabled    = true;
         config.crossingLogic.friendlyStandingInJamEnabled = true;
-        config.crossingLogic.setOnlyOneVehicle(false);
+        config.crossingLogic.onlyOneVehicleEnabled        = false;
         config.visualization.style                        = new DarkStyleSheet();
 
         return config;

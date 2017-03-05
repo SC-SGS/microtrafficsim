@@ -133,7 +133,7 @@ public class CrossingLogicPanel extends PreferencesPanel {
             selectedItem = combos[2];
 
         cbPriorityToThe.setSelectedItem(selectedItem);
-        cbOnlyOneVehicle.setSelected(config.crossingLogic.isOnlyOneVehicleEnabled());
+        cbOnlyOneVehicle.setSelected(config.crossingLogic.onlyOneVehicleEnabled);
         cbFriendlyStandingInJam.setSelected(config.crossingLogic.friendlyStandingInJamEnabled);
     }
 
@@ -142,7 +142,7 @@ public class CrossingLogicPanel extends PreferencesPanel {
         ScenarioConfig config = new ScenarioConfig();
 
         config.crossingLogic.edgePriorityEnabled = cbEdgePriority.isSelected();
-        config.crossingLogic.setOnlyOneVehicle(cbOnlyOneVehicle.isSelected());
+        config.crossingLogic.onlyOneVehicleEnabled = cbOnlyOneVehicle.isSelected();
         config.crossingLogic.friendlyStandingInJamEnabled = cbFriendlyStandingInJam.isSelected();
 
         switch (cbPriorityToThe.getSelectedIndex()) {
