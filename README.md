@@ -4,11 +4,11 @@ with OpenStreetMap data.
 ![Teaser: New York](teaser.png "Teaser: New York")
 
 ## News
-After a huge redesign of the simulations/scenarios and the vehicle logic, we want to implement contraction hierarchies for faster route calculations before we are going to make the simulation execution deterministic by guarantee. For now, the determinism should be (almost) given but it is not formally tested yet.
+Testing the simulation execution for determinism has finished. According to our test cases the simulation execution is deterministic.
 
-By finishing these (hopefully in the end of February 2017), we will start developing multilane logic. This will be used in a bachelor thesis for traffic jam cause research.
+Our next task is implementing a scenario handling the input from the polygon overlay, that allows an user to choose polygonial areas on a map with an ui dynamically). Finishing this, we will start developing multilane logic. This will be used in a bachelor thesis for traffic jam cause research.
 
-The implementation of polygon triangulation for a more complex visualization has been finished. In future, we want to use this for defining own scenarios by selecting polygonal start areas. In addition, buildings should be visualized as well (already done in subbranch).
+In parallel, we implement a serialization for our graphs, route calculations and scenarios. This feature allows us simulating scenarios with more than a few 1000 vehicles without the need to wait every time for finishing the route calculations. This is helpful for the bachelor thesis.
 
 
 ## Demonstration and Examples
