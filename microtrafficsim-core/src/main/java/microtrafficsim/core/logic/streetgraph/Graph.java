@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathGraph;
 import microtrafficsim.core.simulation.builder.MapInitializer;
 import microtrafficsim.utils.Resettable;
+import microtrafficsim.core.map.Bounds;
 
 import java.util.Set;
 
@@ -21,13 +22,7 @@ public interface Graph extends MapInitializer, Resettable, ShortestPathGraph {
      */
     void registerEdgeAndNodes(DirectedEdge edge);
 
-    float getMinLat();
-
-    float getMaxLat();
-
-    float getMinLon();
-
-    float getMaxLon();
+    Bounds getBounds();
 
     /*
     |=======================|

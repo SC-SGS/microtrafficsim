@@ -4,6 +4,7 @@ import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
@@ -63,7 +64,7 @@ public class TestShortestPathAlgorithms {
 
     @Before
     public void setup() {
-        graph = new StreetGraph(0, 0, 0, 0);
+        graph = new StreetGraph(new Bounds(0, 0, 0, 0));
         correctShortestPath = new Stack<>();
         shortestPath = new Stack<>();
     }

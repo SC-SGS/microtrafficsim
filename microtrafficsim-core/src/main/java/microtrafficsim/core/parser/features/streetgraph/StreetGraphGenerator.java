@@ -104,10 +104,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
 
         logger.info("generating StreetGraph");
         this.graph        = null;
-        Graph graph = new StreetGraph((float) dataset.bounds.minlat,
-                                            (float) dataset.bounds.maxlat,
-                                            (float) dataset.bounds.minlon,
-                                            (float) dataset.bounds.maxlon);
+        Graph graph = new StreetGraph(dataset.bounds);
 
         // create required nodes and edges
         for (WayEntity way : dataset.ways.values()) {

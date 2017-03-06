@@ -1,5 +1,6 @@
 package microtrafficsim.core.convenience;
 
+import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.vis.Overlay;
@@ -90,5 +91,5 @@ public interface MapViewer {
      */
     void createVisualizationPanel() throws UnsupportedFeatureException;
 
-    void changeMap(OSMParser.Result result) throws InterruptedException;
+    void setMap(SegmentFeatureProvider segment) throws InterruptedException;
 }

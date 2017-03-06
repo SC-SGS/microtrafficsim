@@ -14,10 +14,8 @@ import java.util.Set;
  * @author Maximilian Luz
  */
 public class TileRect {
-    public int          xmin, ymin, xmax, ymax;
-    public int          zoom;
-    private Set<TileId> allTiles;
-    private Set<TileId> all;
+    public int xmin, ymin, xmax, ymax;
+    public int zoom;
 
     /**
      * Constructs a new tile rectangle.

@@ -534,7 +534,7 @@ public class SimulationController implements GUIController {
                 streetgraph = result.streetgraph;
 
                 try {
-                    mapviewer.changeMap(result);
+                    mapviewer.setMap(result.segment);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

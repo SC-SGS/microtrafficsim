@@ -1,19 +1,28 @@
 package microtrafficsim.examples.mapviewer;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.style.MapStyleSheet;
+import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.serialization.KryoSerializer;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 
 /**
@@ -21,12 +30,18 @@ import java.io.File;
  *
  * @author Maximilian Luz
  */
-public class Main {
+public class MapViewerExample {
+    private static Logger logger = LoggerFactory.getLogger(MapViewerExample.class);
 
     /**
      * The used style sheet, defining style and content of the visualization.
      */
     private static final MapStyleSheet STYLE = new MonochromeStyleSheet();
+
+
+    private TileBasedMapViewer viewer;
+    private OSMParser parser;
+    private TileFeatureProvider segment = null;
 
 
     /**
@@ -40,17 +55,17 @@ public class Main {
      * @param file the file to parse
      * @throws UnsupportedFeatureException if not all required OpenGL features are available
      */
-    private static void run(File file) throws UnsupportedFeatureException {
-        TileBasedMapViewer viewer = new TileBasedMapViewer(STYLE);
+    private void run(File file) throws UnsupportedFeatureException {
+        viewer = new TileBasedMapViewer(STYLE);
         viewer.create();
 
         viewer.addOverlay(0, new ScenarioAreaOverlay(viewer.getProjection()));
         // viewer.addOverlay(1, new TileGridOverlay(viewer.getTilingScheme()));
 
         /* parse the OSM file asynchronously and update the sources */
-        OSMParser parser = DefaultParserConfig.get(STYLE).build();
+        parser = DefaultParserConfig.get(STYLE).build();
         if (file != null)
-            asyncParse(viewer, parser, file);
+            asyncParse(file);
 
         /* create and initialize the JFrame */
         JFrame frame = new JFrame("MicroTrafficSim - OSM MapViewer Example");
@@ -74,11 +89,37 @@ public class Main {
         });
 
         JFileChooser fc = new JFileChooser();
+        File dir = new File("/mnt/data/Development/workspaces/microtrafficsim/osmfiles/");      // TODO: REMOVE
+        fc.setCurrentDirectory(dir);
+
         viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_E, (e) -> {
             int status = fc.showOpenDialog(frame);
             if (status == JFileChooser.APPROVE_OPTION) {
                 File f = fc.getSelectedFile();
-                asyncParse(viewer, parser, f);
+
+                if (f.getName().endsWith(".ser")) {
+                    asyncLoad(f);
+                } else {
+                    asyncParse(f);
+                }
+            }
+        });
+
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_W, (e) -> {
+            int status = fc.showSaveDialog(frame);
+            if (status == JFileChooser.APPROVE_OPTION) {
+                File f = fc.getSelectedFile();
+
+                logger.info("writing binary file");
+                Kryo kryo = KryoSerializer.create();
+
+                try (Output out = new Output(new FileOutputStream(f))) {
+                    kryo.writeClassAndObject(out, segment);
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                    Runtime.getRuntime().halt(1);
+                }
+                logger.info("finished writing binary file");
             }
         });
 
@@ -95,12 +136,34 @@ public class Main {
      * @param file   the file to be parsed
      *               layers are set to the parsed result
      */
-    private static void asyncParse(MapViewer viewer, OSMParser parser, File file) {
+    private void asyncParse(File file) {
         new Thread(() -> {
             try {
-                viewer.changeMap(parser.parse(file));
+                logger.info("loading OSM file");
+                segment = new QuadTreeTiledMapSegment.Generator().generate(
+                        parser.parse(file).segment, viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel());
+                logger.info("finished reading OSM file");
+                viewer.setMap(segment);
+                logger.info("finished loading OSM file");
             } catch (Exception e) {
                 e.printStackTrace();
+                Runtime.getRuntime().halt(1);
+            }
+        }).start();
+    }
+
+    private void asyncLoad(File file) {
+        new Thread(() -> {
+            Kryo kryo = KryoSerializer.create();
+
+            try (Input in = new Input(new FileInputStream(file))) {
+                logger.info("loading binary file");
+                segment = (TileFeatureProvider) kryo.readClassAndObject(in);
+                logger.info("finished reading binary file");
+                viewer.setMap(segment);
+                logger.info("finished loading binary file");
+            } catch (Throwable t) {
+                t.printStackTrace();
                 Runtime.getRuntime().halt(1);
             }
         }).start();
@@ -128,7 +191,7 @@ public class Main {
         }
 
         try {
-            run(file);
+            new MapViewerExample().run(file);
         } catch (UnsupportedFeatureException e) {
             System.out.println("It seems that your PC does not meet the requirements for this software.");
             System.out.println("Please make sure that your graphics driver is up to date.");
@@ -145,7 +208,7 @@ public class Main {
      * Prints the usage of this example.
      */
     private static void printUsage() {
-        System.out.println("MicroTrafficSim - OSM Main Example.");
+        System.out.println("MicroTrafficSim - OSM MapViewerExample Example.");
         System.out.println("");
         System.out.println("Usage:");
         System.out.println("  mapviewer                Run this example without any map-file");

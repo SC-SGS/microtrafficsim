@@ -2,6 +2,7 @@ package microtrafficsim.core.logic.streetgraph;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.simulation.builder.MapInitializer;
 import microtrafficsim.core.simulation.builder.impl.StreetGraphInitializer;
 
@@ -19,7 +20,7 @@ import java.util.Set;
  */
 public class StreetGraph implements Graph {
 
-    private final float           minLat, maxLat, minLon, maxLon;
+    private Bounds                bounds;
     private HashSet<Node>         nodes;
     private HashSet<DirectedEdge> edges;
     private MapInitializer        initializer;
@@ -27,13 +28,10 @@ public class StreetGraph implements Graph {
     /**
      * Just a standard constructor.
      */
-    public StreetGraph(float minLat, float maxLat, float minLon, float maxLon) {
-        this.minLat = minLat;
-        this.maxLat = maxLat;
-        this.minLon = minLon;
-        this.maxLon = maxLon;
-        nodes       = new HashSet<>();
-        edges       = new HashSet<>();
+    public StreetGraph(Bounds bounds) {
+        this.bounds = bounds;
+        this.nodes  = new HashSet<>();
+        this.edges  = new HashSet<>();
 
         initializer = new StreetGraphInitializer();
     }
@@ -63,23 +61,8 @@ public class StreetGraph implements Graph {
     |===========|
     */
     @Override
-    public float getMinLat() {
-        return minLat;
-    }
-
-    @Override
-    public float getMaxLat() {
-        return maxLat;
-    }
-
-    @Override
-    public float getMinLon() {
-        return minLon;
-    }
-
-    @Override
-    public float getMaxLon() {
-        return maxLon;
+    public Bounds getBounds() {
+        return bounds;
     }
 
     @Override

@@ -11,7 +11,7 @@ import microtrafficsim.core.map.Coordinate;
  * @author Maximilian Luz
  */
 public class Street extends MultiLine {
-    public final float    layer;
+    public final double   layer;
     public final double   length;
     public final double[] distances;
     private StreetEntity  entity;
@@ -25,7 +25,7 @@ public class Street extends MultiLine {
      * @param length    the length of the street.
      * @param distances the distances of the single line segments.
      */
-    public Street(long id, Coordinate[] nodes, float layer, double length, double[] distances) {
+    public Street(long id, Coordinate[] nodes, double layer, double length, double[] distances) {
         super(id, nodes);
 
         this.entity    = null;

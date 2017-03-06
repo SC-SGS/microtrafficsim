@@ -127,7 +127,7 @@ public class UIValidation {
                 OSMParser.Result result = parser.parse(file);
                 graph = result.streetgraph;
 
-                mapviewer.changeMap(result);
+                mapviewer.setMap(result.segment);
                 frame.setTitle(oldTitle);
             } catch (Exception e) {
                 frame.setTitle(oldTitle);

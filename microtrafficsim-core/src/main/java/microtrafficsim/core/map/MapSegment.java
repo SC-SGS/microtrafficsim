@@ -12,7 +12,7 @@ public class MapSegment implements SegmentFeatureProvider {
 
     private Bounds bounds;
     private Map<String, Feature<?>> featureset;
-    private List<FeatureChangeListener> listeners;
+    private transient List<FeatureChangeListener> listeners;
 
     /**
      * Constructs a new {@code MapSegment} from the given feature set.
@@ -53,13 +53,13 @@ public class MapSegment implements SegmentFeatureProvider {
 
     @Override
     public Map<String, Feature<?>> getFeatures() {
-        return Collections.unmodifiableMap(featureset);
+        return featureset;
     }
 
 
     @Override
     public Set<String> getAvailableFeatures() {
-        return Collections.unmodifiableSet(featureset.keySet());
+        return featureset.keySet();
     }
 
     @Override
