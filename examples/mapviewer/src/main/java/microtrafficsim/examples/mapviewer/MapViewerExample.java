@@ -13,6 +13,7 @@ import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.serialization.KryoSerializer;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
+import microtrafficsim.utils.concurrency.interruptsafe.InterruptSafeFutureTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,9 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 
 /**
@@ -33,15 +37,19 @@ import java.io.FileOutputStream;
 public class MapViewerExample {
     private static Logger logger = LoggerFactory.getLogger(MapViewerExample.class);
 
+    // TODO: update docs
+
     /**
      * The used style sheet, defining style and content of the visualization.
      */
     private static final MapStyleSheet STYLE = new MonochromeStyleSheet();
 
 
+    private JFrame frame;
     private TileBasedMapViewer viewer;
     private OSMParser parser;
     private TileFeatureProvider segment = null;
+    private Future<Void> loading = null;
 
 
     /**
@@ -65,10 +73,10 @@ public class MapViewerExample {
         /* parse the OSM file asynchronously and update the sources */
         parser = DefaultParserConfig.get(STYLE).build();
         if (file != null)
-            asyncParse(file);
+            load(file);
 
         /* create and initialize the JFrame */
-        JFrame frame = new JFrame("MicroTrafficSim - OSM MapViewer Example");
+        frame = new JFrame("MicroTrafficSim - MapViewer Example");
         frame.setSize(viewer.getInitialWindowWidth(), viewer.getInitialWindowHeight());
         frame.add(viewer.getVisualizationPanel());
 
@@ -89,19 +97,11 @@ public class MapViewerExample {
         });
 
         JFileChooser fc = new JFileChooser();
-        File dir = new File("/mnt/data/Development/workspaces/microtrafficsim/osmfiles/");      // TODO: REMOVE
-        fc.setCurrentDirectory(dir);
 
         viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_E, (e) -> {
             int status = fc.showOpenDialog(frame);
             if (status == JFileChooser.APPROVE_OPTION) {
-                File f = fc.getSelectedFile();
-
-                if (f.getName().endsWith(".ser")) {
-                    asyncLoad(f);
-                } else {
-                    asyncParse(f);
-                }
+                load(fc.getSelectedFile());
             }
         });
 
@@ -110,16 +110,16 @@ public class MapViewerExample {
             if (status == JFileChooser.APPROVE_OPTION) {
                 File f = fc.getSelectedFile();
 
-                logger.info("writing binary file");
-                Kryo kryo = KryoSerializer.create();
+                if (f.exists()) {
+                    status = JOptionPane.showConfirmDialog(frame,
+                            "The selected file already exists. Continue?", "Save File", JOptionPane.OK_CANCEL_OPTION);
 
-                try (Output out = new Output(new FileOutputStream(f))) {
-                    kryo.writeClassAndObject(out, segment);
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                    Runtime.getRuntime().halt(1);
+                    if (status != JOptionPane.OK_OPTION) {
+                        return;
+                    }
                 }
-                logger.info("finished writing binary file");
+
+                store(f);
             }
         });
 
@@ -129,44 +129,74 @@ public class MapViewerExample {
         viewer.show();
     }
 
-    /**
-     * Asynchronously parses the given file with the given parser, updates
-     * the specified layers and resets the view of the visualizer.
-     *
-     * @param file   the file to be parsed
-     *               layers are set to the parsed result
-     */
-    private void asyncParse(File file) {
+    private void load(File file) {
+        if (this.loading != null) {
+            int status = JOptionPane.showConfirmDialog(frame,
+                    "Another file is already being loaded. Continue?", "Load File", JOptionPane.OK_CANCEL_OPTION);
+
+            if (status != JOptionPane.OK_OPTION) {
+                return;
+            }
+
+            loading.cancel(true);
+        }
+
+        InterruptSafeFutureTask<Void> loading = new InterruptSafeFutureTask<>(() -> {
+            boolean xml = file.getName().endsWith(".osm");
+            TileFeatureProvider tiled;
+
+            try {
+                if (xml) {
+                    tiled = new QuadTreeTiledMapSegment.Generator().generate(parser.parse(file).segment,
+                            viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel());
+                } else {
+                    try (Input in = new Input(new FileInputStream(file))) {
+                        tiled = (TileFeatureProvider) KryoSerializer.create().readClassAndObject(in);
+                    }
+                }
+            } catch (InterruptedException e) {
+                throw new CancellationException();
+            }
+
+            if (Thread.interrupted())
+                throw new CancellationException();
+
+            segment = tiled;
+            viewer.setMap(segment);
+
+            return null;
+        });
+
+        this.loading = loading;
+
         new Thread(() -> {
             try {
-                logger.info("loading OSM file");
-                segment = new QuadTreeTiledMapSegment.Generator().generate(
-                        parser.parse(file).segment, viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel());
-                logger.info("finished reading OSM file");
-                viewer.setMap(segment);
-                logger.info("finished loading OSM file");
-            } catch (Exception e) {
+                logger.info("loading file");
+                loading.run();
+                loading.get();
+                logger.info("finished loading file");
+            } catch (InterruptedException | CancellationException e) {
+                /* ignore */
+            } catch (ExecutionException e) {
                 e.printStackTrace();
                 Runtime.getRuntime().halt(1);
+            } finally {
+                this.loading = null;
             }
         }).start();
     }
 
-    private void asyncLoad(File file) {
-        new Thread(() -> {
-            Kryo kryo = KryoSerializer.create();
+    private void store(File file) {
+        logger.info("writing file");
+        Kryo kryo = KryoSerializer.create();
 
-            try (Input in = new Input(new FileInputStream(file))) {
-                logger.info("loading binary file");
-                segment = (TileFeatureProvider) kryo.readClassAndObject(in);
-                logger.info("finished reading binary file");
-                viewer.setMap(segment);
-                logger.info("finished loading binary file");
-            } catch (Throwable t) {
-                t.printStackTrace();
-                Runtime.getRuntime().halt(1);
-            }
-        }).start();
+        try (Output out = new Output(new FileOutputStream(file))) {
+            kryo.writeClassAndObject(out, segment);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            Runtime.getRuntime().halt(1);
+        }
+        logger.info("finished writing file");
     }
 
 
