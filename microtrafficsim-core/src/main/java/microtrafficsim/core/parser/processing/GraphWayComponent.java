@@ -1,18 +1,18 @@
 package microtrafficsim.core.parser.processing;
 
-import microtrafficsim.osm.parser.ecs.components.traits.Removeable;
-import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
+import microtrafficsim.core.parser.processing.Ways.MergePoint;
+import microtrafficsim.core.parser.processing.Ways.WayLayout;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.Entity;
 import microtrafficsim.osm.parser.ecs.components.traits.Mergeable;
+import microtrafficsim.osm.parser.ecs.components.traits.Removeable;
 import microtrafficsim.osm.parser.ecs.components.traits.Reversible;
 import microtrafficsim.osm.parser.ecs.components.traits.Splittable;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
-import microtrafficsim.core.parser.processing.Ways.MergePoint;
-import microtrafficsim.core.parser.processing.Ways.WayLayout;
+import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.utils.collections.HashMultiSet;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 

@@ -52,7 +52,7 @@ public class TileRect {
     /**
      * Constructs a new tile rectangle from the given tile-id.
      *
-     * @param tile the tile to create the recangle from.
+     * @param tile the tile to create the rectangle from.
      */
     public TileRect(TileId tile) {
         this.xmin = this.xmax = tile.x;

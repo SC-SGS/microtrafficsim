@@ -1,6 +1,7 @@
 package microtrafficsim.core.convenience;
 
 import com.jogamp.newt.event.KeyEvent;
+import microtrafficsim.core.convenience.utils.Utils;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.layers.LayerDefinition;
@@ -10,7 +11,6 @@ import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TilingScheme;
-import microtrafficsim.core.convenience.utils.Utils;
 import microtrafficsim.core.vis.AbstractVisualization;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.core.vis.map.projections.Projection;

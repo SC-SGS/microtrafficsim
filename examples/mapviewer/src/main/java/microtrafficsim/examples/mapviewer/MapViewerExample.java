@@ -1,16 +1,14 @@
 package microtrafficsim.examples.mapviewer;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.convenience.DefaultParserConfig;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
-import microtrafficsim.core.map.TileFeatureProvider;
+import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.serialization.KryoSerializer;
+import microtrafficsim.core.serialization.Container;
+import microtrafficsim.core.serialization.Serializer;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.utils.concurrency.interruptsafe.InterruptSafeFutureTask;
@@ -22,15 +20,14 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 
 /**
- * Map viewer example. The map to be displayed can be specified via the command-line options.
+ * Map viewer example. The map to be displayed can be specified via the command-line options or loaded by pressing the
+ * {@code e} key. A binary file for faster re-loading can be written using the {@code w} key.
  *
  * @author Maximilian Luz
  */
@@ -48,8 +45,9 @@ public class MapViewerExample {
     private JFrame frame;
     private TileBasedMapViewer viewer;
     private OSMParser parser;
-    private TileFeatureProvider segment = null;
+    private SegmentFeatureProvider segment = null;
     private Future<Void> loading = null;
+    private Serializer serializer;
 
 
     /**
@@ -64,11 +62,12 @@ public class MapViewerExample {
      * @throws UnsupportedFeatureException if not all required OpenGL features are available
      */
     private void run(File file) throws UnsupportedFeatureException {
+        serializer = Serializer.create();
+
         viewer = new TileBasedMapViewer(STYLE);
         viewer.create();
 
         viewer.addOverlay(0, new ScenarioAreaOverlay(viewer.getProjection()));
-        // viewer.addOverlay(1, new TileGridOverlay(viewer.getTilingScheme()));
 
         /* parse the OSM file asynchronously and update the sources */
         parser = DefaultParserConfig.get(STYLE).build();
@@ -143,16 +142,14 @@ public class MapViewerExample {
 
         InterruptSafeFutureTask<Void> loading = new InterruptSafeFutureTask<>(() -> {
             boolean xml = file.getName().endsWith(".osm");
-            TileFeatureProvider tiled;
+            SegmentFeatureProvider segment;
 
             try {
                 if (xml) {
-                    tiled = new QuadTreeTiledMapSegment.Generator().generate(parser.parse(file).segment,
+                    segment = new QuadTreeTiledMapSegment.Generator().generate(parser.parse(file).segment,
                             viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel());
                 } else {
-                    try (Input in = new Input(new FileInputStream(file))) {
-                        tiled = (TileFeatureProvider) KryoSerializer.create().readClassAndObject(in);
-                    }
+                    segment = serializer.read(file).getSegment();
                 }
             } catch (InterruptedException e) {
                 throw new CancellationException();
@@ -161,7 +158,7 @@ public class MapViewerExample {
             if (Thread.interrupted())
                 throw new CancellationException();
 
-            segment = tiled;
+            this.segment = segment;
             viewer.setMap(segment);
 
             return null;
@@ -188,10 +185,10 @@ public class MapViewerExample {
 
     private void store(File file) {
         logger.info("writing file");
-        Kryo kryo = KryoSerializer.create();
-
-        try (Output out = new Output(new FileOutputStream(file))) {
-            kryo.writeClassAndObject(out, segment);
+        try {
+            new Container()
+                    .setSegment(segment)
+                    .write(serializer, file);
         } catch (Throwable t) {
             t.printStackTrace();
             Runtime.getRuntime().halt(1);

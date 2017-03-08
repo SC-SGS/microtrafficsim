@@ -24,7 +24,7 @@ public class Utils {
     private static final Logger logger = new EasyMarkableLogger(Utils.class);
 
     /**
-     * Create a screenshot of the context, asycnronously.
+     * Create a screenshot of the context, asychronously.
      *
      * @param context the context of which the screenshot should be created.
      */

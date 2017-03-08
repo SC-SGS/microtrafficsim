@@ -1,15 +1,12 @@
 package microtrafficsim.core.convenience;
 
 import microtrafficsim.core.map.SegmentFeatureProvider;
-import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.map.projections.Projection;
-
-import java.io.File;
 
 
 /**
