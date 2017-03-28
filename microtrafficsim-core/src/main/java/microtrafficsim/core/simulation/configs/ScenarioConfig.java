@@ -21,7 +21,7 @@ import java.util.function.Function;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public final class ScenarioConfig implements Resettable {
+public final class ScenarioConfig {
 
     // general
     public float metersPerCell;
@@ -45,33 +45,29 @@ public final class ScenarioConfig implements Resettable {
     public final MultiThreadingConfig multiThreading;
 
     /**
-     * Just calls {@link #reset()}.
+     * Just calls {@link #setup()}.
      */
     public ScenarioConfig() {
 
         visualization   = new VisualizationConfig();
         crossingLogic   = new CrossingLogicConfig();
         multiThreading  = new MultiThreadingConfig();
-        reset();
+        setup();
     }
 
     /**
+     * <p>
      * Resets the parameter of this config file. This method keeps references of<br>
      * &bull {@link VisualizationConfig}<br>
      * &bull {@link CrossingLogicConfig}<br>
-     * &bull {@link MultiThreadingConfig}<br>
+     * &bull {@link MultiThreadingConfig}
      */
-    @Override
-    public void reset() {
+    private void setup() {
         // 1/3,6 = 25/90 = 0,277... => 0,277 m/cell means 1 cell/s <=> 1 km/h
         metersPerCell     = 7.5f; // Nagel-Schreckenberg-Model
         globalMaxVelocity = 6;
         speedup           = 1;
         seed              = new Random().nextLong();
-        // visualization
-        visualization.reset();
-        // crossing logic
-        crossingLogic.reset();
         // vehicles
         maxVehicleCount = 100;
         // street type priorities
@@ -98,8 +94,6 @@ public final class ScenarioConfig implements Resettable {
             }
             return prioLevel;
         };
-        // multithreading
-        multiThreading.reset();
     }
 
     /*

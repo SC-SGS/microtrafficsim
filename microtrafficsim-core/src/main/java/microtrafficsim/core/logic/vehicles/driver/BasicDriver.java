@@ -214,6 +214,7 @@ public class BasicDriver implements Driver {
         lock_priorityCounter.unlock();
     }
 
+
     /*
     |==========|
     | (i) Hulk |
@@ -251,5 +252,29 @@ public class BasicDriver implements Driver {
     @Override
     public int getMaxAnger() {
         return maxAnger;
+    }
+
+
+    /*
+    |================|
+    | (i) Resettable |
+    |================|
+    */
+    @Override
+    public void reset() {
+        /* general */
+        random.reset();
+
+        /* variable information */
+        route = null;
+
+        /* dynamic information */
+        this.travellingTime = 0;
+        resetPriorityCounter();
+        anger      = 0;
+        totalAnger = 0;
+
+        /* fix information */
+        vehicle         = null;
     }
 }

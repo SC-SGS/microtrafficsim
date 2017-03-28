@@ -8,6 +8,8 @@ import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
+import microtrafficsim.math.MathUtils;
+import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.LinkedList;
@@ -98,13 +100,9 @@ public abstract class BasicVehicle implements Vehicle {
         return strBuilder.toString();
     }
 
-    private void claimVelocity() {
-        int maxVelocity = getMaxVelocity();
-        if (velocity > maxVelocity)
-            velocity = maxVelocity;
-
-        if (velocity < 0)
-            velocity = 0;
+    @Override
+    public int hashCode() {
+        return new FNVHashBuilder().add(id).getHash();
     }
 
     public void setDriver(Driver driver) {
@@ -257,7 +255,7 @@ public abstract class BasicVehicle implements Vehicle {
         int vVehicle = accelerate.apply(velocity);
         int vDriver = driver.accelerate(velocity);
         velocity = Math.min(vVehicle, vDriver);
-        claimVelocity();
+        velocity = MathUtils.clamp(velocity, 0, getMaxVelocity());
     }
 
     @Override
@@ -311,7 +309,7 @@ public abstract class BasicVehicle implements Vehicle {
                 }
             }
             velocity = newVelocity;
-            claimVelocity();
+            velocity = MathUtils.clamp(velocity, 0, getMaxVelocity());
         }
     }
 

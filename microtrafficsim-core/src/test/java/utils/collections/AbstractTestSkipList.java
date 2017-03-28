@@ -1,10 +1,10 @@
 package utils.collections;
 
-import microtrafficsim.build.BuildSetup;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.collections.skiplist.PrioritySkipList;
 import microtrafficsim.utils.collections.skiplist.SkipList;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
+import microtrafficsim.utils.logging.LoggingLevel;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ public abstract class AbstractTestSkipList implements TestSkipList {
 
     private static final Logger logger = new EasyMarkableLogger(TestPrioritySkipList.class);
     static {
-        BuildSetup.DEBUG_ENABLED = true;
+        LoggingLevel.setEnabledGlobally(false, true, true, true, true);
     }
 
     private final Random                random    = new Random();

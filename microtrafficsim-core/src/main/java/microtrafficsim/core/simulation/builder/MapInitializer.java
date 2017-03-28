@@ -20,8 +20,8 @@ public interface MapInitializer {
     Graph postprocessFreshGraph(Graph protoGraph, long seed);
 
     /**
-     * Prepares the graph independent of the fact whether it has just been created or not, e.g. setting seeds. Resets
-     * the graph.
+     * Resets the graph and prepares the graph independent of the fact whether it has just been created or not, e.g.
+     * setting seeds.
      *
      * @param protoGraph the created/reset graph
      * @param seed this parameter can be used for initializing random variables etc.

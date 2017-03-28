@@ -35,7 +35,7 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
         super(config, graph, vehicleContainer);
 
         this.random = random;
-        fastestWayProbability = 1.0f;
+        fastestWayProbability = 0;
 
         /* scout factory */
         fastestWayBidirectionalAStar = new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);

@@ -40,9 +40,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * the GUI.
  *
  * <p>
- * This class uses a static instance of {@link EasyMarkableLogger} to log. You can change the logging behaviour using
- * {@link microtrafficsim.build.BuildSetup}. This is different to {@link BuildSetup} used in the constructor to build
- * the {@code SimulationController}.
+ * This class uses a static instance of {@link EasyMarkableLogger} to log. You can change its logging behaviour
+ * using {@link microtrafficsim.utils.logging.LoggingLevel LoggingLevel}
+ * .{@link microtrafficsim.utils.logging.LoggingLevel.Type Type}.
  *
  * @author Dominic Parga Cacheiro
  *

@@ -145,12 +145,10 @@ public class Node implements ShortestPathNode, Resettable, Seeded {
                     if (config.priorityToTheRightEnabled) {
                         byte leftmostMatchingIdx = IndicesCalculator.leftmostIndexInMatching(
                                 origin1, destination1, origin2, destination2, indicesPerNode);
-                        if (leftmostMatchingIdx == origin1) {
+                        if (leftmostMatchingIdx == origin1)
                             return 1;
-                        }
-                        if (leftmostMatchingIdx == origin2) {
+                        if (leftmostMatchingIdx == origin2)
                             return -1;
-                        }
                         throw new CrossingLogicException();
                     } else {
                         // random out of {-1, 1}
@@ -256,7 +254,7 @@ public class Node implements ShortestPathNode, Resettable, Seeded {
                 // XOR
                 // case #2: deadlock OR tooManyVehicles
                 // => choose random vehicle
-                boolean tooManyVehicles = config.isOnlyOneVehicleEnabled() && maxPrioVehicles.size() > 1;
+                boolean tooManyVehicles = config.onlyOneVehicleEnabled && maxPrioVehicles.size() > 1;
                 if (!allOthersBeaten || tooManyVehicles) {
                     Iterator<Vehicle> bla = maxPrioVehicles.iterator();
                     for (int i = 0; i < random.nextInt(maxPrioVehicles.size()); i++)

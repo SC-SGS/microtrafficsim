@@ -2,7 +2,6 @@ package logic.validation;
 
 import logic.validation.scenarios.pluscrossroad.AbstractPlusCrossroadScenario;
 import logic.validation.scenarios.pluscrossroad.FullPlusCrossroadScenario;
-import microtrafficsim.build.BuildSetup;
 import microtrafficsim.core.convenience.DefaultParserConfig;
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
@@ -15,6 +14,7 @@ import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
+import microtrafficsim.utils.logging.LoggingLevel;
 import microtrafficsim.utils.resources.PackagedResource;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -39,7 +39,6 @@ public class TestNodeCrossingIndices {
             /* setup config */
             ScenarioConfig config = new ScenarioConfig();
             AbstractPlusCrossroadScenario.setupConfig(config);
-            config.speedup = 100;
             config.crossingLogic.drivingOnTheRight = priorityRun == 0; // first right-before-left
 
             /* setup graph */
@@ -98,11 +97,6 @@ public class TestNodeCrossingIndices {
 
     @BeforeClass
     public static void buildSetup() {
-        /* build setup: logging */
-        BuildSetup.TRACE_ENABLED = false;
-        BuildSetup.DEBUG_ENABLED = false;
-        BuildSetup.INFO_ENABLED  = false;
-        BuildSetup.WARN_ENABLED  = false;
-        BuildSetup.ERROR_ENABLED = false;
+        LoggingLevel.setEnabledGlobally(false, false, false, false, false);
     }
 }

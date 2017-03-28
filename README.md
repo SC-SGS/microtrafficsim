@@ -4,15 +4,15 @@ with OpenStreetMap data.
 ![Teaser: New York](teaser.png "Teaser: New York")
 
 ## News
-After a huge redesign of the simulations/scenarios and the vehicle logic, we want to implement contraction hierarchies for faster route calculations before we are going to make the simulation execution deterministic by guarantee. For now, the determinism should be (almost) given but it is not formally tested yet.
+Testing the simulation execution for determinism has finished. According to our test cases the simulation execution is deterministic.
 
-By finishing these (hopefully in the end of February 2017), we will start developing multilane logic. This will be used in a bachelor thesis for traffic jam cause research.
+Our next task is implementing a scenario handling the input from the polygon overlay, that allows an user to choose polygonial areas on a map with an ui dynamically). Finishing this, we will start developing multilane logic. This will be used in a bachelor thesis for traffic jam cause research.
 
-The implementation of polygon triangulation for a more complex visualization has been finished. In future, we want to use this for defining own scenarios by selecting polygonal start areas. In addition, buildings should be visualized as well (already done in subbranch).
+In parallel, we implement a serialization for our graphs, route calculations and scenarios. This feature allows us simulating scenarios with more than a few 1000 vehicles without the need to wait every time for finishing the route calculations. This is helpful for the bachelor thesis.
 
 
 ## Demonstration and Examples
-Demonstrations and examples can be executed using `gradle`. All OpenStreetMap (OSM) files need to be in the OSM XML format, as, for example, provided by the [OpenStreetMap web interface](https://www.openstreetmap.org). A (somewhat) stable demonstration can be executed from the `master`-branch (see Main UI).
+Demonstrations and examples can be executed using `gradle`. All OpenStreetMap (OSM) files need to be in the OSM XML format, as, for example, provided by the [OpenStreetMap web interface](https://www.openstreetmap.org). If your file is too large for OSM, you can use our python-script to download it (`osm_get_xml.py`). A (somewhat) stable demonstration can be executed from the `master`-branch (see Main UI).
 
 #### Main UI
 The main UI provides an overview of the simulation. The scenario is currently fixed (random routes), however various simulation parameters, as well as the number of vehicles and the used map, can be adjusted
@@ -34,19 +34,28 @@ The map-viewer example can be executed using
 ```
 
 
-## Supported traffic attributes
+## Supported features
+#### Traffic attributes
 * different vehicle types (inclusive different max velocities, acceleration
   functions etc.)
 * static routing: fastest vs. shortest route
 * streets' max velocity
 * single laned streets
+* driver behaviour (e.g. in acceleration) limited by the vehicles "physical" behaviour
 
+#### Crossing logic
 All following attributes can be en-/disabled.
-
-* crossing logic: street priorities
-* crossing logic: right-before-left XOR left-before-right XOR random
+* street priorities
+* right-before-left XOR left-before-right XOR random
+* more than one vehicle can cross a crossroad if the are not intersecting eachother's ways
 * "friendly-standing-in-jam": If a vehicle has to wait at a crossroad, it
   relinquishes its right of way for an other vehicle that has not to wait.
+
+#### Main-ui features
+* parse any map file in OSM MAP format
+* interrupt parsing or route calculations without exiting the main-ui
+* different style sheets can be used (the preferred style sheet has to be chosen in code)
+* different vehicle colors depending on the vehicle's attributes (e.g. anger of its driver)
 
 
 ## Please Note

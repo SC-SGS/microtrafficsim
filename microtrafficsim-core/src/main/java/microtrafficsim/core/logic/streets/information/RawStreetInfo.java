@@ -1,9 +1,7 @@
 package microtrafficsim.core.logic.streets.information;
 
 import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.Vec2d;
-import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 /**
  * @author Dominic Parga Cacheiro

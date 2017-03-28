@@ -88,7 +88,7 @@ public abstract class QueueScenarioSmall implements Scenario {
         config.crossingLogic.drivingOnTheRight         = true;
         config.crossingLogic.edgePriorityEnabled       = true;
         config.crossingLogic.priorityToTheRightEnabled = true;
-        config.crossingLogic.setOnlyOneVehicle(false);
+        config.crossingLogic.onlyOneVehicleEnabled     = false;
 
         return config;
     }

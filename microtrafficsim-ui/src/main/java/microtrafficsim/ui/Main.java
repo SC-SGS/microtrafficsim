@@ -1,13 +1,11 @@
 package microtrafficsim.ui;
 
-import microtrafficsim.build.BuildSetup;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
 import microtrafficsim.ui.gui.statemachine.impl.SimulationController;
-import microtrafficsim.utils.strings.builder.LevelStringBuilder;
+import microtrafficsim.utils.logging.LoggingLevel;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 
 
@@ -20,7 +18,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        BuildSetup.DEBUG_ENABLED = true;
+        LoggingLevel.setEnabledGlobally(false, false, true, true, true);
 
         /* handle input arguments */
         final File file;

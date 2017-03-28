@@ -47,7 +47,8 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
      * Default constructor. The {@code visVehicleFactory} can be null, which means vehicles are not visualized.
      *
      * @param seed              Used for {@link ConcurrentSeedGenerator}
-     * @param visVehicleFactory Creates the visualization part of the vehicle entity
+     * @param visVehicleFactory Creates the visualization part of the vehicle entity; can be null, which means
+     *                          vehicles are not visualized
      */
     public VehicleScenarioBuilder(long seed, Supplier<VisualizationVehicleEntity> visVehicleFactory) {
 
@@ -55,6 +56,13 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
         seedGenerator = new ConcurrentSeedGenerator(seed);
 
         this.visVehicleFactory = visVehicleFactory;
+    }
+
+    /**
+     * Calls {@link #VehicleScenarioBuilder(long, Supplier) VehicleScenarioBuilder(seed, null)}
+     */
+    public VehicleScenarioBuilder(long seed) {
+        this(seed, null);
     }
 
 
