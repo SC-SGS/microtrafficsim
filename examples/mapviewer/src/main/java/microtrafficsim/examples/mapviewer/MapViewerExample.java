@@ -27,7 +27,10 @@ import java.util.concurrent.Future;
 
 /**
  * Map viewer example. The map to be displayed can be specified via the command-line options or loaded by pressing the
- * {@code e} key. A binary file for faster re-loading can be written using the {@code w} key.
+ * {@code e} key. A binary file for faster re-loading can be written using the {@code w} key. Both, the {@code <Escape>}
+ * and {@code q} key will close this program.
+ *
+ * This example is loaded with the ScenarioAreaOverlay. For a detailed look at the controls, see {@linkplain }
  *
  * @author Maximilian Luz
  */
@@ -48,28 +51,35 @@ public class MapViewerExample {
     private SegmentFeatureProvider segment = null;
     private Future<Void> loading = null;
     private Serializer serializer;
+    private JFileChooser filechooser;
 
 
     /**
-     * Set up this example. Layer definitions describe the visual layers
-     * to be rendered and are used to create a layer provider. With this
-     * provider a tile provider is created, capable of returning drawable
-     * tiles. These tiles are rendered using the visualization object. A
-     * parser is created to parse the specified file (asynchronously) and
-     * update the layers (respectively their sources).
+     * Set up this example.
      *
-     * @param file the file to parse
+     * We begin by creating a Serializer, which is responsible for reading and writing binary (serialized) files.
+     *
+     * Next, we create a TileMapViewer. This class is responsible for the visualization. It not only renders the
+     * map but also handles Overlays, that can be added to the map-viewer. The {@code MapStyleSheet} provided
+     * to the map-viewer specifies what to display, and how to do that. This style is also used to tell the
+     * XML parser what we want to extract from an OpenStreetMap XML file.
+     *
+     * Once the map-viewer has been created, we can connect it with a JFrame add some key-commands and display it.
+     *
+     * @param file the initial file to load. If {@code null}, no file will be loaded.
      * @throws UnsupportedFeatureException if not all required OpenGL features are available
      */
     private void run(File file) throws UnsupportedFeatureException {
+        filechooser = new JFileChooser();
         serializer = Serializer.create();
 
         viewer = new TileBasedMapViewer(STYLE);
         viewer.create();
 
+        /* Create and add a new ScenarioAreaOverlay */
         viewer.addOverlay(0, new ScenarioAreaOverlay(viewer.getProjection()));
 
-        /* parse the OSM file asynchronously and update the sources */
+        /* Parse the OSM file asynchronously and update the sources */
         parser = DefaultParserConfig.get(STYLE).build();
         if (file != null)
             load(file);
@@ -86,48 +96,73 @@ public class MapViewerExample {
          */
         frame.setMinimumSize(new Dimension(100, 100));
 
-        /* on close: stop the visualization and exit */
+        /* On close: stop the visualization and exit */
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                viewer.destroy();
-                frame.dispose();
-                System.exit(0);
+                shutdown();
             }
         });
 
-        JFileChooser fc = new JFileChooser();
-
-        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_E, (e) -> {
-            int status = fc.showOpenDialog(frame);
-            if (status == JFileChooser.APPROVE_OPTION) {
-                load(fc.getSelectedFile());
-            }
+        /* Use <ESC> and <Q> as shortcuts to stop and exit */
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_ESCAPE, (e) -> {
+            shutdown();
         });
 
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_Q, (e) -> {
+            shutdown();
+        });
+
+        /* Use <W> and <Ctrl-S> as shortcuts to save the current map to a binary file */
         viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_W, (e) -> {
-            int status = fc.showSaveDialog(frame);
-            if (status == JFileChooser.APPROVE_OPTION) {
-                File f = fc.getSelectedFile();
+            store();
+        });
 
-                if (f.exists()) {
-                    status = JOptionPane.showConfirmDialog(frame,
-                            "The selected file already exists. Continue?", "Save File", JOptionPane.OK_CANCEL_OPTION);
-
-                    if (status != JOptionPane.OK_OPTION) {
-                        return;
-                    }
-                }
-
-                store(f);
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_S, (e) -> {
+            if (e.isControlDown()) {
+                store();
             }
         });
 
-        /* show frame and start visualization */
-        frame.setVisible(true);
+        /* Use <E> and <Ctrl-O> as shortcuts to load binary or osm (xml) file */
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_E, (e) -> {
+            load();
+        });
 
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_O, (e) -> {
+            if (e.isControlDown()) {
+                load();
+            }
+        });
+
+        /* Show frame and start visualization */
+        frame.setVisible(true);
         viewer.show();
     }
 
+    /**
+     * Safely terminate the application.
+     */
+    private void shutdown() {
+        viewer.destroy();
+        frame.dispose();
+        System.exit(0);
+    }
+
+
+    /**
+     * Open a JFileChooser to let the user load a binary or xml file.
+     */
+    private void load() {
+        int status = filechooser.showOpenDialog(frame);
+        if (status == JFileChooser.APPROVE_OPTION) {
+            load(filechooser.getSelectedFile());
+        }
+    }
+
+    /**
+     * Load the specified file (asynchronously), abort a previous in-flight load-operation if there is any.
+     * @param file the file to load.
+     */
     private void load(File file) {
         if (this.loading != null) {
             int status = JOptionPane.showConfirmDialog(frame,
@@ -183,6 +218,31 @@ public class MapViewerExample {
         }).start();
     }
 
+    /**
+     * Open a JFileChooser to let the user store a binary file of the map being displayed.
+     */
+    private void store() {
+        int status = filechooser.showSaveDialog(frame);
+        if (status == JFileChooser.APPROVE_OPTION) {
+            File f = filechooser.getSelectedFile();
+
+            if (f.exists()) {
+                status = JOptionPane.showConfirmDialog(frame,
+                        "The selected file already exists. Continue?", "Save File", JOptionPane.OK_CANCEL_OPTION);
+
+                if (status != JOptionPane.OK_OPTION) {
+                    return;
+                }
+            }
+
+            store(f);
+        }
+    }
+
+    /**
+     * Store the current map in the specified file (synchronously).
+     * @param file the file to write the current map to.
+     */
     private void store(File file) {
         logger.info("writing file");
         try {
@@ -203,9 +263,11 @@ public class MapViewerExample {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        File file = null;
+        File file;
 
-        if (args.length == 1) {
+        if (args.length == 0) {
+            file = null;
+        } else if (args.length == 1) {
             switch (args[0]) {
             case "-h":
             case "--help":
@@ -215,6 +277,9 @@ public class MapViewerExample {
             default:
                 file = new File(args[0]);
             }
+        } else {
+            printUsage();
+            return;
         }
 
         try {
@@ -235,7 +300,7 @@ public class MapViewerExample {
      * Prints the usage of this example.
      */
     private static void printUsage() {
-        System.out.println("MicroTrafficSim - OSM MapViewerExample Example.");
+        System.out.println("MicroTrafficSim - Map Viewer Example.");
         System.out.println("");
         System.out.println("Usage:");
         System.out.println("  mapviewer                Run this example without any map-file");
