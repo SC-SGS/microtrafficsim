@@ -317,6 +317,7 @@ public class ScenarioAreaOverlay implements Overlay {
             ui.getContext().addTask(ctx -> {
                 Rect2d rect = rectangle.end(e.getPointer());
 
+                clearVertexSelection();
                 if (!e.isControlDown()) {
                     clearAreaSelection();
                 }
