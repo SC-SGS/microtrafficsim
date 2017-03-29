@@ -67,6 +67,13 @@ public interface MapViewer {
     }
 
     /**
+     * Reset the view of this map-viewer.
+     */
+    default void resetView() {
+        getVisualizationPanel().getVisualization().getVisualizer().resetView();
+    }
+
+    /**
      * @throws UnsupportedFeatureException if not all required OpenGL features
      *                                     are available
      */

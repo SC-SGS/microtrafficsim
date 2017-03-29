@@ -2,6 +2,7 @@ package microtrafficsim.examples.mapviewer;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.convenience.DefaultParserConfig;
+import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.MapStyleSheet;
@@ -26,18 +27,17 @@ import java.util.concurrent.Future;
 
 
 /**
- * Map viewer example. The map to be displayed can be specified via the command-line options or loaded by pressing the
- * {@code e} key. A binary file for faster re-loading can be written using the {@code w} key. Both, the {@code <Escape>}
- * and {@code q} key will close this program.
- *
- * This example is loaded with the ScenarioAreaOverlay. For a detailed look at the controls, see {@linkplain }
+ * Map viewer example. The map to be displayed can be specified via the command-line options or loaded by pressing
+ * {@code E} or {@code Ctrl-O}. A binary file for faster re-loading can be written using {@code W} or {@code Ctrl-S}.
+ * Both, the {@code Esc} and {@code Q} key will close this program.
+ * <p>
+ * This example is loaded with the ScenarioAreaOverlay. For a detailed look at the controls, see
+ * <a href="https://github.com/sgs-us/microtrafficsim/wiki/Controls">github.com/sgs-us/microtrafficsim/wiki/Controls</a>
  *
  * @author Maximilian Luz
  */
 public class MapViewerExample {
     private static Logger logger = LoggerFactory.getLogger(MapViewerExample.class);
-
-    // TODO: update docs
 
     /**
      * The used style sheet, defining style and content of the visualization.
@@ -45,25 +45,29 @@ public class MapViewerExample {
     private static final MapStyleSheet STYLE = new MonochromeStyleSheet();
 
 
+    private JFileChooser filechooser;
+    private Serializer serializer;
+    private OSMParser parser;
+
     private JFrame frame;
     private TileBasedMapViewer viewer;
-    private OSMParser parser;
+
+    private String file = null;
     private SegmentFeatureProvider segment = null;
+
     private Future<Void> loading = null;
-    private Serializer serializer;
-    private JFileChooser filechooser;
 
 
     /**
-     * Set up this example.
-     *
+     * Set up and run this example.
+     * <p>
      * We begin by creating a Serializer, which is responsible for reading and writing binary (serialized) files.
-     *
-     * Next, we create a TileMapViewer. This class is responsible for the visualization. It not only renders the
-     * map but also handles Overlays, that can be added to the map-viewer. The {@code MapStyleSheet} provided
-     * to the map-viewer specifies what to display, and how to do that. This style is also used to tell the
+     * <br>
+     * Next, we create a Parser and a TileMapViewer. The second class is responsible for the visualization. It not only
+     * renders the map but also handles Overlays, that can be added to the map-viewer. The {@code MapStyleSheet}
+     * provided to the map-viewer specifies what to display, and how to do that. This style is also used to tell the
      * XML parser what we want to extract from an OpenStreetMap XML file.
-     *
+     * <br>
      * Once the map-viewer has been created, we can connect it with a JFrame add some key-commands and display it.
      *
      * @param file the initial file to load. If {@code null}, no file will be loaded.
@@ -72,20 +76,38 @@ public class MapViewerExample {
     private void run(File file) throws UnsupportedFeatureException {
         filechooser = new JFileChooser();
         serializer = Serializer.create();
+        parser = DefaultParserConfig.get(STYLE).build();
 
-        viewer = new TileBasedMapViewer(STYLE);
+        viewer = setUpMapViewer(STYLE);
+        frame = setUpFrame(viewer);
+        show();
+
+        /* Parse the OSM file asynchronously and update the sources */
+        if (file != null)
+            load(file);
+    }
+
+    /**
+     * Set up the {@code TileBasedMapViewer}.
+     */
+    private TileBasedMapViewer setUpMapViewer(MapStyleSheet style) throws UnsupportedFeatureException {
+        TileBasedMapViewer viewer = new TileBasedMapViewer(style);
         viewer.create();
 
         /* Create and add a new ScenarioAreaOverlay */
         viewer.addOverlay(0, new ScenarioAreaOverlay(viewer.getProjection()));
 
-        /* Parse the OSM file asynchronously and update the sources */
-        parser = DefaultParserConfig.get(STYLE).build();
-        if (file != null)
-            load(file);
+        setUpShortcuts(viewer);
 
+        return viewer;
+    }
+
+    /**
+     * Set up the application window.
+     */
+    private JFrame setUpFrame(MapViewer viewer) {
         /* create and initialize the JFrame */
-        frame = new JFrame("MicroTrafficSim - MapViewer Example");
+        JFrame frame = new JFrame(getDefaultFrameTitle());
         frame.setSize(viewer.getInitialWindowWidth(), viewer.getInitialWindowHeight());
         frame.add(viewer.getVisualizationPanel());
 
@@ -103,38 +125,14 @@ public class MapViewerExample {
             }
         });
 
-        /* Use <ESC> and <Q> as shortcuts to stop and exit */
-        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_ESCAPE, (e) -> {
-            shutdown();
-        });
+        return frame;
+    }
 
-        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_Q, (e) -> {
-            shutdown();
-        });
-
-        /* Use <W> and <Ctrl-S> as shortcuts to save the current map to a binary file */
-        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_W, (e) -> {
-            store();
-        });
-
-        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_S, (e) -> {
-            if (e.isControlDown()) {
-                store();
-            }
-        });
-
-        /* Use <E> and <Ctrl-O> as shortcuts to load binary or osm (xml) file */
-        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_E, (e) -> {
-            load();
-        });
-
-        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_O, (e) -> {
-            if (e.isControlDown()) {
-                load();
-            }
-        });
-
-        /* Show frame and start visualization */
+    /**
+     * Show frame and start visualization.
+     */
+    private void show() {
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         viewer.show();
     }
@@ -147,6 +145,35 @@ public class MapViewerExample {
             viewer.destroy();
             frame.dispose();
             System.exit(0);
+        });
+    }
+
+
+    /**
+     * Set up the keyboard-shortcuts.
+     */
+    private void setUpShortcuts(TileBasedMapViewer viewer) {
+        /* Use <Esc> and <Q> as shortcuts to stop and exit */
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_ESCAPE, (e) -> shutdown());
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_Q, (e) -> shutdown());
+
+        /* Use <C> and as shortcut to reset the view */
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_C, (e) -> viewer.resetView());
+
+        /* Use <W> and <Ctrl-S> as shortcuts to save the current map to a binary file */
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_W, (e) -> store());
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_S, (e) -> {
+            if (e.isControlDown()) {
+                store();
+            }
+        });
+
+        /* Use <E> and <Ctrl-O> as shortcuts to load binary or osm (xml) file */
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_E, (e) -> load());
+        viewer.addKeyCommand(KeyEvent.EVENT_KEY_PRESSED, KeyEvent.VK_O, (e) -> {
+            if (e.isControlDown()) {
+                load();
+            }
         });
     }
 
@@ -178,6 +205,9 @@ public class MapViewerExample {
         }
 
         InterruptSafeFutureTask<Void> loading = new InterruptSafeFutureTask<>(() -> {
+            SwingUtilities.invokeLater(() ->
+                    frame.setTitle(getDefaultFrameTitle() + " - [Loading: " + file.getPath() + "]"));
+
             boolean xml = file.getName().endsWith(".osm");
             SegmentFeatureProvider segment;
 
@@ -197,6 +227,9 @@ public class MapViewerExample {
 
             this.segment = segment;
             viewer.setMap(segment);
+            this.file = file.getPath();
+
+            SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle()));
 
             return null;
         });
@@ -247,15 +280,38 @@ public class MapViewerExample {
      */
     private void store(File file) {
         logger.info("writing file");
+
         try {
+            SwingUtilities.invokeAndWait(() ->
+                frame.setTitle(getDefaultFrameTitle() + " - [Saving: " + file.getPath() + "]"));
+
             new Container()
                     .setSegment(segment)
                     .write(serializer, file);
+
         } catch (Throwable t) {
             t.printStackTrace();
             Runtime.getRuntime().halt(1);
+
+        } finally {
+            SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle()));
         }
         logger.info("finished writing file");
+    }
+
+
+    /**
+     * Return the default window title.
+     * @return the default frame title.
+     */
+    private String getDefaultFrameTitle() {
+        StringBuilder title = new StringBuilder("MicroTrafficSim - Map Viewer Example");
+
+        if (file != null) {
+            title.append(" - [").append(file).append("]");
+        }
+
+        return title.toString();
     }
 
 
