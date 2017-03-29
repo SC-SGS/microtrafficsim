@@ -193,6 +193,7 @@ public class MapViewerExample {
      * @param file the file to load.
      */
     private void load(File file) {
+        /* cancel loading, if map is loading */
         if (this.loading != null) {
             int status = JOptionPane.showConfirmDialog(frame,
                     "Another file is already being loaded. Continue?", "Load File", JOptionPane.OK_CANCEL_OPTION);
@@ -202,12 +203,23 @@ public class MapViewerExample {
             }
 
             loading.cancel(true);
+
+            /* wait until the task has been fully cancelled, required to set the frame-title correctly */
+            try {
+                loading.get();
+            } catch (InterruptedException | CancellationException e) {
+                /* ignore */
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
         }
 
+        /* create new load-task */
         InterruptSafeFutureTask<Void> loading = new InterruptSafeFutureTask<>(() -> {
             SwingUtilities.invokeLater(() ->
                     frame.setTitle(getDefaultFrameTitle() + " - [Loading: " + file.getPath() + "]"));
 
+            /* parse file */
             boolean xml = file.getName().endsWith(".osm");
             SegmentFeatureProvider segment;
 
@@ -225,17 +237,17 @@ public class MapViewerExample {
             if (Thread.interrupted())
                 throw new CancellationException();
 
+            /* set segment */
             this.segment = segment;
-            viewer.setMap(segment);
             this.file = file.getPath();
-
-            SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle()));
+            viewer.setMap(segment);
 
             return null;
         });
 
         this.loading = loading;
 
+        /* execute load-task */
         new Thread(() -> {
             try {
                 logger.info("loading file");
@@ -248,6 +260,7 @@ public class MapViewerExample {
                 e.printStackTrace();
                 Runtime.getRuntime().halt(1);
             } finally {
+                SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle()));
                 this.loading = null;
             }
         }).start();
