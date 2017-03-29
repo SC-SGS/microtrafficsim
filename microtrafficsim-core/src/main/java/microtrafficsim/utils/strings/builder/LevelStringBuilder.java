@@ -33,6 +33,10 @@ public class LevelStringBuilder implements StringBuilder {
         return stringBuilder.toString();
     }
 
+    @Override
+    public int length() {
+        return stringBuilder.length();
+    }
 
     public void incLevel() {
         level++;
@@ -84,7 +88,14 @@ public class LevelStringBuilder implements StringBuilder {
     @Override
     public LevelStringBuilder append(String str) {
 
-        String[] lines = str.split(levelSeparator);
+        String[] lines;
+        int lastIdx = -1;
+        if (levelSeparator == null)
+            lines = new String[]{str};
+        else {
+            lines = str.split(levelSeparator);
+            str.lastIndexOf(levelSeparator);
+        }
 
         if (lines.length > 0) {
             // add all lines except for last line
@@ -96,7 +107,7 @@ public class LevelStringBuilder implements StringBuilder {
             appendLevelSeparator(level);
             stringBuilder.append(lines[lines.length - 1]);
         }
-        int lastIdx = str.lastIndexOf(levelSeparator);
+
         if (lastIdx >= 0) {
             // check if last line has line break and add line break if true
             if (str.lastIndexOf(levelSeparator) == str.length() - levelSeparator.length())

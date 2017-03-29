@@ -34,6 +34,11 @@ public class BasicStringBuilder implements StringBuilder {
     }
 
     @Override
+    public int length() {
+        return stringBuilder.length();
+    }
+
+    @Override
     public StringBuilder append(Object obj) {
         stringBuilder.append(obj);
         return this;

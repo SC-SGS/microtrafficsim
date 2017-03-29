@@ -1,4 +1,7 @@
-apply plugin: 'application'
+plugins {
+    id 'application'
+    id "edu.sc.seis.macAppBundle" version "2.1.6"
+}
 
 
 dependencies {
@@ -13,7 +16,19 @@ run {
 }
 
 
-mainClassName = "microtrafficsim.ui.Main"   // TODO
+mainClassName = "microtrafficsim.ui.Main"
+macAppBundle {
+    mainClassName = "microtrafficsim.ui.Main"
+}
+jar {
+     manifest {
+         attributes "Main-Class": "$mainClassName"
+     }
+
+     from {
+         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+     }
+ }
 
 
 
