@@ -142,6 +142,19 @@ public class MapViewerExample {
      * Safely terminate the application.
      */
     private void shutdown() {
+        if (loading != null) {
+            loading.cancel(true);
+        }
+
+        if (loader != null) {
+            try {
+                loader.join();
+                loader = null;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         SwingUtilities.invokeLater(() -> {
             viewer.destroy();
             frame.dispose();
