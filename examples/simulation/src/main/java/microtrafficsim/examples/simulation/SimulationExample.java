@@ -43,6 +43,8 @@ import java.util.concurrent.Future;
  */
 public class SimulationExample {
 
+    private static final long SEED = Random.createSeed();
+
     private JFileChooser filechooser;
     private Serializer serializer;
     private OSMParser parser;
@@ -97,7 +99,7 @@ public class SimulationExample {
 
         config.maxVehicleCount                            = 1000;
         config.speedup                                    = 5;
-        config.seed                                       = 1455374755807L;
+        config.seed                                       = SEED;
         config.multiThreading.nThreads                    = 8;
         config.crossingLogic.drivingOnTheRight            = true;
         config.crossingLogic.edgePriorityEnabled          = true;
@@ -194,9 +196,11 @@ public class SimulationExample {
     private Simulation createAndInitSimulation(ScenarioConfig config, Graph graph, VehicleOverlay overlay)
             throws InterruptedException
     {
-        Scenario scenario = new RandomRouteScenario(new Random(), config, graph);
+        Random seedgen = new Random(config.seed);
+
+        Scenario scenario = new RandomRouteScenario(seedgen.nextLong(), config, graph);
         Simulation simulation = new VehicleSimulation();
-        ScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
+        ScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(seedgen.nextLong(), overlay.getVehicleFactory());
 
         overlay.setSimulation(simulation);
         scenarioBuilder.prepare(scenario);
