@@ -7,6 +7,7 @@ import microtrafficsim.core.convenience.TileBasedMapViewer;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
+import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.serialization.Container;
 import microtrafficsim.core.serialization.Serializer;
@@ -237,10 +238,13 @@ public class MapViewerExample {
 
             try {
                 if (xml) {
-                    segment = new QuadTreeTiledMapSegment.Generator().generate(parser.parse(file).segment,
-                            viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel());
+                    QuadTreeTiledMapSegment.Generator tiler = new QuadTreeTiledMapSegment.Generator();
+                    TilingScheme scheme = viewer.getPreferredTilingScheme();
+
+                    OSMParser.Result result = parser.parse(file);
+                    segment = tiler.generate(result.segment, scheme, viewer.getPreferredTileGridLevel());
                 } else {
-                    segment = serializer.read(file).getSegment();
+                    segment = serializer.read(file).getMapSegment();
                 }
             } catch (InterruptedException e) {
                 throw new CancellationException();
@@ -271,8 +275,8 @@ public class MapViewerExample {
             } catch (ExecutionException e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(frame,
-                        "Failed to load file: '" + file.getPath() + "'\n"
-                        + "Please make sure this file exists and is a valid OSM XML or MTS binary file.",
+                        "Failed to load file: '" + file.getPath() + "'.\n"
+                                + "Please make sure this file exists and is a valid OSM XML or MTS binary file.",
                         "Error loading file", JOptionPane.ERROR_MESSAGE);
             } finally {
                 SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle()));
@@ -315,7 +319,7 @@ public class MapViewerExample {
                 frame.setTitle(getDefaultFrameTitle() + " - [Saving: " + file.getPath() + "]"));
 
             new Container()
-                    .setSegment(segment)
+                    .setMapSegment(segment)
                     .write(serializer, file);
 
         } catch (Throwable t) {

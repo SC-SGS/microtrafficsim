@@ -8,8 +8,10 @@ import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
+import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.serialization.Serializer;
+import microtrafficsim.core.serialization.Container;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -210,8 +212,67 @@ public class SimulationExample {
      * Reset the simulation.
      */
     private void reset() {
-        // TODO
-        new UnsupportedOperationException().printStackTrace();
+        /* pause simulation */
+        if (simulation != null)
+            simulation.cancel();
+
+        /* cancel loading, if map is loading */
+        if (this.loading != null) {
+            int status = JOptionPane.showConfirmDialog(frame,
+                    "Another file is already being loaded. Continue?", "Reset Simulation", JOptionPane.OK_CANCEL_OPTION);
+
+            if (status != JOptionPane.OK_OPTION) {
+                return;
+            }
+
+            loading.cancel(true);
+
+            /* wait until the task has been fully cancelled, required to set the frame-title correctly */
+            try {
+                loader.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        /* create new reset-task */
+        InterruptSafeFutureTask<Void> loading = new InterruptSafeFutureTask<>(() -> {
+            /* cancel and destroy old simulation */
+            if (simulation != null) {
+                simulation.cancel();
+                simulation = null;
+            }
+
+            /* create simulation */
+            SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle() + " - [Resetting Simulation]"));
+
+            try {
+                simulation = createAndInitSimulation(config, graph, overlay);
+            } catch (InterruptedException e) {
+                throw new CancellationException();
+            }
+
+            return null;
+        });
+
+        this.loading = loading;
+
+        /* execute load-task */
+        loader = new Thread(() -> {
+            try {
+                loading.run();
+                loading.get();
+            } catch (InterruptedException | CancellationException e) {
+                /* ignore */
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+                Runtime.getRuntime().halt(1);
+            } finally {
+                SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle()));
+                this.loading = null;
+            }
+        });
+        loader.start();
     }
 
 
@@ -315,14 +376,16 @@ public class SimulationExample {
 
             try {
                 if (xml) {
+                    QuadTreeTiledMapSegment.Generator tiler = new QuadTreeTiledMapSegment.Generator();
+                    TilingScheme scheme = viewer.getPreferredTilingScheme();
+
                     OSMParser.Result result = parser.parse(file);
-                    segment = new QuadTreeTiledMapSegment.Generator().generate(result.segment,
-                            viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel());
+                    segment = tiler.generate(result.segment, scheme, viewer.getPreferredTileGridLevel());
                     graph = result.streetgraph;
                 } else {
-                    // TODO
-                    new UnsupportedOperationException().printStackTrace();
-                    return null;
+                    Container result = serializer.read(file);
+                    segment = result.getMapSegment();
+                    graph = result.getMapGraph();
                 }
             } catch (InterruptedException e) {
                 throw new CancellationException();
@@ -368,7 +431,7 @@ public class SimulationExample {
             } catch (ExecutionException e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(frame,
-                        "Failed to load file: '" + file.getPath() + "'\n"
+                        "Failed to load file: '" + file.getPath() + "'.\n"
                                 + "Please make sure this file exists and is a valid OSM XML or MTS binary file.",
                         "Error loading file", JOptionPane.ERROR_MESSAGE);
             } finally {
@@ -405,8 +468,22 @@ public class SimulationExample {
      * @param file the file to write the current map to.
      */
     private void store(File file) {
-        // TODO
-        new UnsupportedOperationException().printStackTrace();
+        try {
+            SwingUtilities.invokeAndWait(() ->
+                    frame.setTitle(getDefaultFrameTitle() + " - [Saving: " + file.getPath() + "]"));
+
+            new Container()
+                    .setMapSegment(segment)
+                    .setMapGraph(graph)
+                    .write(serializer, file);
+
+        } catch (Throwable t) {
+            t.printStackTrace();
+            Runtime.getRuntime().halt(1);
+
+        } finally {
+            SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle()));
+        }
     }
 
 

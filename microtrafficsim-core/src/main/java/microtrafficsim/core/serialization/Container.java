@@ -1,5 +1,6 @@
 package microtrafficsim.core.serialization;
 
+import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 
 import java.io.File;
@@ -10,8 +11,8 @@ import java.io.OutputStream;
 
 public class Container {
     private Meta meta = new Meta();
-    private SegmentFeatureProvider segment;
-
+    private SegmentFeatureProvider segment = null;
+    private Graph streetgraph = null;
 
 
     public Container setMetaInfo(Meta meta) {
@@ -34,13 +35,23 @@ public class Container {
     }
 
 
-    public Container setSegment(SegmentFeatureProvider segment) {
+    public Container setMapSegment(SegmentFeatureProvider segment) {
         this.segment = segment;
         return this;
     }
 
-    public SegmentFeatureProvider getSegment() {
+    public SegmentFeatureProvider getMapSegment() {
         return segment;
+    }
+
+
+    public Container setMapGraph(Graph streetgraph) {
+        this.streetgraph = streetgraph;
+        return this;
+    }
+
+    public Graph getMapGraph() {
+        return streetgraph;
     }
 
 
