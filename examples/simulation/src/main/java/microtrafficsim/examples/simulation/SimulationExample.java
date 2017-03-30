@@ -450,6 +450,9 @@ public class SimulationExample {
             return;
         }
 
+        System.setProperty("awt.useSystemAAFontSettings","on");
+        System.setProperty("swing.aatext", "true");
+
         try {
             new SimulationExample().run(file);
         } catch (UnsupportedFeatureException e) {

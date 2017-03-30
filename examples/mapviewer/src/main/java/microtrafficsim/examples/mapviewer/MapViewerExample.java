@@ -369,6 +369,9 @@ public class MapViewerExample {
             return;
         }
 
+        System.setProperty("awt.useSystemAAFontSettings","on");
+        System.setProperty("swing.aatext", "true");
+
         try {
             new MapViewerExample().run(file);
         } catch (UnsupportedFeatureException e) {
