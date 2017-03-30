@@ -55,6 +55,8 @@ public class SimulationExample {
     private Graph graph = null;
 
     private Simulation simulation = null;
+    
+    private Thread loader = null;
     private Future<Void> loading = null;
 
 
@@ -173,17 +175,16 @@ public class SimulationExample {
      * @param overlay the overlay displaying the vehicles.
      * @return the created simulation.
      */
-    private static Simulation createAndInitSimulation(ScenarioConfig config, Graph graph, VehicleOverlay overlay) {
+    private static Simulation createAndInitSimulation(ScenarioConfig config, Graph graph, VehicleOverlay overlay)
+            throws InterruptedException
+    {
         Scenario scenario = new RandomRouteScenario(new Random(), config, graph);
         Simulation simulation = new VehicleSimulation();
         ScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
 
         overlay.setSimulation(simulation);
-        try {
-            scenarioBuilder.prepare(scenario);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        scenarioBuilder.prepare(scenario);
+
         simulation.setAndInitPreparedScenario(scenario);
         simulation.runOneStep();
 
@@ -282,10 +283,8 @@ public class SimulationExample {
 
             /* wait until the task has been fully cancelled, required to set the frame-title correctly */
             try {
-                loading.get();
-            } catch (InterruptedException | CancellationException e) {
-                /* ignore */
-            } catch (ExecutionException e) {
+                loader.join();
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
@@ -333,7 +332,12 @@ public class SimulationExample {
 
             /* create simulation */
             SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle() + " - [Initializing Simulation]"));
-            simulation = createAndInitSimulation(config, graph, overlay);
+
+            try {
+                simulation = createAndInitSimulation(config, graph, overlay);
+            } catch (InterruptedException e) {
+                throw new CancellationException();
+            }
 
             return null;
         });
@@ -341,7 +345,7 @@ public class SimulationExample {
         this.loading = loading;
 
         /* execute load-task */
-        new Thread(() -> {
+        loader = new Thread(() -> {
             try {
                 loading.run();
                 loading.get();
@@ -354,7 +358,8 @@ public class SimulationExample {
                 SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle()));
                 this.loading = null;
             }
-        }).start();
+        });
+        loader.start();
     }
 
     /**

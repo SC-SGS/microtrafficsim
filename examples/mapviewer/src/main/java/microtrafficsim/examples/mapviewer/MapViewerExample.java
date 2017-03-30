@@ -55,6 +55,7 @@ public class MapViewerExample {
     private String file = null;
     private SegmentFeatureProvider segment = null;
 
+    private Thread loader = null;
     private Future<Void> loading = null;
 
 
@@ -206,10 +207,8 @@ public class MapViewerExample {
 
             /* wait until the task has been fully cancelled, required to set the frame-title correctly */
             try {
-                loading.get();
-            } catch (InterruptedException | CancellationException e) {
-                /* ignore */
-            } catch (ExecutionException e) {
+                loader.join();
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
@@ -248,7 +247,7 @@ public class MapViewerExample {
         this.loading = loading;
 
         /* execute load-task */
-        new Thread(() -> {
+        loader = new Thread(() -> {
             try {
                 logger.info("loading file");
                 loading.run();
@@ -263,7 +262,8 @@ public class MapViewerExample {
                 SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle()));
                 this.loading = null;
             }
-        }).start();
+        });
+        loader.start();
     }
 
     /**
