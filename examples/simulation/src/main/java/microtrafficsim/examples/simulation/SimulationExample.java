@@ -189,7 +189,7 @@ public class SimulationExample {
      * @param overlay the overlay displaying the vehicles.
      * @return the created simulation.
      */
-    private static Simulation createAndInitSimulation(ScenarioConfig config, Graph graph, VehicleOverlay overlay)
+    private Simulation createAndInitSimulation(ScenarioConfig config, Graph graph, VehicleOverlay overlay)
             throws InterruptedException
     {
         Scenario scenario = new RandomRouteScenario(new Random(), config, graph);
@@ -367,7 +367,10 @@ public class SimulationExample {
                 /* ignore */
             } catch (ExecutionException e) {
                 e.printStackTrace();
-                Runtime.getRuntime().halt(1);
+                JOptionPane.showMessageDialog(frame,
+                        "Failed to load file: '" + file.getPath() + "'\n"
+                                + "Please make sure this file exists and is a valid OSM XML or MTS binary file.",
+                        "Error loading file", JOptionPane.ERROR_MESSAGE);
             } finally {
                 SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle()));
                 this.loading = null;
