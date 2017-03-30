@@ -208,22 +208,24 @@ public class MapViewerExample {
      * @param file the file to load.
      */
     private void load(File file) {
-        /* cancel loading, if map is loading */
-        if (this.loading != null) {
-            int status = JOptionPane.showConfirmDialog(frame,
-                    "Another file is already being loaded. Continue?", "Load File", JOptionPane.OK_CANCEL_OPTION);
+        {   /* cancel loading, if map is loading */
+            Future<Void> loading = this.loading;
+            if (loading != null) {
+                int status = JOptionPane.showConfirmDialog(frame,
+                        "Another file is already being loaded. Continue?", "Load File", JOptionPane.OK_CANCEL_OPTION);
 
-            if (status != JOptionPane.OK_OPTION) {
-                return;
-            }
+                if (status != JOptionPane.OK_OPTION) {
+                    return;
+                }
 
-            loading.cancel(true);
+                loading.cancel(true);
 
-            /* wait until the task has been fully cancelled, required to set the frame-title correctly */
-            try {
-                loader.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                /* wait until the task has been fully cancelled, required to set the frame-title correctly */
+                try {
+                    loader.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
