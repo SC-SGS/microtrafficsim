@@ -7,8 +7,8 @@ import microtrafficsim.core.shortestpath.ShortestPathNode;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Stack;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.ToDoubleBiFunction;
+import java.util.function.ToDoubleFunction;
 
 /**
  * This class represents an bidirectional A* algorithm. You can use the constructor for own
@@ -28,8 +28,8 @@ import java.util.function.Function;
 public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>>
         implements ShortestPathAlgorithm<N, E>
 {
-    private final Function<? super E, Double> edgeWeightFunction;
-    private final BiFunction<? super N, ? super N, Double> estimationFunction;
+    private final ToDoubleFunction<? super E> edgeWeightFunction;
+    private final ToDoubleBiFunction<? super N, ? super N> estimationFunction;
 
     /**
      * Standard constructor which sets its edge weight and estimation function to the given ones. This constructor
@@ -53,8 +53,8 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
      *                           2) This estimation has to be >= 0
      *
      */
-    public BidirectionalAStar(Function<? super E, Double> edgeWeightFunction,
-                              BiFunction<? super N, ? super N, Double> estimationFunction) {
+    public BidirectionalAStar(ToDoubleFunction<? super E> edgeWeightFunction,
+                              ToDoubleBiFunction<? super N, ? super N> estimationFunction) {
         this.edgeWeightFunction = edgeWeightFunction;
         this.estimationFunction = estimationFunction;
     }
@@ -82,7 +82,7 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
         |================|
         */
         // both
-        double estimation = estimationFunction.apply(start, end);
+        double estimation = estimationFunction.applyAsDouble(start, end);
 
         // forward
         HashMap<N, WeightedNode<N, E>> forwardVisitedNodes = new HashMap<>();
@@ -119,11 +119,11 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
                     // iterate over all leaving edges
                     for (E leaving : current.node.getLeavingEdges(current.predecessor)) {
                         N dest = leaving.getDestination();
-                        double g = current.g + edgeWeightFunction.apply(leaving);
+                        double g = current.g + edgeWeightFunction.applyAsDouble(leaving);
 
                         // push new node into priority queue
                         if (!forwardVisitedNodes.keySet().contains(dest)) {
-                            double h = estimationFunction.apply(dest, end);
+                            double h = estimationFunction.applyAsDouble(dest, end);
                             forwardQueue.add(new WeightedNode<>(dest, leaving, null, g, h));
                         }
                     }
@@ -147,11 +147,11 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
                     // iterate over all incoming edges
                     for (E incoming : current.node.getIncoming()) {
                         N orig = incoming.getOrigin();
-                        double g = current.g + edgeWeightFunction.apply(incoming);
+                        double g = current.g + edgeWeightFunction.applyAsDouble(incoming);
 
                         // push new node into priority queue
                         if (!backwardVisitedNodes.keySet().contains(orig)) {
-                            double h = estimationFunction.apply(start, end);
+                            double h = estimationFunction.applyAsDouble(start, end);
                             backwardQueue.add(new WeightedNode<>(orig, null, incoming, g, h));
                         }
                     }

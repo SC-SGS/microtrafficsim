@@ -7,8 +7,8 @@ import microtrafficsim.core.shortestpath.ShortestPathNode;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Stack;
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.function.ToDoubleBiFunction;
+import java.util.function.ToDoubleFunction;
 
 
 /**
@@ -20,8 +20,8 @@ import java.util.function.Function;
  */
 public class AStar<N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>> implements ShortestPathAlgorithm<N, E> {
 
-    private final Function<? super E, Double> edgeWeightFunction;
-    private final BiFunction<? super N, ? super N, Double> estimationFunction;
+    private final ToDoubleFunction<? super E> edgeWeightFunction;
+    private final ToDoubleBiFunction<? super N, ? super N> estimationFunction;
 
     /**
      * Standard constructor which sets its edge weight and estimation function to the given ones. This constructor
@@ -45,8 +45,8 @@ public class AStar<N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>>
      *                           2) This estimation has to be >= 0
      *
      */
-    public AStar(Function<? super E, Double> edgeWeightFunction,
-                 BiFunction<? super N, ? super N, Double> estimationFunction) {
+    public AStar(ToDoubleFunction<? super E> edgeWeightFunction,
+                 ToDoubleBiFunction<? super N, ? super N> estimationFunction) {
         this.edgeWeightFunction = edgeWeightFunction;
         this.estimationFunction = estimationFunction;
     }
@@ -63,7 +63,7 @@ public class AStar<N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>>
 
         HashMap<N, WeightedNode<N, E>> visitedNodes = new HashMap<>();
         PriorityQueue<WeightedNode<N, E>> queue = new PriorityQueue<>();
-        queue.add(new WeightedNode<>(start, null, null, 0f, estimationFunction.apply(start, end)));
+        queue.add(new WeightedNode<>(start, null, null, 0f, estimationFunction.applyAsDouble(start, end)));
 
         while (!queue.isEmpty()) {
             WeightedNode<N, E> current = queue.poll();
@@ -86,11 +86,11 @@ public class AStar<N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>>
             // iterate over all leaving edges
             for (E leaving : current.node.getLeavingEdges(current.predecessor)) {
                 N dest = leaving.getDestination();
-                double g = current.g + edgeWeightFunction.apply(leaving);
+                double g = current.g + edgeWeightFunction.applyAsDouble(leaving);
 
                 // push new node into priority queue
                 if (!visitedNodes.keySet().contains(dest))
-                    queue.add(new WeightedNode<>(dest, leaving, null, g, estimationFunction.apply(dest, end)));
+                    queue.add(new WeightedNode<>(dest, leaving, null, g, estimationFunction.applyAsDouble(dest, end)));
             }
         }
     }

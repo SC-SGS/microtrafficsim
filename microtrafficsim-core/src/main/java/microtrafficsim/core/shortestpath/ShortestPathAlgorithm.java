@@ -31,9 +31,7 @@ public interface ShortestPathAlgorithm<N extends ShortestPathNode<E>, E extends 
      * Is needed for some algorithms for preparations needed for faster shortest path finding. It is implemented
      * empty per default.
      */
-    default void preprocess() {
-
-    }
+    default void preprocess() {}
 
     /**
      * <pr>
