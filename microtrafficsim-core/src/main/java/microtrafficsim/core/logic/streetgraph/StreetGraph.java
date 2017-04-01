@@ -27,6 +27,8 @@ public class StreetGraph implements Graph {
 
     /**
      * Just a standard constructor.
+     *
+     * @param bounds the bounds enclosing the excerpt represented in this graph.
      */
     public StreetGraph(Bounds bounds) {
         this.bounds = bounds;
@@ -62,6 +64,7 @@ public class StreetGraph implements Graph {
         return bounds;
     }
 
+
     @Override
     public Set<Node> getNodes() {
         return Collections.unmodifiableSet(nodes);
@@ -73,9 +76,12 @@ public class StreetGraph implements Graph {
     }
 
     @Override
-    public void registerEdgeAndNodes(DirectedEdge edge) {
-        nodes.add(edge.getOrigin());
-        nodes.add(edge.getDestination());
+    public void addNode(Node node) {
+        nodes.add(node);
+    }
+
+    @Override
+    public void addEdge(DirectedEdge edge) {
         edges.add(edge);
     }
 

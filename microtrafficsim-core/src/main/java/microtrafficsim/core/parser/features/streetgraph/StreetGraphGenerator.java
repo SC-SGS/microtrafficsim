@@ -51,7 +51,6 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * StreetGraphGenerator(config, HaversineDistanceCalculator::getDistance) }
      */
     public StreetGraphGenerator(ScenarioConfig config) {
-        // TODO: use vincenty-formular here for better accuracy?
         this(config, HaversineDistanceCalculator::getDistance);
     }
 
@@ -63,7 +62,6 @@ public class StreetGraphGenerator implements FeatureGenerator {
      *                 streets.
      */
     public StreetGraphGenerator(ScenarioConfig config, DistanceCalculator distcalc) {
-
         this.config      = config;
         this.distcalc    = distcalc;
         this.graph       = null;
@@ -180,14 +178,19 @@ public class StreetGraphGenerator implements FeatureGenerator {
         way.set(StreetGraphWayComponent.class, graphinfo);
 
         // register
+        if (forward != null || backward != null) {
+            graph.addNode(start);
+            graph.addNode(end);
+        }
+
         if (forward != null) {
-            graph.registerEdgeAndNodes(forward);
+            graph.addEdge(forward);
             start.addLeavingEdge(forward);
             end.addIncomingEdge(forward);
         }
 
         if (backward != null) {
-            graph.registerEdgeAndNodes(backward);
+            graph.addEdge(backward);
             start.addIncomingEdge(backward);
             end.addLeavingEdge(backward);
         }

@@ -9,21 +9,13 @@ import microtrafficsim.utils.Resettable;
 
 import java.util.Set;
 
+
 /**
  * Interface for street-graphs.
  *
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public interface Graph extends Seeded, Resettable, ShortestPathGraph {
-
-    /**
-     * Adds the {@link Node}s of the given {@link DirectedEdge} to the node set
-     * and the edge to the edge set.
-     *
-     * @param edge This edge will be added to the graph.
-     */
-    void registerEdgeAndNodes(DirectedEdge edge);       // TODO: split into multiple methods?
-
 
     /**
      * Returns the bounding rectangle enclosing this graph.
@@ -51,6 +43,36 @@ public interface Graph extends Seeded, Resettable, ShortestPathGraph {
 
 
     /**
+     * Add the given {@code Node} to this graph. Consider calling {@link #setSeed(long)} afterwards.
+     * <p>
+     * Note: The specified node is expected to be set up completely, i.e. if a new edge has been created and added to
+     * either existing or new nodes, the edge indices of have to be updated by calling {@link Node#updateEdgeIndices()}
+     * on both adjacent nodes.
+     * <p>
+     * Determinism: Please note that adding an edge will break determinism, even if the given seed is the same, thus
+     * resulting in a different scenario cycle.
+     *
+     * @param node the node to add.
+     */
+    void addNode(Node node);
+
+    /**
+     * Add the given {@code Edge} to this graph, does not add any {@code Node}s. To add the {@code Node}s of this edge,
+     * call {@link #addNode(Node)}.
+     * <p>
+     * Note: The specified edge is expected to be set up completely, i.e. if a new edge has been created and added to
+     * either existing or new nodes, the edge indices of have to be updated by calling {@link Node#updateEdgeIndices()}
+     * on both adjacent nodes.
+     * <p>
+     * Determinism: Please note that adding an edge will break determinism, even if the given seed is the same, thus
+     * resulting in a different scenario cycle.
+     *
+     * @param edge the edge to add.
+     */
+    void addEdge(DirectedEdge edge);
+
+
+    /**
      * Sets the seeds of associated nodes based on the given seed. Consider calling {@link #reset()} before
      * executing this method, as this method does not reset this graph.
      *
@@ -60,7 +82,7 @@ public interface Graph extends Seeded, Resettable, ShortestPathGraph {
     void setSeed(long seed);
 
     /**
-     * Resets the nodes and edges of the {@code graph}.
+     * Resets all nodes and edges of this graph.
      */
     @Override
     default void reset() {

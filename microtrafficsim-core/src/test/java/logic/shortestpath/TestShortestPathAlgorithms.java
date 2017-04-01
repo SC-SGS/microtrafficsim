@@ -208,12 +208,19 @@ public class TestShortestPathAlgorithms {
         c.addEdge(ec);
 
         // add nodes to the graph
-        graph.registerEdgeAndNodes(ab);
-        graph.registerEdgeAndNodes(bc);
-        graph.registerEdgeAndNodes(bd);
-        graph.registerEdgeAndNodes(cd);
-        graph.registerEdgeAndNodes(de);
-        graph.registerEdgeAndNodes(ec);
+        graph.addNode(a);
+        graph.addNode(b);
+        graph.addNode(c);
+        graph.addNode(d);
+        graph.addNode(e);
+
+        // add edges to the graph
+        graph.addEdge(ab);
+        graph.addEdge(bc);
+        graph.addEdge(bd);
+        graph.addEdge(cd);
+        graph.addEdge(de);
+        graph.addEdge(ec);
 
         // create turning lanes
         b.addConnector(ab.getLane(0), bc.getLane(0));
@@ -322,18 +329,28 @@ public class TestShortestPathAlgorithms {
         g.addEdge(hg);
 
         // add nodes to the graph
-        graph.registerEdgeAndNodes(ab);
-        graph.registerEdgeAndNodes(ac);
-        graph.registerEdgeAndNodes(ba);
-        graph.registerEdgeAndNodes(bc);
-        graph.registerEdgeAndNodes(de);
-        graph.registerEdgeAndNodes(df);
-        graph.registerEdgeAndNodes(ea);
-        graph.registerEdgeAndNodes(fh);
-        graph.registerEdgeAndNodes(gd);
-        graph.registerEdgeAndNodes(gf);
-        graph.registerEdgeAndNodes(he);
-        graph.registerEdgeAndNodes(hg);
+        graph.addNode(a);
+        graph.addNode(b);
+        graph.addNode(c);
+        graph.addNode(d);
+        graph.addNode(e);
+        graph.addNode(f);
+        graph.addNode(g);
+        graph.addNode(h);
+
+        // add edges to the graph
+        graph.addEdge(ab);
+        graph.addEdge(ac);
+        graph.addEdge(ba);
+        graph.addEdge(bc);
+        graph.addEdge(de);
+        graph.addEdge(df);
+        graph.addEdge(ea);
+        graph.addEdge(fh);
+        graph.addEdge(gd);
+        graph.addEdge(gf);
+        graph.addEdge(he);
+        graph.addEdge(hg);
 
         // create turning lanes
         a.addConnector(ea.getLane(0), ab.getLane(0));
@@ -437,19 +454,29 @@ public class TestShortestPathAlgorithms {
         g.addEdge(hg);
 
         // add nodes to the graph
-        graph.registerEdgeAndNodes(ab);
-        graph.registerEdgeAndNodes(ac);
-        graph.registerEdgeAndNodes(ba);
-        graph.registerEdgeAndNodes(bc);
-        graph.registerEdgeAndNodes(de);
-        graph.registerEdgeAndNodes(df);
-        graph.registerEdgeAndNodes(ea);
-        graph.registerEdgeAndNodes(eb);
-        graph.registerEdgeAndNodes(fh);
-        graph.registerEdgeAndNodes(gd);
-        graph.registerEdgeAndNodes(gf);
-        graph.registerEdgeAndNodes(he);
-        graph.registerEdgeAndNodes(hg);
+        graph.addNode(a);
+        graph.addNode(b);
+        graph.addNode(c);
+        graph.addNode(d);
+        graph.addNode(e);
+        graph.addNode(f);
+        graph.addNode(g);
+        graph.addNode(h);
+
+        // add edges to the graph
+        graph.addEdge(ab);
+        graph.addEdge(ac);
+        graph.addEdge(ba);
+        graph.addEdge(bc);
+        graph.addEdge(de);
+        graph.addEdge(df);
+        graph.addEdge(ea);
+        graph.addEdge(eb);
+        graph.addEdge(fh);
+        graph.addEdge(gd);
+        graph.addEdge(gf);
+        graph.addEdge(he);
+        graph.addEdge(hg);
 
         // create turning lanes
         a.addConnector(ea.getLane(0), ab.getLane(0));
