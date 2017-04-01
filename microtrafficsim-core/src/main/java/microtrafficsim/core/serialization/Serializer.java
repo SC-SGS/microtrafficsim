@@ -3,6 +3,8 @@ package microtrafficsim.core.serialization;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import microtrafficsim.core.entities.street.StreetEntity;
+import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.map.*;
 import microtrafficsim.core.map.features.MultiLine;
 import microtrafficsim.core.map.features.Point;
@@ -12,12 +14,14 @@ import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.serialization.kryo.impl.*;
+import microtrafficsim.core.serialization.kryo.impl.entities.StreetEntitySerializer;
 import microtrafficsim.core.serialization.kryo.impl.features.MultiLineSerializer;
 import microtrafficsim.core.serialization.kryo.impl.features.PointSerializer;
 import microtrafficsim.core.serialization.kryo.impl.features.PolygonSerializer;
 import microtrafficsim.core.serialization.kryo.impl.features.StreetSerializer;
 import microtrafficsim.core.serialization.kryo.impl.segments.MapSegmentSerializer;
 import microtrafficsim.core.serialization.kryo.impl.segments.QuadTreeTiledMapSegmentSerializer;
+import microtrafficsim.core.serialization.kryo.impl.streetgraph.StreetGraphSerializer;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.core.vis.map.projections.PlateCarreeProjection;
 import microtrafficsim.math.Rect2d;
@@ -76,8 +80,14 @@ public class Serializer {
         kryo.register(Coordinate.class, new CoordinateSerializer());
         kryo.register(Bounds.class, new BoundsSerializer());
 
+        kryo.register(Rect2d.class, new Rect2dSerializer());
+
+        kryo.register(TileRect.class, new TileRectSerializer());
+
         kryo.register(PlateCarreeProjection.class);
         kryo.register(MercatorProjection.class);
+
+        kryo.register(QuadTreeTilingScheme.class, new QuadTreeTilingSchemeSerializer());
 
         kryo.register(Feature.class, new FeatureSerializer());
         kryo.register(Point.class, new PointSerializer());
@@ -85,16 +95,14 @@ public class Serializer {
         kryo.register(Street.class, new StreetSerializer());
         kryo.register(Polygon.class, new PolygonSerializer());
 
-        kryo.register(Rect2d.class, new Rect2dSerializer());
-
-        kryo.register(TileRect.class, new TileRectSerializer());
+        kryo.register(StreetEntity.class, new StreetEntitySerializer());
 
         kryo.register(MapSegment.class, new MapSegmentSerializer());
         kryo.register(QuadTreeTiledMapSegment.class, new QuadTreeTiledMapSegmentSerializer());
         kryo.register(QuadTreeTiledMapSegment.TileGroup.class, new QuadTreeTiledMapSegmentSerializer.TileGroup());
         kryo.register(QuadTreeTiledMapSegment.TileData.class, new QuadTreeTiledMapSegmentSerializer.TileData());
 
-        kryo.register(QuadTreeTilingScheme.class, new QuadTreeTilingSchemeSerializer());
+        // kryo.register(StreetGraph.class, new StreetGraphSerializer());
 
         return kryo;
     }
