@@ -1,19 +1,15 @@
 package logic.shortestpath;
 
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
-import microtrafficsim.core.shortestpath.astar.AStar;
-import microtrafficsim.core.shortestpath.astar.BidirectionalAStar;
-import microtrafficsim.core.shortestpath.astar.impl.FastestWayAStar;
-import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
-import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceAStar;
-import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
+import microtrafficsim.core.shortestpath.astar.AStars;
+import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.id.BasicLongIDGenerator;
@@ -42,10 +38,10 @@ public class TestShortestPathAlgorithms {
 
     private static final Logger logger = new EasyMarkableLogger(TestShortestPathAlgorithms.class);
 
-    private static ScenarioConfig        config;
-    private static ShortestPathAlgorithm shortestPathAlgorithm;
-    private static Vec2d                 rubbishVec2d;
-    private static LongGenerator         idGenerator;
+    private static ScenarioConfig                            config;
+    private static ShortestPathAlgorithm<Node, DirectedEdge> shortestPathAlgorithm;
+    private static Vec2d                                     rubbishVec2d;
+    private static LongGenerator                             idGenerator;
 
     private final int               maxVelocity = 1;
     private Stack<ShortestPathEdge> shortestPath;
@@ -77,8 +73,8 @@ public class TestShortestPathAlgorithms {
     @Test
     public void testDijkstra() {
         logger.info("");
-        logger.info("NEW TEST CLASS: ShortestWayDijkstra");
-        shortestPathAlgorithm = AStar.createShortestWayDijkstra();
+        logger.info("NEW TEST: AStars.shortestPathDijkstra()");
+        shortestPathAlgorithm = AStars.shortestPathDijkstra();
         shortestPathAlgorithm.preprocess();
         testAll();
     }
@@ -86,8 +82,8 @@ public class TestShortestPathAlgorithms {
     @Test
     public void testFastestWayAStar() {
         logger.info("");
-        logger.info("NEW TEST CLASS: " + FastestWayAStar.class.getSimpleName());
-        shortestPathAlgorithm = new FastestWayAStar(config.metersPerCell, config.globalMaxVelocity);
+        logger.info("NEW TEST: AStars.fastestPathAStar()");
+        shortestPathAlgorithm = AStars.fastestPathAStar(config.metersPerCell, config.globalMaxVelocity);
         shortestPathAlgorithm.preprocess();
         testAll();
     }
@@ -95,8 +91,8 @@ public class TestShortestPathAlgorithms {
     @Test
     public void testLinearDistanceAStar() {
         logger.info("");
-        logger.info("NEW TEST CLASS: " + LinearDistanceAStar.class.getSimpleName());
-        shortestPathAlgorithm = new LinearDistanceAStar(config.metersPerCell);
+        logger.info("NEW TEST: AStars.shortestPathAStar()");
+        shortestPathAlgorithm = AStars.shortestPathAStar(config.metersPerCell);
         shortestPathAlgorithm.preprocess();
         testAll();
     }
@@ -104,8 +100,8 @@ public class TestShortestPathAlgorithms {
     @Test
     public void testBidirectionalDijkstra() {
         logger.info("");
-        logger.info("NEW TEST CLASS: BidirectionalShortestWayDijkstra");
-        shortestPathAlgorithm = BidirectionalAStar.createShortestWayDijkstra();
+        logger.info("NEW TEST: BidirectionalAStars.shortestPathDijkstra()");
+        shortestPathAlgorithm = BidirectionalAStars.shortestPathDijkstra();
         shortestPathAlgorithm.preprocess();
         testAll();
     }
@@ -113,8 +109,8 @@ public class TestShortestPathAlgorithms {
     @Test
     public void testFastestWayBidirectionalAStar() {
         logger.info("");
-        logger.info("NEW TEST CLASS: " + FastestWayBidirectionalAStar.class.getSimpleName());
-        shortestPathAlgorithm = new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);
+        logger.info("NEW TEST: BidirectionalAStars.fastestPathAStar()");
+        shortestPathAlgorithm = BidirectionalAStars.fastestPathAStar(config.metersPerCell, config.globalMaxVelocity);
         shortestPathAlgorithm.preprocess();
         testAll();
     }
@@ -122,8 +118,8 @@ public class TestShortestPathAlgorithms {
     @Test
     public void testLinearDistanceBidirectionalAStar() {
         logger.info("");
-        logger.info("NEW TEST CLASS: " + LinearDistanceBidirectionalAStar.class.getSimpleName());
-        shortestPathAlgorithm = new LinearDistanceBidirectionalAStar(config.metersPerCell);
+        logger.info("NEW TEST: BidirectionalAStars.shortestPathAStar()");
+        shortestPathAlgorithm = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
         shortestPathAlgorithm.preprocess();
         testAll();
     }
@@ -220,13 +216,13 @@ public class TestShortestPathAlgorithms {
         graph.registerEdgeAndNodes(ec);
 
         // create turning lanes
-        b.addConnector(ab.getLane(0), bc.getLane(0), null);
-        b.addConnector(ab.getLane(0), bd.getLane(0), null);
-        c.addConnector(bc.getLane(0), cd.getLane(0), null);
-        c.addConnector(ec.getLane(0), cd.getLane(0), null);
-        d.addConnector(bd.getLane(0), de.getLane(0), null);
-        d.addConnector(cd.getLane(0), de.getLane(0), null);
-        e.addConnector(de.getLane(0), ec.getLane(0), null);
+        b.addConnector(ab.getLane(0), bc.getLane(0));
+        b.addConnector(ab.getLane(0), bd.getLane(0));
+        c.addConnector(bc.getLane(0), cd.getLane(0));
+        c.addConnector(ec.getLane(0), cd.getLane(0));
+        d.addConnector(bd.getLane(0), de.getLane(0));
+        d.addConnector(cd.getLane(0), de.getLane(0));
+        e.addConnector(de.getLane(0), ec.getLane(0));
 
         String graphBefore = graph.toString();
 
@@ -297,7 +293,7 @@ public class TestShortestPathAlgorithms {
         d.addEdge(de);
         e.addEdge(de);
 
-        DirectedEdge df = createEdge(1, e, f, 3);
+        DirectedEdge df = createEdge(1, d, f, 3);
         d.addEdge(df);
         f.addEdge(df);
 
@@ -340,18 +336,18 @@ public class TestShortestPathAlgorithms {
         graph.registerEdgeAndNodes(hg);
 
         // create turning lanes
-        a.addConnector(ea.getLane(0), ab.getLane(0), null);
-        a.addConnector(ea.getLane(0), ac.getLane(0), null);
-        b.addConnector(ab.getLane(0), bc.getLane(0), null);
-        d.addConnector(gd.getLane(0), de.getLane(0), null);
-        e.addConnector(de.getLane(0), ea.getLane(0), null);
-        e.addConnector(he.getLane(0), ea.getLane(0), null);
-        f.addConnector(df.getLane(0), fh.getLane(0), null);
-        f.addConnector(gf.getLane(0), fh.getLane(0), null);
-        g.addConnector(hg.getLane(0), gd.getLane(0), null);
-        g.addConnector(hg.getLane(0), gf.getLane(0), null);
-        h.addConnector(fh.getLane(0), he.getLane(0), null);
-        h.addConnector(fh.getLane(0), hg.getLane(0), null);
+        a.addConnector(ea.getLane(0), ab.getLane(0));
+        a.addConnector(ea.getLane(0), ac.getLane(0));
+        b.addConnector(ab.getLane(0), bc.getLane(0));
+        d.addConnector(gd.getLane(0), de.getLane(0));
+        e.addConnector(de.getLane(0), ea.getLane(0));
+        e.addConnector(he.getLane(0), ea.getLane(0));
+        f.addConnector(df.getLane(0), fh.getLane(0));
+        f.addConnector(gf.getLane(0), fh.getLane(0));
+        g.addConnector(hg.getLane(0), gd.getLane(0));
+        g.addConnector(hg.getLane(0), gf.getLane(0));
+        h.addConnector(fh.getLane(0), he.getLane(0));
+        h.addConnector(fh.getLane(0), hg.getLane(0));
 
         // shortest path
         start = g;
@@ -408,7 +404,7 @@ public class TestShortestPathAlgorithms {
         d.addEdge(de);
         e.addEdge(de);
 
-        DirectedEdge df = createEdge(1, e, f, 3);
+        DirectedEdge df = createEdge(1, d, f, 3);
         d.addEdge(df);
         f.addEdge(df);
 
@@ -441,33 +437,33 @@ public class TestShortestPathAlgorithms {
         g.addEdge(hg);
 
         // add nodes to the graph
-//        graph.registerEdgeAndNodes(ab);
-//        graph.registerEdgeAndNodes(ac);
-//        graph.registerEdgeAndNodes(ba);
-//        graph.registerEdgeAndNodes(bc);
-//        graph.registerEdgeAndNodes(de);
-//        graph.registerEdgeAndNodes(df);
-//        graph.registerEdgeAndNodes(ea);
-//        graph.registerEdgeAndNodes(eb);
-//        graph.registerEdgeAndNodes(fh);
-//        graph.registerEdgeAndNodes(gd);
-//        graph.registerEdgeAndNodes(gf);
-//        graph.registerEdgeAndNodes(he);
-//        graph.registerEdgeAndNodes(hg);
+        graph.registerEdgeAndNodes(ab);
+        graph.registerEdgeAndNodes(ac);
+        graph.registerEdgeAndNodes(ba);
+        graph.registerEdgeAndNodes(bc);
+        graph.registerEdgeAndNodes(de);
+        graph.registerEdgeAndNodes(df);
+        graph.registerEdgeAndNodes(ea);
+        graph.registerEdgeAndNodes(eb);
+        graph.registerEdgeAndNodes(fh);
+        graph.registerEdgeAndNodes(gd);
+        graph.registerEdgeAndNodes(gf);
+        graph.registerEdgeAndNodes(he);
+        graph.registerEdgeAndNodes(hg);
 
         // create turning lanes
-//        a.addConnector(ea.getLane(0), ab.getLane(0), null);
-//        a.addConnector(ea.getLane(0), ac.getLane(0), null);
-//        b.addConnector(ab.getLane(0), bc.getLane(0), null);
-//        d.addConnector(gd.getLane(0), de.getLane(0), null);
-//        e.addConnector(de.getLane(0), ea.getLane(0), null);
-//        e.addConnector(he.getLane(0), ea.getLane(0), null);
-//        f.addConnector(df.getLane(0), fh.getLane(0), null);
-//        f.addConnector(gf.getLane(0), fh.getLane(0), null);
-//        g.addConnector(hg.getLane(0), gd.getLane(0), null);
-//        g.addConnector(hg.getLane(0), gf.getLane(0), null);
-//        h.addConnector(fh.getLane(0), he.getLane(0), null);
-//        h.addConnector(fh.getLane(0), hg.getLane(0), null);
+        a.addConnector(ea.getLane(0), ab.getLane(0));
+        a.addConnector(ea.getLane(0), ac.getLane(0));
+        b.addConnector(ab.getLane(0), bc.getLane(0));
+        d.addConnector(gd.getLane(0), de.getLane(0));
+        e.addConnector(de.getLane(0), ea.getLane(0));
+        e.addConnector(he.getLane(0), ea.getLane(0));
+        f.addConnector(df.getLane(0), fh.getLane(0));
+        f.addConnector(gf.getLane(0), fh.getLane(0));
+        g.addConnector(hg.getLane(0), gd.getLane(0));
+        g.addConnector(hg.getLane(0), gf.getLane(0));
+        h.addConnector(fh.getLane(0), he.getLane(0));
+        h.addConnector(fh.getLane(0), hg.getLane(0));
 
         // shortest path
         start = g;

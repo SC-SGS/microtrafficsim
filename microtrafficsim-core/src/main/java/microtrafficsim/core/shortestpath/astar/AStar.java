@@ -13,15 +13,15 @@ import java.util.function.Function;
 
 /**
  * This class represents an A* algorithm. You can use the constructor for own implementations of the weight and
- * estimation function, but you can also use {@link #createShortestWayDijkstra()} for a standard implementation of
- * Dijkstra's algorithm.
+ * estimation function, but you can also look at {@link AStars} for various constructor-functions using selected cost
+ * and heuristic functions.
  *
- * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
+ * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro, Maximilian Luz
  */
-public class AStar implements ShortestPathAlgorithm {
+public class AStar<N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>> implements ShortestPathAlgorithm<N, E> {
 
-    private final Function<ShortestPathEdge, Float> edgeWeightFunction;
-    private final BiFunction<ShortestPathNode, ShortestPathNode, Float> estimationFunction;
+    private final Function<? super E, Double> edgeWeightFunction;
+    private final BiFunction<? super N, ? super N, Double> estimationFunction;
 
     /**
      * Standard constructor which sets its edge weight and estimation function to the given ones. This constructor
@@ -45,22 +45,12 @@ public class AStar implements ShortestPathAlgorithm {
      *                           2) This estimation has to be >= 0
      *
      */
-    public AStar(Function<ShortestPathEdge, Float> edgeWeightFunction,
-                 BiFunction<ShortestPathNode, ShortestPathNode, Float> estimationFunction) {
+    public AStar(Function<? super E, Double> edgeWeightFunction,
+                 BiFunction<? super N, ? super N, Double> estimationFunction) {
         this.edgeWeightFunction = edgeWeightFunction;
         this.estimationFunction = estimationFunction;
     }
 
-    /**
-     * @return Standard implementation of Dijkstra's algorithm for calculating the shortest (not necessarily fastest)
-     * path using {@link ShortestPathEdge#getLength()}
-     */
-    public static AStar createShortestWayDijkstra() {
-        return new AStar(
-                edge -> (float)edge.getLength(),
-                (destination, routeDestination) -> 0f
-        );
-    }
 
     /*
     |===========================|
@@ -68,16 +58,15 @@ public class AStar implements ShortestPathAlgorithm {
     |===========================|
     */
     @Override
-    public void findShortestPath(ShortestPathNode start, ShortestPathNode end, Stack<ShortestPathEdge> shortestPath) {
+    public void findShortestPath(N start, N end, Stack<? super E> shortestPath) {
+        if (start == end) return;
 
-        if (start == end)
-            return;
-        HashMap<ShortestPathNode, WeightedNode> visitedNodes = new HashMap<>();
-        PriorityQueue<WeightedNode>             queue = new PriorityQueue<>();
-        queue.add(new WeightedNode(start, null, null, 0f, estimationFunction.apply(start, end)));
+        HashMap<N, WeightedNode<N, E>> visitedNodes = new HashMap<>();
+        PriorityQueue<WeightedNode<N, E>> queue = new PriorityQueue<>();
+        queue.add(new WeightedNode<>(start, null, null, 0f, estimationFunction.apply(start, end)));
 
         while (!queue.isEmpty()) {
-            WeightedNode current = queue.poll();
+            WeightedNode<N, E> current = queue.poll();
 
             if (current.node == end) { // shortest path found
                 // create shortest path
@@ -91,16 +80,17 @@ public class AStar implements ShortestPathAlgorithm {
 
             if (visitedNodes.keySet().contains(current.node))
                 continue;
+
             visitedNodes.put(current.node, current);
 
             // iterate over all leaving edges
-            for (ShortestPathEdge leaving : current.node.getLeavingEdges(current.predecessor)) {
-                ShortestPathNode dest = leaving.getDestination();
-                float            g    = current.g + edgeWeightFunction.apply(leaving);
+            for (E leaving : current.node.getLeavingEdges(current.predecessor)) {
+                N dest = leaving.getDestination();
+                double g = current.g + edgeWeightFunction.apply(leaving);
 
                 // push new node into priority queue
                 if (!visitedNodes.keySet().contains(dest))
-                    queue.add(new WeightedNode(dest, leaving, null, g, estimationFunction.apply(dest, end)));
+                    queue.add(new WeightedNode<>(dest, leaving, null, g, estimationFunction.apply(dest, end)));
             }
         }
     }

@@ -14,12 +14,13 @@ import microtrafficsim.core.shortestpath.ShortestPathNode;
  *
  * @author Dominic Parga Cacheiro
  */
-class WeightedNode implements Comparable<WeightedNode> {
+class WeightedNode<N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>> implements Comparable<WeightedNode> {
 
-    final ShortestPathNode node;
-    final float            g;
-    final float            f;    // f = g + h
-    ShortestPathEdge       predecessor, successor;
+    final N node;
+    final double g;
+    final double f;    // f = g + h
+    E predecessor;
+    E successor;
 
     /**
      * Standard constructor.
@@ -28,7 +29,7 @@ class WeightedNode implements Comparable<WeightedNode> {
      * @param g    Real weight from the start to this node.
      * @param h    Estimated weight of the way from this node to the end.
      */
-    WeightedNode(ShortestPathNode node, ShortestPathEdge predecessor, ShortestPathEdge successor, float g, float h) {
+    WeightedNode(N node, E predecessor, E successor, double g, double h) {
         this.node = node;
         this.predecessor = predecessor;
         this.successor = successor;
@@ -48,6 +49,6 @@ class WeightedNode implements Comparable<WeightedNode> {
 
     @Override
     public int compareTo(WeightedNode o) {
-        return Float.compare(f, o.f);
+        return Double.compare(f, o.f);
     }
 }

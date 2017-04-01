@@ -11,25 +11,25 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * <p>
  * This class represents an bidirectional A* algorithm. You can use the constructor for own
- * implementations of the
- * weight and estimation function, but you can also use {@link #createShortestWayDijkstra()} for a standard
- * implementation of Dijkstra's algorithm (bidirectional).
+ * implementations of the weight and estimation function, but you can also look at {@link BidirectionalAStars} for
+ * various constructor-functions using selected cost and heuristic functions.
  *
  * <p>
  * Important note:<br>
  * Hence this class is a {@code bidirectional A}*, it uses two priority queues (forward and backward search). For
- * better performance, {@link #findShortestPath(ShortestPathNode, ShortestPathNode, Stack) findShortestPath(...)}
+ * better performance, {@link #findShortestPath(N, N, Stack) findShortestPath(...)}
  * stops searching for the shortest path if <b>at least</b> one queue is empty, <b>not both</b>. This
  * could cause incorrect shortest paths if the forward queue iterates over different edges/nodes than the backward
  * queue (e.g. in {@code contraction hierarchies}).
  *
- * @author Dominic Parga Cacheiro
+ * @author Dominic Parga Cacheiro, Maximilian Luz
  */
-public class BidirectionalAStar implements ShortestPathAlgorithm {
-    private final Function<ShortestPathEdge, Float> edgeWeightFunction;
-    private final BiFunction<ShortestPathNode, ShortestPathNode, Float> estimationFunction;
+public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>>
+        implements ShortestPathAlgorithm<N, E>
+{
+    private final Function<? super E, Double> edgeWeightFunction;
+    private final BiFunction<? super N, ? super N, Double> estimationFunction;
 
     /**
      * Standard constructor which sets its edge weight and estimation function to the given ones. This constructor
@@ -53,22 +53,12 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
      *                           2) This estimation has to be >= 0
      *
      */
-    public BidirectionalAStar(Function<ShortestPathEdge, Float> edgeWeightFunction,
-                              BiFunction<ShortestPathNode, ShortestPathNode, Float> estimationFunction) {
+    public BidirectionalAStar(Function<? super E, Double> edgeWeightFunction,
+                              BiFunction<? super N, ? super N, Double> estimationFunction) {
         this.edgeWeightFunction = edgeWeightFunction;
         this.estimationFunction = estimationFunction;
     }
 
-    /**
-     * @return Standard implementation of Dijkstra's algorithm for calculating the shortest (not necessarily fastest)
-     * path using {@link ShortestPathEdge#getLength()}
-     */
-    public static BidirectionalAStar createShortestWayDijkstra() {
-        return new BidirectionalAStar(
-                edge -> (float)edge.getLength(),
-                (destination, routeDestination) -> 0f
-        );
-    }
 
     /*
     |===========================|
@@ -76,7 +66,6 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
     |===========================|
     */
     /**
-     * <p>
      * Important note:<br>
      * Hence this class is a {@code bidirectional A}*, it uses two priority queues (forward and backward search). For
      * better performance, this method stops searching for the shortest path if <b>at least</b> one queue is empty,
@@ -84,10 +73,8 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
      * edges/nodes than the backward queue (e.g. in {@code contraction hierarchies}).
      */
     @Override
-    public void findShortestPath(ShortestPathNode start, ShortestPathNode end, Stack<ShortestPathEdge> shortestPath) {
-
-        if (start == end)
-            return;
+    public void findShortestPath(N start, N end, Stack<? super E> result) {
+        if (start == end) return;
 
         /*
         |================|
@@ -95,29 +82,31 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
         |================|
         */
         // both
-        float estimation = estimationFunction.apply(start, end);
+        double estimation = estimationFunction.apply(start, end);
+
         // forward
-        HashMap<ShortestPathNode, WeightedNode> forwardVisitedNodes = new HashMap<>();
-        PriorityQueue<WeightedNode>             forwardQueue        = new PriorityQueue<>();
-        forwardQueue.add(new WeightedNode(start, null, null, 0f, estimation));
+        HashMap<N, WeightedNode<N, E>> forwardVisitedNodes = new HashMap<>();
+        PriorityQueue<WeightedNode<N, E>> forwardQueue = new PriorityQueue<>();
+        forwardQueue.add(new WeightedNode<>(start, null, null, 0.0, estimation));
+
         // backward
-        HashMap<ShortestPathNode, WeightedNode> backwardVisitedNodes = new HashMap<>();
-        PriorityQueue<WeightedNode>             backwardQueue        = new PriorityQueue<>();
-        backwardQueue.add(new WeightedNode(end, null, null, 0f, estimation));
+        HashMap<N, WeightedNode<N, E>> backwardVisitedNodes = new HashMap<>();
+        PriorityQueue<WeightedNode<N, E>> backwardQueue = new PriorityQueue<>();
+        backwardQueue.add(new WeightedNode<>(end, null, null, 0.0, estimation));
 
         /*
         |================|
         | LOOP/ALGORITHM |
         |================|
         */
-        WeightedNode meetingNode = null;
+        WeightedNode<N, E> meetingNode = null;
         // while at least one is not empty
         while (!forwardQueue.isEmpty() && !backwardQueue.isEmpty()) {
             // one step forwards
             if (!forwardQueue.isEmpty()) {
-                WeightedNode current = forwardQueue.poll();
+                WeightedNode<N, E> current = forwardQueue.poll();
 
-                WeightedNode backwardsCurrent = backwardVisitedNodes.get(current.node);
+                WeightedNode<N, E> backwardsCurrent = backwardVisitedNodes.get(current.node);
                 if (backwardsCurrent != null) { // shortest path found
                     meetingNode = current;
                     meetingNode.successor = backwardsCurrent.successor;
@@ -128,23 +117,24 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
                     forwardVisitedNodes.put(current.node, current);
 
                     // iterate over all leaving edges
-                    for (ShortestPathEdge leaving : current.node.getLeavingEdges(current.predecessor)) {
-                        ShortestPathNode dest = leaving.getDestination();
-                        float g = current.g + edgeWeightFunction.apply(leaving);
+                    for (E leaving : current.node.getLeavingEdges(current.predecessor)) {
+                        N dest = leaving.getDestination();
+                        double g = current.g + edgeWeightFunction.apply(leaving);
 
                         // push new node into priority queue
-                        if (!forwardVisitedNodes.keySet().contains(dest))
-                            forwardQueue.add(
-                                    new WeightedNode(dest, leaving, null, g, estimationFunction.apply(dest, end)));
+                        if (!forwardVisitedNodes.keySet().contains(dest)) {
+                            double h = estimationFunction.apply(dest, end);
+                            forwardQueue.add(new WeightedNode<>(dest, leaving, null, g, h));
+                        }
                     }
                 }
             }
 
             // one step backwards
             if (!backwardQueue.isEmpty()) {
-                WeightedNode current = backwardQueue.poll();
+                WeightedNode<N, E> current = backwardQueue.poll();
 
-                WeightedNode forwardsCurrent = forwardVisitedNodes.get(current.node);
+                WeightedNode<N, E> forwardsCurrent = forwardVisitedNodes.get(current.node);
                 if (forwardsCurrent != null) { // shortest path found
                     meetingNode = current;
                     meetingNode.predecessor = forwardsCurrent.predecessor;
@@ -155,14 +145,15 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
                     backwardVisitedNodes.put(current.node, current);
 
                     // iterate over all incoming edges
-                    for (ShortestPathEdge incoming : current.node.getIncomingEdges()) {
-                        ShortestPathNode orig = incoming.getOrigin();
-                        float g = current.g + edgeWeightFunction.apply(incoming);
+                    for (E incoming : current.node.getIncoming()) {
+                        N orig = incoming.getOrigin();
+                        double g = current.g + edgeWeightFunction.apply(incoming);
 
                         // push new node into priority queue
-                        if (!backwardVisitedNodes.keySet().contains(orig))
-                            backwardQueue.add(
-                                    new WeightedNode(orig, null, incoming, g, estimationFunction.apply(start, orig)));
+                        if (!backwardVisitedNodes.keySet().contains(orig)) {
+                            double h = estimationFunction.apply(start, end);
+                            backwardQueue.add(new WeightedNode<>(orig, null, incoming, g, h));
+                        }
                     }
                 }
             }
@@ -176,20 +167,21 @@ public class BidirectionalAStar implements ShortestPathAlgorithm {
         */
         if (meetingNode == null)
             return;
-        Stack<ShortestPathEdge> bin = new Stack<>();
+
+        Stack<E> bin = new Stack<>();
         // create shortest path - last part
-        WeightedNode current = meetingNode;
+        WeightedNode<N, E> current = meetingNode;
         while (current.successor != null) {
             bin.push(current.successor);
             current = backwardVisitedNodes.get(current.successor.getDestination());
         }
         while (!bin.isEmpty()) {
-            shortestPath.push(bin.pop());
+            result.push(bin.pop());
         }
         // create shortest path - first part
         current = meetingNode;
         while (current.predecessor != null) {
-            shortestPath.push(current.predecessor);
+            result.push(current.predecessor);
             current = forwardVisitedNodes.get(current.predecessor.getOrigin());
         }
     }

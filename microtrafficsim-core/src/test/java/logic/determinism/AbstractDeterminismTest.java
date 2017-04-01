@@ -163,7 +163,7 @@ public abstract class AbstractDeterminismTest {
     }
 
     private void setupNewSimulationRun() {
-        graph.postprocess(config.seed);
+        graph.setSeed(config.seed);
         setupScenario(simulation.getScenario());
     }
 

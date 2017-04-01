@@ -22,7 +22,7 @@ import java.util.Collection;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity, Resettable {
+public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, Resettable {
 
     /* street information */
     private FullStreetInfo streetInfo;
@@ -187,9 +187,9 @@ public class DirectedEdge implements ShortestPathEdge, LogicStreetEntity, Resett
     }
 
     @Override
-    public float getTimeCostMillis() {
-        // 1000f because velocity is in cells/s = cells/1000ms
-        return (1000f * getLength()) / streetInfo.maxVelocity;
+    public double getTimeCostMillis() {
+        // 1000.0 because velocity is in cells/s = cells/1000ms
+        return (1000.0 * getLength()) / streetInfo.maxVelocity;
     }
 
     @Override

@@ -4,6 +4,7 @@ import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
@@ -192,7 +193,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
         ThreadDelegator delegator = new StaticThreadDelegator(config.multiThreading.nThreads);
         delegator.doTask(
                 vehicle -> {
-                    ShortestPathAlgorithm scout = scenario.getScoutFactory().get();
+                    ShortestPathAlgorithm<Node, DirectedEdge> scout = scenario.getScoutFactory().get();
                     Route<Node> route = vehicle.getDriver().getRoute();
                     scout.findShortestPath(route.getStart(), route.getEnd(), route);
                     vehicle.registerInGraph();
