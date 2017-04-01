@@ -2,17 +2,19 @@ package microtrafficsim.core.logic.streetgraph;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.shortestpath.ShortestPathGraph;
-import microtrafficsim.core.simulation.builder.MapInitializer;
-import microtrafficsim.utils.Resettable;
 import microtrafficsim.core.map.Bounds;
+import microtrafficsim.core.shortestpath.ShortestPathGraph;
+import microtrafficsim.math.random.Seeded;
+import microtrafficsim.utils.Resettable;
 
 import java.util.Set;
 
 /**
- * @author Dominic Parga Cacheiro
+ * Interface for street-graphs.
+ *
+ * @author Dominic Parga Cacheiro, Maximilian Luz
  */
-public interface Graph extends MapInitializer, Resettable, ShortestPathGraph {
+public interface Graph extends Seeded, Resettable, ShortestPathGraph {
 
     /**
      * Adds the {@link Node}s of the given {@link DirectedEdge} to the node set
@@ -20,53 +22,45 @@ public interface Graph extends MapInitializer, Resettable, ShortestPathGraph {
      *
      * @param edge This edge will be added to the graph.
      */
-    void registerEdgeAndNodes(DirectedEdge edge);
+    void registerEdgeAndNodes(DirectedEdge edge);       // TODO: split into multiple methods?
 
+
+    /**
+     * Returns the bounding rectangle enclosing this graph.
+     *
+     * @return the bounds of this graph.
+     */
     Bounds getBounds();
 
-    /*
-    |=======================|
-    | (i) ShortestPathGraph |
-    |=======================|
-    */
+
     /**
-     * @return instance of {@link java.util.Collections.UnmodifiableSet} of the nodes in this graph
+     * Returns the nodes of this graph.
+     *
+     * @return a set containing all nodes of this graph.
      */
     @Override
     Set<Node> getNodes();
 
     /**
-     * @return instance of {@link java.util.Collections.UnmodifiableSet} of the edges in this graph
+     * Returns the edges of this graph.
+     *
+     * @return a set containing all edges of this graph.
      */
     @Override
     Set<DirectedEdge> getEdges();
 
-    /*
-    |=================================|
-    | extension to (i) MapInitializer |
-    |=================================|
-    */
-    /**
-     * Calls {@link #postprocessFreshGraph(Graph, long) postprocessFreshGraph(this, seed)}
-     */
-    default Graph postprocessFresh(long seed) {
-        return postprocessFreshGraph(this, seed);
-    }
 
     /**
-     * Calls {@link #postprocessGraph(Graph, long) postprocessGraph(this, seed)}
+     * Sets the seeds of associated nodes based on the given seed. Consider calling {@link #reset()} before
+     * executing this method, as this method does not reset this graph.
+     *
+     * @param seed the seed, typically used to generate subsequent seeds.
      */
-    default Graph postprocess(long seed) {
-        return postprocessGraph(this, seed);
-    }
+    @Override
+    void setSeed(long seed);
 
-    /*
-    |================|
-    | (i) Resettable |
-    |================|
-    */
     /**
-     * This method resets the nodes and edges of the {@code graph}.
+     * Resets the nodes and edges of the {@code graph}.
      */
     @Override
     default void reset() {

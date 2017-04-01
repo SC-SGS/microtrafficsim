@@ -580,7 +580,8 @@ public class SimulationController implements GUIController {
 
         /* update streetgraph */
         // mapviewer.createParser(config) is not needed because the mapviewer gets the final config-reference
-        streetgraph.postprocess(config.seed);
+        streetgraph.reset();
+        streetgraph.setSeed(config.seed);
 
 
         /* create new scenario */

@@ -495,7 +495,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         assessedVehicles.clear();
         maxPrioVehicles.clear();
         newRegisteredVehicles.clear();
-        anyChangeSinceUpdate  = false;
+        anyChangeSinceUpdate = false;
     }
 
     /*

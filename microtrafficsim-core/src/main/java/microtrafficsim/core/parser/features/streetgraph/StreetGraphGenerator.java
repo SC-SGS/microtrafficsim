@@ -101,7 +101,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
          */
 
         logger.info("generating StreetGraph");
-        this.graph        = null;
+        this.graph = null;
         Graph graph = new StreetGraph(dataset.bounds);
 
         // create required nodes and edges
@@ -120,10 +120,12 @@ public class StreetGraphGenerator implements FeatureGenerator {
             node.remove(StreetGraphNodeComponent.class);
 
         // finish
-        this.graph = graph.setSeed(config.seed);
-        for (Node node : this.graph.getNodes()) {
+        graph.setSeed(config.seed);
+        for (Node node : graph.getNodes()) {
             node.updateEdgeIndices();
         }
+
+        this.graph = graph;
         logger.info("finished generating StreetGraph");
     }
 

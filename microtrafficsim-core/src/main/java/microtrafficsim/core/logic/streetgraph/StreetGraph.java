@@ -3,8 +3,8 @@ package microtrafficsim.core.logic.streetgraph;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Bounds;
-import microtrafficsim.core.simulation.builder.MapInitializer;
-import microtrafficsim.core.simulation.builder.impl.StreetGraphInitializer;
+import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.id.BasicSeedGenerator;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -16,14 +16,14 @@ import java.util.Set;
  * dependencies between nodes and edges are saved in these classes, not in this
  * graph. This class is just a container for them with some functions for interaction.
  *
- * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
+ * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro, Maximilian Luz
  */
 public class StreetGraph implements Graph {
 
     private Bounds                bounds;
     private HashSet<Node>         nodes;
     private HashSet<DirectedEdge> edges;
-    private MapInitializer        initializer;
+    private long                  seed;
 
     /**
      * Just a standard constructor.
@@ -32,34 +32,31 @@ public class StreetGraph implements Graph {
         this.bounds = bounds;
         this.nodes  = new HashSet<>();
         this.edges  = new HashSet<>();
-
-        initializer = new StreetGraphInitializer();
+        this.seed   = Random.createSeed();
     }
 
     @Override
     public String toString() {
-        String output = "|==========================================|\n"
-                + "| Graph\n"
-                + "|==========================================|\n";
+        StringBuilder output = new StringBuilder()
+                .append(StreetGraph.class.toString())
+                .append(": {\n");
 
-        output += "> Nodes\n";
+        output.append("    Nodes: {\n");
         for (Node node : nodes) {
-            output += node + "\n";
+            output.append("        ").append(node).append("\n");
         }
+        output.append("    }\n");
 
-        output += "> Edges\n";
+        output.append("    Edges: {\n");
         for (DirectedEdge edge : edges) {
-            output += edge + "\n";
+            output.append("        ").append(edge).append("\n");
         }
+        output.append("    }\n");
 
-        return output;
+        return output.append("}").toString();
     }
 
-    /*
-    |===========|
-    | (i) Graph |
-    |===========|
-    */
+
     @Override
     public Bounds getBounds() {
         return bounds;
@@ -83,18 +80,18 @@ public class StreetGraph implements Graph {
     }
 
 
-    /*
-    |====================|
-    | (i) MapInitializer |
-    |====================|
-    */
     @Override
-    public Graph postprocessFreshGraph(Graph protoGraph, long seed) {
-        return initializer.postprocessFreshGraph(protoGraph, seed);
+    public void setSeed(long seed) {
+        BasicSeedGenerator gen = new BasicSeedGenerator(seed);
+        for (Node node : nodes) {
+            node.setSeed(gen.next());
+        }
+
+        this.seed = seed;
     }
 
     @Override
-    public Graph postprocessGraph(Graph protoGraph, long seed) {
-        return initializer.postprocessGraph(protoGraph, seed);
+    public long getSeed() {
+        return seed;
     }
 }
