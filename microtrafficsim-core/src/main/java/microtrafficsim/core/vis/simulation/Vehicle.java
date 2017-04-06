@@ -19,7 +19,7 @@ public class Vehicle implements VisualizationVehicleEntity {
 
     private VehicleEntity entity;
     private Coordinate    position;
-    private float         layer;
+    private double        layer;
     private Coordinate    target;
     private Color         color;
 
@@ -141,7 +141,7 @@ public class Vehicle implements VisualizationVehicleEntity {
      *
      * @return the layer on which this vehicle resides.
      */
-    public float getLayer() {
+    public double getLayer() {
         return layer;
     }
 

@@ -148,17 +148,13 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
         // generate line geometry
         int counter = 0;
-        HashMap<Vertex, Integer>           indexmap = new HashMap<>();
-        HashMap<Float, ArrayList<Integer>> buckets  = new HashMap<>();
+        HashMap<Vertex, Integer>            indexmap = new HashMap<>();
+        HashMap<Double, ArrayList<Integer>> buckets  = new HashMap<>();
 
         for (Street street : feature.getData()) {
             if (Thread.interrupted()) throw new InterruptedException();
 
-            ArrayList<Integer> bucket = buckets.get(street.layer);
-            if (bucket == null) {
-                bucket = new ArrayList<>();
-                buckets.put(street.layer, bucket);
-            }
+            ArrayList<Integer> bucket = buckets.computeIfAbsent(street.layer, k -> new ArrayList<>());
 
             // duplicate or extrude first vertex
             {
@@ -176,9 +172,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                     else
                         c = other.coordinates[other.coordinates.length - 2];
 
-                    v = new Vertex(c, street.layer);
+                    v = new Vertex(c, (float) street.layer);
                 } else {
-                    v = new Vertex(street.coordinates[0], street.layer);
+                    v = new Vertex(street.coordinates[0], (float) street.layer);
                 }
 
                 int     index;
@@ -196,7 +192,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
             // generate base line
             for (Coordinate c : street.coordinates) {
-                Vertex v = new Vertex(c, street.layer);
+                Vertex v = new Vertex(c, (float) street.layer);
 
                 int     index;
                 Integer indexobj = indexmap.get(v);
@@ -227,9 +223,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                     else
                         c = other.coordinates[other.coordinates.length - 2];
 
-                    v = new Vertex(c, street.layer);
+                    v = new Vertex(c, (float) street.layer);
                 } else {
-                    v = new Vertex(street.coordinates[street.coordinates.length - 1], street.layer);
+                    v = new Vertex(street.coordinates[street.coordinates.length - 1], (float) street.layer);
                 }
 
                 int     index;
@@ -274,11 +270,11 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             ArrayList<Integer> bucket = buckets.get(street.layer);
             if (bucket == null) {
                 bucket = new ArrayList<>();
-                buckets.put(street.layer, bucket);
+                buckets.put((float) street.layer, bucket);
             }
 
             for (Coordinate c : street.coordinates) {
-                Vertex v = new Vertex(c, street.layer);
+                Vertex v = new Vertex(c, (float) street.layer);
 
                 int     index;
                 Integer indexobj = indexmap.get(v);

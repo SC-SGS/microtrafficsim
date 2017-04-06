@@ -2,8 +2,10 @@ package microtrafficsim.core.logic.streetgraph;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.simulation.builder.MapInitializer;
-import microtrafficsim.core.simulation.builder.impl.StreetGraphInitializer;
+import microtrafficsim.core.map.Bounds;
+import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.id.BasicSeedGenerator;
+import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -15,72 +17,52 @@ import java.util.Set;
  * dependencies between nodes and edges are saved in these classes, not in this
  * graph. This class is just a container for them with some functions for interaction.
  *
- * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
+ * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro, Maximilian Luz
  */
 public class StreetGraph implements Graph {
 
-    private final float           minLat, maxLat, minLon, maxLon;
+    private Bounds                bounds;
     private HashSet<Node>         nodes;
     private HashSet<DirectedEdge> edges;
-    private MapInitializer        initializer;
+    private long                  seed;
 
     /**
      * Just a standard constructor.
+     *
+     * @param bounds the bounds enclosing the excerpt represented in this graph.
      */
-    public StreetGraph(float minLat, float maxLat, float minLon, float maxLon) {
-        this.minLat = minLat;
-        this.maxLat = maxLat;
-        this.minLon = minLon;
-        this.maxLon = maxLon;
-        nodes       = new HashSet<>();
-        edges       = new HashSet<>();
-
-        initializer = new StreetGraphInitializer();
+    public StreetGraph(Bounds bounds) {
+        this.bounds = bounds;
+        this.nodes  = new HashSet<>();
+        this.edges  = new HashSet<>();
+        this.seed   = Random.createSeed();
     }
 
     @Override
     public String toString() {
-        String output = "|==========================================|\n"
-                + "| Graph\n"
-                + "|==========================================|\n";
+        LevelStringBuilder output = new LevelStringBuilder()
+                .setLevelSubString("    ")
+                .setLevelSeparator(System.lineSeparator())
+                .append(StreetGraph.class.toString())
+                .appendln(": {").incLevel();
 
-        output += "> Nodes\n";
-        for (Node node : nodes) {
-            output += node + "\n";
-        }
+        output.appendln("Nodes: {").incLevel();
+        nodes.forEach(output::appendln);
+        output.decLevel().appendln("}");
 
-        output += "> Edges\n";
-        for (DirectedEdge edge : edges) {
-            output += edge + "\n";
-        }
+        output.appendln("Edges: {").incLevel();
+        edges.forEach(output::appendln);
+        output.decLevel().appendln("}");
 
-        return output;
+        return output.decLevel().append("}").toString();
     }
 
-    /*
-    |===========|
-    | (i) Graph |
-    |===========|
-    */
-    @Override
-    public float getMinLat() {
-        return minLat;
-    }
 
     @Override
-    public float getMaxLat() {
-        return maxLat;
+    public Bounds getBounds() {
+        return bounds;
     }
 
-    @Override
-    public float getMinLon() {
-        return minLon;
-    }
-
-    @Override
-    public float getMaxLon() {
-        return maxLon;
-    }
 
     @Override
     public Set<Node> getNodes() {
@@ -93,25 +75,28 @@ public class StreetGraph implements Graph {
     }
 
     @Override
-    public void registerEdgeAndNodes(DirectedEdge edge) {
-        nodes.add(edge.getOrigin());
-        nodes.add(edge.getDestination());
+    public void addNode(Node node) {
+        nodes.add(node);
+    }
+
+    @Override
+    public void addEdge(DirectedEdge edge) {
         edges.add(edge);
     }
 
 
-    /*
-    |====================|
-    | (i) MapInitializer |
-    |====================|
-    */
     @Override
-    public Graph postprocessFreshGraph(Graph protoGraph, long seed) {
-        return initializer.postprocessFreshGraph(protoGraph, seed);
+    public void setSeed(long seed) {
+        BasicSeedGenerator gen = new BasicSeedGenerator(seed);
+        for (Node node : nodes) {
+            node.setSeed(gen.next());
+        }
+
+        this.seed = seed;
     }
 
     @Override
-    public Graph postprocessGraph(Graph protoGraph, long seed) {
-        return initializer.postprocessGraph(protoGraph, seed);
+    public long getSeed() {
+        return seed;
     }
 }

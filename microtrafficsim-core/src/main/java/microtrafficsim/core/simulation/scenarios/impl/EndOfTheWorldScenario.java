@@ -2,6 +2,7 @@ package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.area.Area;
 import microtrafficsim.core.map.area.polygons.RectangleArea;
@@ -51,29 +52,32 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
         bottomNodes = new ArrayList<>();
         rightNodes  = new ArrayList<>();
         topNodes    = new ArrayList<>();
+
+        final Bounds bounds = graph.getBounds();
+
         // define areas for filling node lists
-        float latLength   = Math.min(0.01f, 0.1f * (graph.getMaxLat() - graph.getMinLat()));
-        float lonLength   = Math.min(0.01f, 0.1f * (graph.getMaxLon() - graph.getMinLon()));
+        double latLength   = Math.min(0.01f, 0.1f * (bounds.maxlat - bounds.minlat));
+        double lonLength   = Math.min(0.01f, 0.1f * (bounds.maxlon - bounds.minlon));
         Area leftBorder   = new RectangleArea(
-                graph.getMinLat(),
-                graph.getMinLon(),
-                graph.getMaxLat(),
-                graph.getMinLon() + lonLength);
+                bounds.minlat,
+                bounds.minlon,
+                bounds.maxlat,
+                bounds.minlon + lonLength);
         Area bottomBorder = new RectangleArea(
-                graph.getMinLat(),
-                graph.getMinLon(),
-                graph.getMinLat() + latLength,
-                graph.getMaxLon());
+                bounds.minlat,
+                bounds.minlon,
+                bounds.minlat + latLength,
+                bounds.maxlon);
         Area rightBorder  = new RectangleArea(
-                graph.getMinLat(),
-                graph.getMaxLon() - lonLength,
-                graph.getMaxLat(),
-                graph.getMaxLon());
+                bounds.minlat,
+                bounds.maxlon - lonLength,
+                bounds.maxlat,
+                bounds.maxlon);
         Area topBorder    = new RectangleArea(
-                graph.getMaxLat() - latLength,
-                graph.getMinLon(),
-                graph.getMaxLat(),
-                graph.getMaxLon());
+                bounds.maxlat - latLength,
+                bounds.minlon,
+                bounds.maxlat,
+                bounds.maxlon);
 
         // fill node lists
         for (Node node : nodes) {
@@ -116,37 +120,34 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
             Node origin = getRandomNode.apply(nodes);
 
             // get end node depending on start node's position
-            Graph graph    = getGraph();
-            final float
-                    minlat = graph.getMinLat(),
-                    maxlat = graph.getMaxLat(),
-                    minlon = graph.getMinLon(),
-                    maxlon = graph.getMaxLon();
-            Coordinate
-                    center      = new Coordinate((maxlat + minlat) / 2, (maxlon + minlon) / 2),
-                    originCoord = origin.getCoordinate();
+            Graph graph = getGraph();
+            final Bounds bounds = graph.getBounds();
+
+            Coordinate center = new Coordinate((bounds.maxlat + bounds.minlat) / 2, (bounds.maxlon + bounds.minlon) / 2);
+            Coordinate originCoord = origin.getCoordinate();
+
             // set data relevant for distance calculation
-            Coordinate
-                    latProjection = new Coordinate(0, originCoord.lon),
-                    lonProjection = new Coordinate(originCoord.lat, 0);
+            Coordinate latProjection = new Coordinate(0, originCoord.lon);
+            Coordinate lonProjection = new Coordinate(originCoord.lat, 0);
+
             ArrayList<Node> latNodes, lonNodes;
 
             if (center.lat - originCoord.lat > 0) {
                 // origin is below from center
-                latProjection.lat = minlat;
+                latProjection.lat = bounds.minlat;
                 latNodes          = bottomNodes;
             } else {
                 // origin is over center
-                latProjection.lat = maxlat;
+                latProjection.lat = bounds.maxlat;
                 latNodes          = topNodes;
             }
             if (center.lon - originCoord.lon > 0) {
                 // origin is left from center
-                lonProjection.lon = minlon;
+                lonProjection.lon = bounds.minlon;
                 lonNodes          = leftNodes;
             } else {
                 // origin is right from center
-                lonProjection.lon = maxlon;
+                lonProjection.lon = bounds.maxlon;
                 lonNodes          = rightNodes;
             }
 

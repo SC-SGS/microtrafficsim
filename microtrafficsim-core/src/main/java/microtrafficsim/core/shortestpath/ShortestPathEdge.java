@@ -6,7 +6,7 @@ package microtrafficsim.core.shortestpath;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public interface ShortestPathEdge {
+public interface ShortestPathEdge<N> {
 
     /**
      * @return Length of this edge in a certain unit.
@@ -20,8 +20,8 @@ public interface ShortestPathEdge {
      *
      * @return Time to pass this edge in milliseconds
      */
-    float getTimeCostMillis();
+    double getTimeCostMillis();
 
-    ShortestPathNode getOrigin();
-    ShortestPathNode getDestination();
+    N getOrigin();
+    N getDestination();
 }

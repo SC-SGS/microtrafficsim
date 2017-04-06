@@ -1,6 +1,9 @@
 package microtrafficsim.core.convenience;
 
 import com.jogamp.newt.event.KeyEvent;
+import microtrafficsim.core.convenience.utils.Utils;
+import microtrafficsim.core.map.SegmentFeatureProvider;
+import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.map.style.MapStyleSheet;
@@ -8,8 +11,6 @@ import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TilingScheme;
-import microtrafficsim.core.convenience.utils.Utils;
-import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.vis.AbstractVisualization;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.core.vis.map.projections.Projection;
@@ -31,9 +32,9 @@ public class TileBasedMapViewer extends BasicMapViewer {
 
     private TileBasedVisualization visualization;
 
-    private final TilingScheme tilingScheme;
+    private TilingScheme preferredTilingScheme;
+    private int preferredTileGridLevel;
 
-    private final int tileGridLevel;
     private final int numTileWorkers;
 
     /**
@@ -106,21 +107,21 @@ public class TileBasedMapViewer extends BasicMapViewer {
      * @param projection the projection used to transform the spherical world coordinates to plane coordinates.
      *                   The resulting tile size is dependent on the scale of this projection (2x scale).
      *
-     * @param tilingScheme    the tiling-scheme used of the tiles to be displayed.
-     * @param tileGridLevel   the level for which map-features should be stored in a grid.
+     * @param preferredTilingScheme    the tiling-scheme used of the tiles to be displayed.
+     * @param preferredTileGridLevel   the level for which map-features should be stored in a grid.
      * @param numTileWorkers  the number of worker-threads loading tiles in parallel in the background.
      * @param printFrameStats set to {@code true} to write frame-statistics to stdout.
      */
     public TileBasedMapViewer(int width, int height, MapStyleSheet style, Projection projection,
-                              TilingScheme tilingScheme, int tileGridLevel, int numTileWorkers,
+                              TilingScheme preferredTilingScheme, int preferredTileGridLevel, int numTileWorkers,
                               boolean printFrameStats) {
         super(width, height, style, projection, printFrameStats);
 
         /* style parameters */
-        this.tilingScheme = tilingScheme;
+        this.preferredTilingScheme = preferredTilingScheme;
 
         /* internal settings */
-        this.tileGridLevel = tileGridLevel;
+        this.preferredTileGridLevel = preferredTileGridLevel;
         this.numTileWorkers = numTileWorkers;
     }
 
@@ -160,6 +161,23 @@ public class TileBasedMapViewer extends BasicMapViewer {
         visualization.getRenderContext().setUncaughtExceptionHandler(new Utils.DebugExceptionHandler());
     }
 
+
+    public void setPreferredTileGridLevel(int level) {
+        this.preferredTileGridLevel = level;
+    }
+
+    public int getPreferredTileGridLevel() {
+        return preferredTileGridLevel;
+    }
+
+    public void setPreferredTilingScheme(TilingScheme scheme) {
+        this.preferredTilingScheme = scheme;
+    }
+
+    public TilingScheme getPreferredTilingScheme() {
+        return preferredTilingScheme;
+    }
+
     /**
      * Creates a {@code TileLayerProvider} from the given layer definitions.
      * The {@code TileLayerProvider} is used to provide map-layers and their
@@ -172,7 +190,7 @@ public class TileBasedMapViewer extends BasicMapViewer {
      */
     private TileLayerProvider createLayerProvider(Collection<LayerDefinition> layers) {
         /* create the layer provider */
-        LayeredTileMap provider = new LayeredTileMap(tilingScheme);
+        LayeredTileMap provider = new LayeredTileMap(preferredTilingScheme);
 
         /* add a generator to support feature layers */
         FeatureTileLayerGenerator generator = new FeatureTileLayerGenerator();
@@ -185,15 +203,25 @@ public class TileBasedMapViewer extends BasicMapViewer {
     }
 
     @Override
-    public void changeMap(OSMParser.Result result) throws InterruptedException {
-        QuadTreeTiledMapSegment tiled
-                = new QuadTreeTiledMapSegment.Generator().generate(result.segment, tilingScheme, tileGridLevel);
+    public void setMap(SegmentFeatureProvider segment) throws InterruptedException {
+        TileFeatureProvider tiled = null;
 
+        if (segment instanceof TileFeatureProvider) {
+            tiled = (TileFeatureProvider) segment;
+        } else {
+            tiled = new QuadTreeTiledMapSegment.Generator().generate(segment, preferredTilingScheme, preferredTileGridLevel);
+        }
+
+        setMap(tiled);
+    }
+
+    public void setMap(TileFeatureProvider tiles) {
         /* update the feature sources, so that they will use the created provider */
         for (LayerDefinition def : style.getLayers()) {
             LayerSource src = def.getSource();
 
-            if (src instanceof FeatureTileLayerSource) ((FeatureTileLayerSource) src).setFeatureProvider(tiled);
+            if (src instanceof FeatureTileLayerSource)
+                ((FeatureTileLayerSource) src).setFeatureProvider(tiles);
         }
 
         /* center the view to the parsed area */

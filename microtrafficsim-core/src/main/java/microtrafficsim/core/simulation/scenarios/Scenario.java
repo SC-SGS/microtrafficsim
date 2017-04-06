@@ -1,6 +1,8 @@
 package microtrafficsim.core.simulation.scenarios;
 
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -76,7 +78,7 @@ public interface Scenario extends StepListener, Resettable {
     /**
      * @return A scout factory serving a ready shortest path algorithm for vehicle route calculation
      */
-    Supplier<ShortestPathAlgorithm> getScoutFactory();
+    Supplier<ShortestPathAlgorithm<Node, DirectedEdge>> getScoutFactory();
 
 
     /*

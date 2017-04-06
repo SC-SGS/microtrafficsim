@@ -7,7 +7,6 @@ import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.opengl.BufferStorage;
 import microtrafficsim.core.vis.opengl.DataTypes;
-import microtrafficsim.core.vis.opengl.shader.Shader;
 import microtrafficsim.core.vis.opengl.shader.ShaderCompileException;
 import microtrafficsim.core.vis.opengl.shader.ShaderLinkException;
 import microtrafficsim.core.vis.opengl.shader.ShaderProgram;
@@ -22,7 +21,6 @@ import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.resources.PackagedResource;
-import microtrafficsim.utils.resources.Resource;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;

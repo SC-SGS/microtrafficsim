@@ -2,76 +2,87 @@ package microtrafficsim.core.logic.streetgraph;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.shortestpath.ShortestPathGraph;
-import microtrafficsim.core.simulation.builder.MapInitializer;
+import microtrafficsim.math.random.Seeded;
 import microtrafficsim.utils.Resettable;
 
 import java.util.Set;
 
+
 /**
- * @author Dominic Parga Cacheiro
+ * Interface for street-graphs.
+ *
+ * @author Dominic Parga Cacheiro, Maximilian Luz
  */
-public interface Graph extends MapInitializer, Resettable, ShortestPathGraph {
+public interface Graph extends Seeded, Resettable, ShortestPathGraph {
 
     /**
-     * Adds the {@link Node}s of the given {@link DirectedEdge} to the node set
-     * and the edge to the edge set.
+     * Returns the bounding rectangle enclosing this graph.
      *
-     * @param edge This edge will be added to the graph.
+     * @return the bounds of this graph.
      */
-    void registerEdgeAndNodes(DirectedEdge edge);
+    Bounds getBounds();
 
-    float getMinLat();
 
-    float getMaxLat();
-
-    float getMinLon();
-
-    float getMaxLon();
-
-    /*
-    |=======================|
-    | (i) ShortestPathGraph |
-    |=======================|
-    */
     /**
-     * @return instance of {@link java.util.Collections.UnmodifiableSet} of the nodes in this graph
+     * Returns the nodes of this graph.
+     *
+     * @return a set containing all nodes of this graph.
      */
     @Override
     Set<Node> getNodes();
 
     /**
-     * @return instance of {@link java.util.Collections.UnmodifiableSet} of the edges in this graph
+     * Returns the edges of this graph.
+     *
+     * @return a set containing all edges of this graph.
      */
     @Override
     Set<DirectedEdge> getEdges();
 
-    /*
-    |=================================|
-    | extension to (i) MapInitializer |
-    |=================================|
-    */
-    /**
-     * Calls {@link #postprocessFreshGraph(Graph, long) postprocessFreshGraph(this, seed)}
-     */
-    default Graph postprocessFresh(long seed) {
-        return postprocessFreshGraph(this, seed);
-    }
 
     /**
-     * Calls {@link #postprocessGraph(Graph, long) postprocessGraph(this, seed)}
+     * Add the given {@code Node} to this graph. Consider calling {@link #setSeed(long)} afterwards.
+     * <p>
+     * Note: The specified node is expected to be set up completely, i.e. if a new edge has been created and added to
+     * either existing or new nodes, the edge indices of have to be updated by calling {@link Node#updateEdgeIndices()}
+     * on both adjacent nodes.
+     * <p>
+     * Determinism: Please note that adding an edge will break determinism, even if the given seed is the same, thus
+     * resulting in a different scenario cycle.
+     *
+     * @param node the node to add.
      */
-    default Graph postprocess(long seed) {
-        return postprocessGraph(this, seed);
-    }
+    void addNode(Node node);
 
-    /*
-    |================|
-    | (i) Resettable |
-    |================|
-    */
     /**
-     * This method resets the nodes and edges of the {@code graph}.
+     * Add the given {@code Edge} to this graph, does not add any {@code Node}s. To add the {@code Node}s of this edge,
+     * call {@link #addNode(Node)}.
+     * <p>
+     * Note: The specified edge is expected to be set up completely, i.e. if a new edge has been created and added to
+     * either existing or new nodes, the edge indices of have to be updated by calling {@link Node#updateEdgeIndices()}
+     * on both adjacent nodes.
+     * <p>
+     * Determinism: Please note that adding an edge will break determinism, even if the given seed is the same, thus
+     * resulting in a different scenario cycle.
+     *
+     * @param edge the edge to add.
+     */
+    void addEdge(DirectedEdge edge);
+
+
+    /**
+     * Sets the seeds of associated nodes based on the given seed. Consider calling {@link #reset()} before
+     * executing this method, as this method does not reset this graph.
+     *
+     * @param seed the seed, typically used to generate subsequent seeds.
+     */
+    @Override
+    void setSeed(long seed);
+
+    /**
+     * Resets all nodes and edges of this graph.
      */
     @Override
     default void reset() {

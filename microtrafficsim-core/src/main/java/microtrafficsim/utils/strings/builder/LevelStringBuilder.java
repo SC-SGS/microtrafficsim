@@ -8,7 +8,7 @@ public class LevelStringBuilder implements StringBuilder {
     private java.lang.StringBuilder stringBuilder;
     private int                     level          = 0;
     private String                  levelSubString = "    ";
-    private String                  levelSeparator = "\n";
+    private String                  levelSeparator = System.lineSeparator();
 
 
     public LevelStringBuilder() {
@@ -38,16 +38,19 @@ public class LevelStringBuilder implements StringBuilder {
         return stringBuilder.length();
     }
 
-    public void incLevel() {
+    public LevelStringBuilder incLevel() {
         level++;
+        return this;
     }
 
-    public void decLevel() {
+    public LevelStringBuilder decLevel() {
         level--;
+        return this;
     }
 
-    public void setLevel(int level) {
+    public LevelStringBuilder setLevel(int level) {
         this.level = level;
+        return this;
     }
 
     private LevelStringBuilder appendLevelSeparator(int level) {
@@ -60,16 +63,18 @@ public class LevelStringBuilder implements StringBuilder {
         return levelSubString;
     }
 
-    public void setLevelSubString(String levelSubString) {
+    public LevelStringBuilder setLevelSubString(String levelSubString) {
         this.levelSubString = levelSubString;
+        return this;
     }
 
     public String getLevelSeparator() {
         return levelSeparator;
     }
 
-    public void setLevelSeparator(String levelSeparator) {
+    public LevelStringBuilder setLevelSeparator(String levelSeparator) {
         this.levelSeparator = levelSeparator;
+        return this;
     }
 
 

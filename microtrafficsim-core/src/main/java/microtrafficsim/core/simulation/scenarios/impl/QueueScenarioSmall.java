@@ -1,8 +1,10 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
+import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.core.Simulation;
@@ -28,7 +30,7 @@ public abstract class QueueScenarioSmall implements Scenario {
     private final ScenarioConfig config;
     private final Graph graph;
     private final VehicleContainer vehicleContainer;
-    private ShortestPathAlgorithm scout;
+    private ShortestPathAlgorithm<Node, DirectedEdge> scout;
     private boolean isPrepared;
 
     /* scenario definition */
@@ -55,7 +57,7 @@ public abstract class QueueScenarioSmall implements Scenario {
         this.config           = config;
         this.graph            = graph;
         this.vehicleContainer = vehicleContainer;
-        scout                 = new LinearDistanceBidirectionalAStar(config.metersPerCell);
+        scout                 = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
 
         /* scenario definition */
         odMatrices         = new ArrayList<>();
@@ -210,7 +212,7 @@ public abstract class QueueScenarioSmall implements Scenario {
     }
 
     @Override
-    public final Supplier<ShortestPathAlgorithm> getScoutFactory() {
+    public final Supplier<ShortestPathAlgorithm<Node, DirectedEdge>> getScoutFactory() {
         return () -> scout;
     }
 }

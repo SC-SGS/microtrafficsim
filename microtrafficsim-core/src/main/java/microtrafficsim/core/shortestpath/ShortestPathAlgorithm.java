@@ -18,7 +18,7 @@ import java.util.Stack;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public interface ShortestPathAlgorithm {
+public interface ShortestPathAlgorithm<N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>> {
 
     /**
      * @return Hence this implementation needs no preprocessing, this method returns true.
@@ -31,9 +31,7 @@ public interface ShortestPathAlgorithm {
      * Is needed for some algorithms for preparations needed for faster shortest path finding. It is implemented
      * empty per default.
      */
-    default void preprocess() {
-
-    }
+    default void preprocess() {}
 
     /**
      * <pr>
@@ -53,7 +51,5 @@ public interface ShortestPathAlgorithm {
      * @param shortestPath This data structure gets NOT cleared, but filled with the edges of the shortest path, that is
      *                     calculated in this method.
      */
-    void findShortestPath(ShortestPathNode start,
-                          ShortestPathNode end,
-                          Stack<ShortestPathEdge> shortestPath);
+    void findShortestPath(N start, N end, Stack<? super E> shortestPath);
 }

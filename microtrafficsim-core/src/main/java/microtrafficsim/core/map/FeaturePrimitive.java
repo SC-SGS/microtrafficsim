@@ -6,7 +6,7 @@ package microtrafficsim.core.map;
  *
  * @author Maximilian Luz
  */
-public class FeaturePrimitive {
+public abstract class FeaturePrimitive {
     public long id;
 
     /**

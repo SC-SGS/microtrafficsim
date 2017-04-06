@@ -22,11 +22,11 @@ import java.util.*;
 public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeatureProvider {
 
     private TilingScheme scheme;
-    private Bounds               bounds;
-    private TileRect             leafs;
+    private Bounds       bounds;
+    private TileRect     leafs;
     private Map<String, TileGroup<?>> featureset;
-    private List<SegmentFeatureProvider.FeatureChangeListener> segmentListeners;
-    private List<TileFeatureProvider.FeatureChangeListener>    tileListeners;
+    private transient List<SegmentFeatureProvider.FeatureChangeListener> segmentListeners;
+    private transient List<TileFeatureProvider.FeatureChangeListener>    tileListeners;
 
     /**
      * Constructs a new {@code QuadTreeTiledMapSegment}.
@@ -36,7 +36,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
      * @param leafs      the rectangle describing the provided leaf tiles.
      * @param featureset the set of features provided by this tiled map-segment.
      */
-    private QuadTreeTiledMapSegment(
+    public QuadTreeTiledMapSegment(
             TilingScheme scheme,
             Bounds bounds,
             TileRect leafs,
@@ -89,6 +89,10 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
         return features;
     }
 
+    public Map<String, TileGroup<?>> getFeatureSet() {
+        return featureset;
+    }
+
     @Override
     public <T extends FeaturePrimitive> TileFeature<T> require(String name, TileRect bounds)
             throws InterruptedException {
@@ -119,6 +123,10 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
                             Math.min(bounds.xmax, this.leafs.xmax),
                             Math.min(bounds.ymax, this.leafs.ymax),
                             this.leafs.zoom);
+    }
+
+    public TileRect getLeafTiles() {
+        return leafs;
     }
 
     @SuppressWarnings("unchecked")
@@ -282,8 +290,8 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
 
             for (int z = root.z; z < gridlevel; z++) {
                 TileRect    childBounds = scheme.getTiles(bounds, z + 1);
-                int         cx          = childBounds.xmax - childBounds.xmin + 1;
-                int         cy          = childBounds.ymax - childBounds.ymin + 1;
+                int         cx          = (childBounds.xmax - childBounds.xmin) + 1;
+                int         cy          = (childBounds.ymax - childBounds.ymin) + 1;
                 TileData<T> childData   = new TileData<>(cx, cy);
 
                 for (int x = 0; x < px; x++) {
@@ -294,9 +302,14 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
                         if (c.xmin >= childBounds.xmin && c.ymin >= childBounds.ymin) {
                             Rect2d b = scheme.getBounds(c.xmin, c.ymin, z + 1);
 
-                            for (T t : parentData.get(x, y))
-                                if (intersector.intersect(t, b, scheme.getProjection()))
-                                    childData.add(c.xmin - childBounds.xmin, c.ymin - childBounds.ymin, t);
+                            try {
+                                for (T t : parentData.get(x, y))
+                                    if (intersector.intersect(t, b, scheme.getProjection()))
+                                        childData.add(c.xmin - childBounds.xmin, c.ymin - childBounds.ymin, t);
+                            } catch (Throwable t) {
+                                System.err.println("px: " + px + ", py: " + py + ", x: " + x + ", y: " + y);
+                                t.printStackTrace();
+                            }
                         }
 
                         // top right
@@ -345,7 +358,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
      *
      * @param <T> the type of the feature.
      */
-    protected static class TileGroup<T extends FeaturePrimitive> {
+    public final static class TileGroup<T extends FeaturePrimitive> {
         public String      name;
         public Class<T>    type;
         public TileData<T> data;
@@ -369,25 +382,40 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
      *
      * @param <T> the type of the feature.
      */
-    protected static class TileData<T extends FeaturePrimitive> {
-        private List<List<List<T>>> data;
+    public final static class TileData<T extends FeaturePrimitive> {
+        public int xlen;
+        public int ylen;
+        public ArrayList<ArrayList<T>> data;
 
         /**
          * Constructs a new {@code TileData}.
          *
-         * @param nx the number of tiles in x-direction.
-         * @param ny the number of tiles in y-direction.
+         * @param xlen the number of tiles in x-direction.
+         * @param ylen the number of tiles in y-direction.
          */
-        public TileData(int nx, int ny) {
-            this.data = new ArrayList<>(nx);
+        public TileData(int xlen, int ylen) {
+            this.xlen = xlen;
+            this.ylen = ylen;
+            this.data = new ArrayList<>(xlen * ylen);
 
-            for (int x = 0; x < nx; x++) {
-                List<List<T>> xlist = new ArrayList<>(ny);
-                this.data.add(xlist);
-
-                for (int y = 0; y < ny; y++)
-                    xlist.add(new ArrayList<>());
+            for (int i = 0; i < (xlen * ylen); i++) {
+                this.data.add(new ArrayList<T>());
             }
+        }
+
+        /**
+         * Constructs a new {@code TileData}.
+         *
+         * @param xlen the number of tiles in x-direction.
+         * @param ylen the number of tiles in y-direction.
+         * @param data the data-array.
+         */
+        public TileData(int xlen, int ylen, ArrayList<ArrayList<T>> data) {
+            assert xlen * ylen == data.size();
+
+            this.xlen = xlen;
+            this.ylen = ylen;
+            this.data = data;
         }
 
         /**
@@ -397,8 +425,8 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
          * @param y    the y-id of the tile.
          * @param data the data to be added.
          */
-        public void add(int x, int y, T data) {
-            this.data.get(x).get(y).add(data);
+        public void add(int x, int y, T data){
+            this.data.get(y * xlen + x).add(data);
         }
 
         /**
@@ -409,7 +437,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
          * @param data the data to be added.
          */
         public void addAll(int x, int y, T[] data) {
-            List<T> list = this.data.get(x).get(y);
+            ArrayList<T> list = this.data.get(y * xlen + x);
             Collections.addAll(list, data);
         }
 
@@ -421,7 +449,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
          * @return the data stored for the given tile.
          */
         public List<T> get(int x, int y) {
-            return data.get(x).get(y);
+            return data.get(y * xlen + x);
         }
     }
 }

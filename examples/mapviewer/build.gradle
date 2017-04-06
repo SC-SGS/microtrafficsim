@@ -1,5 +1,7 @@
-apply plugin: 'application'
-
+plugins {
+    id 'application'
+    id "edu.sc.seis.macAppBundle" version "2.1.6"
+}
 
 dependencies {
     compile project(':microtrafficsim-core')
@@ -17,7 +19,10 @@ run {
 }
 
 
-mainClassName = 'microtrafficsim.examples.mapviewer.Main'
+mainClassName = 'microtrafficsim.examples.mapviewer.MapViewerExample'
+macAppBundle {
+    mainClassName = 'microtrafficsim.examples.mapviewer.MapViewerExample'
+}
 
 
 // set jar and distribution name

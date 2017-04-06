@@ -271,7 +271,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
             buffer.putFloat((float) pos.x);
             buffer.putFloat((float) pos.y);
-            buffer.putFloat(v.getLayer());
+            buffer.putFloat((float) v.getLayer());
             buffer.putFloat((float) dir.x);
             buffer.putFloat((float) dir.y);
             buffer.putInt(v.getBaseColor().toIntABGR());

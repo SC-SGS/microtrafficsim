@@ -1,14 +1,12 @@
 package microtrafficsim.core.convenience;
 
-import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.map.projections.Projection;
-
-import java.io.File;
 
 
 /**
@@ -69,6 +67,13 @@ public interface MapViewer {
     }
 
     /**
+     * Reset the view of this map-viewer.
+     */
+    default void resetView() {
+        getVisualizationPanel().getVisualization().getVisualizer().resetView();
+    }
+
+    /**
      * @throws UnsupportedFeatureException if not all required OpenGL features
      *                                     are available
      */
@@ -90,5 +95,5 @@ public interface MapViewer {
      */
     void createVisualizationPanel() throws UnsupportedFeatureException;
 
-    void changeMap(OSMParser.Result result) throws InterruptedException;
+    void setMap(SegmentFeatureProvider segment) throws InterruptedException;
 }

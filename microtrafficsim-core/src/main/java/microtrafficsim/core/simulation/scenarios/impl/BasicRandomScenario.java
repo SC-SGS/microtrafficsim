@@ -1,9 +1,10 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.shortestpath.astar.impl.FastestWayBidirectionalAStar;
-import microtrafficsim.core.shortestpath.astar.impl.LinearDistanceBidirectionalAStar;
+import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.math.random.Seeded;
@@ -19,7 +20,8 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
     /* scout factory */
     private final Random random;
     private final float fastestWayProbability;
-    private final ShortestPathAlgorithm fastestWayBidirectionalAStar, linearDistanceBidirectionalAStar;
+    private final ShortestPathAlgorithm<Node, DirectedEdge> fastestPathAlg;
+    private final ShortestPathAlgorithm<Node, DirectedEdge> shortestPathAlg;
 
     protected BasicRandomScenario(long seed,
                                   ScenarioConfig config,
@@ -38,8 +40,8 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
         fastestWayProbability = 0;
 
         /* scout factory */
-        fastestWayBidirectionalAStar = new FastestWayBidirectionalAStar(config.metersPerCell, config.globalMaxVelocity);
-        linearDistanceBidirectionalAStar = new LinearDistanceBidirectionalAStar(config.metersPerCell);
+        fastestPathAlg = BidirectionalAStars.fastestPathAStar(config.metersPerCell, config.globalMaxVelocity);
+        shortestPathAlg = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
     }
 
     protected abstract void fillMatrix();
@@ -50,11 +52,10 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
     |==============|
     */
     @Override
-    public Supplier<ShortestPathAlgorithm> getScoutFactory() {
-        return () ->
-                (random.nextFloat() < fastestWayProbability)
-                        ? fastestWayBidirectionalAStar
-                        : linearDistanceBidirectionalAStar;
+    public Supplier<ShortestPathAlgorithm<Node, DirectedEdge>> getScoutFactory() {
+        return () -> (random.nextFloat() < fastestWayProbability)
+                        ? fastestPathAlg
+                        : shortestPathAlg;
     }
 
     @Override

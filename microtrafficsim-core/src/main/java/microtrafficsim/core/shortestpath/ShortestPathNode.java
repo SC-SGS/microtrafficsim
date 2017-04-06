@@ -10,17 +10,17 @@ import java.util.Set;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public interface ShortestPathNode extends Mappable {
+public interface ShortestPathNode<E extends ShortestPathEdge> extends Mappable {
 
     /**
      * @param incoming The leaving edges are depending on the incoming edge.
      *                 Therefore, this parameter is needed.
      * @return A set of all edges that are leaving this node
      */
-    Set<? extends ShortestPathEdge> getLeavingEdges(ShortestPathEdge incoming);
+    Set<? extends E> getLeavingEdges(E incoming);
 
     /**
      * @return A set of all edges that are coming in this node
      */
-    Set<? extends ShortestPathEdge> getIncomingEdges();
+    Set<? extends E> getIncoming();
 }

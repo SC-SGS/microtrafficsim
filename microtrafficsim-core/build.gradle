@@ -10,6 +10,9 @@ dependencies {
     compile group: 'org.jogamp.jogl', name: 'jogl-all-main', version: '2.3.2'
     compile group: 'org.jogamp.gluegen', name: 'gluegen-rt-main', version: '2.3.2'
 
+    // serialization
+    compile group: 'com.esotericsoftware', name: 'kryo', version: '4.0.0'
+
     // JUnit
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
