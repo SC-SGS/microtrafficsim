@@ -47,13 +47,11 @@ public class StreetGraph implements Graph {
                 .appendln(": {").incLevel();
 
         output.appendln("Nodes: {").incLevel();
-        for (Node node : nodes)
-            output.appendln(node);
+        nodes.forEach(output::appendln);
         output.decLevel().appendln("}");
 
         output.appendln("Edges: {").incLevel();
-        for (DirectedEdge edge : edges)
-            output.appendln(edge);
+        edges.forEach(output::appendln);
         output.decLevel().appendln("}");
 
         return output.decLevel().append("}").toString();
