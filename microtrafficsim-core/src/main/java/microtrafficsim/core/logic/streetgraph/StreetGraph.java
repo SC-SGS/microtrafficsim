@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.id.BasicSeedGenerator;
+import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,23 +40,23 @@ public class StreetGraph implements Graph {
 
     @Override
     public String toString() {
-        StringBuilder output = new StringBuilder()
+        LevelStringBuilder output = new LevelStringBuilder()
+                .setLevelSubString("    ")
+                .setLevelSeparator(System.lineSeparator())
                 .append(StreetGraph.class.toString())
-                .append(": {\n");
+                .appendln(": {").incLevel();
 
-        output.append("    Nodes: {\n");
-        for (Node node : nodes) {
-            output.append("        ").append(node).append("\n");
-        }
-        output.append("    }\n");
+        output.appendln("Nodes: {").incLevel();
+        for (Node node : nodes)
+            output.appendln(node);
+        output.decLevel().appendln("}");
 
-        output.append("    Edges: {\n");
-        for (DirectedEdge edge : edges) {
-            output.append("        ").append(edge).append("\n");
-        }
-        output.append("    }\n");
+        output.appendln("Edges: {").incLevel();
+        for (DirectedEdge edge : edges)
+            output.appendln(edge);
+        output.decLevel().appendln("}");
 
-        return output.append("}").toString();
+        return output.decLevel().append("}").toString();
     }
 
 
