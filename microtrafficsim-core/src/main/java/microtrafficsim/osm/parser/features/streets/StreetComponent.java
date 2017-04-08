@@ -50,10 +50,6 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
         this.layer      = layer;
     }
 
-    @Override
-    public Class<StreetComponent> getType() {
-        return StreetComponent.class;
-    }
 
     /**
      * Clones this component and all contained objects.

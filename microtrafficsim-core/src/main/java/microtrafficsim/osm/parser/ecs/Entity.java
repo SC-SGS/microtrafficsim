@@ -24,7 +24,8 @@ public class Entity implements Cloneable {
 
     /**
      * Set the {@code Component} associated with the specified key to the
-     * specified {@code Component}.
+     * specified {@code Component}. Note that the following expression should
+     * always be satisfied: {@code entity.get(x).getType() == x}.
      *
      * @param <T>       the type of the {@code Component}.
      * @param key       the key as the type (Class) of the {@code Component} to set.
@@ -63,8 +64,9 @@ public class Entity implements Cloneable {
 
     /**
      * Return the {@code HashMap} internally used to store the {@code
-     * Components}. Any changes on this map will be reflected in this {@code
-     * Entity}.
+     * Components}. Any changes to this map will be reflected in this {@code
+     * Entity}. Note that the following expression should * always be satisfied:
+     * {@code entity.get(x).getType() == x}.
      *
      * @return the {@code HashMap} containing all {@code Components} of
      * this {@code Entity}.

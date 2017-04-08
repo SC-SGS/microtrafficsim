@@ -21,10 +21,6 @@ public class WayMappingComponent extends Component {
         this.mapsto = mapsto;
     }
 
-    @Override
-    public Class<? extends Component> getType() {
-        return WayMappingComponent.class;
-    }
 
     @Override
     public Component clone(Entity e) {
