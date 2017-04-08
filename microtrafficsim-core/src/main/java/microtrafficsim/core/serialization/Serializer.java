@@ -26,6 +26,7 @@ import microtrafficsim.core.serialization.kryo.impl.segments.QuadTreeTiledMapSeg
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.core.vis.map.projections.PlateCarreeProjection;
 import microtrafficsim.math.Rect2d;
+import microtrafficsim.utils.Version;
 
 import java.io.*;
 

@@ -2,6 +2,7 @@ package microtrafficsim.core.serialization;
 
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.SegmentFeatureProvider;
+import microtrafficsim.utils.Version;
 
 import java.io.File;
 import java.io.IOException;

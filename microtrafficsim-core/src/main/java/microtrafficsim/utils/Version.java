@@ -1,4 +1,4 @@
-package microtrafficsim.core.serialization;
+package microtrafficsim.utils;
 
 
 public class Version {
