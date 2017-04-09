@@ -7,18 +7,18 @@ import microtrafficsim.math.Rect2d;
 
 
 /**
- * Generic source for a layer.
+ * Generic source for a (tiled) layer.
  *
  * @author Maximilian Luz
  */
-public interface LayerSource {
+public interface TileLayerSource {
 
     /**
      * Returns the type of this source.
      *
      * @return the type of this source.
      */
-    Class<? extends LayerSource> getType();
+    Class<? extends TileLayerSource> getType();
 
     /**
      * Checks if this source is available.
@@ -54,7 +54,7 @@ public interface LayerSource {
      * @param listener the listener to add.
      * @return {@code true} if the underlying collection of listeners changed with this call.
      */
-    boolean addLayerSourceChangeListener(LayerSourceChangeListener listener);
+    boolean addLayerSourceChangeListener(TileLayerSourceChangeListener listener);
 
     /**
      * Removes the given change-listener from this source.
@@ -62,7 +62,7 @@ public interface LayerSource {
      * @param listener the listener to remove.
      * @return {@code true} if the underlying collection of listeners changed with this call.
      */
-    boolean removeLayerSourceChangeListener(LayerSourceChangeListener listener);
+    boolean removeLayerSourceChangeListener(TileLayerSourceChangeListener listener);
 
     /**
      * Checks if the given change-listener is present on this source.
@@ -70,20 +70,20 @@ public interface LayerSource {
      * @param listener the listener to check for.
      * @return {@code true} if this source contains the given listener.
      */
-    boolean hasLayerSourceChangeListener(LayerSourceChangeListener listener);
+    boolean hasLayerSourceChangeListener(TileLayerSourceChangeListener listener);
 
 
     /**
      * Change-listener for layer sources.
      */
-    interface LayerSourceChangeListener {
+    interface TileLayerSourceChangeListener {
 
         /**
          * Notified when a layer-source changed.
          *
          * @param source the changed source.
          */
-        void sourceChanged(LayerSource source);
+        void sourceChanged(TileLayerSource source);
 
         /**
          * Notified when a single tile of a layer-source changed.
@@ -91,6 +91,6 @@ public interface LayerSource {
          * @param source the source on which the tile changed.
          * @param tile   the tile that changed.
          */
-        void sourceChanged(LayerSource source, TileId tile);
+        void sourceChanged(TileLayerSource source, TileId tile);
     }
 }

@@ -5,7 +5,7 @@ import microtrafficsim.core.convenience.utils.Utils;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.map.layers.LayerSource;
+import microtrafficsim.core.map.layers.TileLayerSource;
 import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
@@ -218,7 +218,7 @@ public class TileBasedMapViewer extends BasicMapViewer {
     public void setMap(TileFeatureProvider tiles) {
         /* update the feature sources, so that they will use the created provider */
         for (LayerDefinition def : style.getLayers()) {
-            LayerSource src = def.getSource();
+            TileLayerSource src = def.getSource();
 
             if (src instanceof FeatureTileLayerSource)
                 ((FeatureTileLayerSource) src).setFeatureProvider(tiles);
