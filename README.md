@@ -6,7 +6,7 @@ with OpenStreetMap data.
 ## News
 Testing the simulation execution for determinism has finished. According to our test cases the simulation execution is deterministic.
 
-Our next task is implementing a scenario handling the input from the polygon overlay, that allows an user to choose polygonial areas on a map with an ui dynamically). Finishing this, we will start developing multilane logic. This will be used in a bachelor thesis for traffic jam cause research.
+Our next task is implementing a scenario handling the input from the polygon overlay, that allows an user to choose polygonial areas on a map with an ui dynamically. Finishing this, we will start developing multilane logic. This will be used in a bachelor thesis for traffic jam cause research.
 
 In parallel, we implement a serialization for our graphs, route calculations and scenarios. This feature allows us simulating scenarios with more than a few 1000 vehicles without the need to wait every time for finishing the route calculations. This is helpful for the bachelor thesis.
 
@@ -83,7 +83,7 @@ has been part of our team in the very first 6 months. He worked at the single-la
 
 ## Papers
 
-####[Microscopic Traffic Simulation](https://www.informatik.uni-stuttgart.de/studium/interessierte/bsc-studiengaenge/informatik/projekt-inf/2016-06-03/Gruppe_5.pdf)
+#### [Microscopic Traffic Simulation](https://www.informatik.uni-stuttgart.de/studium/interessierte/bsc-studiengaenge/informatik/projekt-inf/2016-06-03/Gruppe_5.pdf)
 Mobility plays a huge role in modern society and is the reason for the necessity of a well developed and carefully planned infrastructure. Unfortunately, the volume of traffic is irregular and its flow is influenced on certain, hardly controllable parameters (such as weather) which leads to the occurance of traffic jams. Observing reasons for the emergence of such phenomneas in reality is difficult, trying to predict bottlenecks on planned streets without a simulation almost impossible. This paper deals with an approach to a real-time microscopic traffic simulation, based on OpenStreetMap data and single-laned streets. We base this approach on the well known Nagel-Schreckenberg model which we later extend, and will focus on explaining the logic at crossroads.
 
 *Please consider: The only appearance of the word "evaluation" is misspelled as "evacuation", which could be a word you are looking for. Furthermore, due to an implementation bug, unfortunately our examples in the following paper are wrong. Theory is correct.*
