@@ -176,6 +176,7 @@ public class TileBasedVisualization extends AbstractVisualization {
          */
         private void resolve(MouseEvent e, MouseListenerFunction fn, Consumer<MouseEvent> toplevel) {
             ArrayList<MouseListener> listeners = getAllOverlays().stream()
+                    .filter(Overlay::isEnabled)
                     .map(Overlay::getMouseListener)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toCollection(ArrayList::new));
@@ -228,6 +229,7 @@ public class TileBasedVisualization extends AbstractVisualization {
          */
         private void resolve(KeyEvent e, KeyListenerFunction fn, Consumer<KeyEvent> toplevel) {
             ArrayList<KeyListener> listeners = getAllOverlays().stream()
+                    .filter(Overlay::isEnabled)
                     .map(Overlay::getKeyListener)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toCollection(ArrayList::new));
