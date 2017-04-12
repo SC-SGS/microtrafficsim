@@ -51,6 +51,6 @@ public class BuildSetup {
         scenarioBuilder     = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
 
         /* gui */
-        this.frameTitle = "MicroTrafficSim - GUI Example";
+        this.frameTitle = "MicroTrafficSim";
     }
 }

@@ -176,13 +176,13 @@ public class PreferencesFrame extends JFrame implements Preferences {
         constraints         = new GridBagConstraints();
         constraints.weightx = 0;
         JButton buAccept    = new JButton("Accept");
-        buAccept.addActionListener(e -> guiController.transiate(GUIEvent.ACCEPT));
+        buAccept.addActionListener(e -> guiController.transiate(GUIEvent.ACCEPT_PREFS));
         bottom.add(buAccept, constraints);
 
         constraints         = new GridBagConstraints();
         constraints.weightx = 0;
         JButton buCancel    = new JButton("Cancel");
-        buCancel.addActionListener(e -> guiController.transiate(GUIEvent.CANCEL));
+        buCancel.addActionListener(e -> guiController.transiate(GUIEvent.CANCEL_PREFS));
         bottom.add(buCancel, constraints);
     }
 

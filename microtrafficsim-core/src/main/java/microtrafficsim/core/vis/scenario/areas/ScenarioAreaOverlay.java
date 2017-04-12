@@ -57,11 +57,11 @@ public class ScenarioAreaOverlay implements Overlay {
     }
 
 
-    public void addArea(Area area) {
+    public void add(Area area) {
         ui.addComponent(new AreaComponent(this, area));
     }
 
-    public void addRemove(Area area) {
+    public void remove(Area area) {
         for (Component c : ui.getComponents()) {
             if (c instanceof AreaComponent) {
                 if (((AreaComponent) c).getArea() == area) {
