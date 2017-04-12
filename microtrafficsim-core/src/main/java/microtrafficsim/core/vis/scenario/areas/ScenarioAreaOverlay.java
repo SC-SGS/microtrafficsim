@@ -26,6 +26,9 @@ import java.util.HashSet;
 // TODO: re-use batches?
 
 
+/**
+ * @author Maximilian Luz
+ */
 public class ScenarioAreaOverlay implements Overlay {
     private DirectBatchUIOverlay ui;
     private Projection projection;
@@ -69,6 +72,12 @@ public class ScenarioAreaOverlay implements Overlay {
                 }
             }
         }
+    }
+
+    public void removeAllAreas() {
+        ui.getComponents().stream()
+                .filter(c -> c instanceof AreaComponent)
+                .forEach(c -> ui.removeComponent(c));
     }
 
     public ArrayList<Area> getAreas() {
