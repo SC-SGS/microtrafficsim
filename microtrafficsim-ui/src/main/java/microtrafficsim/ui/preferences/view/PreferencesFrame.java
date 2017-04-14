@@ -11,6 +11,7 @@ import microtrafficsim.ui.preferences.model.PreferencesModel;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 
@@ -122,14 +123,15 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
      */
     private PreferencesPanel border(PreferencesPanel panel) {
 
-        /* define margins and line */
-        Border margins = BorderFactory.createEmptyBorder(10, 5, 10, 5);
-        Border line    = BorderFactory.createLineBorder(Color.black);
-
         /* set titled border */
+        Border line         = BorderFactory.createLineBorder(Color.black);
         TitledBorder border = BorderFactory.createTitledBorder(line, panel.getModel().getTitle());
         border.setTitleFont(HEADER_FONT);
-        panel.setBorder(BorderFactory.createCompoundBorder(margins, border));
+
+
+        Border outsideBorder = BorderFactory.createEmptyBorder(10, 5, 10, 5);
+        Border insideBorder = BorderFactory.createCompoundBorder(border, new EmptyBorder(0, 5, 0, 5));
+        panel.setBorder(BorderFactory.createCompoundBorder(outsideBorder, insideBorder));
 
         return panel;
     }

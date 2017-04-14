@@ -21,6 +21,7 @@ public abstract class PreferencesPanel extends JPanel implements PreferencesView
         constraints.gridy   = row;
         constraints.weightx = 0;
         constraints.anchor  = GridBagConstraints.WEST;
+        constraints.insets  = new Insets(0, 0, 0, 5);
         add(label, constraints);
 
 
@@ -35,6 +36,7 @@ public abstract class PreferencesPanel extends JPanel implements PreferencesView
         constraints.gridwidth = 1;
         constraints.fill      = GridBagConstraints.HORIZONTAL;
         constraints.anchor    = GridBagConstraints.WEST;
+        constraints.insets    = new Insets(0, 5, 0, 0);
         add(tf, constraints);
 
 

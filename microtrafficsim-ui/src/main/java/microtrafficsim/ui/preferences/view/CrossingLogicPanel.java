@@ -35,6 +35,7 @@ public class CrossingLogicPanel extends PreferencesPanel {
     public void create() {
 
         setLayout(new GridBagLayout());
+        Insets insets = new Insets(0, 0, 0, 10);
 
 
         /* row 0 column 0 */
@@ -44,6 +45,7 @@ public class CrossingLogicPanel extends PreferencesPanel {
         constraints.gridx  = 0;
         constraints.gridy  = 0;
         constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = insets;
         add(cbEdgePriority, constraints);
 
 
@@ -76,6 +78,7 @@ public class CrossingLogicPanel extends PreferencesPanel {
         constraints.gridx  = 0;
         constraints.gridy  = 1;
         constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = insets;
         add(cbPriorityToThe, constraints);
 
 
