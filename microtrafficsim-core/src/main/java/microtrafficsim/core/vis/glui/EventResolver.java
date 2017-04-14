@@ -181,13 +181,15 @@ public class EventResolver implements KeyListener, com.jogamp.newt.event.MouseLi
 
         // exit events (call exit before enter)
         MouseEvent exit = createMouseExitEvent(e);
-        mouseover.removeAll(allover);
-        for (ChainNode node : mouseover) {
-            node.component.mouseover = false;
+        if (mouseover != null) {
+            mouseover.removeAll(allover);
+            for (ChainNode node : mouseover) {
+                node.component.mouseover = false;
 
-            MouseEvent event = transform(node.transform, exit);
-            for (MouseListener listener : node.component.getMouseListeners())
-                listener.mouseExited(event);
+                MouseEvent event = transform(node.transform, exit);
+                for (MouseListener listener : node.component.getMouseListeners())
+                    listener.mouseExited(event);
+            }
         }
 
         // enter events
