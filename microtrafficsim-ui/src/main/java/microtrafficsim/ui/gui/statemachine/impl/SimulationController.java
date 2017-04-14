@@ -11,15 +11,14 @@ import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
-import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.ui.gui.menues.MTSMenuBar;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
-import microtrafficsim.ui.preferences.PrefElement;
-import microtrafficsim.ui.preferences.impl.PreferencesFrame;
+import microtrafficsim.ui.preferences.model.PrefElement;
+import microtrafficsim.ui.preferences.view.PreferencesFrame;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 

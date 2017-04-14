@@ -1,4 +1,4 @@
-package microtrafficsim.ui.preferences;
+package microtrafficsim.ui.preferences.model;
 
 
 /**

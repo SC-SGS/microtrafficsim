@@ -1,14 +1,16 @@
-package microtrafficsim.ui.preferences;
+package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
-
+import microtrafficsim.ui.preferences.IncorrectSettingsException;
+import microtrafficsim.ui.preferences.model.PrefElement;
+import microtrafficsim.ui.preferences.model.PreferencesModel;
 
 /**
  * @author Dominic Parga Cacheiro
  */
-public interface Preferences {
+public interface PreferencesView {
 
-    void create();
+    PreferencesModel getModel();
 
     /**
      * Sets all relevant settings to the value given by the {@code config}
@@ -32,6 +34,4 @@ public interface Preferences {
         for (PrefElement prefElement : PrefElement.values())
             setEnabled(prefElement, enabled);
     }
-
-    default void addSubpreferences(Preferences preferences) {}
 }
