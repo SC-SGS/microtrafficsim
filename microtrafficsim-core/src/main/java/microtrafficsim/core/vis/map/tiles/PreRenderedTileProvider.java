@@ -48,8 +48,8 @@ import java.util.concurrent.Future;
  */
 public class PreRenderedTileProvider implements TileProvider {
 
-    // TODO: reload only grid on grid-change, instead of full tile
-    // TODO: do not reload layers on grid state change
+    // TODO: reload only layer on layer-change, instead of full tile
+    // TODO: do not reload layers on layer state change
 
     private static final Rect2d TILE_TARGET = new Rect2d(-1.0, -1.0, 1.0, 1.0);
 
@@ -83,9 +83,9 @@ public class PreRenderedTileProvider implements TileProvider {
     private TileQuad       quad;
 
     /**
-     * Constructs a new {@code PreRenderedTileProvider} for the given grid-provider.
+     * Constructs a new {@code PreRenderedTileProvider} for the given layer-provider.
      *
-     * @param provider the provider to be used as grid-source.
+     * @param provider the provider to be used as layer-source.
      */
     public PreRenderedTileProvider(TileLayerProvider provider) {
         this(provider,
@@ -93,9 +93,9 @@ public class PreRenderedTileProvider implements TileProvider {
     }
 
     /**
-     * Constructs a new {@code PreRenderedTileProvider} for the given grid-provider and target cache size.
+     * Constructs a new {@code PreRenderedTileProvider} for the given layer-provider and target cache size.
      *
-     * @param provider             the provider to be used as grid-source.
+     * @param provider             the provider to be used as layer-source.
      * @param targetBufferPoolSize the desired cache size (in tiles) for the gpu-cached tiles.
      */
     public PreRenderedTileProvider(TileLayerProvider provider, int targetBufferPoolSize) {
@@ -716,7 +716,7 @@ public class PreRenderedTileProvider implements TileProvider {
     }
 
     /**
-     * Implementation of the grid provider's {@code LayerChangeListener}.
+     * Implementation of the layer provider's {@code LayerChangeListener}.
      */
     private class LayerChangeListenerImpl implements TileLayerProvider.LayerChangeListener {
 
@@ -745,7 +745,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
         @Override
         public void layerChanged(String name) {
-            // TODO: only reload grid
+            // TODO: only reload layer
 
             for (TileChangeListener l : tileListener)
                 l.tilesChanged();
@@ -753,7 +753,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
         @Override
         public void layerChanged(String name, TileId tile) {
-            // TODO: only reload grid
+            // TODO: only reload layer
 
             for (TileChangeListener l : tileListener)
                 l.tileChanged(tile);

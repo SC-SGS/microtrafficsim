@@ -6,7 +6,6 @@ import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
@@ -138,8 +137,6 @@ public class MapViewerExample {
     private void setUpSerializer(TileBasedMapViewer viewer) {
         serializer = ExchangeFormatSerializer.create();
         exfmt = ExchangeFormat.getDefault();
-        exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.class,
-                new QuadTreeTiledMapSegmentExtractor.Config(viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel()));
     }
 
     /**

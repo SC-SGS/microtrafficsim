@@ -137,9 +137,9 @@ public class Vehicle implements VisualizationVehicleEntity {
     }
 
     /**
-     * Returns the depth-grid on which this vehicle resides.
+     * Returns the depth-layer on which this vehicle resides.
      *
-     * @return the grid on which this vehicle resides.
+     * @return the layer on which this vehicle resides.
      */
     public double getLayer() {
         return layer;

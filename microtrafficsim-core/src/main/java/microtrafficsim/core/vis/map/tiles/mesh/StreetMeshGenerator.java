@@ -334,17 +334,17 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
 
     /**
-     * Vertex described by coordinate and z-grid.
+     * Vertex described by coordinate and z-layer.
      */
     private static class Vertex {
         public final Coordinate coordinate;
         public final float      layer;
 
         /**
-         * Constructs a new {@code Vertex} with the given coordinate and grid.
+         * Constructs a new {@code Vertex} with the given coordinate and layer.
          *
          * @param coordinate the coordinate of this vertex.
-         * @param layer      the z-grid of this vertex.
+         * @param layer      the z-layer of this vertex.
          */
         Vertex(Coordinate coordinate, float layer) {
             this.coordinate = coordinate;

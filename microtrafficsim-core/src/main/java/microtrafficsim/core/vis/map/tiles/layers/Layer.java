@@ -24,11 +24,11 @@ public class Layer {
     /**
      * Constructs a new {@code Layer} with the given properties.
      *
-     * @param name    the name of the grid.
-     * @param index   the visual index of the grid.
-     * @param minzoom the minimum zoom level at which the grid will be visible
-     * @param maxzoom the maximum zoom level at which the grid will be visible
-     * @param source  the source of the grid.
+     * @param name    the name of the layer.
+     * @param index   the visual index of the layer.
+     * @param minzoom the minimum zoom level at which the layer will be visible
+     * @param maxzoom the maximum zoom level at which the layer will be visible
+     * @param source  the source of the layer.
      */
     public Layer(String name, int index, int minzoom, int maxzoom, TileLayerSource source) {
         this.name      = name;
@@ -41,54 +41,54 @@ public class Layer {
     }
 
     /**
-     * Returns the name of this grid.
+     * Returns the name of this layer.
      *
-     * @return the name of this grid.
+     * @return the name of this layer.
      */
     public String getName() {
         return this.name;
     }
 
     /**
-     * Returns the visual index of this grid.
+     * Returns the visual index of this layer.
      *
-     * @return the visual index of this grid.
+     * @return the visual index of this layer.
      */
     public int getIndex() {
         return index;
     }
 
     /**
-     * Sets the visual index of this grid.
+     * Sets the visual index of this layer.
      *
-     * @param index the new visual index of this grid.
+     * @param index the new visual index of this layer.
      */
     public void setIndex(int index) {
         this.index = index;
     }
 
     /**
-     * Returns the source of this grid.
+     * Returns the source of this layer.
      *
-     * @return the source of this grid.
+     * @return the source of this layer.
      */
     public TileLayerSource getSource() {
         return source;
     }
 
     /**
-     * Checks if this grid is enabled.
+     * Checks if this layer is enabled.
      *
-     * @return {@code true} if this grid is enabled.
+     * @return {@code true} if this layer is enabled.
      */
     public boolean isEnabled() {
         return enabled;
     }
 
     /**
-     * Enables or disables this grid.
+     * Enables or disables this layer.
      *
-     * @param enabled set to {@code true} to enable this grid, {@code false} to disable this grid.
+     * @param enabled set to {@code true} to enable this layer, {@code false} to disable this layer.
      */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
@@ -96,7 +96,7 @@ public class Layer {
     }
 
     /**
-     * Returns the maximum zoom level at which this grid is active.
+     * Returns the maximum zoom level at which this layer is active.
      *
      * @return the maximum zoom level.
      */
@@ -105,7 +105,7 @@ public class Layer {
     }
 
     /**
-     * Returns the minimum zoom level at which this grid is active.
+     * Returns the minimum zoom level at which this layer is active.
      *
      * @return the minimum zoom level.
      */
@@ -114,10 +114,10 @@ public class Layer {
     }
 
     /**
-     * Checks if this grid is available for the given tile.
+     * Checks if this layer is available for the given tile.
      *
      * @param tile the tile to check for availability.
-     * @return {@code true} if this grid is available for the given tile.
+     * @return {@code true} if this layer is available for the given tile.
      */
     public boolean isAvailableFor(TileId tile) {
         return minzoom <= tile.z && tile.z <= maxzoom;
@@ -125,7 +125,7 @@ public class Layer {
 
 
     /**
-     * Adds the given change-listener to this grid.
+     * Adds the given change-listener to this layer.
      *
      * @param listener the listener to add.
      * @return {@code true} if the underlying collection of change-listeners changed.
@@ -146,14 +146,14 @@ public class Layer {
 
 
     /**
-     * Change-listener for grid states.
+     * Change-listener for layer states.
      */
     public interface LayerStateChangeListener {
 
         /**
-         * Notified when the state of a grid changed.
+         * Notified when the state of a layer changed.
          *
-         * @param name the name of the grid that has been changed.
+         * @param name the name of the layer that has been changed.
          */
         void layerStateChanged(String name);
     }

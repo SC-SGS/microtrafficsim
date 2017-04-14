@@ -37,7 +37,7 @@ public interface MapViewer {
 
     /**
      * Set up this example. Layer definitions describe the visual layers
-     * to be rendered and are used to create a grid provider. With this
+     * to be rendered and are used to create a layer provider. With this
      * provider a tile provider is created, capable of returning drawable
      * tiles. These tiles are rendered using the visualization object. A
      * parser is created to parse the specified file (asynchronously) and

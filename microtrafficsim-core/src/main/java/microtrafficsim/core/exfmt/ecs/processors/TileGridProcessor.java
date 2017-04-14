@@ -22,6 +22,6 @@ public class TileGridProcessor implements EntityManager.Processor {
 
         // insert in tile-grid-set
         TileGridSet.TileGrid grid = container.get(TileGridSet.class, TileGridSet::new).getOrCreate(state.scheme, state.grid);
-        grid.entities.add(entity);
+        grid.entities.get(state.x, state.y).add(entity);
     }
 }

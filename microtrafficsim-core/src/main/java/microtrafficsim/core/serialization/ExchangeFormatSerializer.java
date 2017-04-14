@@ -32,6 +32,7 @@ import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.core.vis.map.projections.PlateCarreeProjection;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.Version;
+import microtrafficsim.utils.collections.Grid;
 
 import java.io.*;
 
@@ -82,6 +83,8 @@ public class ExchangeFormatSerializer {
         //       with the exception of appending new serializers
 
         // misc
+        kryo.register(Grid.class, new GridSerializer());
+
         kryo.register(Version.class, new VersionSerializer());
         kryo.register(Container.class);
 

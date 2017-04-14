@@ -7,7 +7,7 @@ import microtrafficsim.math.Rect2d;
 
 
 /**
- * Generic source for a (tiled) grid.
+ * Generic source for a (tiled) layer.
  *
  * @author Maximilian Luz
  */
@@ -28,16 +28,16 @@ public interface TileLayerSource {
     boolean isAvailable();
 
     /**
-     * Returns the (un-projected) bounds of the data this grid provides.
+     * Returns the (un-projected) bounds of the data this layer provides.
      *
-     * @return the (un-projected) bounds of the data this grid provides.
+     * @return the (un-projected) bounds of the data this layer provides.
      */
     Bounds getBounds();
 
     /**
-     * Returns the (projected) bounds of the data this grid provides.
+     * Returns the (projected) bounds of the data this layer provides.
      *
-     * @return the (projected) bounds of the data this grid provides.
+     * @return the (projected) bounds of the data this layer provides.
      */
     Rect2d getProjectedBounds();
 
@@ -74,19 +74,19 @@ public interface TileLayerSource {
 
 
     /**
-     * Change-listener for grid sources.
+     * Change-listener for layer sources.
      */
     interface TileLayerSourceChangeListener {
 
         /**
-         * Notified when a grid-source changed.
+         * Notified when a layer-source changed.
          *
          * @param source the changed source.
          */
         void sourceChanged(TileLayerSource source);
 
         /**
-         * Notified when a single tile of a grid-source changed.
+         * Notified when a single tile of a layer-source changed.
          *
          * @param source the source on which the tile changed.
          * @param tile   the tile that changed.

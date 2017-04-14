@@ -138,7 +138,7 @@ public class TileBasedMapViewer extends BasicMapViewer {
 
     @Override
     public void createVisualization() {
-        /* set up grid and tile provider */
+        /* set up layer and tile provider */
         layerProvider = createLayerProvider(style.getLayers());
         TileProvider provider = new PreRenderedTileProvider(layerProvider);
 
@@ -180,17 +180,17 @@ public class TileBasedMapViewer extends BasicMapViewer {
     }
 
     /**
-     * Creates a {@code TileLayerProvider} from the given grid definitions.
+     * Creates a {@code TileLayerProvider} from the given layer definitions.
      * The {@code TileLayerProvider} is used to provide map-layers and their
      * style to the visualization. {@code LayerDefinition}s describe such
-     * a grid in dependence of a source object. {@code TileLayerGenerator}s
+     * a layer in dependence of a source object. {@code TileLayerGenerator}s
      * are used to generate a renderable {@code TileLayer} from a specified
      * source.
      *
-     * @param layers the grid definitions for the provider
+     * @param layers the layer definitions for the provider
      */
     private TileLayerProvider createLayerProvider(Collection<LayerDefinition> layers) {
-        /* create the grid provider */
+        /* create the layer provider */
         LayeredTileMap provider = new LayeredTileMap(preferredTilingScheme);
 
         /* add a generator to support feature layers */

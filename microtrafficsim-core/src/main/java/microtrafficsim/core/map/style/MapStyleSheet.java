@@ -68,9 +68,9 @@ public interface MapStyleSheet {
     Collection<MapFeatureDefinition<?>> getFeatureDefinitions();
 
     /**
-     * Returns the grid definitions of this style.
+     * Returns the layer definitions of this style.
      *
-     * @return the grid definitions of this style.
+     * @return the layer definitions of this style.
      */
     Collection<LayerDefinition> getLayers();
 

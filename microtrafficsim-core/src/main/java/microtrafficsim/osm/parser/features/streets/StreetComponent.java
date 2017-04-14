@@ -25,7 +25,7 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
     public MaxspeedInfo maxspeed;
     public OnewayInfo   oneway;
     public boolean      roundabout;
-    public float        layer;
+    public double       layer;
 
 
     /**
@@ -37,10 +37,10 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
      * @param maxspeed   the maximum-speed information of the street.
      * @param oneway     the one-way information of the street.
      * @param roundabout set to {@code true} if the street is a roundabout.
-     * @param layer      the (vertical) grid on which this street resides.
+     * @param layer      the (vertical) layer on which this street resides.
      */
     public StreetComponent(WayEntity entity, StreetType streettype, LaneInfo lanes, MaxspeedInfo maxspeed,
-                           OnewayInfo oneway, boolean roundabout, float layer) {
+                           OnewayInfo oneway, boolean roundabout, double layer) {
         super(entity);
         this.streettype = streettype;
         this.lanes      = lanes;

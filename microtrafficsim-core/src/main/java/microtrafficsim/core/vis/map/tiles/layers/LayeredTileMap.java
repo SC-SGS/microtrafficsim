@@ -89,8 +89,8 @@ public class LayeredTileMap implements TileLayerProvider {
     /**
      * Adds the given {@code LayerDefinition} and associates it with the given name.
      *
-     * @param def the grid-definition to add.
-     * @return the grid-definition previously associated with the name of the provided definition.
+     * @param def the layer-definition to add.
+     * @return the layer-definition previously associated with the name of the provided definition.
      */
     public LayerDefinition addLayer(LayerDefinition def) {
         Layer layer = new Layer(def.getName(), def.getIndex(), def.getMinimumZoomLevel(), def.getMaximumZoomLevel(),
