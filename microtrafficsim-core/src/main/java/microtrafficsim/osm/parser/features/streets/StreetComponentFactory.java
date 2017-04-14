@@ -65,11 +65,11 @@ public class StreetComponentFactory implements ComponentFactory<StreetComponent,
 
     private static float parseLayer(Map<String, String> tags) {
         Float layer = null;
-        if (tags.get("layer") != null) {
+        if (tags.get("grid") != null) {
             try {
-                layer = Float.parseFloat(tags.get("layer"));
+                layer = Float.parseFloat(tags.get("grid"));
             } catch (NumberFormatException e) {
-                logger.warn("on 'layer' tag: '" + tags.get("layer") + "' is not a valid number!");
+                logger.warn("on 'grid' tag: '" + tags.get("grid") + "' is not a valid number!");
             }
         }
 

@@ -15,7 +15,7 @@ public abstract class TileLayerBucket {
     /**
      * Constructs a new {@code TileLayerBucket}.
      *
-     * @param layer  the layer of this bucket.
+     * @param layer  the grid of this bucket.
      * @param zIndex the z-index of this bucket.
      */
     public TileLayerBucket(TileLayer layer, float zIndex) {

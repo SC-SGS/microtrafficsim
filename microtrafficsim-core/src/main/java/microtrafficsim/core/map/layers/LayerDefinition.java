@@ -2,7 +2,7 @@ package microtrafficsim.core.map.layers;
 
 
 /**
- * Definition for a visual layer.
+ * Definition for a visual grid.
  *
  * @author Maximilian Luz
  */
@@ -16,11 +16,11 @@ public class LayerDefinition {
     /**
      * Constructs a new {@code LayerDefinition}.
      *
-     * @param name    the name of the layer.
-     * @param index   the visual index of the layer.
-     * @param minzoom the minimum zoom level at which the layer is active.
-     * @param maxzoom the maximum zoom level at which the layer is active.
-     * @param source  the source of the layer.
+     * @param name    the name of the grid.
+     * @param index   the visual index of the grid.
+     * @param minzoom the minimum zoom level at which the grid is active.
+     * @param maxzoom the maximum zoom level at which the grid is active.
+     * @param source  the source of the grid.
      */
     public LayerDefinition(String name, int index, int minzoom, int maxzoom, TileLayerSource source) {
         this.name    = name;
@@ -31,27 +31,27 @@ public class LayerDefinition {
     }
 
     /**
-     * Returns the name name of the layer.
+     * Returns the name name of the grid.
      *
-     * @return the name name of the layer.
+     * @return the name name of the grid.
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Returns the visual index of the layer.
+     * Returns the visual index of the grid.
      *
-     * @return the visual index of the layer.
+     * @return the visual index of the grid.
      */
     public int getIndex() {
         return index;
     }
 
     /**
-     * Returns the source of the layer.
+     * Returns the source of the grid.
      *
-     * @return the source of the layer.
+     * @return the source of the grid.
      */
     public TileLayerSource getSource() {
         return source;

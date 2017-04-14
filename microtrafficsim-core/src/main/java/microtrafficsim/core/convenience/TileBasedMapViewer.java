@@ -31,6 +31,7 @@ import java.util.Collection;
 public class TileBasedMapViewer extends BasicMapViewer {
 
     private TileBasedVisualization visualization;
+    private TileLayerProvider layerProvider;
 
     private TilingScheme preferredTilingScheme;
     private int preferredTileGridLevel;
@@ -59,7 +60,7 @@ public class TileBasedMapViewer extends BasicMapViewer {
      * @see #TileBasedMapViewer(int, int, MapStyleSheet, Projection)
      */
     public TileBasedMapViewer(MapStyleSheet style) {
-        this(1600, 900, style, new MercatorProjection(256));
+        this(1600, 900, style, new MercatorProjection());
     }
 
     /**
@@ -137,9 +138,9 @@ public class TileBasedMapViewer extends BasicMapViewer {
 
     @Override
     public void createVisualization() {
-        /* set up layer and tile provider */
-        TileLayerProvider layerProvider = createLayerProvider(style.getLayers());
-        TileProvider      provider      = new PreRenderedTileProvider(layerProvider);
+        /* set up grid and tile provider */
+        layerProvider = createLayerProvider(style.getLayers());
+        TileProvider provider = new PreRenderedTileProvider(layerProvider);
 
         /* create a new visualization object */
         visualization = new TileBasedVisualization(
@@ -179,17 +180,17 @@ public class TileBasedMapViewer extends BasicMapViewer {
     }
 
     /**
-     * Creates a {@code TileLayerProvider} from the given layer definitions.
+     * Creates a {@code TileLayerProvider} from the given grid definitions.
      * The {@code TileLayerProvider} is used to provide map-layers and their
      * style to the visualization. {@code LayerDefinition}s describe such
-     * a layer in dependence of a source object. {@code TileLayerGenerator}s
+     * a grid in dependence of a source object. {@code TileLayerGenerator}s
      * are used to generate a renderable {@code TileLayer} from a specified
      * source.
      *
-     * @param layers the layer definitions for the provider
+     * @param layers the grid definitions for the provider
      */
     private TileLayerProvider createLayerProvider(Collection<LayerDefinition> layers) {
-        /* create the layer provider */
+        /* create the grid provider */
         LayeredTileMap provider = new LayeredTileMap(preferredTilingScheme);
 
         /* add a generator to support feature layers */
@@ -216,6 +217,13 @@ public class TileBasedMapViewer extends BasicMapViewer {
     }
 
     public void setMap(TileFeatureProvider tiles) {
+        /* Update the tiling-scheme according to the source. Note: All sources must have the same tiling scheme and the
+         * visual appearance (i.e. line-thickness) may depend on the tiling-scheme (specifically its scale). It is
+         * thus often better to specify the tiling-scheme while loading/generating the feature provider and other
+         * sources.
+         */
+        layerProvider.setTilingScheme(tiles.getTilingScheme());
+
         /* update the feature sources, so that they will use the created provider */
         for (LayerDefinition def : style.getLayers()) {
             TileLayerSource src = def.getSource();

@@ -20,8 +20,8 @@ public abstract class TileLayer {
     /**
      * Constructs a new {@code TileLayer}.
      *
-     * @param tile      the tile-id for which this tile-layer is.
-     * @param layer     the layer corresponding to this tile-layer.
+     * @param tile      the tile-id for which this tile-grid is.
+     * @param layer     the grid corresponding to this tile-grid.
      * @param transform the transformation-matrix to transform the tile to world-space.
      */
     public TileLayer(TileId tile, Layer layer, Mat4f transform) {
@@ -31,57 +31,57 @@ public abstract class TileLayer {
     }
 
     /**
-     * Initializes this tile-layer.
+     * Initializes this tile-grid.
      *
-     * @param context the context on which this layer should be displayed.
+     * @param context the context on which this grid should be displayed.
      * @throws Exception if any exception occurs during initialization.
      */
     public abstract void initialize(RenderContext context) throws Exception;
 
     /**
-     * Disposes this tile-layer.
+     * Disposes this tile-grid.
      *
-     * @param context the context on which this layer has been initialized.
+     * @param context the context on which this grid has been initialized.
      * @throws Exception if any exception occurs during disposal.
      */
     public abstract void dispose(RenderContext context) throws Exception;
 
     /**
-     * Renders this tile-layer.
+     * Renders this tile-grid.
      *
-     * @param context the context on which this tile-layer should be rendered.
+     * @param context the context on which this tile-grid should be rendered.
      */
     public abstract void display(RenderContext context);
 
     /**
-     * Returns all buckets of this tile-layer.
+     * Returns all buckets of this tile-grid.
      *
-     * @return the buckets of this tile-layer.
+     * @return the buckets of this tile-grid.
      */
     public abstract List<? extends TileLayerBucket> getBuckets();
 
     /**
-     * Returns the id of this tile-layer.
+     * Returns the id of this tile-grid.
      *
-     * @return the id of this tile-layer.
+     * @return the id of this tile-grid.
      */
     public TileId getTile() {
         return tile;
     }
 
     /**
-     * Returns the layer corresponding to this tile-layer.
+     * Returns the grid corresponding to this tile-grid.
      *
-     * @return the layer corresponding to this tile-layer.
+     * @return the grid corresponding to this tile-grid.
      */
     public Layer getLayer() {
         return layer;
     }
 
     /**
-     * Returns the transform of this tile-layer.
+     * Returns the transform of this tile-grid.
      *
-     * @return the transform of this tile-layer.
+     * @return the transform of this tile-grid.
      */
     public Mat4f getTransform() {
         return transform;

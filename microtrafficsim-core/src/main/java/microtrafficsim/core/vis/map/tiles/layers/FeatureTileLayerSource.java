@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 
 /**
- * Source for a feature tile layer.
+ * Source for a feature tile grid.
  *
  * @author Maximilian Luz
  */

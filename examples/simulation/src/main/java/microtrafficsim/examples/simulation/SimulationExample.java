@@ -4,14 +4,17 @@ import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.convenience.DefaultParserConfig;
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.exfmt.Container;
+import microtrafficsim.core.exfmt.ExchangeFormat;
+import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.serialization.Serializer;
-import microtrafficsim.core.serialization.Container;
+import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.ScenarioConfig;
@@ -46,8 +49,9 @@ public class SimulationExample {
     private static final long SEED = Random.createSeed();
 
     private JFileChooser filechooser;
-    private Serializer serializer;
     private OSMParser parser;
+    private ExchangeFormatSerializer serializer;
+    private ExchangeFormat exfmt;
 
     private JFrame frame;
     private ScenarioConfig config;
@@ -69,7 +73,6 @@ public class SimulationExample {
         LoggingLevel.setEnabledGlobally(false, false, true, true, true);
 
         filechooser = new JFileChooser();
-        serializer = Serializer.create();
 
         /* Create configuration for scenarios, parser and map-viewer */
         config = config();
@@ -82,6 +85,7 @@ public class SimulationExample {
 
         /* Create the window and display the visualization */
         frame = setUpFrame(viewer);
+        setUpSerializer(viewer);
         show();
 
         /* Load the OSM file asynchronously */
@@ -148,6 +152,13 @@ public class SimulationExample {
         });
 
         return frame;
+    }
+
+    private void setUpSerializer(TileBasedMapViewer viewer) {
+        serializer = ExchangeFormatSerializer.create();
+        exfmt = ExchangeFormat.getDefault();
+        exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.class,
+                new QuadTreeTiledMapSegmentExtractor.Config(viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel()));
     }
 
     /**
@@ -390,10 +401,11 @@ public class SimulationExample {
                     OSMParser.Result result = parser.parse(file);
                     segment = tiler.generate(result.segment, scheme, viewer.getPreferredTileGridLevel());
                     graph = result.streetgraph;
+
                 } else {
-                    Container result = serializer.read(file);
-                    segment = result.getMapSegment();
-                    graph = result.getMapGraph();
+                    ExchangeFormat.Manipulator xmp = exfmt.manipulator(serializer.read(file));
+                    segment = xmp.extract(QuadTreeTiledMapSegment.class);
+                    graph = xmp.extract(StreetGraph.class);
                 }
             } catch (InterruptedException e) {
                 throw new CancellationException();
@@ -480,10 +492,12 @@ public class SimulationExample {
             SwingUtilities.invokeAndWait(() ->
                     frame.setTitle(getDefaultFrameTitle() + " - [Saving: " + file.getPath() + "]"));
 
-            new Container()
-                    .setMapSegment(segment)
-                    .setMapGraph(graph)
-                    .write(serializer, file);
+            Container container = exfmt.manipulator()
+                    .inject(segment)
+                    .inject(graph)
+                    .getContainer();
+
+            serializer.write(file, container);
 
         } catch (Throwable t) {
             t.printStackTrace();

@@ -23,6 +23,11 @@ public interface TileLayerProvider {
     interface LayerChangeListener {
 
         /**
+         * Notified when the tiling-scheme changes.
+         */
+        void tilingSchemeChanged();
+
+        /**
          * Notified when all layers on all tiles change.
          */
         void layersChanged();
@@ -35,24 +40,24 @@ public interface TileLayerProvider {
         void layersChanged(TileId tile);
 
         /**
-         * Notified when the layer associated with the given name changes (for all tiles).
+         * Notified when the grid associated with the given name changes (for all tiles).
          *
-         * @param name the layer that changed.
+         * @param name the grid that changed.
          */
         void layerChanged(String name);
 
         /**
-         * Notified when the layer associated with the given name changes for the specified tile.
+         * Notified when the grid associated with the given name changes for the specified tile.
          *
-         * @param name the layer that changed.
-         * @param tile the tile for which the layer changed.
+         * @param name the grid that changed.
+         * @param tile the tile for which the grid changed.
          */
         void layerChanged(String name, TileId tile);
 
         /**
-         * Notified when the state of a layer changed.
+         * Notified when the state of a grid changed.
          *
-         * @param name the layer of which the state changed.
+         * @param name the grid of which the state changed.
          */
         void layerStateChanged(String name);
     }
@@ -86,10 +91,15 @@ public interface TileLayerProvider {
     TilingScheme getTilingScheme();
 
     /**
-     * Return the layer associated with the given string.
+     * Sets the tiling-scheme to be used in this provider.
+     */
+    void setTilingScheme(TilingScheme scheme);
+
+    /**
+     * Return the grid associated with the given string.
      *
-     * @param name the name of the layer.
-     * @return the layer associated with the givne string.
+     * @param name the name of the grid.
+     * @return the grid associated with the givne string.
      */
     Layer getLayer(String name);
 
@@ -116,22 +126,22 @@ public interface TileLayerProvider {
     Set<String> getAvailableLayers(TileId tile);
 
     /**
-     * Requires/loads the requested tile-layer.
+     * Requires/loads the requested tile-grid.
      *
-     * @param context the context on which this layer should be loaded.
-     * @param layer   the layer-name for which the tile-layer should be returned.
-     * @param tile    the tile for which the tile-layer should be returned.
-     * @param target  the target space to which the tile-layer should be projected.
+     * @param context the context on which this grid should be loaded.
+     * @param layer   the grid-name for which the tile-grid should be returned.
+     * @param tile    the tile for which the tile-grid should be returned.
+     * @param target  the target space to which the tile-grid should be projected.
      * @return the requested {@code TileLayer}.
      * @throws InterruptedException if this call has been interrupted.
      */
     TileLayer require(RenderContext context, String layer, TileId tile, Rect2d target) throws InterruptedException;
 
     /**
-     * Releases te specified tile-layer.
+     * Releases te specified tile-grid.
      *
-     * @param context the context on which this layer has been loaded.
-     * @param layer   the tile-layer that should be returned.
+     * @param context the context on which this grid has been loaded.
+     * @param layer   the tile-grid that should be returned.
      */
     void release(RenderContext context, TileLayer layer);
 

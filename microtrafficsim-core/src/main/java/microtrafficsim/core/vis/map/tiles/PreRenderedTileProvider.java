@@ -48,8 +48,8 @@ import java.util.concurrent.Future;
  */
 public class PreRenderedTileProvider implements TileProvider {
 
-    // TODO: reload only layer on layer-change, instead of full tile
-    // TODO: do not reload layers on layer state change
+    // TODO: reload only grid on grid-change, instead of full tile
+    // TODO: do not reload layers on grid state change
 
     private static final Rect2d TILE_TARGET = new Rect2d(-1.0, -1.0, 1.0, 1.0);
 
@@ -63,6 +63,8 @@ public class PreRenderedTileProvider implements TileProvider {
     private static final int TEX_UNIT_TILE_DEPTH = 1;
 
     private static final BucketComparator CMP_BUCKET = new BucketComparator();
+
+    private RenderContext context;
 
     private TileLayerProvider           provider;
     private HashSet<TileChangeListener> tileListener;
@@ -81,9 +83,9 @@ public class PreRenderedTileProvider implements TileProvider {
     private TileQuad       quad;
 
     /**
-     * Constructs a new {@code PreRenderedTileProvider} for the given layer-provider.
+     * Constructs a new {@code PreRenderedTileProvider} for the given grid-provider.
      *
-     * @param provider the provider to be used as layer-source.
+     * @param provider the provider to be used as grid-source.
      */
     public PreRenderedTileProvider(TileLayerProvider provider) {
         this(provider,
@@ -91,9 +93,9 @@ public class PreRenderedTileProvider implements TileProvider {
     }
 
     /**
-     * Constructs a new {@code PreRenderedTileProvider} for the given layer-provider and target cache size.
+     * Constructs a new {@code PreRenderedTileProvider} for the given grid-provider and target cache size.
      *
-     * @param provider             the provider to be used as layer-source.
+     * @param provider             the provider to be used as grid-source.
      * @param targetBufferPoolSize the desired cache size (in tiles) for the gpu-cached tiles.
      */
     public PreRenderedTileProvider(TileLayerProvider provider, int targetBufferPoolSize) {
@@ -140,6 +142,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
     @Override
     public void initialize(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
+        this.context = context;
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         tilecopy = context.getShaderManager().load(TILE_COPY_SHADER_SRC);
@@ -713,9 +716,20 @@ public class PreRenderedTileProvider implements TileProvider {
     }
 
     /**
-     * Implementation of the layer provider's {@code LayerChangeListener}.
+     * Implementation of the grid provider's {@code LayerChangeListener}.
      */
     private class LayerChangeListenerImpl implements TileLayerProvider.LayerChangeListener {
+
+        @Override
+        public void tilingSchemeChanged() {
+            context.addTask(c -> {
+                TileBufferPool old = PreRenderedTileProvider.this.pool;
+                pool = new TileBufferPool(provider.getTilingScheme().getTileSize(), pool.targetPoolSize);
+
+                old.dispose(c);
+                return null;
+            });
+        }
 
         @Override
         public void layersChanged() {
@@ -731,7 +745,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
         @Override
         public void layerChanged(String name) {
-            // TODO: only reload layer
+            // TODO: only reload grid
 
             for (TileChangeListener l : tileListener)
                 l.tilesChanged();
@@ -739,7 +753,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
         @Override
         public void layerChanged(String name, TileId tile) {
-            // TODO: only reload layer
+            // TODO: only reload grid
 
             for (TileChangeListener l : tileListener)
                 l.tileChanged(tile);

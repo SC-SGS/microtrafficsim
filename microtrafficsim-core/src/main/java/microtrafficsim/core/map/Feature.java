@@ -47,21 +47,20 @@ public class Feature<T extends FeaturePrimitive> {
     }
 
     /**
-     * Returns the data of this feature.
-     *
-     * @return the data of this feature.
-     */
-    public T[] getData() {
-        return data;
-    }
-
-
-    /**
      * Returns the descriptor describing this feature.
      *
      * @return the descriptor describing this feature.
      */
     public FeatureDescriptor getDescriptor() {
         return new FeatureDescriptor(name, type);
+    }
+
+    /**
+     * Returns the data of this feature.
+     *
+     * @return the data of this feature.
+     */
+    public T[] getData() {
+        return data;
     }
 }

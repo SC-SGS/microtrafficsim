@@ -275,11 +275,11 @@ public abstract class BasicStyleSheet implements StyleSheet {
     /**
      * Generate a LayerDefinition for features, based on the specific properties.
      *
-     * @param name    the name of the generated layer.
-     * @param index   the index of the  generated layer.
-     * @param min     the minimum zoom-level at which the generated layer is visible.
-     * @param max     the maximum zoom-level at which the generated layer is visible.
-     * @param feature the feature-name of the feature on which the layer is based on.
+     * @param name    the name of the generated grid.
+     * @param index   the index of the  generated grid.
+     * @param min     the minimum zoom-level at which the generated grid is visible.
+     * @param max     the maximum zoom-level at which the generated grid is visible.
+     * @param feature the feature-name of the feature on which the grid is based on.
      * @param style   the style to be used for rendering.
      * @return the generated LayerDefinition.
      */

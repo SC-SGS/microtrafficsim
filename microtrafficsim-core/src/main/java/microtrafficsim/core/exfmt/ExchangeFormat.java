@@ -1,0 +1,217 @@
+package microtrafficsim.core.exfmt;
+
+import microtrafficsim.core.exfmt.ecs.EntityManager;
+import microtrafficsim.core.exfmt.ecs.processors.FeatureProcessor;
+import microtrafficsim.core.exfmt.ecs.processors.TileGridProcessor;
+import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.exfmt.injector.map.QuadTreeTiledMapSegmentInjector;
+import microtrafficsim.core.exfmt.injector.map.SegmentFeatureProviderInjector;
+import microtrafficsim.core.exfmt.injector.map.features.FeatureInjector;
+import microtrafficsim.core.exfmt.injector.map.features.TileFeatureGridInjector;
+import microtrafficsim.core.exfmt.injector.map.features.primitives.MultiLineInjector;
+import microtrafficsim.core.exfmt.injector.map.features.primitives.PointInjector;
+import microtrafficsim.core.exfmt.injector.map.features.primitives.PolygonInjector;
+import microtrafficsim.core.exfmt.injector.map.features.primitives.StreetInjector;
+import microtrafficsim.core.map.Feature;
+import microtrafficsim.core.map.MapSegment;
+import microtrafficsim.core.map.SegmentFeatureProvider;
+import microtrafficsim.core.map.features.MultiLine;
+import microtrafficsim.core.map.features.Point;
+import microtrafficsim.core.map.features.Polygon;
+import microtrafficsim.core.map.features.Street;
+import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
+import microtrafficsim.core.map.tiles.TileFeatureGrid;
+import microtrafficsim.utils.collections.Composite;
+
+import java.util.HashMap;
+
+
+// TODO:
+// - add load/unload functions to Interfaces (Injector, Extractor, EntityProcessor, PostProcessor, ...) for perf?
+// - remove TileGridSet, FeatureSet in favour of respective Components or make optional with Processors?
+
+
+public class ExchangeFormat {
+    private Config config = new Config();
+
+    private HashMap<Class<?>, Injector<?>>  injectors  = new HashMap<>();
+    private HashMap<Class<?>, Extractor<?>> extractors = new HashMap<>();
+
+
+    public <T> void injector(Class<T> type, Injector<? super T> injector) {
+        if (injector != null)
+            injectors.put(type, injector);
+        else
+            injectors.remove(type);
+    }
+
+    public <T> void extractor(Class<T> type, Extractor<T> extractor) {
+        if (extractor != null)
+            extractors.put(type, extractor);
+        else
+            extractors.remove(type);
+    }
+
+
+    @SuppressWarnings("unchecked")
+    public <T> void inject(Context ctx, Container dst, T src) throws Exception {
+        Injector<?> injector = injectors.get(src.getClass());
+        if (injector == null)
+            throw new IllegalArgumentException("No injector for class '" + src.getClass().getName() + "'");
+
+        call((Injector<? super T>) injector, ctx, dst, src);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> void inject(Context ctx, Container dst, Class<T> type, T src) throws Exception {
+        Injector<?> injector = injectors.get(type);
+        if (injector == null)
+            throw new IllegalArgumentException("No injector for class '" + type.getName() + "'");
+
+        call((Injector<? super T>) injector, ctx, dst, src);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T extract(Context ctx, Container src, Class<T> type) throws Exception {
+        Extractor<?> extractor = extractors.get(type);
+        if (extractor == null)
+            throw new IllegalArgumentException("No extractor for class '" + type.getName() + "'");
+
+        return call((Extractor<? extends T>) extractor, ctx, src);
+    }
+
+
+    public Config getConfig() {
+        return config;
+    }
+
+    public void setConfig(Config config) {
+        this.config = config;
+    }
+
+
+    public Manipulator manipulator() {
+        return new Manipulator(this);
+    }
+
+    public Manipulator manipulator(Container container) {
+        return new Manipulator(this, container);
+    }
+
+
+    private <T> void call(Injector<? super T> injector, Context ctx, Container dst, T src) throws Exception {
+        injector.inject(this, ctx, dst, src);
+    }
+
+    private <T> T call(Extractor<T> extractor, Context ctx, Container src) throws Exception {
+        return extractor.extract(this, ctx, src);
+    }
+
+
+    public static ExchangeFormat getDefault() {
+        ExchangeFormat format = new ExchangeFormat();
+
+        // CONFIGURATION
+        {
+            Config cfg = format.getConfig();
+
+            // entities
+            EntityManager ecsmgr = cfg.get(EntityManager.class, EntityManager::new);
+            ecsmgr.addProcessor(new FeatureProcessor());
+            ecsmgr.addProcessor(new TileGridProcessor());
+        }
+
+        // INJECTORS
+        // map feature primitives
+        format.injector(Point.class, new PointInjector());
+        format.injector(MultiLine.class, new MultiLineInjector());
+        format.injector(Street.class, new StreetInjector());
+        format.injector(Polygon.class, new PolygonInjector());
+
+        // features
+        format.injector(Feature.class, new FeatureInjector());
+        format.injector(TileFeatureGrid.class, new TileFeatureGridInjector());
+
+        // map segments
+        format.injector(SegmentFeatureProvider.class, new SegmentFeatureProviderInjector());
+        format.injector(MapSegment.class, new SegmentFeatureProviderInjector());
+
+        format.injector(QuadTreeTiledMapSegment.class, new QuadTreeTiledMapSegmentInjector());
+        format.extractor(QuadTreeTiledMapSegment.class, new QuadTreeTiledMapSegmentExtractor());
+
+        return format;
+    }
+
+
+    public interface Injector<T> {
+        void inject(ExchangeFormat fmt, Context ctx, Container dst, T src) throws Exception;
+    }
+
+    public interface Extractor<T> {
+        T extract(ExchangeFormat format, Context ctx, Container src) throws Exception;
+    }
+
+    public static class Context extends Composite<Object> {}
+
+
+    public static class Manipulator {
+        private ExchangeFormat format;
+        private Context context;
+        private Container container;
+
+        public Manipulator() {
+            this(ExchangeFormat.getDefault(), new Context(), new Container());
+        }
+
+        public Manipulator(ExchangeFormat format) {
+            this(format, new Context(), new Container());
+        }
+
+        public Manipulator(Container container) {
+            this(ExchangeFormat.getDefault(), new Context(), container);
+        }
+
+        public Manipulator(ExchangeFormat format, Container container) {
+            this(format, new Context(), container);
+        }
+
+        public Manipulator(ExchangeFormat format, Context context, Container container) {
+            this.format = format;
+            this.context = context;
+            this.container = container;
+        }
+
+
+        public Context getContext() {
+            return context;
+        }
+
+        public ExchangeFormat getFormat() {
+            return format;
+        }
+
+        public Container getContainer() {
+            return container;
+        }
+
+
+        public <T> Manipulator inject(T obj) throws Exception {
+            format.inject(context, container, obj);
+            return this;
+        }
+
+        public <T> Manipulator inject(Class<T> type, T obj) throws Exception {
+            format.inject(context, container, type, obj);
+            return this;
+        }
+
+        public <T> T extract(Class<T> type) throws Exception {
+            return format.extract(context, container, type);
+        }
+
+
+        public void reset() {
+            this.context = new Context();
+        }
+    }
+}

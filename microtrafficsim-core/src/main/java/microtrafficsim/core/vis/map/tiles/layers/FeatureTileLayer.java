@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 
 /**
- * Tile layer for map-features.
+ * Tile grid for map-features.
  *
  * @author Maximilian Luz
  */
@@ -30,11 +30,11 @@ public class FeatureTileLayer extends TileLayer {
     /**
      * Constructs a new {@code FeatureTileLayer} with the given parameters.
      *
-     * @param tile      the tile to create tile-this layer for.
-     * @param layer     the layer to create this tile-layer from.
-     * @param transform the transform to transform the tile-layer to world space.
-     * @param mesh      the mesh to be rendered in the tile-layer.
-     * @param style     the style the tile-layer should be rendered with.
+     * @param tile      the tile to create tile-this grid for.
+     * @param layer     the grid to create this tile-grid from.
+     * @param transform the transform to transform the tile-grid to world space.
+     * @param mesh      the mesh to be rendered in the tile-grid.
+     * @param style     the style the tile-grid should be rendered with.
      */
     public FeatureTileLayer(TileId tile, Layer layer, Mat4f transform, Mesh mesh, FeatureStyle style) {
         super(tile, layer, transform);
@@ -80,9 +80,9 @@ public class FeatureTileLayer extends TileLayer {
     }
 
     /**
-     * Returns the mesh of this tile-layer.
+     * Returns the mesh of this tile-grid.
      *
-     * @return the mesh of this tile-layer.
+     * @return the mesh of this tile-grid.
      */
     public Mesh getMesh() {
         return mesh;
@@ -97,9 +97,9 @@ public class FeatureTileLayer extends TileLayer {
         private MeshBucket mesh;
 
         /**
-         * Constructs a new {@code FeatureBucket} with the given layer and mesh.
+         * Constructs a new {@code FeatureBucket} with the given grid and mesh.
          *
-         * @param layer the tile-layer for which the bucket should be created.
+         * @param layer the tile-grid for which the bucket should be created.
          * @param mesh  the mesh of the bucket.
          */
         FeatureBucket(TileLayer layer, MeshBucket mesh) {

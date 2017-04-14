@@ -2,6 +2,7 @@ package microtrafficsim.utils.collections;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 
 /**
@@ -40,6 +41,37 @@ public class Composite<Base> {
     }
 
     /**
+     * Return the object associated with the given class. If no such object exists invoke the supplier and associate
+     * the computed object with the given class.
+     *
+     * @param key      the class for which the associated object should be returned.
+     * @param fallback the supplier providing a fallback-object to be associated with the given key if no previous
+     *                 association exists.
+     * @param <T>      the type described by the given key, with which the object should be associated.
+     * @return the object associated with the given key, if no such object exists prior to the call to this method,
+     * the object returned by the provided supplier will be associated with the given key and returned.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Base> T get(Class<T> key, Supplier<? extends T> fallback) {
+        return (T) content.computeIfAbsent(key, (x) -> fallback.get());
+    }
+
+    /**
+     * Return the object associated with the given class or the fallback object returned by the supplier, if no object
+     * is associated with the given key.
+     *
+     * @param key the class used as key.
+     * @param <T> the type described by the key.
+     * @return the object associated with the given key or the result of {@code fallback.get()} if no such object
+     * exists.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Base> T getOr(Class<T> key, Supplier<? extends T> fallback) {
+        T stored = (T) content.get(key);
+        return stored != null ? stored : fallback.get();
+    }
+
+    /**
      * Remove and return the object associated with the given class.
      *
      * @param key the class used as key.
@@ -49,6 +81,16 @@ public class Composite<Base> {
     @SuppressWarnings("unchecked")
     public <T extends Base> T remove(Class<T> key) {
         return (T) content.remove(key);
+    }
+
+    /**
+     * Checks if this composite contains an object associated with the given key.
+     *
+     * @param key the key to check for.
+     * @return {@code true} iff this composite contains an object associated with the given key.
+     */
+    public boolean contains(Class<? extends Base> key) {
+        return content.containsKey(key);
     }
 
 
