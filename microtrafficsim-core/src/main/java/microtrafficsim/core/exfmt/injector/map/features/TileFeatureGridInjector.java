@@ -2,8 +2,11 @@ package microtrafficsim.core.exfmt.injector.map.features;
 
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
+import microtrafficsim.core.exfmt.base.FeatureInfo;
+import microtrafficsim.core.exfmt.base.TileGridInfo;
 import microtrafficsim.core.exfmt.context.TileGridContext;
 import microtrafficsim.core.exfmt.ecs.processors.TileGridProcessor;
+import microtrafficsim.core.map.Feature;
 import microtrafficsim.core.map.FeatureDescriptor;
 import microtrafficsim.core.map.FeaturePrimitive;
 import microtrafficsim.core.map.tiles.TileFeatureGrid;
@@ -21,6 +24,15 @@ public class TileFeatureGridInjector implements ExchangeFormat.Injector<TileFeat
     public void inject(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container dst, TileFeatureGrid src)
             throws Exception
     {
+        // inject feature info
+        FeatureInfo features = dst.get(FeatureInfo.class, FeatureInfo::new);
+        features.set(src.getDescriptor());
+
+        // inject grid info
+        TileGridInfo grids = dst.get(TileGridInfo.class, TileGridInfo::new);
+        grids.add(src.getTilingScheme(), src.getLevel());
+
+        // inject entities
         TileGridContext state = new TileGridContext(src.getTilingScheme(), src.getLevel());
 
         ctx.set(FeatureDescriptor.class, src.getDescriptor());

@@ -2,7 +2,6 @@ package microtrafficsim.core.exfmt.ecs.processors;
 
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.base.TileGridSet;
 import microtrafficsim.core.exfmt.context.TileGridContext;
 import microtrafficsim.core.exfmt.ecs.Entity;
 import microtrafficsim.core.exfmt.ecs.EntityManager;
@@ -19,9 +18,5 @@ public class TileGridProcessor implements EntityManager.Processor {
         // add component
         TileGridComponent component = entity.get(TileGridComponent.class, () -> new TileGridComponent(entity));
         component.add(new TileGridComponent.Entry(state.scheme, state.grid, state.x, state.y));
-
-        // insert in tile-grid-set
-        TileGridSet.TileGrid grid = container.get(TileGridSet.class, TileGridSet::new).getOrCreate(state.scheme, state.grid);
-        grid.entities.get(state.x, state.y).add(entity);
     }
 }

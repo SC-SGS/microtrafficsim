@@ -5,8 +5,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import microtrafficsim.core.exfmt.Container;
-import microtrafficsim.core.exfmt.base.FeatureSet;
-import microtrafficsim.core.exfmt.base.TileGridSet;
+import microtrafficsim.core.exfmt.base.TileGridInfo;
 import microtrafficsim.core.exfmt.ecs.components.FeatureComponent;
 import microtrafficsim.core.exfmt.ecs.components.StreetComponent;
 import microtrafficsim.core.exfmt.ecs.components.TileGridComponent;
@@ -20,7 +19,6 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.serialization.kryo.impl.*;
 import microtrafficsim.core.serialization.kryo.impl.exfmt.FeatureDescriptorSerializer;
-import microtrafficsim.core.serialization.kryo.impl.exfmt.FeatureSerializer;
 import microtrafficsim.core.serialization.kryo.impl.exfmt.TileGridSetSerializer;
 import microtrafficsim.core.serialization.kryo.impl.exfmt.components.FeatureComponentSerializer;
 import microtrafficsim.core.serialization.kryo.impl.exfmt.components.StreetComponentSerializer;
@@ -89,8 +87,7 @@ public class ExchangeFormatSerializer {
         kryo.register(Container.class);
 
         // exchange-format
-        kryo.register(TileGridSet.Key.class, new TileGridSetSerializer.Key());
-        kryo.register(TileGridSet.TileGrid.class, new TileGridSetSerializer.TileGrid());
+        kryo.register(TileGridInfo.Grid.class, new TileGridSetSerializer.Grid());
 
         kryo.register(PointEntity.class, new PointEntitySerializer());
         kryo.register(LineEntity.class, new LineEntitySerializer());
@@ -100,8 +97,6 @@ public class ExchangeFormatSerializer {
         kryo.register(FeatureComponent.class, new FeatureComponentSerializer());
         kryo.register(TileGridComponent.class, new TileGridComponentSerializer());
         kryo.register(TileGridComponent.Entry.class, new TileGridComponentSerializer.Entry());
-
-        kryo.register(FeatureSet.Feature.class, new FeatureSerializer());
 
         // map stuff
         kryo.register(FeatureDescriptor.class, new FeatureDescriptorSerializer());

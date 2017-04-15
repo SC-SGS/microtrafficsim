@@ -1,8 +1,14 @@
 package microtrafficsim.core.exfmt;
 
 import microtrafficsim.core.exfmt.ecs.EntityManager;
+import microtrafficsim.core.exfmt.ecs.FeatureManager;
+import microtrafficsim.core.exfmt.ecs.features.MultiLineFeatureExtractor;
+import microtrafficsim.core.exfmt.ecs.features.PointFeatureExtractor;
+import microtrafficsim.core.exfmt.ecs.features.PolygonFeatureExtractor;
+import microtrafficsim.core.exfmt.ecs.features.StreetFeatureExtractor;
 import microtrafficsim.core.exfmt.ecs.processors.FeatureProcessor;
 import microtrafficsim.core.exfmt.ecs.processors.TileGridProcessor;
+import microtrafficsim.core.exfmt.extractor.map.MapSegmentExtractor;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
 import microtrafficsim.core.exfmt.injector.map.QuadTreeTiledMapSegmentInjector;
 import microtrafficsim.core.exfmt.injector.map.SegmentFeatureProviderInjector;
@@ -28,12 +34,10 @@ import java.util.HashMap;
 
 // TODO:
 // - add load/unload functions to Interfaces (Injector, Extractor, EntityProcessor, PostProcessor, ...) for perf?
-// - remove TileGridSet, FeatureSet in favour of respective Components or make optional with Processors?
 
 
 public class ExchangeFormat {
     private Config config = new Config();
-
     private HashMap<Class<?>, Injector<?>>  injectors  = new HashMap<>();
     private HashMap<Class<?>, Extractor<?>> extractors = new HashMap<>();
 
@@ -111,33 +115,41 @@ public class ExchangeFormat {
     public static ExchangeFormat getDefault() {
         ExchangeFormat format = new ExchangeFormat();
 
-        // CONFIGURATION
-        {
+        {   // CONFIGURATION
             Config cfg = format.getConfig();
 
-            // entities
+            // entity processors (may be called by insertion of new entities)
             EntityManager ecsmgr = cfg.get(EntityManager.class, EntityManager::new);
             ecsmgr.addProcessor(new FeatureProcessor());
             ecsmgr.addProcessor(new TileGridProcessor());
+
+            // feature extractors
+            FeatureManager fmgr = cfg.get(FeatureManager.class, FeatureManager::new);
+            fmgr.setExtractor(Point.class, new PointFeatureExtractor());
+            fmgr.setExtractor(MultiLine.class, new MultiLineFeatureExtractor());
+            fmgr.setExtractor(Street.class, new StreetFeatureExtractor());
+            fmgr.setExtractor(Polygon.class, new PolygonFeatureExtractor());
         }
 
-        // INJECTORS
-        // map feature primitives
-        format.injector(Point.class, new PointInjector());
-        format.injector(MultiLine.class, new MultiLineInjector());
-        format.injector(Street.class, new StreetInjector());
-        format.injector(Polygon.class, new PolygonInjector());
+        {   // INJECTORS/EXTRACTORS
+            // map feature primitives
+            format.injector(Point.class, new PointInjector());
+            format.injector(MultiLine.class, new MultiLineInjector());
+            format.injector(Street.class, new StreetInjector());
+            format.injector(Polygon.class, new PolygonInjector());
 
-        // features
-        format.injector(Feature.class, new FeatureInjector());
-        format.injector(TileFeatureGrid.class, new TileFeatureGridInjector());
+            // features
+            format.injector(Feature.class, new FeatureInjector());
+            format.injector(TileFeatureGrid.class, new TileFeatureGridInjector());
 
-        // map segments
-        format.injector(SegmentFeatureProvider.class, new SegmentFeatureProviderInjector());
-        format.injector(MapSegment.class, new SegmentFeatureProviderInjector());
+            // map segments
+            format.injector(SegmentFeatureProvider.class, new SegmentFeatureProviderInjector());
+            format.injector(MapSegment.class, new SegmentFeatureProviderInjector());
+            format.extractor(MapSegment.class, new MapSegmentExtractor());
 
-        format.injector(QuadTreeTiledMapSegment.class, new QuadTreeTiledMapSegmentInjector());
-        format.extractor(QuadTreeTiledMapSegment.class, new QuadTreeTiledMapSegmentExtractor());
+            format.injector(QuadTreeTiledMapSegment.class, new QuadTreeTiledMapSegmentInjector());
+            format.extractor(QuadTreeTiledMapSegment.class, new QuadTreeTiledMapSegmentExtractor());
+        }
 
         return format;
     }

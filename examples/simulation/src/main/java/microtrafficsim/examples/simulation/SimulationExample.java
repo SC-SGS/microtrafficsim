@@ -4,10 +4,14 @@ import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.convenience.DefaultParserConfig;
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.exfmt.Config;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
+import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
+import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
+import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
@@ -156,6 +160,8 @@ public class SimulationExample {
     private void setUpSerializer(TileBasedMapViewer viewer) {
         serializer = ExchangeFormatSerializer.create();
         exfmt = ExchangeFormat.getDefault();
+        exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(
+                viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel()));
     }
 
     /**
@@ -401,7 +407,11 @@ public class SimulationExample {
 
                 } else {
                     ExchangeFormat.Manipulator xmp = exfmt.manipulator(serializer.read(file));
-                    segment = xmp.extract(QuadTreeTiledMapSegment.class);
+                    try {
+                        segment = xmp.extract(QuadTreeTiledMapSegment.class);
+                    } catch (NotAvailableException e) {     // thrown when no TileGrid available
+                        segment = xmp.extract(MapSegment.class);
+                    }
                     graph = xmp.extract(StreetGraph.class);
                 }
             } catch (InterruptedException e) {

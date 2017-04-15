@@ -3,29 +3,32 @@ package microtrafficsim.core.exfmt.extractor.map;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.base.EntitySet;
-import microtrafficsim.core.exfmt.base.FeatureSet;
-import microtrafficsim.core.exfmt.base.TileGridSet;
+import microtrafficsim.core.exfmt.base.FeatureInfo;
+import microtrafficsim.core.exfmt.base.TileGridInfo;
 import microtrafficsim.core.exfmt.ecs.Entity;
-import microtrafficsim.core.exfmt.ecs.components.StreetComponent;
+import microtrafficsim.core.exfmt.ecs.FeatureManager;
+import microtrafficsim.core.exfmt.ecs.components.FeatureComponent;
 import microtrafficsim.core.exfmt.ecs.components.TileGridComponent;
 import microtrafficsim.core.exfmt.ecs.entities.LineEntity;
+import microtrafficsim.core.exfmt.ecs.entities.PointEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PolygonEntity;
-import microtrafficsim.core.map.Feature;
+import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
+import microtrafficsim.core.map.FeatureDescriptor;
 import microtrafficsim.core.map.FeaturePrimitive;
-import microtrafficsim.core.map.MapSegment;
-import microtrafficsim.core.map.features.Polygon;
-import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.tiles.FeatureGrid;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
+import microtrafficsim.math.Vec2i;
 import microtrafficsim.utils.collections.Grid;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 
-// FIXME: THIS IS A TEMPORARY IMPLEMENTATION
 public class QuadTreeTiledMapSegmentExtractor implements ExchangeFormat.Extractor<QuadTreeTiledMapSegment> {
 
     @Override
@@ -33,65 +36,154 @@ public class QuadTreeTiledMapSegmentExtractor implements ExchangeFormat.Extracto
             throws Exception
     {
         EntitySet entities = src.get(EntitySet.class);
-        FeatureSet features = src.get(FeatureSet.class);
-        TileGridSet tiles = src.get(TileGridSet.class);
+        FeatureInfo features = src.get(FeatureInfo.class);
+        TileGridInfo tiles = src.get(TileGridInfo.class);
 
-        TileGridSet.TileGrid grid = tiles.getAll().values().iterator().next();
+        Config config = fmt.getConfig().getOr(Config.class, Config::getDefault);
+        TileGridInfo.Grid grid = config.matcher.call(config, tiles);
+        if (grid == null)
+            throw new NotAvailableException("A TileGridSet is required to extract a QuadTreeTiledMapSegment");
 
-        HashMap<String, FeatureGrid<?>> featureset = new HashMap<>();   // TODO: some scheme to select specific grid
+        HashMap<String, FeatureGrid<?>> featureset = new HashMap<>();
 
-        int nx = grid.entities.getSizeX();
-        int ny = grid.entities.getSizeY();
-        for (FeatureSet.Feature<?> source : features.getAll().values()) {
-            if (source.type.equals(Street.class)) {
-                Grid<List<Street>> data = new Grid<>(nx, ny);
+        // prepare feature grid
+        int nx = grid.level.getTilesX();
+        int ny = grid.level.getTilesY();
+        for (FeatureDescriptor desc : features.getAll().values()) {
+            featureset.put(desc.getName(), createGrid(desc.getName(), desc.getType(), nx, ny));
+        }
 
-                for (int y = 0; y < ny; y++) {
-                    for (int x = 0; x < nx; x++) {
-                        data.set(x, y, new ArrayList<>());
-                    }
-                }
+        FeatureManager extractors = fmt.getConfig().getOr(FeatureManager.class, FeatureManager::new);
 
-                for (Entity e : source.entities) {
-                    LineEntity entity = (LineEntity) e;
-                    StreetComponent sc = entity.get(StreetComponent.class);
+        // fill feature grid
+        for (PointEntity entity : entities.getPoints().values()) {
+            process(fmt, ctx, src, entities, extractors, grid, featureset, entity);
+        }
 
-                    Street street = new Street(entity.getId(), entity.getCoordinates(), sc.getLayer(), sc.getLength(), sc.getDistances());
+        for (LineEntity entity : entities.getLines().values()) {
+            process(fmt, ctx, src, entities, extractors, grid, featureset, entity);
+        }
 
-                    TileGridComponent tc = entity.get(TileGridComponent.class);
-                    for (TileGridComponent.Entry entry : tc.getAll()) {
-                        if (entry.getScheme().equals(grid.scheme) && entry.getLevel().equals(grid.level))
-                            data.get(entry.getX(), entry.getY()).add(street);
-                    }
-                }
-
-                featureset.put(source.name, new FeatureGrid<>(source.name, (Class<Street>) source.type, data));
-
-            } else if (source.type.equals(Polygon.class)) {
-                Grid<List<Polygon>> data = new Grid<>(nx, ny);
-
-                for (int y = 0; y < ny; y++) {
-                    for (int x = 0; x < nx; x++) {
-                        data.set(x, y, new ArrayList<>());
-                    }
-                }
-
-                for (Entity e : source.entities) {
-                    PolygonEntity entity = (PolygonEntity) e;
-
-                    Polygon polygon = new Polygon(entity.getId(), entity.getOutline());
-
-                    TileGridComponent tc = entity.get(TileGridComponent.class);
-                    for (TileGridComponent.Entry entry : tc.getAll()) {
-                        if (entry.getScheme().equals(grid.scheme) && entry.getLevel().equals(grid.level))
-                            data.get(entry.getX(), entry.getY()).add(polygon);
-                    }
-                }
-
-                featureset.put(source.name, new FeatureGrid<>(source.name, (Class<Polygon>) source.type, data));
-            }
+        for (PolygonEntity entity : entities.getPolygons().values()) {
+            process(fmt, ctx, src, entities, extractors, grid, featureset, entity);
         }
 
         return new QuadTreeTiledMapSegment(grid.scheme, entities.getBounds(), grid.level, featureset);
+    }
+
+
+    private <T extends FeaturePrimitive> FeatureGrid<T> createGrid(String name, Class<T> type, int nx, int ny) {
+        Grid<List<T>> data = new Grid<>(nx, ny);
+
+        for (int y = 0; y < ny; y++) {
+            for (int x = 0; x < nx; x++) {
+                data.set(x, y, new ArrayList<>());
+            }
+        }
+
+        return new FeatureGrid<>(name, type, data);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void process(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src, EntitySet ecs,
+                         FeatureManager extractors, TileGridInfo.Grid grid, HashMap<String, FeatureGrid<?>> dst,
+                         Entity entity)
+    {
+        FeatureComponent fc = entity.get(FeatureComponent.class);
+        if (fc == null) return;
+
+        TileGridComponent tc = entity.get(TileGridComponent.class);
+        if (tc == null) return;
+
+        // get all tiles
+        ArrayList<Vec2i> tiles = new ArrayList<>();
+        for (TileGridComponent.Entry te : tc.getAll()) {
+            if (!grid.scheme.equals(te.getScheme()) || !grid.level.equals(te.getLevel()))
+                continue;
+
+            tiles.add(new Vec2i(te.getX(), te.getY()));
+        }
+
+        if (tiles.isEmpty()) return;
+
+        // get all feature types
+        HashSet<Class<? extends FeaturePrimitive>> types = new HashSet<>();
+        for (FeatureDescriptor fd : fc.getAll()) {
+            types.add(fd.getType());
+        }
+
+        // generate the primitives for each type
+        HashMap<Class<? extends FeaturePrimitive>, FeaturePrimitive> primitives = new HashMap<>();
+        for (Class<? extends FeaturePrimitive> type : types) {
+            FeatureManager.Extractor<?> extractor = extractors.getExtractor(type);
+            if (extractor != null)
+                primitives.put(type, extractor.extract(fmt, ctx, src, ecs, entity));
+        }
+
+        // add the primitives to the respective features and tiles
+        for (FeatureDescriptor fd : fc.getAll()) {
+            FeaturePrimitive primitive = primitives.get(fd.getType());
+            if (primitive == null) continue;
+
+            FeatureGrid<?>  fgrid = dst.get(fd.getName());
+            Grid<? extends List<FeaturePrimitive>> data = (Grid<? extends List<FeaturePrimitive>>) fgrid.getData();
+            for (Vec2i id : tiles)
+                data.get(id.x, id.y).add(primitive);
+        }
+    }
+
+
+    public static class Config extends microtrafficsim.core.exfmt.Config.Entry {
+        public TilingScheme scheme;
+        public int level;
+        public GridMatcher matcher;
+
+        public static Config getDefault() {
+            return getDefault(new QuadTreeTilingScheme(new MercatorProjection(), 0, 19), 12);
+        }
+
+        public static Config getDefault(TilingScheme scheme, int level) {
+            Config cfg = new Config();
+            cfg.scheme = scheme;
+            cfg.level = level;
+            cfg.matcher = GridMatcher.CLOSEST;
+
+            return cfg;
+        }
+    }
+
+    public interface GridMatcher {
+        TileGridInfo.Grid call(Config cfg, TileGridInfo set);
+
+        GridMatcher EXACT = (cfg, set) -> {
+            for (TileGridInfo.Grid grid : set.getAll())
+                if (grid.scheme.equals(cfg.scheme) && grid.level.zoom == cfg.level)
+                    return grid;
+
+            return null;
+        };
+
+        GridMatcher CLOSEST = (cfg, set) -> {
+            if (set.getAll().isEmpty()) return null;
+
+            for (TileGridInfo.Grid grid : set.getAll())
+                if (grid.scheme.equals(cfg.scheme) && grid.level.zoom == cfg.level)
+                    return grid;
+
+            for (TileGridInfo.Grid grid : set.getAll())
+                if (grid.scheme.equals(cfg.scheme))
+                    return grid;
+
+            for (TileGridInfo.Grid grid : set.getAll())
+                if (grid.level.zoom == cfg.level)
+                    return grid;
+
+            return set.getAll().iterator().next();
+        };
+
+        GridMatcher ANY = (cfg, set) -> {
+            if (set.getAll().isEmpty()) return null;
+            return set.getAll().iterator().next();
+        };
     }
 }

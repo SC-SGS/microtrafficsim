@@ -1,6 +1,5 @@
 package microtrafficsim.math.geometry.polygons;
 
-import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.geometry.Lines;
