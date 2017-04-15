@@ -8,6 +8,7 @@ import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
@@ -433,7 +434,7 @@ public class SimulationController implements GUIController {
         scenarioBuildThread = new Thread(() -> {
             if (isBuildingScenario.compareAndSet(false, true)) {
 
-                        /* get new config */
+                /* get new config */
                 SimulationConfig newConfig = null;
                 try {
                     newConfig = preferences.getCorrectSettings();
@@ -445,7 +446,7 @@ public class SimulationController implements GUIController {
                             JOptionPane.ERROR_MESSAGE);
                 }
 
-                        /* process new config if correct input */
+                /* process new config if correct input */
                 if (newConfig != null) {
                     closePreferences();
                     config.update(newConfig);
@@ -684,7 +685,16 @@ public class SimulationController implements GUIController {
 
 
         /* create and prepare new scenario */
-        Scenario scenario = new RandomRouteScenario(config.seed, config, streetgraph);
+        Scenario scenario;
+        if (config.scenario.selectedClass == RandomRouteScenario.class) {
+            scenario = new RandomRouteScenario(config.seed, config, streetgraph);
+        } else if (config.scenario.selectedClass == EndOfTheWorldScenario.class){
+            scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
+        } else {
+            logger.error("Chosen scenario could not be found. " + RandomRouteScenario.class.getSimpleName() + " is used instead.");
+            scenario = new RandomRouteScenario(config.seed, config, streetgraph);
+        }
+
         try {
             scenarioBuilder.prepare(
                     scenario,
@@ -708,6 +718,7 @@ public class SimulationController implements GUIController {
 
     private void updateScenario() {
         // todo update scenario although it is not new => activate PrefElements
+        // todo show areas while simulating
     }
 
     private void askUserToCancelScenarioBuilding() {
@@ -752,6 +763,11 @@ public class SimulationController implements GUIController {
         preferences.setEnabled(PrefElement.maxVehicleCount,       newSim);
         preferences.setEnabled(PrefElement.seed,                  newSim);
         preferences.setEnabled(PrefElement.metersPerCell,         newSim);
+
+        /* scenario */
+        // todo
+        preferences.setEnabled(PrefElement.showAreasWhileSimulating, true);
+        preferences.setEnabled(PrefElement.scenarioSelection,     newSim);
 
         /* crossing logic */
         preferences.setEnabled(PrefElement.edgePriority,          newSim);

@@ -13,6 +13,8 @@ import microtrafficsim.math.random.distributions.impl.Random;
 import java.util.function.Supplier;
 
 /**
+ * The type of scenario represented by this class chooses start and end nodes randomly out of node-collections.
+ *
  * @author Dominic Parga Cacheiro
  */
 public abstract class BasicRandomScenario extends BasicScenario implements Seeded {

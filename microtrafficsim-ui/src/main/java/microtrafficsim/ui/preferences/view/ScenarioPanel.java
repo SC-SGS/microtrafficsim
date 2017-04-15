@@ -1,16 +1,12 @@
 package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.PrefElement;
-import microtrafficsim.ui.preferences.model.PreferencesModel;
 import microtrafficsim.ui.preferences.model.ScenarioModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.function.Supplier;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -88,13 +84,23 @@ public class ScenarioPanel extends PreferencesPanel {
 
 
     @Override
-    public PreferencesModel getModel() {
+    public ScenarioModel getModel() {
         return model;
     }
 
     @Override
     public void setSettings(SimulationConfig config) {
         cbShowAreasWhileSimulating.setSelected(config.scenario.showAreasWhileSimulating);
+
+        /* update model */
+        model.clearAllScenarios();
+        config.scenario.classes.forEach(model::addScenario);
+        /* update checkbox for scenario choice */
+        cbScenarioChoice.removeAllItems();
+        model.getScenarios().stream()
+                .map(Class::getSimpleName)
+                .forEach(cbScenarioChoice::addItem);
+        cbScenarioChoice.setSelectedItem(config.scenario.selectedClass);
     }
 
     @Override
@@ -102,6 +108,7 @@ public class ScenarioPanel extends PreferencesPanel {
         SimulationConfig config = new SimulationConfig();
 
         config.scenario.showAreasWhileSimulating = cbShowAreasWhileSimulating.isSelected();
+        config.scenario.selectedClass            = model.get(cbScenarioChoice.getSelectedIndex());
 
         return config;
     }
@@ -112,6 +119,7 @@ public class ScenarioPanel extends PreferencesPanel {
 
         switch (id) {
             case showAreasWhileSimulating: cbShowAreasWhileSimulating.setEnabled(enabled); break;
+            case scenarioSelection:        cbScenarioChoice.setEnabled(enabled);           break;
         }
     }
 }

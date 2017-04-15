@@ -1,7 +1,6 @@
 package microtrafficsim.ui.preferences.model;
 
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 
 import java.util.ArrayList;
 
@@ -16,9 +15,16 @@ public class ScenarioModel extends PreferencesModel {
         super("Scenario");
 
         scenarios = new ArrayList<>();
-        scenarios.add(RandomRouteScenario.class);
     }
 
+
+    public void clearAllScenarios() {
+        scenarios.clear();
+    }
+
+    public void addScenario(Class<? extends Scenario> scenario) {
+        scenarios.add(scenario);
+    }
 
     public ArrayList<Class<? extends Scenario>> getScenarios() {
         return new ArrayList<>(scenarios);

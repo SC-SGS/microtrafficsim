@@ -1,6 +1,11 @@
 package microtrafficsim.core.simulation.configs;
 
 
+import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
+
+import java.util.ArrayList;
+
 /**
  * This class isolates the scenario attributes from the other config
  * parameters to guarantee better overview.
@@ -9,11 +14,14 @@ package microtrafficsim.core.simulation.configs;
  */
 public final class ScenarioConfig {
     public boolean showAreasWhileSimulating;
+    public final ArrayList<Class<? extends Scenario>> classes;
+    public Class<? extends Scenario> selectedClass;
 
     /**
      * Just calls {@link #setup()}.
      */
     public ScenarioConfig() {
+        classes = new ArrayList<>();
         setup();
     }
 
@@ -31,5 +39,10 @@ public final class ScenarioConfig {
      */
     public void update(ScenarioConfig config) {
         showAreasWhileSimulating = config.showAreasWhileSimulating;
+
+        classes.clear();
+        classes.addAll(config.classes);
+
+        selectedClass = config.selectedClass;
     }
 }

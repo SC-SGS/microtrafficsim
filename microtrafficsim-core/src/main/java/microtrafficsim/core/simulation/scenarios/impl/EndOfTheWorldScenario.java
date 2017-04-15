@@ -8,6 +8,7 @@ import microtrafficsim.core.map.area.Area;
 import microtrafficsim.core.map.area.polygons.RectangleArea;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
+import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
 import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -32,6 +33,18 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
 
     // matrix
     private final ArrayList<Node> nodes, leftNodes, bottomNodes, rightNodes, topNodes;
+
+    public EndOfTheWorldScenario(long seed,
+                                 SimulationConfig config,
+                                 Graph graph) {
+        this(new Random(seed), config, graph, new ConcurrentVehicleContainer());
+    }
+
+    public EndOfTheWorldScenario(Random random,
+                                 SimulationConfig config,
+                                 Graph graph) {
+        this(random, config, graph, new ConcurrentVehicleContainer());
+    }
 
     public EndOfTheWorldScenario(long seed,
                                  SimulationConfig config,

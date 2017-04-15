@@ -153,9 +153,9 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
 
     @Override
     public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
-        SimulationConfig config           = new SimulationConfig();
-        boolean                    exceptionOccured = false;
-        IncorrectSettingsException exception        = new IncorrectSettingsException();
+        SimulationConfig config              = new SimulationConfig();
+        boolean exceptionOccured             = false;
+        IncorrectSettingsException exception = new IncorrectSettingsException();
 
 
         try {
@@ -165,7 +165,7 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
             exceptionOccured = true;
         }
         try {
-            config.update(scenarioPanel.getCorrectSettings());
+            config.scenario.update(scenarioPanel.getCorrectSettings().scenario);
         } catch (IncorrectSettingsException e) {
             exception.appendToMessage(e.getMessage());
             exceptionOccured = true;
@@ -209,6 +209,7 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
 
             // scenario
             case showAreasWhileSimulating:
+            case scenarioSelection:
                 scenarioPanel.setEnabled(id, enabled);
                 break;
 

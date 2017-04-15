@@ -97,9 +97,9 @@ public class GeneralPanel extends PreferencesPanel {
 
     @Override
     public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
-        SimulationConfig config           = new SimulationConfig();
-        boolean                    exceptionOccured = false;
-        IncorrectSettingsException exception        = new IncorrectSettingsException();
+        SimulationConfig config              = new SimulationConfig();
+        boolean exceptionOccured             = false;
+        IncorrectSettingsException exception = new IncorrectSettingsException();
 
 
         config.speedup = sliderSpeedup.getValue();
