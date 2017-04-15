@@ -17,6 +17,7 @@ import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.geometry.polygons.Polygon;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -49,11 +50,20 @@ public class ScenarioAreaOverlay implements Overlay {
         this.projection = projection;
 
         SwingUtilities.invokeLater(() -> {
-                properties = new PropertyFrame(ui);
-                properties.setVisible(false);
-                properties.setResizable(false);
-                properties.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-                properties.setAlwaysOnTop(true);
+            properties = new PropertyFrame(ui);
+
+            /* put properties to bottom right */
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice defaultScreen = ge.getDefaultScreenDevice();
+            Rectangle rect = defaultScreen.getDefaultConfiguration().getBounds();
+            int x = (int) rect.getMaxX() - properties.getWidth();
+            int y = 0;
+            properties.setLocation(x - 100, y + 100);
+
+            properties.setVisible(false);
+            properties.setResizable(false);
+            properties.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+            properties.setAlwaysOnTop(true);
         });
 
         this.rectangle = new SelectionRectangle();
@@ -129,6 +139,7 @@ public class ScenarioAreaOverlay implements Overlay {
     @Override
     public void setEnabled(boolean enabled) {
         ui.setEnabled(enabled);
+        properties.setVisible(enabled);
     }
 
     @Override

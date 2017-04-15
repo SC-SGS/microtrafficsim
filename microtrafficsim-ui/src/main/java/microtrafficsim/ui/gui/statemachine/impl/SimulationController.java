@@ -319,8 +319,9 @@ public class SimulationController implements GUIController {
                         Object[] options = {"Yes", "No"};
                         int choice = JOptionPane.showOptionDialog(
                                 null,
-                                "To change the origin/destination areas, the currently running scenario has to be removed." +
-                                        "Do you still like to change the areas?",
+                                "To change the origin/destination areas, the currently running scenario has to be removed."
+                                        + System.lineSeparator()
+                                        + "Do you still like to change the areas?",
                                 "Remove currently running scenario?",
                                 JOptionPane.YES_NO_OPTION,
                                 JOptionPane.WARNING_MESSAGE,
@@ -491,7 +492,7 @@ public class SimulationController implements GUIController {
 
         /* overlays */
         scenarioAreaOverlay = new ScenarioAreaOverlay(mapviewer.getProjection());
-        scenarioAreaOverlay.setEnabled(false);
+        SwingUtilities.invokeLater(() -> scenarioAreaOverlay.setEnabled(false));
         mapviewer.addOverlay(0, scenarioAreaOverlay);
         mapviewer.addOverlay(1, overlay);
 
@@ -636,6 +637,7 @@ public class SimulationController implements GUIController {
                 simulation.removeCurrentScenario();
                 streetgraph = result.streetgraph;
                 overlay.setEnabled(true);
+                scenarioAreaOverlay.setEnabled(true);
 
                 try {
                     mapviewer.setMap(result.segment);
@@ -712,6 +714,7 @@ public class SimulationController implements GUIController {
             simulation.runOneStep();
         } catch (InterruptedException ignored) {
             logger.info("Scenario building interrupted by user");
+            scenarioAreaOverlay.setEnabled(true);
         }
 
 
