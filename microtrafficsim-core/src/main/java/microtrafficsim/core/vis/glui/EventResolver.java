@@ -17,30 +17,44 @@ public class EventResolver implements KeyListener, com.jogamp.newt.event.MouseLi
     private UIManager manager;
     private LinkedList<ChainNode> lastdown;
     private HashSet<ChainNode> mouseover;
+    private boolean enabled = true;
 
     public EventResolver(UIManager manager) {
         this.manager = manager;
     }
 
 
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+
     @Override
     public void keyPressed(KeyEvent e) {
+        if (!enabled) return;
         resolveKeyEvent(e, KeyListener::keyPressed);
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
+        if (!enabled) return;
         resolveKeyEvent(e, KeyListener::keyReleased);
     }
 
 
     @Override
     public void mouseClicked(com.jogamp.newt.event.MouseEvent e) {
+        if (!enabled) return;
         resolveMouseEvent(getResolveChain(e), MouseListener::mouseClicked);
     }
 
     @Override
     public void mousePressed(com.jogamp.newt.event.MouseEvent e) {
+        if (!enabled) return;
         lastdown = getResolveChain(e);
         updateFocus(lastdown);
         resolveMouseEvent(lastdown, MouseListener::mousePressed);
@@ -48,23 +62,27 @@ public class EventResolver implements KeyListener, com.jogamp.newt.event.MouseLi
 
     @Override
     public void mouseReleased(com.jogamp.newt.event.MouseEvent e) {
+        if (!enabled) return;
         resolveMouseEvent(lastdown, MouseListener::mouseReleased, e);
     }
 
 
     @Override
     public void mouseEntered(com.jogamp.newt.event.MouseEvent e) {
+        if (!enabled) return;
         resolveMouseEnter(e);
     }
 
     @Override
     public void mouseExited(com.jogamp.newt.event.MouseEvent e) {
+        if (!enabled) return;
         resolveMouseExit(e);
     }
 
 
     @Override
     public void mouseMoved(com.jogamp.newt.event.MouseEvent e) {
+        if (!enabled) return;
         LinkedList<ChainNode> chain = getResolveChain(e);
         resolveMouseEnterExit(chain, e);
         resolveMouseEvent(chain, MouseListener::mouseMoved);
@@ -72,14 +90,15 @@ public class EventResolver implements KeyListener, com.jogamp.newt.event.MouseLi
 
     @Override
     public void mouseDragged(com.jogamp.newt.event.MouseEvent e) {
+        if (!enabled) return;
         resolveMouseEvent(lastdown, MouseListener::mouseDragged, e);
     }
 
     @Override
     public void mouseWheelMoved(com.jogamp.newt.event.MouseEvent e) {
+        if (!enabled) return;
         resolveMouseEvent(getResolveChain(e), MouseListener::mouseWheelMoved);
     }
-
 
 
     private void updateFocus(LinkedList<ChainNode> chain) {

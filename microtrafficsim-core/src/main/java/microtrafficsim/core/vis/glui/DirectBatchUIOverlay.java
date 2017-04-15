@@ -114,6 +114,15 @@ public class DirectBatchUIOverlay extends UIManager implements Overlay {
     }
 
 
+    public void setEventsEnabled(boolean enabled) {
+        super.setEventsEnabled(enabled);
+    }
+
+    public boolean hasEventsEnabled() {
+        return super.hasEventsEnabled();
+    }
+
+
     @Override
     public MouseListener getMouseListener() {
         return mouseListener;
