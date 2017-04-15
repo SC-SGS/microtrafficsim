@@ -10,13 +10,15 @@ public enum PrefElement {
     maxVehicleCount(true),
     seed(true),
     metersPerCell(false),
-    // Visualization
-    style(false),
+    /* scenario */
+    showAreasWhileSimulating(true),
     // crossing logic
     edgePriority(true),
     priorityToThe(true),
     onlyOneVehicle(true),
     friendlyStandingInJam(true),
+    // Visualization
+    style(false),
     // concurrency
     nThreads(true),
     vehiclesPerRunnable(true),

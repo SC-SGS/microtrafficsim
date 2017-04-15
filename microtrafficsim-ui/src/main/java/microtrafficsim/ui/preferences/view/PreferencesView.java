@@ -1,6 +1,6 @@
 package microtrafficsim.ui.preferences.view;
 
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.model.PreferencesModel;
@@ -17,9 +17,9 @@ public interface PreferencesView {
      *
      * @param config Gives values for the (initial) settings
      */
-    void setSettings(ScenarioConfig config);
+    void setSettings(SimulationConfig config);
 
-    ScenarioConfig getCorrectSettings() throws IncorrectSettingsException;
+    SimulationConfig getCorrectSettings() throws IncorrectSettingsException;
 
     /**
      * Makes the id-preference editable, if the given parameter {@code enabled} is true. If the id is not enabled

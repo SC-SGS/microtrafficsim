@@ -4,7 +4,7 @@ import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.BlockingCar;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.collections.Triple;
@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  */
 public class PartialPlusCrossroadScenario extends AbstractPlusCrossroadScenario {
 
-    public PartialPlusCrossroadScenario(ScenarioConfig config,
+    public PartialPlusCrossroadScenario(SimulationConfig config,
                                         Graph graph,
                                         Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph, visVehicleFactory);
@@ -26,7 +26,7 @@ public class PartialPlusCrossroadScenario extends AbstractPlusCrossroadScenario 
      * @param config
      * @return the given config updated; just for practical purpose
      */
-    public static ScenarioConfig setupConfig(ScenarioConfig config) {
+    public static SimulationConfig setupConfig(SimulationConfig config) {
 
         AbstractPlusCrossroadScenario.setupConfig(config);
 

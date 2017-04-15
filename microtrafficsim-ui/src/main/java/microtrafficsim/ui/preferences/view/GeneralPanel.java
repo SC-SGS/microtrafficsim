@@ -1,6 +1,6 @@
 package microtrafficsim.ui.preferences.view;
 
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.GeneralModel;
 import microtrafficsim.ui.preferences.model.PrefElement;
@@ -31,9 +31,11 @@ public class GeneralPanel extends PreferencesPanel {
         tfMaxVehicleCount = new JTextField();
         tfSeed            = new JTextField();
         tfMetersPerCell   = new JTextField();
+
+        create();
     }
 
-    public void create() {
+    private void create() {
 
         setLayout(new GridBagLayout());
 
@@ -86,7 +88,7 @@ public class GeneralPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(ScenarioConfig config) {
+    public void setSettings(SimulationConfig config) {
         sliderSpeedup.setValue(config.speedup);
         tfMaxVehicleCount.setText("" + config.maxVehicleCount);
         tfSeed.setText("" + config.seed);
@@ -94,8 +96,8 @@ public class GeneralPanel extends PreferencesPanel {
     }
 
     @Override
-    public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
-        ScenarioConfig             config           = new ScenarioConfig();
+    public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
+        SimulationConfig config           = new SimulationConfig();
         boolean                    exceptionOccured = false;
         IncorrectSettingsException exception        = new IncorrectSettingsException();
 

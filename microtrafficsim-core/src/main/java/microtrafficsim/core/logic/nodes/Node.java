@@ -7,7 +7,7 @@ import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.exceptions.core.logic.CrossingLogicException;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.Vec2d;
@@ -95,7 +95,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
      * At first, the crossing logic checks whether the two vehicles' turning ways are crossing each other (otherwise
      * return 0). If they are crossing, the origin-priorities are compared. If equal, the destination-priorities are
      * compared. If equal, they have to be compared by right-before-left or randomly. All sub-comparisons can be
-     * enabled/disabled with the {@link ScenarioConfig}.
+     * enabled/disabled with the {@link SimulationConfig}.
      *
      * @return an int > 0 if v1 has priority over v2; an int < 0 if v2 has priority over v1; an int = 0 if v1 and v2
      * have equal priorities

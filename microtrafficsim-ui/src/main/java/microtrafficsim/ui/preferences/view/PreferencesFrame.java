@@ -1,7 +1,7 @@
 package microtrafficsim.ui.preferences.view;
 
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
-import microtrafficsim.ui.gui.ScrollablePanel;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.ui.gui.utils.ScrollablePanel;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
@@ -25,6 +25,7 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
 
     private final PreferencesFrameModel model;
     private final GeneralPanel generalPanel;
+    private final ScenarioPanel scenarioPanel;
     private final CrossingLogicPanel crossingLogicPanel;
     private final VisualizationPanel visualizationPanel;
     private final ConcurrencyPanel concurrencyPanel;
@@ -38,7 +39,7 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
      */
     public PreferencesFrame(GUIController guiController) {
         super();
-        model = new PreferencesFrameModel("Scenario parameter settings", guiController);
+        model = new PreferencesFrameModel("Simulation parameter settings", guiController);
         setTitle(model.getTitle());
 
         setLayout(new BorderLayout());
@@ -62,6 +63,7 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
 
         /* init sub panels */
         generalPanel = new GeneralPanel();
+        scenarioPanel = new ScenarioPanel();
         crossingLogicPanel = new CrossingLogicPanel();
         visualizationPanel = new VisualizationPanel();
         concurrencyPanel = new ConcurrencyPanel();
@@ -70,23 +72,21 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
         /* bottom panel with buttons outside of scroll panel */
         bottom = new JPanel();
         add(bottom, BorderLayout.SOUTH);
+
+
+        /* setup gui */
+        create();
     }
 
-    public void create() {
+    private void create() {
 
         setMinimumSize(new Dimension(200, 200));
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 630));
 
-        generalPanel.create();
         center.add(border(generalPanel));
-
-        crossingLogicPanel.create();
+        center.add(border(scenarioPanel));
         center.add(border(crossingLogicPanel));
-
-        visualizationPanel.create();
         center.add(border(visualizationPanel));
-
-        concurrencyPanel.create();
         center.add(border(concurrencyPanel));
 
 
@@ -143,22 +143,29 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
     }
 
     @Override
-    public void setSettings(ScenarioConfig config) {
+    public void setSettings(SimulationConfig config) {
         generalPanel.setSettings(config);
+        scenarioPanel.setSettings(config);
         crossingLogicPanel.setSettings(config);
         visualizationPanel.setSettings(config);
         concurrencyPanel.setSettings(config);
     }
 
     @Override
-    public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
-        ScenarioConfig             config           = new ScenarioConfig();
+    public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
+        SimulationConfig config           = new SimulationConfig();
         boolean                    exceptionOccured = false;
         IncorrectSettingsException exception        = new IncorrectSettingsException();
 
 
         try {
             config.update(generalPanel.getCorrectSettings());
+        } catch (IncorrectSettingsException e) {
+            exception.appendToMessage(e.getMessage());
+            exceptionOccured = true;
+        }
+        try {
+            config.update(scenarioPanel.getCorrectSettings());
         } catch (IncorrectSettingsException e) {
             exception.appendToMessage(e.getMessage());
             exceptionOccured = true;
@@ -200,22 +207,29 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
                 generalPanel.setEnabled(id, enabled);
                 break;
 
-            // Visualization
-            case style:
-                visualizationPanel.setEnabled(id, enabled);
-
-                // concurrency
-            case nThreads:
-            case vehiclesPerRunnable:
-            case nodesPerThread:
-                concurrencyPanel.setEnabled(id, enabled);
+            // scenario
+            case showAreasWhileSimulating:
+                scenarioPanel.setEnabled(id, enabled);
                 break;
 
             // crossing logic
             case edgePriority:
             case priorityToThe:
             case onlyOneVehicle:
-            case friendlyStandingInJam: crossingLogicPanel.setEnabled(id, enabled);
+            case friendlyStandingInJam:
+                crossingLogicPanel.setEnabled(id, enabled);
+                break;
+
+            // Visualization
+            case style:
+                visualizationPanel.setEnabled(id, enabled);
+
+            // concurrency
+            case nThreads:
+            case vehiclesPerRunnable:
+            case nodesPerThread:
+                concurrencyPanel.setEnabled(id, enabled);
+                break;
         }
     }
 }

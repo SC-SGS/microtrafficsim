@@ -1,4 +1,4 @@
-package microtrafficsim.ui.gui;
+package microtrafficsim.ui.gui.utils;
 
 import microtrafficsim.math.MathUtils;
 

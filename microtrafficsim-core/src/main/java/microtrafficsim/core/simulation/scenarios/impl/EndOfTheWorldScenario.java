@@ -6,7 +6,7 @@ import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.area.Area;
 import microtrafficsim.core.map.area.polygons.RectangleArea;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.math.random.distributions.impl.Random;
@@ -34,14 +34,14 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
     private final ArrayList<Node> nodes, leftNodes, bottomNodes, rightNodes, topNodes;
 
     public EndOfTheWorldScenario(long seed,
-                                 ScenarioConfig config,
+                                 SimulationConfig config,
                                  Graph graph,
                                  VehicleContainer vehicleContainer) {
         this(new Random(seed), config, graph, vehicleContainer);
     }
 
     public EndOfTheWorldScenario(Random random,
-                                 ScenarioConfig config,
+                                 SimulationConfig config,
                                  Graph graph,
                                  VehicleContainer vehicleContainer) {
         super(random, config, graph, vehicleContainer);
@@ -100,7 +100,7 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
 
     /**
      * <p>
-     * Until enough vehicles (defined in {@link ScenarioConfig}) are created, this method is doing this:<br>
+     * Until enough vehicles (defined in {@link SimulationConfig}) are created, this method is doing this:<br>
      * &bull get random origin <br>
      * &bull calculate its position relative to the graph's center <br>
      * &bull get a random destination out of the border field (of nodes) being closest to the chosen origin

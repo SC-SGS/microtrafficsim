@@ -5,7 +5,7 @@ import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
@@ -78,7 +78,7 @@ public class SimulationController implements GUIController {
     private boolean isCreated;
 
     /* general */
-    private final ScenarioConfig config;
+    private final SimulationConfig config;
 
     /* visualization and parsing */
     private final MapViewer      mapviewer;
@@ -161,7 +161,102 @@ public class SimulationController implements GUIController {
                 }
             }
         });
+
+
+        /* create */
+        create();
+        show();
+        updateMenuBar();
     }
+
+
+    /*
+    |=========|
+    | general |
+    |=========|
+    */
+    private void create() {
+        if (isCreated) throw new RuntimeException("The simulation controller has already been created.");
+
+        try {
+            mapviewer.create(config);
+        } catch (UnsupportedFeatureException e) { e.printStackTrace(); }
+
+        parser = DefaultParserConfig.get(config).build();
+
+        /* create preferences */
+        preferences.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        preferences.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                transiate(GUIEvent.CANCEL_PREFS);
+            }
+        });
+        preferences.pack();
+        preferences.setLocationRelativeTo(null);    // center on screen; close to setVisible
+        preferences.setVisible(false);
+
+        /* overlays */
+        scenarioAreaOverlay = new ScenarioAreaOverlay(mapviewer.getProjection());
+        SwingUtilities.invokeLater(() -> scenarioAreaOverlay.setEnabled(false));
+        mapviewer.addOverlay(0, scenarioAreaOverlay);
+        mapviewer.addOverlay(1, overlay);
+
+        /* setup JFrame */
+        menubar.menuMap.addActions(this);
+        menubar.menuLogic.addActions(this);
+        // todo toolbar for icons for run etc.
+        //            JToolBar toolbar = new JToolBar("Menu");
+        //            toolbar.add(new MTSMenuBar(this).create());
+        //            addToTopBar(toolbar);
+        frame.add(menubar, BorderLayout.NORTH);
+        frame.setSize(mapviewer.getInitialWindowWidth(), mapviewer.getInitialWindowHeight());
+        frame.add(mapviewer.getVisualizationPanel());
+
+        /*
+         * Note: JOGL automatically calls glViewport, we need to make sure that this
+         * function is not called with a height or width of 0! Otherwise the program
+         * crashes.
+         */
+        frame.setMinimumSize(new Dimension(100, 100));
+
+        /* on close: stop the visualization and shutdown */
+        frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                shutdown();
+            }
+        });
+
+        /* set state */
+        isCreated = true;
+    }
+
+    private void show() {
+        if (!isCreated) throw new RuntimeException("The simulation controller has to be created before it is shown.");
+
+        frame.setLocationRelativeTo(null);    // center on screen; close to setVisible
+        frame.setVisible(true);
+        mapviewer.show();
+    }
+
+    private void shutdown() {
+        int choice = JOptionPane.showConfirmDialog(frame,
+                "Do you really want to exit?", "Close Program",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (choice == JOptionPane.YES_OPTION) {
+            if (parsingThread != null)
+                parsingThread.interrupt();
+            if (scenarioBuildThread != null)
+                scenarioBuildThread.interrupt();
+            mapviewer.destroy();
+            frame.dispose();
+            System.exit(0);
+        }
+    }
+
 
     /*
     |===================|
@@ -177,8 +272,6 @@ public class SimulationController implements GUIController {
      * <ul>
      * <li> {@link GUIEvent#EXIT} - If this is called, all running executions are interrupted and the application
      * exits. So this event is getting executed even if there are other executions active. <br>
-     * <li> {@link GUIEvent#CREATE} - Creates and shows the GUI. If the file is not null, the map is parsed and
-     * shown. <br>
      * <li> {@link GUIEvent#LOAD_MAP} - Asks the user to choose a map file. If (and only if) a parsing is already
      * running, the user is asked to cancel the currently running parsing task. <br>
      * <li> {@link GUIEvent#NEW_SCENARIO} - Pauses a running simulation and shows the scenario-preferences-window for
@@ -210,9 +303,6 @@ public class SimulationController implements GUIController {
             return;
 
         switch (event) {
-            case CREATE:
-                transitionCreate(file);
-                break;
             case LOAD_MAP:
                 transitionLoadMap(file);
                 break;
@@ -243,25 +333,6 @@ public class SimulationController implements GUIController {
         }
 
         lock_user_input.unlock();
-    }
-
-    private void transitionCreate(File file) {
-        if (isExecutingUserTask.compareAndSet(false, true)) {
-            new Thread(() -> {
-                create();
-                show();
-
-                if (file != null) {
-                    if (isParsing.compareAndSet(false, true)) {
-                        parseAndShow(file);
-                        isParsing.set(false);
-                    }
-                }
-
-                updateMenuBar();
-                isExecutingUserTask.set(false);
-            }).start();
-        }
     }
 
     private void transitionLoadMap(File file) {
@@ -363,7 +434,7 @@ public class SimulationController implements GUIController {
             if (isBuildingScenario.compareAndSet(false, true)) {
 
                         /* get new config */
-                ScenarioConfig newConfig = null;
+                SimulationConfig newConfig = null;
                 try {
                     newConfig = preferences.getCorrectSettings();
                 } catch (IncorrectSettingsException e) {
@@ -463,93 +534,6 @@ public class SimulationController implements GUIController {
         mapviewer.addKeyCommand(event, vk, command);
     }
 
-    /*
-    |=========|
-    | general |
-    |=========|
-    */
-    private void create() {
-        if (isCreated) throw new RuntimeException("The simulation controller has already been created.");
-
-        try {
-            mapviewer.create(config);
-        } catch (UnsupportedFeatureException e) { e.printStackTrace(); }
-
-        parser = DefaultParserConfig.get(config).build();
-
-        /* create preferences */
-        preferences.create();
-        preferences.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        preferences.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                transiate(GUIEvent.CANCEL_PREFS);
-            }
-        });
-        preferences.pack();
-        preferences.setLocationRelativeTo(null);    // center on screen; close to setVisible
-        preferences.setVisible(false);
-
-        /* overlays */
-        scenarioAreaOverlay = new ScenarioAreaOverlay(mapviewer.getProjection());
-        SwingUtilities.invokeLater(() -> scenarioAreaOverlay.setEnabled(false));
-        mapviewer.addOverlay(0, scenarioAreaOverlay);
-        mapviewer.addOverlay(1, overlay);
-
-        /* setup JFrame */
-        menubar.menuMap.addActions(this);
-        menubar.menuLogic.addActions(this);
-        // todo toolbar for icons for run etc.
-        //            JToolBar toolbar = new JToolBar("Menu");
-        //            toolbar.add(new MTSMenuBar(this).create());
-        //            addToTopBar(toolbar);
-        frame.add(menubar, BorderLayout.NORTH);
-        frame.setSize(mapviewer.getInitialWindowWidth(), mapviewer.getInitialWindowHeight());
-        frame.add(mapviewer.getVisualizationPanel());
-
-        /*
-         * Note: JOGL automatically calls glViewport, we need to make sure that this
-         * function is not called with a height or width of 0! Otherwise the program
-         * crashes.
-         */
-        frame.setMinimumSize(new Dimension(100, 100));
-
-        /* on close: stop the visualization and shutdown */
-        frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        frame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                shutdown();
-            }
-        });
-
-        /* set state */
-        isCreated = true;
-    }
-
-    private void show() {
-        if (!isCreated) throw new RuntimeException("The simulation controller has to be created before it is shown.");
-
-        frame.setLocationRelativeTo(null);    // center on screen; close to setVisible
-        frame.setVisible(true);
-        mapviewer.show();
-    }
-
-    private void shutdown() {
-        int choice = JOptionPane.showConfirmDialog(frame,
-                "Do you really want to exit?", "Close Program",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE);
-
-        if (choice == JOptionPane.YES_OPTION) {
-            if (parsingThread != null)
-                parsingThread.interrupt();
-            if (scenarioBuildThread != null)
-                scenarioBuildThread.interrupt();
-            mapviewer.destroy();
-            frame.dispose();
-            System.exit(0);
-        }
-    }
 
     /*
     |========|

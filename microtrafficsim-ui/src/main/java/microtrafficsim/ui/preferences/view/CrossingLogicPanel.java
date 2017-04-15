@@ -1,6 +1,6 @@
 package microtrafficsim.ui.preferences.view;
 
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.CrossingLogicModel;
 import microtrafficsim.ui.preferences.model.PrefElement;
@@ -19,20 +19,19 @@ public class CrossingLogicPanel extends PreferencesPanel {
     private final JCheckBox cbOnlyOneVehicle;
     private final JCheckBox cbFriendlyStandingInJam;
 
-    /**
-     * You should call {@link #create()} before you use this frame.
-     */
     public CrossingLogicPanel() {
         super();
         model = new CrossingLogicModel();
 
-        cbEdgePriority          = new JCheckBox("Edge priorities");
+        cbEdgePriority          = new JCheckBox("edge priorities");
         cbPriorityToThe         = new JComboBox<>(model.getCombosPriorityToThe());
         cbOnlyOneVehicle        = new JCheckBox("only one vehicle crosses");
         cbFriendlyStandingInJam = new JCheckBox("friendly-standing-in-jam");
+
+        create();
     }
 
-    public void create() {
+    private void create() {
 
         setLayout(new GridBagLayout());
         Insets insets = new Insets(0, 0, 0, 10);
@@ -111,7 +110,7 @@ public class CrossingLogicPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(ScenarioConfig config) {
+    public void setSettings(SimulationConfig config) {
         cbEdgePriority.setSelected(config.crossingLogic.edgePriorityEnabled);
         cbPriorityToThe.setSelectedItem(model.getSelectedItem(config));
         cbOnlyOneVehicle.setSelected(config.crossingLogic.onlyOneVehicleEnabled);
@@ -119,8 +118,8 @@ public class CrossingLogicPanel extends PreferencesPanel {
     }
 
     @Override
-    public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
-        ScenarioConfig config = new ScenarioConfig();
+    public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
+        SimulationConfig config = new SimulationConfig();
 
         config.crossingLogic.edgePriorityEnabled = cbEdgePriority.isSelected();
         config.crossingLogic.onlyOneVehicleEnabled = cbOnlyOneVehicle.isSelected();

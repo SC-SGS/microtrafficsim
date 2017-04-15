@@ -61,7 +61,8 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
             GUIController controller = new SimulationController();
-            controller.transiate(GUIEvent.CREATE, file);
+            if (file != null)
+                controller.transiate(GUIEvent.LOAD_MAP, file);
         });
     }
 

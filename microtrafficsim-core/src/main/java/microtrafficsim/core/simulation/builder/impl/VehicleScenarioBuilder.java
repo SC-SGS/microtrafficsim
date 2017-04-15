@@ -11,7 +11,7 @@ import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.Car;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.interesting.progressable.ProgressListener;
 import microtrafficsim.math.random.Seeded;
@@ -86,7 +86,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
 
     protected Vehicle createLogicVehicle(Scenario scenario, Route<Node> route) {
 
-        ScenarioConfig config = scenario.getConfig();
+        SimulationConfig config = scenario.getConfig();
         long id               = idGenerator.next();
         long seed             = seedGenerator.next();
 
@@ -165,7 +165,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
             throws InterruptedException {
 
         // general attributes for this
-        final ScenarioConfig config = scenario.getConfig();
+        final SimulationConfig config = scenario.getConfig();
         lastPercentage = 0;
         final AtomicInteger finishedVehiclesCount = new AtomicInteger(0);
 

@@ -2,10 +2,9 @@ package microtrafficsim.ui.gui.statemachine.impl;
 
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
-import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
@@ -24,7 +23,7 @@ import microtrafficsim.core.vis.simulation.VehicleOverlay;
 public class BuildSetup {
 
     /* general */
-    public ScenarioConfig config;
+    public SimulationConfig config;
 
     /* visualization and parsing */
     public MapViewer mapviewer;
@@ -40,7 +39,7 @@ public class BuildSetup {
     public BuildSetup() {
 
         /* general */
-        config = new ScenarioConfig();
+        config = new SimulationConfig();
 
         /* visualization and parsing */
         mapviewer = new TileBasedMapViewer(config.visualization.style);

@@ -8,7 +8,7 @@ import microtrafficsim.core.convenience.TileBasedMapViewer;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
@@ -44,7 +44,7 @@ public class UIValidation {
                 "roundabout.osm",
                 "plus_crossroad.osm",
                 "motorway_slip-road.osm"}[0];
-        Consumer<ScenarioConfig> setupConfig    = TCrossroadScenario::setupConfig;
+        Consumer<SimulationConfig> setupConfig    = TCrossroadScenario::setupConfig;
         ScenarioConstructor scenarioConstructor = (config, graph, visVehicleFactory) -> {
             QueueScenarioSmall scenario = new TCrossroadScenario(config, graph, visVehicleFactory);
             scenario.setLooping(true);
@@ -66,7 +66,7 @@ public class UIValidation {
         }
 
         /* simulation config */
-        ScenarioConfig config = new ScenarioConfig();
+        SimulationConfig config = new SimulationConfig();
         setupConfig.accept(config);
 
 
@@ -165,7 +165,7 @@ public class UIValidation {
     }
 
     private interface ScenarioConstructor {
-        QueueScenarioSmall instantiate(ScenarioConfig config,
+        QueueScenarioSmall instantiate(SimulationConfig config,
                                        Graph graph,
                                        Supplier<VisualizationVehicleEntity> visVehicleFactory);
     }

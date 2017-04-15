@@ -2,12 +2,10 @@ package microtrafficsim.core.convenience;
 
 import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.*;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.map.projections.Projection;
-
-import java.io.File;
 
 /**
  * @author Maximilian Luz, Dominic Parga Cacheiro
@@ -87,7 +85,7 @@ public abstract class BasicMapViewer implements MapViewer {
     }
 
     @Override
-    public void create(ScenarioConfig config) throws UnsupportedFeatureException {
+    public void create(SimulationConfig config) throws UnsupportedFeatureException {
         /* create the visualizer */
         createVisualization();
 

@@ -1,6 +1,6 @@
 package microtrafficsim.ui.preferences.view;
 
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.model.VisualizationModel;
@@ -22,12 +22,13 @@ public class VisualizationPanel extends PreferencesPanel {
     public VisualizationPanel() {
         super();
         model = new VisualizationModel();
+
         cbStyle = new JComboBox<>();
+
+        create();
     }
 
-
-    public void create() {
-
+    private void create() {
         model.getStyleSheets().stream()
                 .map(Class::getSimpleName)
                 .forEach(cbStyle::addItem);
@@ -62,14 +63,14 @@ public class VisualizationPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(ScenarioConfig config) {
+    public void setSettings(SimulationConfig config) {
         cbStyle.setSelectedItem(config.visualization.style.getClass().getSimpleName());
     }
 
     @Override
-    public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
+    public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
 
-        ScenarioConfig config = new ScenarioConfig();
+        SimulationConfig config = new SimulationConfig();
         config.visualization.style = model.instantiate(cbStyle.getSelectedIndex());
         return config;
     }

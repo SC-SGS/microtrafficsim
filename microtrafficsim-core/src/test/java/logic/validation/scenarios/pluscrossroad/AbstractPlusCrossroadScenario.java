@@ -3,7 +3,7 @@ package logic.validation.scenarios.pluscrossroad;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
@@ -22,7 +22,7 @@ public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
     public final Node bottomLeft, topLeft, mid, topRight, bottomRight;
     private final HashMap<Node, Integer> lengthToMid;
 
-    public AbstractPlusCrossroadScenario(ScenarioConfig config,
+    public AbstractPlusCrossroadScenario(SimulationConfig config,
                                          Graph graph,
                                          Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
@@ -55,7 +55,7 @@ public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
      * @param config
      * @return the given config updated; just for practical purpose
      */
-    public static ScenarioConfig setupConfig(ScenarioConfig config) {
+    public static SimulationConfig setupConfig(SimulationConfig config) {
 
         QueueScenarioSmall.setupConfig(config);
 

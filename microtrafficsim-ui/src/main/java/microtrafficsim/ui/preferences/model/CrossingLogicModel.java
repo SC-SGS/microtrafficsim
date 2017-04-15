@@ -1,6 +1,6 @@
 package microtrafficsim.ui.preferences.model;
 
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -21,14 +21,14 @@ public class CrossingLogicModel extends PreferencesModel {
         return combos;
     }
 
-    public String getSelectedItem(ScenarioConfig config) {
+    public String getSelectedItem(SimulationConfig config) {
         if (config.crossingLogic.priorityToTheRightEnabled)
             return combos[config.crossingLogic.drivingOnTheRight ? 1 : 0];
         else
             return combos[2];
     }
 
-    public void updateConfig(ScenarioConfig config, int selectedIndex) {
+    public void updateConfig(SimulationConfig config, int selectedIndex) {
         switch (selectedIndex) {
             case 0:    // combos[0] = "priority to the left"
                 config.crossingLogic.priorityToTheRightEnabled = true;

@@ -3,7 +3,7 @@ package logic.validation.scenarios;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
@@ -17,9 +17,9 @@ import java.util.function.Supplier;
 public class TCrossroadScenario extends QueueScenarioSmall {
 
     /**
-     * @see QueueScenarioSmall#QueueScenarioSmall(ScenarioConfig, Graph)
+     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph)
      */
-    public TCrossroadScenario(ScenarioConfig config,
+    public TCrossroadScenario(SimulationConfig config,
                               Graph graph,
                               Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
@@ -31,7 +31,7 @@ public class TCrossroadScenario extends QueueScenarioSmall {
      * @param config
      * @return the given config updated; just for practical purpose
      */
-    public static ScenarioConfig setupConfig(ScenarioConfig config) {
+    public static SimulationConfig setupConfig(SimulationConfig config) {
 
         QueueScenarioSmall.setupConfig(config);
 

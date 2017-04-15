@@ -5,7 +5,7 @@ import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
@@ -24,14 +24,14 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
     private final ShortestPathAlgorithm<Node, DirectedEdge> shortestPathAlg;
 
     protected BasicRandomScenario(long seed,
-                                  ScenarioConfig config,
+                                  SimulationConfig config,
                                   Graph graph,
                                   VehicleContainer vehicleContainer) {
         this(new Random(seed), config, graph, vehicleContainer);
     }
 
     protected BasicRandomScenario(Random random,
-                                  ScenarioConfig config,
+                                  SimulationConfig config,
                                   Graph graph,
                                   VehicleContainer vehicleContainer) {
         super(config, graph, vehicleContainer);

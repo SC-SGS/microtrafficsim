@@ -1,7 +1,7 @@
 package microtrafficsim.core.convenience;
 
 import microtrafficsim.core.map.SegmentFeatureProvider;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.VisualizationPanel;
@@ -77,7 +77,7 @@ public interface MapViewer {
      * @throws UnsupportedFeatureException if not all required OpenGL features
      *                                     are available
      */
-    void create(ScenarioConfig config) throws UnsupportedFeatureException;
+    void create(SimulationConfig config) throws UnsupportedFeatureException;
 
     /**
      * Create the (tile-based) visualization object. The visualization object is
