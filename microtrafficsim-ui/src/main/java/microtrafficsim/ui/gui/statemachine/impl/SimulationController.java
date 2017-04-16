@@ -698,6 +698,9 @@ public class SimulationController implements GUIController {
         } else if (config.scenario.selectedClass == EndOfTheWorldScenario.class){
             scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
             scenarioAreaOverlay.removeAllAreas();
+            ((EndOfTheWorldScenario)scenario).getAreas().stream()
+                    .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
+                    .forEach(scenarioAreaOverlay::add);
         } else {
             logger.error("Chosen scenario could not be found. " + RandomRouteScenario.class.getSimpleName() + " is used instead.");
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);

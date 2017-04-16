@@ -81,15 +81,4 @@ public class BasicPolygonArea implements PolygonArea {
 
         return windings != 0;
     }
-
-    /**
-     * Todo: does only support {@link Polygon#outline}
-     */
-    public Area getProjectedArea(Projection projection, Area.Type type) {
-        Vec2d[] outline = new Vec2d[coordinates.length];
-        for (int i = 0; i < outline.length; i++)
-            outline[i] = projection.project(coordinates[i]);
-
-        return new Area(new Polygon(outline), type);
-    }
 }

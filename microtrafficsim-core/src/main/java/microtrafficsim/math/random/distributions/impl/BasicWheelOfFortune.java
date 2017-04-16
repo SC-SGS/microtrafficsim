@@ -11,10 +11,10 @@ import java.util.Iterator;
  *
  * @author Dominic Parga Cacheiro
  */
-public class BasicWheelOfFortune implements WheelOfFortune {
+public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
 
     private Random random;
-    private HashMap<Object, Integer> fields;
+    private HashMap<T, Integer> fields;
     private int               n;
 
     public BasicWheelOfFortune(long seed) {
@@ -31,9 +31,9 @@ public class BasicWheelOfFortune implements WheelOfFortune {
      * The runtime of this implementation is determined by
      * {@link HashMap#containsKey(Object)} and {@link HashMap#put(Object, Object)}.
      */
-    public void add(Object obj, int weight) {
-        if (!fields.containsKey(obj) && weight > 0) {
-            fields.put(obj, weight);
+    public void add(T t, int weight) {
+        if (!fields.containsKey(t) && weight > 0) {
+            fields.put(t, weight);
             n += weight;
         }
     }
@@ -42,32 +42,59 @@ public class BasicWheelOfFortune implements WheelOfFortune {
      * The runtime of this implementation is determined by
      * {@link HashMap#containsKey(Object)} and {@link HashMap#put(Object, Object)}.
      */
-    public void update(Object obj, int weight) {
+    public void update(T t, int weight) {
 
         if (weight < 0)
             throw new IllegalArgumentException("The weight should be updated to < 0, which is forbidden.");
 
-        if (weight > 0 && fields.containsKey(obj))
-            n += weight - fields.put(obj, weight);
+        if (fields.containsKey(t)) {
+            if (weight == 0)
+                remove(t);
+            else
+                n += weight - fields.put(t, weight);
+        }
+    }
+
+    @Override
+    public void incWeight(T t) {
+        Integer weight = fields.get(t);
+        if (weight != null)
+            fields.put(t, weight + 1);
+        else
+            fields.put(t, 1);
+        n++;
+    }
+
+    @Override
+    public void decWeight(T t) {
+        Integer weight = fields.get(t);
+        if (weight != null) {
+            if (--weight > 0)
+                fields.put(t, weight);
+            else
+                fields.remove(t);
+
+            n--;
+        }
     }
 
     /**
      * The runtime of this implementation is determined by {@link HashMap#remove(Object)}.
      */
-    public void remove(Object obj) {
-        fields.remove(obj);
+    public void remove(T t) {
+        n -= fields.remove(t);
     }
 
     /**
      * The runtime of this method is O(n) where n is the number of elements in this wheel.
      */
-    public Object nextObject() {
+    public T nextObject() {
 
         if (n <= 0) return null;
 
-        int              i       = random.nextInt(n);
-        Iterator<Object> objects = fields.keySet().iterator();
-        Object           lastObj = null;
+        int         i       = random.nextInt(n);
+        Iterator<T> objects = fields.keySet().iterator();
+        T           lastObj = null;
 
         while (i >= 0) {
             lastObj = objects.next();

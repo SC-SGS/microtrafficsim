@@ -8,6 +8,7 @@ import microtrafficsim.core.map.area.polygons.BasicPolygonArea;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
+import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -26,17 +27,16 @@ import java.util.function.Function;
  *
  * @author Dominic Parga Cacheiro
  */
-public class EndOfTheWorldScenario extends BasicRandomScenario {
+public class EndOfTheWorldScenario extends AreaScenario {
 
     private static Logger logger = new EasyMarkableLogger(EndOfTheWorldScenario.class);
 
     // matrix
-    private final ArrayList<Node> nodes, leftNodes, bottomNodes, rightNodes, topNodes;
-    private final BasicPolygonArea originArea;
-    private final BasicPolygonArea destinationAreaLeft;
-    private final BasicPolygonArea destinationAreaBottom;
-    private final BasicPolygonArea destinationAreaRight;
-    private final BasicPolygonArea destinationAreaTop;
+    private final ScenarioPolygonArea originArea;
+    private final ScenarioPolygonArea destinationAreaLeft;
+    private final ScenarioPolygonArea destinationAreaBottom;
+    private final ScenarioPolygonArea destinationAreaRight;
+    private final ScenarioPolygonArea destinationAreaTop;
 
     public EndOfTheWorldScenario(long seed,
                                  SimulationConfig config,
@@ -63,13 +63,6 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
                                  VehicleContainer vehicleContainer) {
         super(random, config, graph, vehicleContainer);
 
-        /* prepare building matrix */
-        nodes       = new ArrayList<>();
-        leftNodes   = new ArrayList<>();
-        bottomNodes = new ArrayList<>();
-        rightNodes  = new ArrayList<>();
-        topNodes    = new ArrayList<>();
-
 
         /* helping variables */
         final Bounds bounds = graph.getBounds();
@@ -89,54 +82,49 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
 
 
         /* define areas for filling node lists */
-        originArea = new BasicPolygonArea(new Coordinate[] {
+        originArea = new ScenarioPolygonArea(new Coordinate[] {
                 bottomLeft,
                 bottomRight,
                 topRight,
                 topLeft
-        });
-        destinationAreaLeft = new BasicPolygonArea(new Coordinate[] {
+        }, Area.Type.ORIGIN);
+        addArea(originArea);
+
+        destinationAreaLeft = new ScenarioPolygonArea(new Coordinate[] {
                 bottomLeft,
                 innerBottomLeft,
                 innerTopLeft,
                 topLeft
-        });
-        destinationAreaBottom = new BasicPolygonArea(new Coordinate[] {
+        }, Area.Type.DESTINATION);
+        addArea(destinationAreaLeft);
+
+        destinationAreaBottom = new ScenarioPolygonArea(new Coordinate[] {
                 bottomLeft,
                 bottomRight,
                 innerBottomRight,
                 innerBottomLeft
-        });
-        destinationAreaRight = new BasicPolygonArea(new Coordinate[] {
+        }, Area.Type.DESTINATION);
+        addArea(destinationAreaBottom);
+
+        destinationAreaRight = new ScenarioPolygonArea(new Coordinate[] {
                 innerBottomRight,
                 bottomRight,
                 topRight,
                 innerTopRight
-        });
-        destinationAreaTop = new BasicPolygonArea(new Coordinate[] {
+        }, Area.Type.DESTINATION);
+        addArea(destinationAreaRight);
+
+        destinationAreaTop = new ScenarioPolygonArea(new Coordinate[] {
                 innerTopLeft,
                 innerTopRight,
                 topRight,
                 topLeft
-        });
+        }, Area.Type.DESTINATION);
+        addArea(destinationAreaTop);
+
 
         // fill node lists
-        for (Node node : graph.getNodes()) {
-            if (originArea.contains(node))
-                nodes.add(node);
-
-            if (destinationAreaLeft.contains(node))
-                leftNodes.add(node);
-
-            if (destinationAreaBottom.contains(node))
-                bottomNodes.add(node);
-
-            if (destinationAreaRight.contains(node))
-                rightNodes.add(node);
-
-            if (destinationAreaTop.contains(node))
-                topNodes.add(node);
-        }
+        refillNodeLists();
 
         /* init */
         fillMatrix();
@@ -161,7 +149,7 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
         odMatrix.clear();
         // build matrix
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
-            Node origin = getRandomNode.apply(nodes);
+            Node origin = getRandomNode.apply(get(originArea));
 
             // get end node depending on start node's position
             Graph graph = getGraph();
@@ -179,20 +167,20 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
             if (center.lat - originCoord.lat > 0) {
                 // origin is below from center
                 latProjection.lat = bounds.minlat;
-                latNodes          = bottomNodes;
+                latNodes          = get(destinationAreaBottom);
             } else {
                 // origin is over center
                 latProjection.lat = bounds.maxlat;
-                latNodes          = topNodes;
+                latNodes          = get(destinationAreaTop);
             }
             if (center.lon - originCoord.lon > 0) {
                 // origin is left from center
                 lonProjection.lon = bounds.minlon;
-                lonNodes          = leftNodes;
+                lonNodes          = get(destinationAreaLeft);
             } else {
                 // origin is right from center
                 lonProjection.lon = bounds.maxlon;
-                lonNodes          = rightNodes;
+                lonNodes          = get(destinationAreaRight);
             }
 
             double latDistance = HaversineDistanceCalculator.getDistance(originCoord, latProjection);

@@ -20,6 +20,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 // TODO: proper line rendering for area outline
 
@@ -83,9 +84,13 @@ public class ScenarioAreaOverlay implements Overlay {
     }
 
     public void removeAllAreas() {
+        LinkedList<Component> removeObjects = new LinkedList<>();
+
         ui.getComponents().stream()
                 .filter(c -> c instanceof AreaComponent)
-                .forEach(c -> ui.removeComponent(c));
+                .forEach(removeObjects::add);
+
+        removeObjects.forEach(ui::removeComponent);
     }
 
     public ArrayList<Area> getAreas() {
