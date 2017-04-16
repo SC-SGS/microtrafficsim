@@ -17,6 +17,4 @@ public interface PolygonArea extends Area {
      * @return the array of coordinate defining this area.
      */
     Coordinate[] getCoordinates();
-
-
 }

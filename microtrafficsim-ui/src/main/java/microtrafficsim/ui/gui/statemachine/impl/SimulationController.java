@@ -202,7 +202,10 @@ public class SimulationController implements GUIController {
 
         /* overlays */
         scenarioAreaOverlay = new ScenarioAreaOverlay();
-        SwingUtilities.invokeLater(() -> scenarioAreaOverlay.setEnabled(false));
+        SwingUtilities.invokeLater(() -> {
+            scenarioAreaOverlay.setEnabled(false);
+            scenarioAreaOverlay.setEventsEnabled(false);
+        });
         mapviewer.addOverlay(0, scenarioAreaOverlay);
         mapviewer.addOverlay(1, overlay);
 
@@ -383,7 +386,7 @@ public class SimulationController implements GUIController {
             new Thread(() -> {
                 boolean enableScenarioAreaOverlay =
                         /* check if overlay is already enabled */
-                        !scenarioAreaOverlay.isEnabled()
+                        !scenarioAreaOverlay.hasEventsEnabled()
                         /* check if there is a map */
                         && streetgraph != null;
 
@@ -410,7 +413,7 @@ public class SimulationController implements GUIController {
                             enableScenarioAreaOverlay = false;
                     }
 
-                    scenarioAreaOverlay.setEnabled(enableScenarioAreaOverlay);
+                    scenarioAreaOverlay.setEventsEnabled(enableScenarioAreaOverlay);
                 }
 
                 isExecutingUserTask.set(false);
@@ -626,6 +629,7 @@ public class SimulationController implements GUIController {
                 streetgraph = result.streetgraph;
                 overlay.setEnabled(true);
                 scenarioAreaOverlay.setEnabled(true);
+                scenarioAreaOverlay.setEventsEnabled(true);
 
                 try {
                     mapviewer.setMap(result.segment);
@@ -684,7 +688,7 @@ public class SimulationController implements GUIController {
 
         /* remove old scenario */
         simulation.removeCurrentScenario();
-        scenarioAreaOverlay.setEnabled(false);
+        scenarioAreaOverlay.setEventsEnabled(false);
 
 
         /* create and prepare new scenario */
@@ -693,6 +697,8 @@ public class SimulationController implements GUIController {
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);
         } else if (config.scenario.selectedClass == EndOfTheWorldScenario.class){
             scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
+            scenarioAreaOverlay.removeAllAreas();
+            scenarioAreaOverlay.add(((EndOfTheWorldScenario)scenario).destinationAreaLeft.getProjectedArea(mapviewer.getProjection(), Area.Type.DESTINATION));
         } else {
             logger.error("Chosen scenario could not be found. " + RandomRouteScenario.class.getSimpleName() + " is used instead.");
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);
@@ -711,7 +717,7 @@ public class SimulationController implements GUIController {
             simulation.runOneStep();
         } catch (InterruptedException ignored) {
             logger.info("Scenario building interrupted by user");
-            scenarioAreaOverlay.setEnabled(true);
+            scenarioAreaOverlay.setEventsEnabled(true);
         }
 
 

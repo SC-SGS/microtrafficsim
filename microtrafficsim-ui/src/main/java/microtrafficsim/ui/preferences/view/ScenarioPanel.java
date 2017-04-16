@@ -108,7 +108,8 @@ public class ScenarioPanel extends PreferencesPanel {
         SimulationConfig config = new SimulationConfig();
 
         config.scenario.showAreasWhileSimulating = cbShowAreasWhileSimulating.isSelected();
-        config.scenario.selectedClass            = model.get(cbScenarioChoice.getSelectedIndex());
+        model.getScenarios().forEach(config.scenario.classes::add);
+        config.scenario.selectedClass = model.get(cbScenarioChoice.getSelectedIndex());
 
         return config;
     }

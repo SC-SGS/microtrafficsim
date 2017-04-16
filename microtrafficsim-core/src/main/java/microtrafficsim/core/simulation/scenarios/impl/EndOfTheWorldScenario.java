@@ -4,9 +4,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.map.area.Area;
 import microtrafficsim.core.map.area.polygons.BasicPolygonArea;
-import microtrafficsim.core.map.area.polygons.RectangleArea;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
@@ -34,11 +32,11 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
 
     // matrix
     private final ArrayList<Node> nodes, leftNodes, bottomNodes, rightNodes, topNodes;
-    private final Area originArea;
-    private final Area destinationAreaLeft;
-    private final Area destinationAreaBottom;
-    private final Area destinationAreaRight;
-    private final Area destinationAreaTop;
+    private final BasicPolygonArea originArea;
+    public final BasicPolygonArea destinationAreaLeft;
+    private final BasicPolygonArea destinationAreaBottom;
+    private final BasicPolygonArea destinationAreaRight;
+    private final BasicPolygonArea destinationAreaTop;
 
     public EndOfTheWorldScenario(long seed,
                                  SimulationConfig config,
