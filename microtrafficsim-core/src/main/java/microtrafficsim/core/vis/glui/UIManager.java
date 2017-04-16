@@ -23,6 +23,15 @@ public abstract class UIManager {
     public abstract RenderContext getContext();
 
 
+    public void setEventsEnabled(boolean enabled) {
+        resolver.setEnabled(enabled);
+    }
+
+    public boolean hasEventsEnabled() {
+        return resolver.isEnabled();
+    }
+
+
     public void setFocus(Component component) {
         if (this.focus == component) return;
 

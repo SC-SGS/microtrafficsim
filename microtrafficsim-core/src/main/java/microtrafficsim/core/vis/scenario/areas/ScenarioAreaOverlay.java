@@ -145,6 +145,14 @@ public class ScenarioAreaOverlay implements Overlay {
         return ui.isEnabled();
     }
 
+    public void setEventsEnabled(boolean enabled) {
+        ui.setEventsEnabled(enabled);
+    }
+
+    public boolean hasEventsEnabled() {
+        return ui.hasEventsEnabled();
+    }
+
     @Override
     public KeyListener getKeyListener() {
         return ui.getKeyListener();
