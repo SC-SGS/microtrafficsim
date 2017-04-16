@@ -6,23 +6,20 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.base.TileGridInfo;
-import microtrafficsim.core.exfmt.ecs.components.FeatureComponent;
-import microtrafficsim.core.exfmt.ecs.components.StreetComponent;
-import microtrafficsim.core.exfmt.ecs.components.TileGridComponent;
+import microtrafficsim.core.exfmt.ecs.components.*;
 import microtrafficsim.core.exfmt.ecs.entities.LineEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PointEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PolygonEntity;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.FeatureDescriptor;
+import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.serialization.kryo.impl.*;
 import microtrafficsim.core.serialization.kryo.impl.exfmt.FeatureDescriptorSerializer;
 import microtrafficsim.core.serialization.kryo.impl.exfmt.TileGridSetSerializer;
-import microtrafficsim.core.serialization.kryo.impl.exfmt.components.FeatureComponentSerializer;
-import microtrafficsim.core.serialization.kryo.impl.exfmt.components.StreetComponentSerializer;
-import microtrafficsim.core.serialization.kryo.impl.exfmt.components.TileGridComponentSerializer;
+import microtrafficsim.core.serialization.kryo.impl.exfmt.components.*;
 import microtrafficsim.core.serialization.kryo.impl.exfmt.entities.LineEntitySerializer;
 import microtrafficsim.core.serialization.kryo.impl.exfmt.entities.PointEntitySerializer;
 import microtrafficsim.core.serialization.kryo.impl.exfmt.entities.PolygonEntitySerializer;
@@ -97,6 +94,9 @@ public class ExchangeFormatSerializer {
         kryo.register(FeatureComponent.class, new FeatureComponentSerializer());
         kryo.register(TileGridComponent.class, new TileGridComponentSerializer());
         kryo.register(TileGridComponent.Entry.class, new TileGridComponentSerializer.Entry());
+        kryo.register(GraphNodeComponent.class, new GraphNodeComponentSerializer());
+        kryo.register(GraphNodeComponent.Connector.class, new GraphNodeComponentSerializer.Connector());
+        kryo.register(GraphEdgeComponent.class, new GraphEdgeComponentSerializer());
 
         // map stuff
         kryo.register(FeatureDescriptor.class, new FeatureDescriptorSerializer());
@@ -105,6 +105,7 @@ public class ExchangeFormatSerializer {
         kryo.register(Bounds.class, new BoundsSerializer());
         kryo.register(Rect2d.class, new Rect2dSerializer());
         kryo.register(TileRect.class, new TileRectSerializer());
+        kryo.register(StreetType.class, new StreetTypeSerializer());
 
         kryo.register(PlateCarreeProjection.class);
         kryo.register(MercatorProjection.class);

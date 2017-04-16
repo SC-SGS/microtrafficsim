@@ -1,8 +1,7 @@
 package microtrafficsim.core.simulation.configs;
 
+import microtrafficsim.core.map.StreetType;
 import microtrafficsim.math.random.distributions.impl.Random;
-import microtrafficsim.osm.parser.features.streets.info.StreetType;
-import microtrafficsim.utils.Resettable;
 
 import java.util.function.Function;
 
@@ -72,26 +71,30 @@ public final class ScenarioConfig {
         maxVehicleCount = 100;
         // street type priorities
         streetPriorityLevel = streetType -> {
-            byte prioLevel = 0;
-            switch (streetType) {
-            case ROUNDABOUT:     prioLevel++;
-            case MOTORWAY:       prioLevel++;
-            case MOTORWAY_LINK:  prioLevel++;
-            case TRUNK:          prioLevel++;
-            case TRUNK_LINK:     prioLevel++;
-            case PRIMARY:        prioLevel++;
-            case PRIMARY_LINK:   prioLevel++;
-            case SECONDARY:      prioLevel++;
-            case SECONDARY_LINK: prioLevel++;
-            case TERTIARY:       prioLevel++;
-            case TERTIARY_LINK:  prioLevel++;
-            case UNCLASSIFIED:   prioLevel++;
-            case RESIDENTIAL:    prioLevel++;
-            case LIVING_STREET:  prioLevel++;
-            case SERVICE:        prioLevel++;
-            case TRACK:          prioLevel++;
-            case ROAD:           prioLevel++;
+            byte prioLevel = (byte) 0x00;
+
+            if (streetType.isRoundabout())
+                return (byte) 0xFF;
+
+            switch (streetType.getType()) {
+                case StreetType.MOTORWAY:       prioLevel++;
+                case StreetType.TRUNK:          prioLevel++;
+                case StreetType.PRIMARY:        prioLevel++;
+                case StreetType.SECONDARY:      prioLevel++;
+                case StreetType.TERTIARY:       prioLevel++;
+                case StreetType.UNCLASSIFIED:   prioLevel++;
+                case StreetType.RESIDENTIAL:    prioLevel++;
+                case StreetType.LIVING_STREET:  prioLevel++;
+                case StreetType.SERVICE:        prioLevel++;
+                case StreetType.TRACK:          prioLevel++;
+                case StreetType.ROAD:           prioLevel++;
             }
+
+            prioLevel *= 2;
+
+            if (streetType.isLink())
+                prioLevel += 1;
+
             return prioLevel;
         };
     }

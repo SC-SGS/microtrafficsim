@@ -10,6 +10,7 @@ import microtrafficsim.core.exfmt.ecs.processors.FeatureProcessor;
 import microtrafficsim.core.exfmt.ecs.processors.TileGridProcessor;
 import microtrafficsim.core.exfmt.extractor.map.MapSegmentExtractor;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.exfmt.injector.map.QuadTreeTiledMapSegmentInjector;
 import microtrafficsim.core.exfmt.injector.map.SegmentFeatureProviderInjector;
 import microtrafficsim.core.exfmt.injector.map.features.FeatureInjector;
@@ -18,6 +19,13 @@ import microtrafficsim.core.exfmt.injector.map.features.primitives.MultiLineInje
 import microtrafficsim.core.exfmt.injector.map.features.primitives.PointInjector;
 import microtrafficsim.core.exfmt.injector.map.features.primitives.PolygonInjector;
 import microtrafficsim.core.exfmt.injector.map.features.primitives.StreetInjector;
+import microtrafficsim.core.exfmt.injector.streetgraph.DirectedEdgeInjector;
+import microtrafficsim.core.exfmt.injector.streetgraph.GraphInjector;
+import microtrafficsim.core.exfmt.injector.streetgraph.NodeInjector;
+import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.StreetGraph;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Feature;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.SegmentFeatureProvider;
@@ -37,6 +45,58 @@ import java.util.HashMap;
 
 
 public class ExchangeFormat {
+
+    public static ExchangeFormat getDefault() {
+        ExchangeFormat format = new ExchangeFormat();
+
+        {   // CONFIGURATION
+            Config cfg = format.getConfig();
+
+            // entity processors (may be called by insertion of new entities)
+            EntityManager ecsmgr = cfg.get(EntityManager.class, EntityManager::new);
+            ecsmgr.addProcessor(new FeatureProcessor());
+            ecsmgr.addProcessor(new TileGridProcessor());
+
+            // feature extractors
+            FeatureManager fmgr = cfg.get(FeatureManager.class, FeatureManager::new);
+            fmgr.setExtractor(Point.class, new PointFeatureExtractor());
+            fmgr.setExtractor(MultiLine.class, new MultiLineFeatureExtractor());
+            fmgr.setExtractor(Street.class, new StreetFeatureExtractor());
+            fmgr.setExtractor(Polygon.class, new PolygonFeatureExtractor());
+        }
+
+        {   // INJECTORS/EXTRACTORS
+            // map feature primitives
+            format.injector(Point.class, new PointInjector());
+            format.injector(MultiLine.class, new MultiLineInjector());
+            format.injector(Street.class, new StreetInjector());
+            format.injector(Polygon.class, new PolygonInjector());
+
+            // features
+            format.injector(Feature.class, new FeatureInjector());
+            format.injector(TileFeatureGrid.class, new TileFeatureGridInjector());
+
+            // map segments
+            format.injector(SegmentFeatureProvider.class, new SegmentFeatureProviderInjector());
+            format.injector(MapSegment.class, new SegmentFeatureProviderInjector());
+            format.extractor(MapSegment.class, new MapSegmentExtractor());
+
+            format.injector(QuadTreeTiledMapSegment.class, new QuadTreeTiledMapSegmentInjector());
+            format.extractor(QuadTreeTiledMapSegment.class, new QuadTreeTiledMapSegmentExtractor());
+
+            // street-graph
+            format.injector(Node.class, new NodeInjector());
+            format.injector(DirectedEdge.class, new DirectedEdgeInjector());
+
+            format.injector(Graph.class, new GraphInjector());
+            format.injector(StreetGraph.class, new GraphInjector());
+            format.extractor(StreetGraph.class, new StreetGraphExtractor());
+        }
+
+        return format;
+    }
+
+
     private Config config = new Config();
     private HashMap<Class<?>, Injector<?>>  injectors  = new HashMap<>();
     private HashMap<Class<?>, Extractor<?>> extractors = new HashMap<>();
@@ -112,59 +172,15 @@ public class ExchangeFormat {
     }
 
 
-    public static ExchangeFormat getDefault() {
-        ExchangeFormat format = new ExchangeFormat();
-
-        {   // CONFIGURATION
-            Config cfg = format.getConfig();
-
-            // entity processors (may be called by insertion of new entities)
-            EntityManager ecsmgr = cfg.get(EntityManager.class, EntityManager::new);
-            ecsmgr.addProcessor(new FeatureProcessor());
-            ecsmgr.addProcessor(new TileGridProcessor());
-
-            // feature extractors
-            FeatureManager fmgr = cfg.get(FeatureManager.class, FeatureManager::new);
-            fmgr.setExtractor(Point.class, new PointFeatureExtractor());
-            fmgr.setExtractor(MultiLine.class, new MultiLineFeatureExtractor());
-            fmgr.setExtractor(Street.class, new StreetFeatureExtractor());
-            fmgr.setExtractor(Polygon.class, new PolygonFeatureExtractor());
-        }
-
-        {   // INJECTORS/EXTRACTORS
-            // map feature primitives
-            format.injector(Point.class, new PointInjector());
-            format.injector(MultiLine.class, new MultiLineInjector());
-            format.injector(Street.class, new StreetInjector());
-            format.injector(Polygon.class, new PolygonInjector());
-
-            // features
-            format.injector(Feature.class, new FeatureInjector());
-            format.injector(TileFeatureGrid.class, new TileFeatureGridInjector());
-
-            // map segments
-            format.injector(SegmentFeatureProvider.class, new SegmentFeatureProviderInjector());
-            format.injector(MapSegment.class, new SegmentFeatureProviderInjector());
-            format.extractor(MapSegment.class, new MapSegmentExtractor());
-
-            format.injector(QuadTreeTiledMapSegment.class, new QuadTreeTiledMapSegmentInjector());
-            format.extractor(QuadTreeTiledMapSegment.class, new QuadTreeTiledMapSegmentExtractor());
-        }
-
-        return format;
-    }
-
-
     public interface Injector<T> {
         void inject(ExchangeFormat fmt, Context ctx, Container dst, T src) throws Exception;
     }
 
     public interface Extractor<T> {
-        T extract(ExchangeFormat format, Context ctx, Container src) throws Exception;
+        T extract(ExchangeFormat fmt, Context ctx, Container src) throws Exception;
     }
 
     public static class Context extends Composite<Object> {}
-
 
     public static class Manipulator {
         private ExchangeFormat format;

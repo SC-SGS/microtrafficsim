@@ -6,6 +6,7 @@ import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.astar.AStars;
@@ -151,14 +152,15 @@ public class TestShortestPathAlgorithms {
         return new DirectedEdge(
                 idGenerator.next(),
                 lengthInCells * config.metersPerCell,
-                rubbishVec2d,
-                rubbishVec2d,
-                origin,
-                destination,
-                config.metersPerCell,
+                new StreetType((byte) 0),
                 noOfLines,
                 maxVelocity,
-                (byte)0
+                origin,
+                destination,
+                rubbishVec2d,
+                rubbishVec2d,
+                config.metersPerCell,
+                config.streetPriorityLevel
         );
     }
 

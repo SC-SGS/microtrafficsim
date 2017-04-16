@@ -28,7 +28,7 @@ import java.util.*;
  */
 public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded {
 
-    public final long           id;
+    private final long          id;
     private Coordinate          coordinate;
     private CrossingLogicConfig config;
     private final Random        random;
@@ -76,6 +76,18 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         return "Node id = " + id + " at " + coordinate.toString();
     }
 
+
+    public long getId() {
+        return id;
+    }
+
+    public CrossingLogicConfig getCrossingLogicConfig() {
+        return config;
+    }
+
+    public HashMap<Lane, ArrayList<Lane>> getConnectors() {
+        return connectors;
+    }
 
     /*
     |================|
@@ -471,8 +483,12 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         return result;
     }
 
+    public Set<DirectedEdge> getLeavingEdges() {
+        return Collections.unmodifiableSet(leaving.keySet());
+    }
+
     @Override
-    public Set<DirectedEdge> getIncoming() {
+    public Set<DirectedEdge> getIncomingEdges() {
         return Collections.unmodifiableSet(incoming.keySet());
     }
 

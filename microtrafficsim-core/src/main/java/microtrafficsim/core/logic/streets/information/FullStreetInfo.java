@@ -11,6 +11,7 @@ public class FullStreetInfo implements Resettable {
 
     public int numberOfCells;
     public int maxVelocity;
+    public byte priorityLevel;
 
 
     public FullStreetInfo(RawStreetInfo rawStreetInfo) {
@@ -25,5 +26,7 @@ public class FullStreetInfo implements Resettable {
 
         // maxVelocity in km/h, but this.maxVelocity in cells/s
         maxVelocity = Math.max(1, (int) Math.round(raw.maxVelocity / 3.6 / raw.metersPerCell));
+
+        priorityLevel = raw.priorityFn.apply(raw.type);
     }
 }

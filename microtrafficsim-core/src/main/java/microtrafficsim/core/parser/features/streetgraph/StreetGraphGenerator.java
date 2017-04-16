@@ -148,9 +148,9 @@ public class StreetGraphGenerator implements FeatureGenerator {
         DirectedEdge forward  = null;
         DirectedEdge backward = null;
 
-        float length        = getLength(dataset, way);
-        byte  priorityLevel = config.streetPriorityLevel.apply(streetinfo.roundabout ? StreetType.ROUNDABOUT
-                                                                                    : streetinfo.streettype);
+        double length = getLength(dataset, way);
+        microtrafficsim.core.map.StreetType type= streetinfo.roundabout ? StreetType.ROUNDABOUT.toCoreStreetType() :
+                streetinfo.streettype.toCoreStreetType();
 
         if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.FORWARD
             || streetinfo.oneway == OnewayInfo.REVERSIBLE) {
@@ -159,8 +159,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
             Vec2d destinationDirection = new Vec2d(lastNode.lon - secondLastNode.lon,
                                                    lastNode.lat - secondLastNode.lat);
 
-            forward = new DirectedEdge(way.id, length, originDirection, destinationDirection, start, end,
-                    config.metersPerCell, 1, streetinfo.maxspeed.forward, priorityLevel);
+            forward = new DirectedEdge(way.id, length, type, 1, streetinfo.maxspeed.forward, start, end,
+                    originDirection, destinationDirection, config.metersPerCell, config.streetPriorityLevel);
         }
 
         if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.BACKWARD) {
@@ -169,8 +169,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
 
             Vec2d destinationDirection = new Vec2d(node0.lon - node1.lon, node0.lat - node1.lat);
 
-            backward = new DirectedEdge(way.id, length, originDirection, destinationDirection, end, start,
-                                        config.metersPerCell, 1, streetinfo.maxspeed.backward, priorityLevel);
+            backward = new DirectedEdge(way.id, length, type, 1, streetinfo.maxspeed.backward, end, start,
+                    originDirection, destinationDirection, config.metersPerCell, config.streetPriorityLevel);
         }
 
         // create component for ECS
@@ -289,11 +289,11 @@ public class StreetGraphGenerator implements FeatureGenerator {
      *                calculated.
      * @return the length of the given {@code WayEntity}.
      */
-    private float getLength(DataSet dataset, WayEntity way) {
+    private double getLength(DataSet dataset, WayEntity way) {
         NodeEntity node = dataset.nodes.get(way.nodes[0]);
         Coordinate a    = new Coordinate(node.lat, node.lon);
 
-        float length = 0;
+        double length = 0;
         for (int i = 1; i < way.nodes.length; i++) {
             node         = dataset.nodes.get(way.nodes[i]);
             Coordinate b = new Coordinate(node.lat, node.lon);

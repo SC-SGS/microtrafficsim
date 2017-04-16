@@ -5,6 +5,7 @@ import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.information.FullStreetInfo;
 import microtrafficsim.core.logic.streets.information.RawStreetInfo;
+import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.Resettable;
@@ -13,6 +14,7 @@ import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Function;
 
 
 /**
@@ -37,18 +39,26 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
      * @see #DirectedEdge(RawStreetInfo)
      */
     public DirectedEdge(long id,
-                        float lengthInMeters,
-                        Vec2d originDirection,
-                        Vec2d destinationDirection,
+                        double lengthInMeters,
+                        StreetType type,
+                        int nLanes,
+                        float maxVelocity,
                         Node origin,
                         Node destination,
+                        Vec2d originDirection,
+                        Vec2d destinationDirection,
                         float metersPerCell,
-                        int noOfLines,
-                        float maxVelocity,
-                        byte priorityLevel) {
+                        Function<StreetType, Byte> priorityFn)
+    {
         this(new RawStreetInfo(
-                id, lengthInMeters, originDirection, destinationDirection, origin, destination,
-                metersPerCell, noOfLines, maxVelocity, priorityLevel
+                id,
+                lengthInMeters,
+                originDirection, destinationDirection,
+                origin, destination,
+                type,
+                nLanes,
+                maxVelocity,
+                metersPerCell, priorityFn
         ));
     }
 
@@ -58,7 +68,7 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
      * leaving edges.
      *
      * For detailed parameter information
-     * see {@link RawStreetInfo#RawStreetInfo(long, float, Vec2d, Vec2d, Node, Node, float, int, float, byte)}
+     * see {@link RawStreetInfo#RawStreetInfo(long, double, Vec2d, Vec2d, Node, Node, StreetType, int, float, float, Function)}
      *
      * @param rawStreetInfo contains all relevant, "persistent" information about this edge
      */
@@ -66,9 +76,22 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
 
         streetInfo = new FullStreetInfo(rawStreetInfo);
 
-        lanes    = new Lane[rawStreetInfo.noOfLines];
+        lanes    = new Lane[rawStreetInfo.nLanes];
         lanes[0] = new Lane(this, 0);
     }
+
+    public long getId() {
+        return streetInfo.raw.id;
+    }
+
+    public StreetType getStreetType() {
+        return new StreetType(0);    // TODO
+    }
+
+    public int getNumberOfLanes() {
+        return streetInfo.raw.nLanes;
+    }
+
 
     @Override
     public int hashCode() {
@@ -116,7 +139,7 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
     }
 
     public byte getPriorityLevel() {
-        return streetInfo.raw.priorityLevel;
+        return streetInfo.priorityLevel;
     }
 
     /**
@@ -138,9 +161,9 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
         stringBuilder.appendln("id = " + streetInfo.raw.id);
         stringBuilder.appendln("hash = " + hashCode());
         stringBuilder.appendln("info = ("
-                + streetInfo.raw.origin.id
+                + streetInfo.raw.origin.getId()
                 + " -" + streetInfo.numberOfCells + "-> "
-                + streetInfo.raw.destination.id + ")");
+                + streetInfo.raw.destination.getId() + ")");
 
         stringBuilder.decLevel();
         stringBuilder.appendln("<\\DirectedEdge>");
@@ -184,6 +207,10 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
     @Override
     public int getLength() {
         return streetInfo.numberOfCells;
+    }
+
+    public double getLengthInMeter() {
+        return streetInfo.raw.lengthInMeters;
     }
 
     @Override
