@@ -33,7 +33,7 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
     // matrix
     private final ArrayList<Node> nodes, leftNodes, bottomNodes, rightNodes, topNodes;
     private final BasicPolygonArea originArea;
-    public final BasicPolygonArea destinationAreaLeft;
+    private final BasicPolygonArea destinationAreaLeft;
     private final BasicPolygonArea destinationAreaBottom;
     private final BasicPolygonArea destinationAreaRight;
     private final BasicPolygonArea destinationAreaTop;
