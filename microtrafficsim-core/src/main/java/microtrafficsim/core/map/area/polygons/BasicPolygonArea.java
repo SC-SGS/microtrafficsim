@@ -1,6 +1,10 @@
 package microtrafficsim.core.map.area.polygons;
 
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.vis.map.projections.Projection;
+import microtrafficsim.core.vis.scenario.areas.Area;
+import microtrafficsim.math.Vec2d;
+import microtrafficsim.math.geometry.polygons.Polygon;
 
 
 /**
@@ -13,7 +17,13 @@ public class BasicPolygonArea implements PolygonArea {
     private Coordinate[] coordinates;
 
     /**
+     * <p>
      * Default constructor.
+     *
+     * <p>
+     * Conventions: <br>
+     * &bull two coordinates after each other are unequal <br>
+     * &bull first and last coordinate are unequal
      *
      * @param coordinates Has to contain at least 3 points, otherwise {@link IllegalAccessException} is thrown.
      */
@@ -70,5 +80,16 @@ public class BasicPolygonArea implements PolygonArea {
         }
 
         return windings != 0;
+    }
+
+    /**
+     * Todo: does only support {@link Polygon#outline}
+     */
+    public Area getProjectedArea(Projection projection, Area.Type type) {
+        Vec2d[] outline = new Vec2d[coordinates.length];
+        for (int i = 0; i < outline.length; i++)
+            outline[i] = projection.project(coordinates[i]);
+
+        return new Area(new Polygon(outline), type);
     }
 }

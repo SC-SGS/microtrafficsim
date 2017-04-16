@@ -32,7 +32,6 @@ import java.util.HashSet;
  */
 public class ScenarioAreaOverlay implements Overlay {
     private DirectBatchUIOverlay ui;
-    private Projection projection;
 
     private HashSet<AreaComponent> selectedAreas = new HashSet<>();
     private HashSet<AreaVertex> selectedVertices = new HashSet<>();
@@ -43,11 +42,10 @@ public class ScenarioAreaOverlay implements Overlay {
     private AreaComponent construction = null;
 
 
-    public ScenarioAreaOverlay(Projection projection) {
+    public ScenarioAreaOverlay() {
         this.ui = new DirectBatchUIOverlay();
         this.ui.getRootComponent().addMouseListener(new MouseListenerImpl());
         this.ui.getRootComponent().addKeyListener(new KeyListenerImpl());
-        this.projection = projection;
 
         SwingUtilities.invokeLater(() -> {
             properties = new PropertyFrame(ui);

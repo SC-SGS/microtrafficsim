@@ -12,8 +12,11 @@ import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
+import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
+import microtrafficsim.math.geometry.polygons.*;
+import microtrafficsim.math.geometry.polygons.Polygon;
 import microtrafficsim.ui.gui.menues.MTSMenuBar;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
@@ -198,7 +201,7 @@ public class SimulationController implements GUIController {
         preferences.setVisible(false);
 
         /* overlays */
-        scenarioAreaOverlay = new ScenarioAreaOverlay(mapviewer.getProjection());
+        scenarioAreaOverlay = new ScenarioAreaOverlay();
         SwingUtilities.invokeLater(() -> scenarioAreaOverlay.setEnabled(false));
         mapviewer.addOverlay(0, scenarioAreaOverlay);
         mapviewer.addOverlay(1, overlay);

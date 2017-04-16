@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.area.Area;
+import microtrafficsim.core.map.area.polygons.BasicPolygonArea;
 import microtrafficsim.core.map.area.polygons.RectangleArea;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
@@ -33,6 +34,11 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
 
     // matrix
     private final ArrayList<Node> nodes, leftNodes, bottomNodes, rightNodes, topNodes;
+    private final Area originArea;
+    private final Area destinationAreaLeft;
+    private final Area destinationAreaBottom;
+    private final Area destinationAreaRight;
+    private final Area destinationAreaTop;
 
     public EndOfTheWorldScenario(long seed,
                                  SimulationConfig config,
@@ -60,50 +66,77 @@ public class EndOfTheWorldScenario extends BasicRandomScenario {
         super(random, config, graph, vehicleContainer);
 
         /* prepare building matrix */
-        nodes       = new ArrayList<>(graph.getNodes());
+        nodes       = new ArrayList<>();
         leftNodes   = new ArrayList<>();
         bottomNodes = new ArrayList<>();
         rightNodes  = new ArrayList<>();
         topNodes    = new ArrayList<>();
 
+
+        /* helping variables */
         final Bounds bounds = graph.getBounds();
 
-        // define areas for filling node lists
-        double latLength   = Math.min(0.01f, 0.1f * (bounds.maxlat - bounds.minlat));
-        double lonLength   = Math.min(0.01f, 0.1f * (bounds.maxlon - bounds.minlon));
-        Area leftBorder   = new RectangleArea(
-                bounds.minlat,
-                bounds.minlon,
-                bounds.maxlat,
-                bounds.minlon + lonLength);
-        Area bottomBorder = new RectangleArea(
-                bounds.minlat,
-                bounds.minlon,
-                bounds.minlat + latLength,
-                bounds.maxlon);
-        Area rightBorder  = new RectangleArea(
-                bounds.minlat,
-                bounds.maxlon - lonLength,
-                bounds.maxlat,
-                bounds.maxlon);
-        Area topBorder    = new RectangleArea(
-                bounds.maxlat - latLength,
-                bounds.minlon,
-                bounds.maxlat,
-                bounds.maxlon);
+        final Coordinate bottomLeft = new Coordinate(   bounds.minlat, bounds.minlon);
+        final Coordinate bottomRight = new Coordinate(  bounds.minlat, bounds.maxlon);
+        final Coordinate topRight = new Coordinate(     bounds.maxlat, bounds.maxlon);
+        final Coordinate topLeft = new Coordinate(      bounds.maxlat, bounds.minlon);
+
+        double latLength = Math.min(0.01f, 0.1f * (bounds.maxlat - bounds.minlat));
+        double lonLength = Math.min(0.01f, 0.1f * (bounds.maxlon - bounds.minlon));
+
+        final Coordinate innerBottomLeft = new Coordinate(  bounds.minlat + latLength, bounds.minlon + lonLength);
+        final Coordinate innerBottomRight = new Coordinate( bounds.minlat + latLength, bounds.maxlon - lonLength);
+        final Coordinate innerTopRight = new Coordinate(    bounds.maxlat - latLength, bounds.maxlon - lonLength);
+        final Coordinate innerTopLeft = new Coordinate(     bounds.maxlat - latLength, bounds.minlon + lonLength);
+
+
+        /* define areas for filling node lists */
+        originArea = new BasicPolygonArea(new Coordinate[] {
+                bottomLeft,
+                bottomRight,
+                topRight,
+                topLeft
+        });
+        destinationAreaLeft = new BasicPolygonArea(new Coordinate[] {
+                bottomLeft,
+                innerBottomLeft,
+                innerTopLeft,
+                topLeft
+        });
+        destinationAreaBottom = new BasicPolygonArea(new Coordinate[] {
+                bottomLeft,
+                bottomRight,
+                innerBottomRight,
+                innerBottomLeft
+        });
+        destinationAreaRight = new BasicPolygonArea(new Coordinate[] {
+                innerBottomRight,
+                bottomRight,
+                topRight,
+                innerTopRight
+        });
+        destinationAreaTop = new BasicPolygonArea(new Coordinate[] {
+                innerTopLeft,
+                innerTopRight,
+                topRight,
+                topLeft
+        });
 
         // fill node lists
-        for (Node node : nodes) {
-            if (leftBorder.contains(node))
+        for (Node node : graph.getNodes()) {
+            if (originArea.contains(node))
+                nodes.add(node);
+
+            if (destinationAreaLeft.contains(node))
                 leftNodes.add(node);
 
-            if (bottomBorder.contains(node))
+            if (destinationAreaBottom.contains(node))
                 bottomNodes.add(node);
 
-            if (rightBorder.contains(node))
+            if (destinationAreaRight.contains(node))
                 rightNodes.add(node);
 
-            if (topBorder.contains(node))
+            if (destinationAreaTop.contains(node))
                 topNodes.add(node);
         }
 
