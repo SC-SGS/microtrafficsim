@@ -38,6 +38,8 @@ public class QuadTreeTiledMapSegmentExtractor implements ExchangeFormat.Extracto
         EntitySet entities = src.get(EntitySet.class);
         FeatureInfo features = src.get(FeatureInfo.class);
         TileGridInfo tiles = src.get(TileGridInfo.class);
+        if (entities == null | features == null | tiles == null)
+            throw new NotAvailableException();
 
         Config config = fmt.getConfig().getOr(Config.class, Config::getDefault);
         TileGridInfo.Grid grid = config.matcher.call(config, tiles);

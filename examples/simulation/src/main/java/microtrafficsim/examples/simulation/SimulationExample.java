@@ -8,6 +8,7 @@ import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.map.MapSegment;
@@ -87,7 +88,7 @@ public class SimulationExample {
 
         /* Create the window and display the visualization */
         frame = setUpFrame(viewer);
-        setUpSerializer(viewer);
+        setUpSerializer(viewer, config);
         show();
 
         /* Load the OSM file asynchronously */
@@ -156,11 +157,14 @@ public class SimulationExample {
         return frame;
     }
 
-    private void setUpSerializer(TileBasedMapViewer viewer) {
+    private void setUpSerializer(TileBasedMapViewer viewer, ScenarioConfig config) {
         serializer = ExchangeFormatSerializer.create();
         exfmt = ExchangeFormat.getDefault();
+
         exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(
                 viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel()));
+
+        exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
     }
 
     /**
@@ -405,6 +409,7 @@ public class SimulationExample {
                     graph = result.streetgraph;
 
                 } else {
+                    // NOTE: the order of the following calls is important: first features, then graph
                     ExchangeFormat.Manipulator xmp = exfmt.manipulator(serializer.read(file));
                     try {
                         segment = xmp.extract(QuadTreeTiledMapSegment.class);

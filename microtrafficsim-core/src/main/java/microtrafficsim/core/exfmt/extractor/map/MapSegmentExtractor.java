@@ -10,6 +10,7 @@ import microtrafficsim.core.exfmt.ecs.components.FeatureComponent;
 import microtrafficsim.core.exfmt.ecs.entities.LineEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PointEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PolygonEntity;
+import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.map.Feature;
 import microtrafficsim.core.map.FeatureDescriptor;
 import microtrafficsim.core.map.FeaturePrimitive;
@@ -27,6 +28,8 @@ public class MapSegmentExtractor implements ExchangeFormat.Extractor<MapSegment>
     public MapSegment extract(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src) throws Exception {
         EntitySet entities = src.get(EntitySet.class);
         FeatureInfo features = src.get(FeatureInfo.class);
+        if (entities == null || features == null)
+            throw new NotAvailableException();
 
         HashMap<String, HashSet<FeaturePrimitive>> featureset = new HashMap<>();
         for (FeatureDescriptor desc : features.getAll().values()) {

@@ -85,7 +85,7 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
     }
 
     public StreetType getStreetType() {
-        return new StreetType(0);    // TODO
+        return streetInfo.raw.type;
     }
 
     public int getNumberOfLanes() {

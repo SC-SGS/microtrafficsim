@@ -4,6 +4,7 @@ import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.base.EntitySet;
 import microtrafficsim.core.exfmt.ecs.components.GraphEdgeComponent;
+import microtrafficsim.core.exfmt.ecs.components.StreetComponent;
 import microtrafficsim.core.exfmt.ecs.entities.LineEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 
@@ -33,6 +34,12 @@ public class DirectedEdgeInjector implements ExchangeFormat.Injector<DirectedEdg
             gec.setOriginDirection(src.getDestinationDirection());
             gec.setDestination(src.getOrigin().getId());
             gec.setDestinationDirection(src.getOriginDirection());
+        }
+
+        // Inject the street-geometry if it has not already been injected. This might be necessary when the street
+        // is not contained in any map-feature
+        if (entity.get(StreetComponent.class) == null && src.getEntity().getGeometry() != null) {
+            fmt.inject(ctx, dst, src.getEntity().getGeometry());
         }
     }
 }
