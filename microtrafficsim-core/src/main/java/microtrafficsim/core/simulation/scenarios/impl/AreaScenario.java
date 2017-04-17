@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public abstract class AreaScenario extends BasicRandomScenario {
 
-    private static Logger logger = new EasyMarkableLogger(EndOfTheWorldScenario.class);
+    private static Logger logger = new EasyMarkableLogger(AreaScenario.class);
 
     // matrix
     private final HashMap<ScenarioPolygonArea, ArrayList<Node>> nodes;
