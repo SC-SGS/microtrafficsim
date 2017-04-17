@@ -44,9 +44,10 @@ public class BuildSetup {
 
         /* general */
         config = new SimulationConfig();
-        config.scenario.classes.add(RandomRouteScenario.class);
+        config.scenario.classes.add(AreaScenario.class);
         config.scenario.classes.add(EndOfTheWorldScenario.class);
-        config.scenario.selectedClass = RandomRouteScenario.class;
+        config.scenario.classes.add(RandomRouteScenario.class);
+        config.scenario.selectedClass = AreaScenario.class;
 
         /* visualization and parsing */
         mapviewer = new TileBasedMapViewer(config.visualization.style);

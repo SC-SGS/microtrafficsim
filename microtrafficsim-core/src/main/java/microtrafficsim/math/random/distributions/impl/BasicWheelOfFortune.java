@@ -15,7 +15,7 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
 
     private Random random;
     private HashMap<T, Integer> fields;
-    private int               n;
+    private int n;
 
     public BasicWheelOfFortune(long seed) {
         this(new Random(seed));
@@ -81,13 +81,26 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
     /**
      * The runtime of this implementation is determined by {@link HashMap#remove(Object)}.
      */
+    @Override
     public void remove(T t) {
         n -= fields.remove(t);
+    }
+
+    @Override
+    public void clear() {
+        fields.clear();
+        n = 0;
+    }
+
+    @Override
+    public int size() {
+        return fields.size();
     }
 
     /**
      * The runtime of this method is O(n) where n is the number of elements in this wheel.
      */
+    @Override
     public T nextObject() {
 
         if (n <= 0) return null;
@@ -104,15 +117,22 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
         return lastObj;
     }
 
-    /*
-    |================|
-    | (i) Resettable |
-    |================|
-    */
+
+    @Override
+    public long getSeed() {
+        return random.getSeed();
+    }
+
+    @Override
+    public void setSeed(long seed) {
+        random.setSeed(seed);
+    }
+
+    /**
+     * Resets the used random variable but does not clear this wheel.
+     */
     @Override
     public void reset() {
         random.reset();
-        fields.clear();
-        n = 0;
     }
 }

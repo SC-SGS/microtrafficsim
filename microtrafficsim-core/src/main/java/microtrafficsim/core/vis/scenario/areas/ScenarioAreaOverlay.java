@@ -175,6 +175,8 @@ public class ScenarioAreaOverlay implements Overlay {
 
     public void setEventsEnabled(boolean enabled) {
         ui.setEventsEnabled(enabled);
+        if (!enabled)
+            clearAreaSelection();
     }
 
     @Override

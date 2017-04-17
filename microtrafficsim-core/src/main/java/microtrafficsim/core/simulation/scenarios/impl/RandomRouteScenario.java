@@ -4,6 +4,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
@@ -53,28 +54,9 @@ public class RandomRouteScenario extends AreaScenario {
         super(random, config, graph, vehicleContainer);
 
 
-        /* helping variables */
-        final Bounds bounds = graph.getBounds();
-
-        final Coordinate bottomLeft = new Coordinate(   bounds.minlat, bounds.minlon);
-        final Coordinate bottomRight = new Coordinate(  bounds.minlat, bounds.maxlon);
-        final Coordinate topRight = new Coordinate(     bounds.maxlat, bounds.maxlon);
-        final Coordinate topLeft = new Coordinate(      bounds.maxlat, bounds.minlon);
-
-
         /* add areas */
-        addArea(new ScenarioPolygonArea(new Coordinate[] {
-                bottomLeft,
-                bottomRight,
-                topRight,
-                topLeft
-        }, Area.Type.ORIGIN));
-        addArea(new ScenarioPolygonArea(new Coordinate[] {
-                bottomLeft,
-                bottomRight,
-                topRight,
-                topLeft
-        }, Area.Type.DESTINATION));
+        addArea(getTotalGraph(Area.Type.ORIGIN));
+        addArea(getTotalGraph(Area.Type.DESTINATION));
 
 
         fillMatrix();

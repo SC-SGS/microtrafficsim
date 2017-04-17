@@ -8,6 +8,7 @@ import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
@@ -687,25 +688,29 @@ public class SimulationController implements GUIController {
         simulation.removeCurrentScenario();
         scenarioAreaOverlay.setEventsEnabled(false);
         scenarioAreaOverlay.setPropertiesVisible(false);
-        scenarioAreaOverlay.removeAllAreas();
 
 
         /* create and prepare new scenario */
-        Scenario scenario;
-        if (config.scenario.selectedClass == RandomRouteScenario.class) {
-            scenario = new RandomRouteScenario(config.seed, config, streetgraph);
-            ((RandomRouteScenario)scenario).getAreas().stream()
-                    .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
-                    .forEach(scenarioAreaOverlay::add);
-        } else if (config.scenario.selectedClass == EndOfTheWorldScenario.class){
+        AreaScenario scenario;
+        if (config.scenario.selectedClass == AreaScenario.class) {
+            scenario = new AreaScenario(config.seed, config, streetgraph);
+            /* get areas from overlay */
+            scenarioAreaOverlay.getAreas().stream()
+                    .map(area -> area.getUnprojectedArea(mapviewer.getProjection()))
+                    .forEach(scenario::addArea);
+            scenario.refillNodeLists();
+        } else if (config.scenario.selectedClass == EndOfTheWorldScenario.class) {
             scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
-            ((EndOfTheWorldScenario)scenario).getAreas().stream()
-                    .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
-                    .forEach(scenarioAreaOverlay::add);
         } else {
-            logger.error("Chosen scenario could not be found. " + RandomRouteScenario.class.getSimpleName() + " is used instead.");
+            if (config.scenario.selectedClass != RandomRouteScenario.class)
+                logger.error("Chosen scenario could not be found. " + RandomRouteScenario.class.getSimpleName() + " is used instead.");
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);
         }
+        /* update area overlay */
+        scenarioAreaOverlay.removeAllAreas();
+        scenario.getAreas().stream()
+                .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
+                .forEach(scenarioAreaOverlay::add);
 
         try {
             scenarioBuilder.prepare(

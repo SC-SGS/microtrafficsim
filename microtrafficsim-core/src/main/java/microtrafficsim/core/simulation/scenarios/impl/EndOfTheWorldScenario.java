@@ -4,7 +4,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.map.area.polygons.BasicPolygonArea;
+import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
@@ -32,11 +32,11 @@ public class EndOfTheWorldScenario extends AreaScenario {
     private static Logger logger = new EasyMarkableLogger(EndOfTheWorldScenario.class);
 
     // matrix
-    private final ScenarioPolygonArea originArea;
-    private final ScenarioPolygonArea destinationAreaLeft;
-    private final ScenarioPolygonArea destinationAreaBottom;
-    private final ScenarioPolygonArea destinationAreaRight;
-    private final ScenarioPolygonArea destinationAreaTop;
+    private final TypedPolygonArea originArea;
+    private final TypedPolygonArea destinationAreaLeft;
+    private final TypedPolygonArea destinationAreaBottom;
+    private final TypedPolygonArea destinationAreaRight;
+    private final TypedPolygonArea destinationAreaTop;
 
     public EndOfTheWorldScenario(long seed,
                                  SimulationConfig config,
@@ -82,7 +82,7 @@ public class EndOfTheWorldScenario extends AreaScenario {
 
 
         /* define areas for filling node lists */
-        originArea = new ScenarioPolygonArea(new Coordinate[] {
+        originArea = new TypedPolygonArea(new Coordinate[] {
                 bottomLeft,
                 bottomRight,
                 topRight,
@@ -90,7 +90,7 @@ public class EndOfTheWorldScenario extends AreaScenario {
         }, Area.Type.ORIGIN);
         addArea(originArea);
 
-        destinationAreaLeft = new ScenarioPolygonArea(new Coordinate[] {
+        destinationAreaLeft = new TypedPolygonArea(new Coordinate[] {
                 bottomLeft,
                 innerBottomLeft,
                 innerTopLeft,
@@ -98,7 +98,7 @@ public class EndOfTheWorldScenario extends AreaScenario {
         }, Area.Type.DESTINATION);
         addArea(destinationAreaLeft);
 
-        destinationAreaBottom = new ScenarioPolygonArea(new Coordinate[] {
+        destinationAreaBottom = new TypedPolygonArea(new Coordinate[] {
                 bottomLeft,
                 bottomRight,
                 innerBottomRight,
@@ -106,7 +106,7 @@ public class EndOfTheWorldScenario extends AreaScenario {
         }, Area.Type.DESTINATION);
         addArea(destinationAreaBottom);
 
-        destinationAreaRight = new ScenarioPolygonArea(new Coordinate[] {
+        destinationAreaRight = new TypedPolygonArea(new Coordinate[] {
                 innerBottomRight,
                 bottomRight,
                 topRight,
@@ -114,7 +114,7 @@ public class EndOfTheWorldScenario extends AreaScenario {
         }, Area.Type.DESTINATION);
         addArea(destinationAreaRight);
 
-        destinationAreaTop = new ScenarioPolygonArea(new Coordinate[] {
+        destinationAreaTop = new TypedPolygonArea(new Coordinate[] {
                 innerTopLeft,
                 innerTopRight,
                 topRight,

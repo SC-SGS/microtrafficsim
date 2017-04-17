@@ -2,8 +2,9 @@ package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.map.area.polygons.BasicPolygonArea;
+import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
@@ -14,21 +15,21 @@ import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * @author Dominic Parga Cacheiro
  */
-public abstract class AreaScenario extends BasicRandomScenario {
+public class AreaScenario extends BasicRandomScenario {
 
     private static Logger logger = new EasyMarkableLogger(AreaScenario.class);
 
     // matrix
-    private final HashMap<ScenarioPolygonArea, ArrayList<Node>> nodes;
-    private final WheelOfFortune<Node> wheelOfFortune;
+    private final HashMap<TypedPolygonArea, ArrayList<Node>> originNodes;
+    private final HashMap<TypedPolygonArea, ArrayList<Node>> destinationNodes;
+    private final WheelOfFortune<Node> randomOriginSupplier;
+    private final WheelOfFortune<Node> randomDestinationSupplier;
 
     public AreaScenario(long seed,
                         SimulationConfig config,
@@ -56,52 +57,113 @@ public abstract class AreaScenario extends BasicRandomScenario {
         super(random, config, graph, vehicleContainer);
 
         /* prepare building matrix */
-        nodes = new HashMap<>();
-        wheelOfFortune = new BasicWheelOfFortune<>(random);
+        originNodes = new HashMap<>();
+        destinationNodes = new HashMap<>();
+        randomOriginSupplier = new BasicWheelOfFortune<>(random);
+        randomDestinationSupplier = new BasicWheelOfFortune<>(random);
     }
 
-    public ArrayList<Node> get(ScenarioPolygonArea area) {
-        return nodes.get(area);
+
+    public TypedPolygonArea getTotalGraph(Area.Type type) {
+        final Bounds bounds = getGraph().getBounds();
+
+        final Coordinate bottomLeft = new Coordinate( bounds.minlat, bounds.minlon);
+        final Coordinate bottomRight = new Coordinate(bounds.minlat, bounds.maxlon);
+        final Coordinate topRight = new Coordinate(   bounds.maxlat, bounds.maxlon);
+        final Coordinate topLeft = new Coordinate(    bounds.maxlat, bounds.minlon);
+
+
+        /* add areas */
+        return new TypedPolygonArea(new Coordinate[] {
+                bottomLeft,
+                bottomRight,
+                topRight,
+                topLeft
+        }, type);
     }
 
-    public Set<ScenarioPolygonArea> getAreas() {
-        return new HashSet<>(nodes.keySet());
+    public ArrayList<Node> get(TypedPolygonArea area) {
+        if (area.getType() == Area.Type.ORIGIN)
+            return originNodes.get(area);
+        else
+            return destinationNodes.get(area);
     }
+
+    public Set<TypedPolygonArea> getAreas() {
+        HashSet<TypedPolygonArea> areas = new HashSet<>();
+        areas.addAll(originNodes.keySet());
+        areas.addAll(destinationNodes.keySet());
+        return areas;
+    }
+
 
     /**
-     * Adds the given area WITHOUT filling the repective node list.
+     * Adds the given area WITHOUT refilling the respective node list. If you like to, call {@link #refillNodeLists()}
      *
      * @param area
      */
-    public void addArea(ScenarioPolygonArea area) {
-        nodes.computeIfAbsent(area, k -> new ArrayList<>());
+    public void addArea(TypedPolygonArea area) {
+        if (area.getType() == Area.Type.ORIGIN)
+            originNodes.computeIfAbsent(area, k -> new ArrayList<>());
+        else
+            destinationNodes.computeIfAbsent(area, k -> new ArrayList<>());
+    }
+
+    /**
+     * Removes the given area WITHOUT the need of calling {@link #refillNodeLists()}
+     *
+     * @param area
+     */
+    public void removeArea(TypedPolygonArea area) {
+        if (area.getType() == Area.Type.ORIGIN)
+            originNodes.remove(area).forEach(randomOriginSupplier::decWeight);
+        else
+            destinationNodes.remove(area).forEach(randomDestinationSupplier::decWeight);
     }
 
     public void refillNodeLists() {
-        nodes.values().forEach(ArrayList::clear);
+        originNodes.values().forEach(ArrayList::clear);
+        destinationNodes.values().forEach(ArrayList::clear);
+
+        if (originNodes.isEmpty())
+            originNodes.put(getTotalGraph(Area.Type.ORIGIN), new ArrayList<>());
+        if (destinationNodes.isEmpty())
+            destinationNodes.put(getTotalGraph(Area.Type.DESTINATION), new ArrayList<>());
 
         for (Node node : getGraph().getNodes()) {
-            nodes.keySet().stream()
+            originNodes.keySet().stream()
                     .filter(area -> area.contains(node))
                     .forEach(area -> {
-                        nodes.get(area).add(node);
-                        wheelOfFortune.incWeight(node);
+                        originNodes.get(area).add(node);
+                        randomOriginSupplier.incWeight(node);
+                    });
+            destinationNodes.keySet().stream()
+                    .filter(area -> area.contains(node))
+                    .forEach(area -> {
+                        destinationNodes.get(area).add(node);
+                        randomDestinationSupplier.incWeight(node);
                     });
         }
+
+        fillMatrix();
     }
 
 
-    public class ScenarioPolygonArea extends BasicPolygonArea {
+    @Override
+    protected void fillMatrix() {
+        logger.info("BUILDING ODMatrix started");
 
-        public Area.Type type;
+        randomOriginSupplier.reset();
+        randomDestinationSupplier.reset();
+        odMatrix.clear();
 
-        public ScenarioPolygonArea(Coordinate[] coordinates, Area.Type type) {
-            super(coordinates);
-            this.type = type;
+
+        for (int i = 0; i < getConfig().maxVehicleCount; i++) {
+            Node origin = randomOriginSupplier.nextObject();
+            Node destination = randomDestinationSupplier.nextObject();
+            odMatrix.inc(origin, destination);
         }
 
-        public Area.Type getType() {
-            return type;
-        }
+        logger.info("BUILDING ODMatrix finished");
     }
 }

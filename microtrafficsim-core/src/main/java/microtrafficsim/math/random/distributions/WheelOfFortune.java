@@ -1,5 +1,6 @@
 package microtrafficsim.math.random.distributions;
 
+import microtrafficsim.math.random.Seeded;
 import microtrafficsim.utils.Resettable;
 
 import java.util.Iterator;
@@ -19,7 +20,7 @@ import java.util.Iterator;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface WheelOfFortune<T> extends Resettable {
+public interface WheelOfFortune<T> extends Resettable, Seeded {
 
     /**
      * Adds the given object with the given weight to this wheel. If the object is already added, nothing happens. To
@@ -48,7 +49,7 @@ public interface WheelOfFortune<T> extends Resettable {
     void incWeight(T t);
 
     /**
-     * Decrements the weight for the given object (minimum is 0). Does add the object if not contained.
+     * Decrements the weight for the given object (minimum is 0). Does nothing if the element is not contained.
      *
      * @param t The weight of this object should be decreased by 1.
      */
@@ -60,6 +61,20 @@ public interface WheelOfFortune<T> extends Resettable {
      * @param t Object that should be removed.
      */
     void remove(T t);
+
+    /**
+     * Removes all elements from this wheel but does not reset it.
+     */
+    void clear();
+
+    /**
+     * @return Number of elements stored in this wheel
+     */
+    int size();
+
+    default boolean isEmpty() {
+        return size() == 0;
+    }
 
     /**
      * @return One object in this wheel. How the probability for an object is calculated is described in the class
