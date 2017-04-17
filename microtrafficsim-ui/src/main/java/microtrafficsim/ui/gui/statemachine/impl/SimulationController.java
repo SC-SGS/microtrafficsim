@@ -203,7 +203,7 @@ public class SimulationController implements GUIController {
         /* overlays */
         scenarioAreaOverlay = new ScenarioAreaOverlay();
         SwingUtilities.invokeLater(() -> {
-            scenarioAreaOverlay.setEnabled(false);
+            scenarioAreaOverlay.setEnabled(false, false, false);
         });
         mapviewer.addOverlay(0, scenarioAreaOverlay);
         mapviewer.addOverlay(1, overlay);
@@ -720,7 +720,7 @@ public class SimulationController implements GUIController {
             simulation.runOneStep();
         } catch (InterruptedException ignored) {
             logger.info("Scenario building interrupted by user");
-            scenarioAreaOverlay.setEnabled(true);
+            scenarioAreaOverlay.setEnabled(true, true, true);
         }
 
 
@@ -734,7 +734,7 @@ public class SimulationController implements GUIController {
         if(config.scenario.showAreasWhileSimulating)
             scenarioAreaOverlay.setEnabled(true, false, false);
         else
-            scenarioAreaOverlay.setEnabled(false);
+            scenarioAreaOverlay.setEnabled(false, false, false);
     }
 
     private void askUserToCancelScenarioBuilding() {

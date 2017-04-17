@@ -140,13 +140,14 @@ public class ScenarioAreaOverlay implements Overlay {
     }
 
     /**
-     * Enables (disables) the ui, its events and sets the properties-frame visible (not visible).
+     * Enables (disables) the ui and sets the properties-frame visible (not visible).
      *
      * @param enabled set to {@code true} to enable this layer.
      */
     @Override
     public void setEnabled(boolean enabled) {
-        setEnabled(enabled, enabled, enabled);
+        ui.setEnabled(enabled);
+        properties.setVisible(enabled);
     }
 
     public void setEnabled(boolean uiEnabled, boolean eventsEnabled, boolean propertiesVisible) {
