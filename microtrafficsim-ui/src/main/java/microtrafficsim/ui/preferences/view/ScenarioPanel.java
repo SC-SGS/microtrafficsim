@@ -15,6 +15,7 @@ public class ScenarioPanel extends PreferencesPanel {
 
     private final ScenarioModel model;
     private final JCheckBox cbShowAreasWhileSimulating;
+    private final JCheckBox cbNodesAreWeightedUniformly;
     private final JComboBox<String> cbScenarioChoice;
 
     public ScenarioPanel() {
@@ -22,6 +23,7 @@ public class ScenarioPanel extends PreferencesPanel {
         model = new ScenarioModel();
 
         cbShowAreasWhileSimulating = new JCheckBox("show areas while simulating");
+        cbNodesAreWeightedUniformly = new JCheckBox("nodes are weighted uniformly");
         cbScenarioChoice = new JComboBox<>();
 
         create();
@@ -34,48 +36,75 @@ public class ScenarioPanel extends PreferencesPanel {
 
         setLayout(new GridBagLayout());
         Insets insets = new Insets(0, 0, 0, 10);
-
+        int row = 0;
+        GridBagConstraints constraints;
+        JPanel gap;
 
         /* row 0 column 0 */
         cbShowAreasWhileSimulating.setFont(PreferencesFrame.TEXT_FONT);
 
-        GridBagConstraints constraints = new GridBagConstraints();
+        constraints = new GridBagConstraints();
         constraints.gridx  = 0;
-        constraints.gridy  = 0;
+        constraints.gridy  = row;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = insets;
         add(cbShowAreasWhileSimulating, constraints);
 
 
         // row 0 column 1 - gap panel
-        JPanel gap = new JPanel();
+        gap = new JPanel();
 
         constraints = new GridBagConstraints();
         constraints.gridx   = 1;
-        constraints.gridy   = 0;
+        constraints.gridy   = row;
         constraints.fill    = GridBagConstraints.HORIZONTAL;
         constraints.weightx = 1;
         constraints.anchor = GridBagConstraints.WEST;
         add(gap, constraints);
 
 
+        row++;
         /* row 1 column 0 */
+        cbNodesAreWeightedUniformly.setFont(PreferencesFrame.TEXT_FONT);
+
+        constraints = new GridBagConstraints();
+        constraints.gridx  = 0;
+        constraints.gridy  = row;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = insets;
+        add(cbNodesAreWeightedUniformly, constraints);
+
+
+        // row 0 column 1 - gap panel
+        gap = new JPanel();
+
+        constraints = new GridBagConstraints();
+        constraints.gridx   = 1;
+        constraints.gridy   = row;
+        constraints.fill    = GridBagConstraints.HORIZONTAL;
+        constraints.weightx = 1;
+        constraints.anchor = GridBagConstraints.WEST;
+        add(gap, constraints);
+
+
+        row++;
+        /* row 2 column 0 */
         cbScenarioChoice.setFont(PreferencesFrame.TEXT_FONT);
 
         constraints = new GridBagConstraints();
         constraints.gridx  = 0;
-        constraints.gridy  = 1;
+        constraints.gridy  = row;
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = insets;
         add(cbScenarioChoice, constraints);
 
 
-        // row 1 column 1 - gap panel
+        // row 2 column 1 - gap panel
         gap = new JPanel();
 
         constraints = new GridBagConstraints();
         constraints.gridx   = 1;
-        constraints.gridy   = 1;
+        constraints.gridy   = row;
         constraints.fill    = GridBagConstraints.HORIZONTAL;
         constraints.weightx = 1;
         constraints.anchor = GridBagConstraints.WEST;
@@ -91,6 +120,7 @@ public class ScenarioPanel extends PreferencesPanel {
     @Override
     public void setSettings(SimulationConfig config) {
         cbShowAreasWhileSimulating.setSelected(config.scenario.showAreasWhileSimulating);
+        cbNodesAreWeightedUniformly.setSelected(config.scenario.nodesAreWeightedUniformly);
 
         /* update model */
         model.clearAllScenarios();
@@ -108,6 +138,8 @@ public class ScenarioPanel extends PreferencesPanel {
         SimulationConfig config = new SimulationConfig();
 
         config.scenario.showAreasWhileSimulating = cbShowAreasWhileSimulating.isSelected();
+        config.scenario.nodesAreWeightedUniformly = cbNodesAreWeightedUniformly.isSelected();
+
         model.getScenarios().forEach(config.scenario.classes::add);
         config.scenario.selectedClass = model.get(cbScenarioChoice.getSelectedIndex());
 
@@ -119,8 +151,9 @@ public class ScenarioPanel extends PreferencesPanel {
         enabled = id.isEnabled() && enabled;
 
         switch (id) {
-            case showAreasWhileSimulating: cbShowAreasWhileSimulating.setEnabled(enabled); break;
-            case scenarioSelection:        cbScenarioChoice.setEnabled(enabled);           break;
+            case showAreasWhileSimulating:  cbShowAreasWhileSimulating.setEnabled(enabled); break;
+            case nodesAreWeightedUniformly: cbNodesAreWeightedUniformly.setEnabled(enabled);
+            case scenarioSelection:         cbScenarioChoice.setEnabled(enabled);           break;
         }
     }
 }

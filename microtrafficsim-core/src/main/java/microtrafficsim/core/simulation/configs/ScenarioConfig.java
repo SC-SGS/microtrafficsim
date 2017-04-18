@@ -14,6 +14,7 @@ import java.util.ArrayList;
  */
 public final class ScenarioConfig {
     public boolean showAreasWhileSimulating;
+    public boolean nodesAreWeightedUniformly;
     public final ArrayList<Class<? extends Scenario>> classes;
     public Class<? extends Scenario> selectedClass;
 
@@ -30,6 +31,7 @@ public final class ScenarioConfig {
      */
     public void setup() {
         showAreasWhileSimulating = false;
+        nodesAreWeightedUniformly = true;
     }
 
     /**
@@ -39,6 +41,7 @@ public final class ScenarioConfig {
      */
     public void update(ScenarioConfig config) {
         showAreasWhileSimulating = config.showAreasWhileSimulating;
+        nodesAreWeightedUniformly = config.nodesAreWeightedUniformly;
 
         classes.clear();
         classes.addAll(config.classes);

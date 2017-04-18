@@ -12,6 +12,7 @@ public enum PrefElement {
     metersPerCell(false),
     /* scenario */
     showAreasWhileSimulating(true),
+    nodesAreWeightedUniformly(true),
     scenarioSelection(true),
     // crossing logic
     edgePriority(true),

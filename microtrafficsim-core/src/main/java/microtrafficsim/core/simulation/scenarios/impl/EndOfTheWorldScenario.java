@@ -14,10 +14,6 @@ import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
 /**
  * <p>
  * Defines one origin and one destination field around the whole graph using its latitude and longitude borders.
@@ -32,11 +28,7 @@ public class EndOfTheWorldScenario extends AreaScenario {
     private static Logger logger = new EasyMarkableLogger(EndOfTheWorldScenario.class);
 
     // matrix
-    private final TypedPolygonArea originArea;
-    private final TypedPolygonArea destinationAreaLeft;
-    private final TypedPolygonArea destinationAreaBottom;
-    private final TypedPolygonArea destinationAreaRight;
-    private final TypedPolygonArea destinationAreaTop;
+    private final TypedPolygonArea[] destinationAreas;
 
     public EndOfTheWorldScenario(long seed,
                                  SimulationConfig config,
@@ -62,71 +54,126 @@ public class EndOfTheWorldScenario extends AreaScenario {
                                  Graph graph,
                                  VehicleContainer vehicleContainer) {
         super(random, config, graph, vehicleContainer);
+        destinationAreas = new TypedPolygonArea[8];
 
 
         /* helping variables */
         final Bounds bounds = graph.getBounds();
-
-        final Coordinate bottomLeft = new Coordinate(   bounds.minlat, bounds.minlon);
-        final Coordinate bottomRight = new Coordinate(  bounds.minlat, bounds.maxlon);
-        final Coordinate topRight = new Coordinate(     bounds.maxlat, bounds.maxlon);
-        final Coordinate topLeft = new Coordinate(      bounds.maxlat, bounds.minlon);
-
+        double halfLat = (bounds.maxlat - bounds.minlat) / 2;
+        double halfLon = (bounds.maxlon - bounds.minlon) / 2;
         double latLength = Math.min(0.01f, 0.1f * (bounds.maxlat - bounds.minlat));
         double lonLength = Math.min(0.01f, 0.1f * (bounds.maxlon - bounds.minlon));
 
-        final Coordinate innerBottomLeft = new Coordinate(  bounds.minlat + latLength, bounds.minlon + lonLength);
-        final Coordinate innerBottomRight = new Coordinate( bounds.minlat + latLength, bounds.maxlon - lonLength);
-        final Coordinate innerTopRight = new Coordinate(    bounds.maxlat - latLength, bounds.maxlon - lonLength);
-        final Coordinate innerTopLeft = new Coordinate(     bounds.maxlat - latLength, bounds.minlon + lonLength);
+
+        final Coordinate bottomLeft  = new Coordinate(bounds.minlat, bounds.minlon);
+        final Coordinate bottomRight = new Coordinate(bounds.minlat, bounds.maxlon);
+        final Coordinate topRight    = new Coordinate(bounds.maxlat, bounds.maxlon);
+        final Coordinate topLeft     = new Coordinate(bounds.maxlat, bounds.minlon);
+
+        final Coordinate bottomMid = new Coordinate(bounds.minlat, bounds.minlon + halfLon);
+        final Coordinate rightMid  = new Coordinate(bounds.minlat + halfLat, bounds.maxlon);
+        final Coordinate topMid    = new Coordinate(bounds.maxlat, bounds.minlon + halfLon);
+        final Coordinate leftMid   = new Coordinate(bounds.minlat + halfLat, bounds.minlon);
+
+        final Coordinate innerBottomLeft  = new Coordinate(bounds.minlat + latLength, bounds.minlon + lonLength);
+        final Coordinate innerBottomRight = new Coordinate(bounds.minlat + latLength, bounds.maxlon - lonLength);
+        final Coordinate innerTopRight    = new Coordinate(bounds.maxlat - latLength, bounds.maxlon - lonLength);
+        final Coordinate innerTopLeft     = new Coordinate(bounds.maxlat - latLength, bounds.minlon + lonLength);
+
+        final Coordinate innerBottomMid = new Coordinate(bounds.minlat + latLength, bounds.minlon + halfLon);
+        final Coordinate innerRightMid  = new Coordinate(bounds.minlat + halfLat, bounds.maxlon - lonLength);
+        final Coordinate innerTopMid    = new Coordinate(bounds.maxlat - latLength, bounds.minlon + halfLon);
+        final Coordinate innerLeftMid   = new Coordinate(bounds.minlat + halfLat, bounds.minlon + lonLength);
 
 
         /* define areas for filling node lists */
-        originArea = new TypedPolygonArea(new Coordinate[] {
-                bottomLeft,
-                bottomRight,
-                topRight,
-                topLeft
-        }, Area.Type.ORIGIN);
-        addArea(originArea);
+        addArea(getTotalGraph(Area.Type.ORIGIN));
 
-        destinationAreaLeft = new TypedPolygonArea(new Coordinate[] {
-                bottomLeft,
-                innerBottomLeft,
-                innerTopLeft,
-                topLeft
-        }, Area.Type.DESTINATION);
-        addArea(destinationAreaLeft);
+        setDestinationArea(
+                Orientation.BOTTOM,
+                Orientation.LEFT,
+                new TypedPolygonArea(new Coordinate[] {
+                        bottomLeft,
+                        bottomMid,
+                        innerBottomMid,
+                        innerBottomLeft
+        }, Area.Type.DESTINATION));
 
-        destinationAreaBottom = new TypedPolygonArea(new Coordinate[] {
-                bottomLeft,
-                bottomRight,
-                innerBottomRight,
-                innerBottomLeft
-        }, Area.Type.DESTINATION);
-        addArea(destinationAreaBottom);
+        setDestinationArea(
+                Orientation.BOTTOM,
+                Orientation.RIGHT,
+                new TypedPolygonArea(new Coordinate[] {
+                        bottomMid,
+                        bottomRight,
+                        innerBottomRight,
+                        innerBottomMid
+                }, Area.Type.DESTINATION));
 
-        destinationAreaRight = new TypedPolygonArea(new Coordinate[] {
-                innerBottomRight,
-                bottomRight,
-                topRight,
-                innerTopRight
-        }, Area.Type.DESTINATION);
-        addArea(destinationAreaRight);
+        setDestinationArea(
+                Orientation.RIGHT,
+                Orientation.BOTTOM,
+                new TypedPolygonArea(new Coordinate[] {
+                        innerBottomRight,
+                        bottomRight,
+                        rightMid,
+                        innerRightMid
+                }, Area.Type.DESTINATION));
 
-        destinationAreaTop = new TypedPolygonArea(new Coordinate[] {
-                innerTopLeft,
-                innerTopRight,
-                topRight,
-                topLeft
-        }, Area.Type.DESTINATION);
-        addArea(destinationAreaTop);
+        setDestinationArea(
+                Orientation.RIGHT,
+                Orientation.TOP,
+                new TypedPolygonArea(new Coordinate[] {
+                        innerRightMid,
+                        rightMid,
+                        topRight,
+                        innerTopRight
+                }, Area.Type.DESTINATION));
+
+        setDestinationArea(
+                Orientation.TOP,
+                Orientation.RIGHT,
+                new TypedPolygonArea(new Coordinate[] {
+                        innerTopMid,
+                        innerTopRight,
+                        topRight,
+                        topMid
+                }, Area.Type.DESTINATION));
+
+        setDestinationArea(
+                Orientation.TOP,
+                Orientation.LEFT,
+                new TypedPolygonArea(new Coordinate[] {
+                        innerTopLeft,
+                        innerTopMid,
+                        topMid,
+                        topLeft
+                }, Area.Type.DESTINATION));
+
+        setDestinationArea(
+                Orientation.LEFT,
+                Orientation.TOP,
+                new TypedPolygonArea(new Coordinate[] {
+                        leftMid,
+                        innerLeftMid,
+                        innerTopLeft,
+                        topLeft
+                }, Area.Type.DESTINATION));
+
+        setDestinationArea(
+                Orientation.LEFT,
+                Orientation.BOTTOM,
+                new TypedPolygonArea(new Coordinate[] {
+                        bottomLeft,
+                        innerBottomLeft,
+                        innerLeftMid,
+                        leftMid
+                }, Area.Type.DESTINATION));
+
+        for (TypedPolygonArea area : destinationAreas)
+            addArea(area);
 
 
-        // fill node lists
         refillNodeLists();
-
-        /* init */
         fillMatrix();
     }
 
@@ -143,13 +190,13 @@ public class EndOfTheWorldScenario extends AreaScenario {
         // note: the directions used in this method's comments are referring to Europe (so the northern hemisphere)
         logger.info("BUILDING ODMatrix started");
 
-        Random random = new Random(getSeed());
-        Function<List<Node>, Node> getRandomNode = nodes -> nodes.get(random.nextInt(nodes.size()));
-
+        /* prepare matrix filling */
+        resetRandomNodeSupplier();
         odMatrix.clear();
-        // build matrix
+
+        // fill matrix
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
-            Node origin = getRandomNode.apply(get(originArea));
+            Node origin = getRandomOriginNode();
 
             // get end node depending on start node's position
             Graph graph = getGraph();
@@ -162,33 +209,86 @@ public class EndOfTheWorldScenario extends AreaScenario {
             Coordinate latProjection = new Coordinate(0, originCoord.lon);
             Coordinate lonProjection = new Coordinate(originCoord.lat, 0);
 
-            ArrayList<Node> latNodes, lonNodes;
+            Orientation latOrientation, lonOrientation;
 
             if (center.lat - originCoord.lat > 0) {
                 // origin is below from center
                 latProjection.lat = bounds.minlat;
-                latNodes          = get(destinationAreaBottom);
+                latOrientation = Orientation.BOTTOM;
             } else {
                 // origin is over center
                 latProjection.lat = bounds.maxlat;
-                latNodes          = get(destinationAreaTop);
+                latOrientation = Orientation.TOP;
             }
             if (center.lon - originCoord.lon > 0) {
                 // origin is left from center
                 lonProjection.lon = bounds.minlon;
-                lonNodes          = get(destinationAreaLeft);
+                lonOrientation = Orientation.LEFT;
             } else {
                 // origin is right from center
                 lonProjection.lon = bounds.maxlon;
-                lonNodes          = get(destinationAreaRight);
+                lonOrientation = Orientation.RIGHT;
             }
 
             double latDistance = HaversineDistanceCalculator.getDistance(originCoord, latProjection);
             double lonDistance = HaversineDistanceCalculator.getDistance(originCoord, lonProjection);
-            Node destination = latDistance > lonDistance ? getRandomNode.apply(lonNodes) : getRandomNode.apply(latNodes);
+            Node destination;
+            if (latDistance > lonDistance)
+                destination = getRandomNode(getDestinationArea(lonOrientation, latOrientation));
+            else
+                destination = getRandomNode(getDestinationArea(latOrientation, lonOrientation));
             odMatrix.inc(origin, destination);
         }
 
         logger.info("BUILDING ODMatrix finished");
+    }
+
+
+    private TypedPolygonArea getDestinationArea(Orientation major, Orientation minor) {
+        return destinationAreas[getDestinationAreaIndex(major, minor)];
+    }
+
+    private void setDestinationArea(Orientation major, Orientation minor, TypedPolygonArea area) {
+        destinationAreas[getDestinationAreaIndex(major, minor)] = area;
+    }
+
+    private int getDestinationAreaIndex(Orientation major, Orientation minor) {
+        switch (major) {
+            case BOTTOM:
+                if (minor == Orientation.LEFT)
+                    return 0;
+                else if (minor == Orientation.RIGHT)
+                    return 1;
+                else
+                    return -1;
+            case RIGHT:
+                if (minor == Orientation.BOTTOM)
+                    return 2;
+                else if (minor == Orientation.TOP)
+                    return 3;
+                else
+                    return -1;
+            case TOP:
+                if (minor == Orientation.RIGHT)
+                    return 4;
+                else if (minor == Orientation.LEFT)
+                    return 5;
+                else
+                    return -1;
+            case LEFT:
+                if (minor == Orientation.TOP)
+                    return 6;
+                else if (minor == Orientation.BOTTOM)
+                    return 7;
+                else
+                    return -1;
+            default:
+                return -1;
+        }
+    }
+
+
+    private enum Orientation {
+        LEFT, BOTTOM, RIGHT, TOP
     }
 }

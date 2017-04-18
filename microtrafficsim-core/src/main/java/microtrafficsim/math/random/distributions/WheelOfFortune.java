@@ -77,8 +77,17 @@ public interface WheelOfFortune<T> extends Resettable, Seeded {
     }
 
     /**
+     * Calls {@link #nextObject(boolean) nextObject(true)}
+     */
+    default T nextObject() {
+        return nextObject(false);
+    }
+
+    /**
+     * @param weighted If false, all elements in this wheel are weighted equally for the use of this method
+     *
      * @return One object in this wheel. How the probability for an object is calculated is described in the class
      * documentation.
      */
-    T nextObject();
+    T nextObject(boolean weightedUniformly);
 }

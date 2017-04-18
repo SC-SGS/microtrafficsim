@@ -80,9 +80,6 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
 
     private void create() {
 
-        setMinimumSize(new Dimension(200, 200));
-        setMaximumSize(new Dimension(Integer.MAX_VALUE, 630));
-
         center.add(border(generalPanel));
         center.add(border(scenarioPanel));
         center.add(border(crossingLogicPanel));
@@ -112,6 +109,7 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
 
 
         /* finish and return */
+        setPreferredSize(new Dimension(550, 650));
         getRootPane().revalidate();
         pack();
     }
@@ -209,6 +207,7 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
 
             // scenario
             case showAreasWhileSimulating:
+            case nodesAreWeightedUniformly:
             case scenarioSelection:
                 scenarioPanel.setEnabled(id, enabled);
                 break;

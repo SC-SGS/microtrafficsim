@@ -1,9 +1,11 @@
 package microtrafficsim.math.random.distributions.impl;
 
 import microtrafficsim.math.random.distributions.WheelOfFortune;
+import microtrafficsim.utils.collections.skiplist.PrioritySkipList;
+import microtrafficsim.utils.collections.skiplist.PrioritySkipListSet;
+import microtrafficsim.utils.collections.skiplist.SkipList;
 
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * Basic implementation using a {@link HashMap}. For the random number generator used for {@link #nextObject()},
@@ -14,6 +16,7 @@ import java.util.Iterator;
 public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
 
     private Random random;
+    private SkipList<T> elements;
     private HashMap<T, Integer> fields;
     private int n;
 
@@ -23,6 +26,7 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
 
     public BasicWheelOfFortune(Random random) {
         this.random = random;
+        elements    = new PrioritySkipListSet<>(Comparator.comparingLong(Object::hashCode));
         fields      = new HashMap<>();
         n           = 0;
     }
@@ -33,6 +37,7 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
      */
     public void add(T t, int weight) {
         if (!fields.containsKey(t) && weight > 0) {
+            elements.add(t);
             fields.put(t, weight);
             n += weight;
         }
@@ -50,18 +55,25 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
         if (fields.containsKey(t)) {
             if (weight == 0)
                 remove(t);
-            else
+            else {
+                elements.remove(t);
+                elements.add(t);
                 n += weight - fields.put(t, weight);
+            }
         }
     }
 
     @Override
     public void incWeight(T t) {
         Integer weight = fields.get(t);
-        if (weight != null)
+        if (weight != null) {
+            elements.remove(t);
+            elements.add(t);
             fields.put(t, weight + 1);
-        else
+        } else {
+            elements.add(t);
             fields.put(t, 1);
+        }
         n++;
     }
 
@@ -69,12 +81,12 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
     public void decWeight(T t) {
         Integer weight = fields.get(t);
         if (weight != null) {
-            if (--weight > 0)
+            if (--weight > 0) {
+                elements.remove(t);
+                elements.add(t);
                 fields.put(t, weight);
-            else
-                fields.remove(t);
-
-            n--;
+                n--;
+            } else remove(t);
         }
     }
 
@@ -83,11 +95,13 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
      */
     @Override
     public void remove(T t) {
+        elements.remove(t);
         n -= fields.remove(t);
     }
 
     @Override
     public void clear() {
+        elements.clear();
         fields.clear();
         n = 0;
     }
@@ -98,23 +112,27 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
     }
 
     /**
-     * The runtime of this method is O(n) where n is the number of elements in this wheel.
+     * The runtime of this method is O(n) where n is the number of elements in this wheel. Unweighted, the runtime is
+     * in O(log(n)) due to {@link SkipList}.
      */
     @Override
-    public T nextObject() {
+    public T nextObject(boolean weightedUniformly) {
+        if (weightedUniformly)
+            return elements.get(random.nextInt(size()));
+        else {
+            if (n <= 0) return null;
 
-        if (n <= 0) return null;
+            int i = random.nextInt(n);
+            Iterator<T> objects = elements.iterator();
+            T lastObj = null;
 
-        int         i       = random.nextInt(n);
-        Iterator<T> objects = fields.keySet().iterator();
-        T           lastObj = null;
+            while (i >= 0) {
+                lastObj = objects.next();
+                i -= fields.get(lastObj);
+            }
 
-        while (i >= 0) {
-            lastObj = objects.next();
-            i -= fields.get(lastObj);
+            return lastObj;
         }
-
-        return lastObj;
     }
 
 

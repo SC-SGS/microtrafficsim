@@ -407,9 +407,10 @@ public class SimulationController implements GUIController {
                                 options,
                                 options[1]);
                         /* if yes: remove */
-                        if (choice == JOptionPane.YES_OPTION)
+                        if (choice == JOptionPane.YES_OPTION) {
+                            pauseSim();
                             simulation.removeCurrentScenario();
-                        else
+                        } else
                             enableScenarioAreaOverlay = false;
                     }
 
@@ -780,15 +781,15 @@ public class SimulationController implements GUIController {
         boolean hasScenario    = simulation.getScenario() != null;
 
         /* general */
-        preferences.setEnabled(PrefElement.sliderSpeedup,         newSim || hasScenario);
-        preferences.setEnabled(PrefElement.maxVehicleCount,       newSim);
-        preferences.setEnabled(PrefElement.seed,                  newSim);
-        preferences.setEnabled(PrefElement.metersPerCell,         newSim);
+        preferences.setEnabled(PrefElement.sliderSpeedup,   true);
+        preferences.setEnabled(PrefElement.maxVehicleCount, newSim);
+        preferences.setEnabled(PrefElement.seed,            newSim);
+        preferences.setEnabled(PrefElement.metersPerCell,   newSim);
 
         /* scenario */
-        // todo
-        preferences.setEnabled(PrefElement.showAreasWhileSimulating, true);
-        preferences.setEnabled(PrefElement.scenarioSelection,     newSim);
+        preferences.setEnabled(PrefElement.showAreasWhileSimulating,  true);
+        preferences.setEnabled(PrefElement.nodesAreWeightedUniformly, newSim);
+        preferences.setEnabled(PrefElement.scenarioSelection,         newSim);
 
         /* crossing logic */
         preferences.setEnabled(PrefElement.edgePriority,          newSim);

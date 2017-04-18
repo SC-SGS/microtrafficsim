@@ -30,6 +30,7 @@ public class AreaScenario extends BasicRandomScenario {
     private final HashMap<TypedPolygonArea, ArrayList<Node>> destinationNodes;
     private final WheelOfFortune<Node> randomOriginSupplier;
     private final WheelOfFortune<Node> randomDestinationSupplier;
+    private final Random nodeRandom;
 
     public AreaScenario(long seed,
                         SimulationConfig config,
@@ -55,6 +56,7 @@ public class AreaScenario extends BasicRandomScenario {
                         Graph graph,
                         VehicleContainer vehicleContainer) {
         super(random, config, graph, vehicleContainer);
+        nodeRandom = new Random(random.getSeed());
 
         /* prepare building matrix */
         originNodes = new HashMap<>();
@@ -63,6 +65,27 @@ public class AreaScenario extends BasicRandomScenario {
         randomDestinationSupplier = new BasicWheelOfFortune<>(random);
     }
 
+
+    protected void resetRandomNodeSupplier() {
+        nodeRandom.reset();
+        randomOriginSupplier.reset();
+        randomDestinationSupplier.reset();
+    }
+
+    protected Node getRandomOriginNode() {
+        return randomOriginSupplier.nextObject();
+    }
+
+    protected Node getRandomDestinationNode() {
+        return randomDestinationSupplier.nextObject();
+    }
+
+    protected Node getRandomNode(TypedPolygonArea area) {
+        ArrayList<Node> nodes = area.getType() == Area.Type.ORIGIN
+                ? originNodes.get(area)
+                : destinationNodes.get(area);
+        return nodes.get(nodeRandom.nextInt(nodes.size()));
+    }
 
     public TypedPolygonArea getTotalGraph(Area.Type type) {
         final Bounds bounds = getGraph().getBounds();
@@ -80,13 +103,6 @@ public class AreaScenario extends BasicRandomScenario {
                 topRight,
                 topLeft
         }, type);
-    }
-
-    public ArrayList<Node> get(TypedPolygonArea area) {
-        if (area.getType() == Area.Type.ORIGIN)
-            return originNodes.get(area);
-        else
-            return destinationNodes.get(area);
     }
 
     public Set<TypedPolygonArea> getAreas() {
@@ -120,6 +136,7 @@ public class AreaScenario extends BasicRandomScenario {
         else
             destinationNodes.remove(area).forEach(randomDestinationSupplier::decWeight);
     }
+
 
     public void refillNodeLists() {
         originNodes.values().forEach(ArrayList::clear);
@@ -159,8 +176,9 @@ public class AreaScenario extends BasicRandomScenario {
 
 
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
-            Node origin = randomOriginSupplier.nextObject();
-            Node destination = randomDestinationSupplier.nextObject();
+            boolean weightedUniformly = getConfig().scenario.nodesAreWeightedUniformly;
+            Node origin = randomOriginSupplier.nextObject(weightedUniformly);
+            Node destination = randomDestinationSupplier.nextObject(weightedUniformly);
             odMatrix.inc(origin, destination);
         }
 
