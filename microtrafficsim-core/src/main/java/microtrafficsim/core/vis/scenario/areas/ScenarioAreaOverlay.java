@@ -9,7 +9,6 @@ import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.glui.Component;
 import microtrafficsim.core.vis.glui.DirectBatchUIOverlay;
 import microtrafficsim.core.vis.glui.events.MouseEvent;
-import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.scenario.areas.ui.*;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Rect2d;
