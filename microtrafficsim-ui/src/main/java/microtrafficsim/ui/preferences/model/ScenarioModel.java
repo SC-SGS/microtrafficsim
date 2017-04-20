@@ -1,6 +1,7 @@
 package microtrafficsim.ui.preferences.model;
 
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.utils.Descriptor;
 
 import java.util.ArrayList;
 
@@ -9,7 +10,7 @@ import java.util.ArrayList;
  */
 public class ScenarioModel extends PreferencesModel {
 
-    private final ArrayList<Class<? extends Scenario>> scenarios;
+    private final ArrayList<Descriptor<Class<? extends Scenario>>> scenarios;
 
     public ScenarioModel() {
         super("Scenario");
@@ -22,15 +23,15 @@ public class ScenarioModel extends PreferencesModel {
         scenarios.clear();
     }
 
-    public void addScenario(Class<? extends Scenario> scenario) {
+    public void addScenario(Descriptor<Class<? extends Scenario>> scenario) {
         scenarios.add(scenario);
     }
 
-    public ArrayList<Class<? extends Scenario>> getScenarios() {
+    public ArrayList<Descriptor<Class<? extends Scenario>>> getScenarios() {
         return new ArrayList<>(scenarios);
     }
 
-    public Class<? extends Scenario> get(int index) {
+    public Descriptor<Class<? extends Scenario>> get(int index) {
         return scenarios.get(index);
     }
 }

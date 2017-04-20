@@ -1,11 +1,12 @@
 package microtrafficsim.math.random.distributions.impl;
 
 import microtrafficsim.math.random.distributions.WheelOfFortune;
-import microtrafficsim.utils.collections.skiplist.PrioritySkipList;
 import microtrafficsim.utils.collections.skiplist.PrioritySkipListSet;
 import microtrafficsim.utils.collections.skiplist.SkipList;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Basic implementation using a {@link HashMap}. For the random number generator used for {@link #nextObject()},

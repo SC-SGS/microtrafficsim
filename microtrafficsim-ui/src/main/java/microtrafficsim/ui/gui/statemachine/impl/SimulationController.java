@@ -689,17 +689,17 @@ public class SimulationController implements GUIController {
 
         /* create and prepare new scenario */
         AreaScenario scenario;
-        if (config.scenario.selectedClass == AreaScenario.class) {
+        if (config.scenario.selectedClass.getObj() == AreaScenario.class) {
             scenario = new AreaScenario(config.seed, config, streetgraph);
             /* get areas from overlay */
             scenarioAreaOverlay.getAreas().stream()
                     .map(area -> area.getUnprojectedArea(mapviewer.getProjection()))
                     .forEach(scenario::addArea);
             scenario.refillNodeLists();
-        } else if (config.scenario.selectedClass == EndOfTheWorldScenario.class) {
+        } else if (config.scenario.selectedClass.getObj() == EndOfTheWorldScenario.class) {
             scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
         } else {
-            if (config.scenario.selectedClass != RandomRouteScenario.class)
+            if (config.scenario.selectedClass.getObj() != RandomRouteScenario.class)
                 logger.error("Chosen scenario could not be found. " + RandomRouteScenario.class.getSimpleName() + " is used instead.");
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);
         }

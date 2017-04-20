@@ -27,14 +27,20 @@ public class MTSMenuLogic extends JMenu {
         itemRunOneStep = new JMenuItem("Run one step");
         add(itemRunOneStep);
 
+        addSeparator();
+
         itemEditSim = new JMenuItem("Edit simulation parameters...");
         add(itemEditSim);
 
         itemNewSim = new JMenuItem("New simulation...");
         add(itemNewSim);
 
+        addSeparator();
+
         itemChangeAreaSelection = new JMenuItem("Change selected areas...");
         add(itemChangeAreaSelection);
+
+        // todo add defined scenario areas to the map
     }
 
     public void simIsPaused(boolean isPaused) {

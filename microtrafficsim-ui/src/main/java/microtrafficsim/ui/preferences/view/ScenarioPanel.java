@@ -4,6 +4,7 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.model.ScenarioModel;
+import microtrafficsim.utils.Descriptor;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +32,7 @@ public class ScenarioPanel extends PreferencesPanel {
 
     private void create() {
         model.getScenarios().stream()
-                .map(Class::getSimpleName)
+                .map(Descriptor::getDescription)
                 .forEach(cbScenarioChoice::addItem);
 
         setLayout(new GridBagLayout());
@@ -124,11 +125,11 @@ public class ScenarioPanel extends PreferencesPanel {
 
         /* update model */
         model.clearAllScenarios();
-        config.scenario.classes.forEach(model::addScenario);
+        config.scenario.supportedClasses.forEach(model::addScenario);
         /* update checkbox for scenario choice */
         cbScenarioChoice.removeAllItems();
         model.getScenarios().stream()
-                .map(Class::getSimpleName)
+                .map(Descriptor::getDescription)
                 .forEach(cbScenarioChoice::addItem);
         cbScenarioChoice.setSelectedItem(config.scenario.selectedClass);
     }
@@ -140,7 +141,7 @@ public class ScenarioPanel extends PreferencesPanel {
         config.scenario.showAreasWhileSimulating = cbShowAreasWhileSimulating.isSelected();
         config.scenario.nodesAreWeightedUniformly = cbNodesAreWeightedUniformly.isSelected();
 
-        model.getScenarios().forEach(config.scenario.classes::add);
+        model.getScenarios().forEach(config.scenario.supportedClasses::add);
         config.scenario.selectedClass = model.get(cbScenarioChoice.getSelectedIndex());
 
         return config;

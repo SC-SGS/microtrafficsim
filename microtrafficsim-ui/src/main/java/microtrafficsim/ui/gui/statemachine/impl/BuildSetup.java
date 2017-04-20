@@ -7,12 +7,13 @@ import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
-import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.Descriptor;
 
 /**
  * <p>
@@ -44,10 +45,17 @@ public class BuildSetup {
 
         /* general */
         config = new SimulationConfig();
-        config.scenario.classes.add(AreaScenario.class);
-        config.scenario.classes.add(EndOfTheWorldScenario.class);
-        config.scenario.classes.add(RandomRouteScenario.class);
-        config.scenario.selectedClass = AreaScenario.class;
+
+        config.scenario.supportedClasses.add(new Descriptor<>(
+                AreaScenario.class,
+                "own defined areas"));
+        config.scenario.supportedClasses.add(new Descriptor<>(
+                EndOfTheWorldScenario.class,
+                "everywhere -> border"));
+        config.scenario.supportedClasses.add(new Descriptor<>(
+                RandomRouteScenario.class,
+                "everywhere -> everywhere"));
+        config.scenario.selectedClass = config.scenario.supportedClasses.get(0);
 
         /* visualization and parsing */
         mapviewer = new TileBasedMapViewer(config.visualization.style);

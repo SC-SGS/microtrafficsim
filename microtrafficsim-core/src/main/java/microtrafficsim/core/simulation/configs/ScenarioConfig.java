@@ -2,7 +2,7 @@ package microtrafficsim.core.simulation.configs;
 
 
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
+import microtrafficsim.utils.Descriptor;
 
 import java.util.ArrayList;
 
@@ -15,14 +15,14 @@ import java.util.ArrayList;
 public final class ScenarioConfig {
     public boolean showAreasWhileSimulating;
     public boolean nodesAreWeightedUniformly;
-    public final ArrayList<Class<? extends Scenario>> classes;
-    public Class<? extends Scenario> selectedClass;
+    public final ArrayList<Descriptor<Class<? extends Scenario>>> supportedClasses;
+    public Descriptor<Class<? extends Scenario>> selectedClass;
 
     /**
      * Just calls {@link #setup()}.
      */
     public ScenarioConfig() {
-        classes = new ArrayList<>();
+        supportedClasses = new ArrayList<>();
         setup();
     }
 
@@ -43,8 +43,8 @@ public final class ScenarioConfig {
         showAreasWhileSimulating = config.showAreasWhileSimulating;
         nodesAreWeightedUniformly = config.nodesAreWeightedUniformly;
 
-        classes.clear();
-        classes.addAll(config.classes);
+        supportedClasses.clear();
+        supportedClasses.addAll(config.supportedClasses);
 
         selectedClass = config.selectedClass;
     }
