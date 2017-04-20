@@ -2,6 +2,7 @@ package microtrafficsim.examples.simulation;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.convenience.DefaultParserConfig;
+import microtrafficsim.core.convenience.MapFileChooser;
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
 import microtrafficsim.core.exfmt.Container;
@@ -51,7 +52,7 @@ public class SimulationExample {
 
     private static final long SEED = Random.createSeed();
 
-    private JFileChooser filechooser;
+    private MapFileChooser filechooser;
     private OSMParser parser;
     private ExchangeFormatSerializer serializer;
     private ExchangeFormat exfmt;
@@ -75,7 +76,7 @@ public class SimulationExample {
         /* Set up logging */
         LoggingLevel.setEnabledGlobally(false, false, true, true, true);
 
-        filechooser = new JFileChooser();
+        filechooser = new MapFileChooser();
         filechooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
 
         /* Create configuration for scenarios, parser and map-viewer */
