@@ -82,6 +82,8 @@ public class MapViewerExample {
      */
     private void run(File file) throws UnsupportedFeatureException {
         filechooser = new JFileChooser();
+        filechooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+
         parser = DefaultParserConfig.get(STYLE).build();
 
         viewer = setUpMapViewer(STYLE);

@@ -76,6 +76,7 @@ public class SimulationExample {
         LoggingLevel.setEnabledGlobally(false, false, true, true, true);
 
         filechooser = new JFileChooser();
+        filechooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
 
         /* Create configuration for scenarios, parser and map-viewer */
         config = config();
