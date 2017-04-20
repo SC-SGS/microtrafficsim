@@ -1,9 +1,19 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
 import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.convenience.MapViewer;
+import microtrafficsim.core.convenience.MapFileChooser;
+import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.exfmt.ExchangeFormat;
+import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
+import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.StreetGraph;
+import microtrafficsim.core.map.MapSegment;
+import microtrafficsim.core.map.SegmentFeatureProvider;
+import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
@@ -24,7 +34,6 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -82,11 +91,13 @@ public class SimulationController implements GUIController {
     private final SimulationConfig config;
 
     /* visualization and parsing */
-    private final MapViewer      mapviewer;
+    private final TileBasedMapViewer mapviewer;
     private final VehicleOverlay overlay;
     private ScenarioAreaOverlay  scenarioAreaOverlay;
-    private       OSMParser      parser;
-    private       Graph          streetgraph;
+    private OSMParser            parser;
+    private ExchangeFormat       exfmt;
+    private ExchangeFormatSerializer serializer;
+    private Graph                streetgraph;
 
     /* simulation */
     private Simulation      simulation;
@@ -97,7 +108,7 @@ public class SimulationController implements GUIController {
     private final JFrame           frame;
     private final MTSMenuBar       menubar;
     private final PreferencesFrame preferences;
-    private final JFileChooser     mapfileChooser;
+    private final MapFileChooser   mapfileChooser;
 
     public SimulationController() {
         this(new BuildSetup());
@@ -132,37 +143,8 @@ public class SimulationController implements GUIController {
         frame            = new JFrame(frameTitleRaw);
         menubar          = new MTSMenuBar();
         preferences      = new PreferencesFrame(this);
-        mapfileChooser   = new JFileChooser();
+        mapfileChooser   = new MapFileChooser();
         mapfileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
-        mapfileChooser.setFileFilter(new FileFilter() {
-
-            @Override
-            public String getDescription() {
-                return ".osm";
-            }
-
-            @Override
-            public boolean accept(File file) {
-                if (file.isDirectory()) return true;
-
-                String extension = null;
-
-                String filename = file.getName();
-                int    i        = filename.lastIndexOf('.');
-
-                if (i > 0)
-                    if (i < filename.length() - 1)
-                        extension = filename.substring(i + 1).toLowerCase();
-
-                if (extension == null) return false;
-
-                switch (extension) {
-                    case "osm": return true;
-                    default:    return false;
-                }
-            }
-        });
-
 
         /* create */
         create();
@@ -184,6 +166,15 @@ public class SimulationController implements GUIController {
         } catch (UnsupportedFeatureException e) { e.printStackTrace(); }
 
         parser = DefaultParserConfig.get(config).build();
+
+        /* create exchange format and serializer */
+        serializer = ExchangeFormatSerializer.create();
+        exfmt = ExchangeFormat.getDefault();
+
+        exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(
+                mapviewer.getPreferredTilingScheme(), mapviewer.getPreferredTileGridLevel()));
+
+        exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
 
         /* create preferences */
         preferences.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -600,39 +591,43 @@ public class SimulationController implements GUIController {
         String cachedTitle = frame.getTitle();
         frame.setTitle(getParsingFrameTitle(file));
 
-        OSMParser.Result result;
-
+        boolean xml = file.getName().endsWith(".osm");
         try {
-            /* parse file and create tiled provider */
-            result = parser.parse(file);
+            SegmentFeatureProvider segment;
+            Graph graph;
+
+            if (xml) {
+                /* parse file and create tiled provider */
+                OSMParser.Result result = parser.parse(file);
+                segment = result.segment;
+                graph = result.streetgraph;
+
+            } else {
+                ExchangeFormat.Manipulator xmp = exfmt.manipulator(serializer.read(file));
+                try {
+                    segment = xmp.extract(QuadTreeTiledMapSegment.class);
+                } catch (NotAvailableException e) {     // thrown when no TileGrid available
+                    segment = xmp.extract(MapSegment.class);
+                }
+                graph = xmp.extract(StreetGraph.class);
+            }
+
+            mapviewer.setMap(segment);
+
+            simulation.removeCurrentScenario();
+            streetgraph = graph;
+            overlay.setEnabled(true);
+            scenarioAreaOverlay.setEnabled(true, true, false);
+
+            cachedTitle = getDefaultFrameTitle(file);
         } catch (InterruptedException e) {
-            logger.info("Parsing interrupted by user");
-            result = null; // might be unnecessary here
+            logger.info("Loading interrupted by user");
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(
-                    null,
-                    "The chosen file has a wrong format.\nTherefore it could not be parsed.",
-                    "Error: wrong osm-file format",
-                    JOptionPane.ERROR_MESSAGE);
-            result = null;
-        }
-
-
-        if (result != null) {
-            if (result.streetgraph != null) {
-                simulation.removeCurrentScenario();
-                streetgraph = result.streetgraph;
-                overlay.setEnabled(true);
-                scenarioAreaOverlay.setEnabled(true, true, false);
-
-                try {
-                    mapviewer.setMap(result.segment);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                cachedTitle = getDefaultFrameTitle(file);
-            }
+            JOptionPane.showMessageDialog(frame,
+                    "Failed to load file: '" + file.getPath() + "'.\n"
+                            + "Please make sure this file exists and is a valid OSM XML or MTS binary file.",
+                    "Error loading file", JOptionPane.ERROR_MESSAGE);
         }
 
         frame.setTitle(cachedTitle);
