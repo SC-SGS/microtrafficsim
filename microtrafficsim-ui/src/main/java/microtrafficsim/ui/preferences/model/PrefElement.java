@@ -1,4 +1,4 @@
-package microtrafficsim.ui.preferences;
+package microtrafficsim.ui.preferences.model;
 
 
 /**
@@ -10,13 +10,17 @@ public enum PrefElement {
     maxVehicleCount(true),
     seed(true),
     metersPerCell(false),
-    // Visualization
-    style(false),
+    /* scenario */
+    showAreasWhileSimulating(true),
+    nodesAreWeightedUniformly(true),
+    scenarioSelection(true),
     // crossing logic
     edgePriority(true),
     priorityToThe(true),
     onlyOneVehicle(true),
     friendlyStandingInJam(true),
+    // Visualization
+    style(false),
     // concurrency
     nThreads(true),
     vehiclesPerRunnable(true),

@@ -6,7 +6,7 @@ import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
@@ -27,7 +27,7 @@ import java.util.function.Supplier;
 public abstract class QueueScenarioSmall implements Scenario {
 
     /* general */
-    private final ScenarioConfig config;
+    private final SimulationConfig config;
     private final Graph graph;
     private final VehicleContainer vehicleContainer;
     private ShortestPathAlgorithm<Node, DirectedEdge> scout;
@@ -49,7 +49,7 @@ public abstract class QueueScenarioSmall implements Scenario {
      * @param graph used for route definitions etc.
      * @param vehicleContainer stores and manages vehicles running in this scenario
      */
-    protected QueueScenarioSmall(ScenarioConfig config,
+    protected QueueScenarioSmall(SimulationConfig config,
                                  Graph graph,
                                  VehicleContainer vehicleContainer) {
 
@@ -70,9 +70,9 @@ public abstract class QueueScenarioSmall implements Scenario {
      * Just calls {@code QueueScenario(config, graph, new ConcurrentVehicleContainer())}.
      *
      * @see ConcurrentVehicleContainer
-     * @see QueueScenarioSmall#QueueScenarioSmall(ScenarioConfig, Graph, VehicleContainer)
+     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, VehicleContainer)
      */
-    protected QueueScenarioSmall(ScenarioConfig config, Graph graph) {
+    protected QueueScenarioSmall(SimulationConfig config, Graph graph) {
         this(config, graph, new ConcurrentVehicleContainer());
     }
 
@@ -80,7 +80,7 @@ public abstract class QueueScenarioSmall implements Scenario {
         this.scenarioBuilder = scenarioBuilder;
     }
 
-    public static ScenarioConfig setupConfig(ScenarioConfig config) {
+    public static SimulationConfig setupConfig(SimulationConfig config) {
 
         config.metersPerCell           = 7.5f;
         config.seed                    = 1455374755807L;
@@ -179,7 +179,7 @@ public abstract class QueueScenarioSmall implements Scenario {
     |==============|
     */
     @Override
-    public final ScenarioConfig getConfig() {
+    public final SimulationConfig getConfig() {
         return config;
     }
 

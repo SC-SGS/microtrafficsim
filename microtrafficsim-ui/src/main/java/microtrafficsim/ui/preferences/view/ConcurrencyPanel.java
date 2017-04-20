@@ -1,68 +1,64 @@
-package microtrafficsim.ui.preferences.impl;
+package microtrafficsim.ui.preferences.view;
 
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
-import microtrafficsim.ui.preferences.PrefElement;
+import microtrafficsim.ui.preferences.model.ConcurrencyModel;
+import microtrafficsim.ui.preferences.model.PrefElement;
 
 import javax.swing.*;
-
+import java.awt.*;
 
 /**
  * @author Dominic Parga Cacheiro
  */
 public class ConcurrencyPanel extends PreferencesPanel {
-    private JTextField tfNThreads;
-    private JTextField tfVehiclesPerRunnable;
-    private JTextField tfNodesPerThread;
 
+    private final ConcurrencyModel model;
+    private final JTextField tfNThreads;
+    private final JTextField tfVehiclesPerRunnable;
+    private final JTextField tfNodesPerThread;
+
+    /**
+     * You should call {@link #create()} before you use this frame.
+     */
     public ConcurrencyPanel() {
-        super("Concurrency");
-    }
+        super();
+        model = new ConcurrencyModel();
 
-    /*
-    |============|
-    | components |
-    |============|
-    */
-    private void addNThreads() {
         tfNThreads = new JTextField();
-        configureAndAddJTextFieldRow("# threads: ", tfNThreads);
-    }
-
-    private void addVehiclesPerRunnable() {
         tfVehiclesPerRunnable = new JTextField();
-        configureAndAddJTextFieldRow("# vehicles per runnable: ", tfVehiclesPerRunnable);
-    }
-
-    private void addNodesPerThread() {
         tfNodesPerThread = new JTextField();
-        configureAndAddJTextFieldRow("# nodes per thread: ", tfNodesPerThread);
+
+        create();
     }
 
-    /*
-    |=================|
-    | (i) Preferences |
-    |=================|
-    */
-    @Override
-    public void create() {
-        addNThreads();
-        addVehiclesPerRunnable();
-        addNodesPerThread();
+    private void create() {
 
-        setAllEnabled(false);
+        setLayout(new GridBagLayout());
+
+
+        int row = 0;
+        addTextFieldToGridBagLayout(row++, "# threads:", tfNThreads);
+        addTextFieldToGridBagLayout(row++, "# vehicles per runnable:", tfVehiclesPerRunnable);
+        addTextFieldToGridBagLayout(row++, "# nodes per thread:", tfNodesPerThread);
+    }
+
+
+    @Override
+    public ConcurrencyModel getModel() {
+        return model;
     }
 
     @Override
-    public void setSettings(ScenarioConfig config) {
+    public void setSettings(SimulationConfig config) {
         tfNThreads.setText("" + config.multiThreading.nThreads);
         tfVehiclesPerRunnable.setText("" + config.multiThreading.vehiclesPerRunnable);
         tfNodesPerThread.setText("" + config.multiThreading.nodesPerThread);
     }
 
     @Override
-    public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
-        ScenarioConfig             config           = new ScenarioConfig();
+    public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
+        SimulationConfig config           = new SimulationConfig();
         boolean                    exceptionOccured = false;
         IncorrectSettingsException exception        = new IncorrectSettingsException();
 
@@ -98,9 +94,9 @@ public class ConcurrencyPanel extends PreferencesPanel {
         enabled = id.isEnabled() && enabled;
 
         switch (id) {
-        case nThreads:            tfNThreads.setEnabled(enabled);            break;
-        case vehiclesPerRunnable: tfVehiclesPerRunnable.setEnabled(enabled); break;
-        case nodesPerThread:      tfNodesPerThread.setEnabled(enabled);      break;
+            case nThreads:            tfNThreads.setEnabled(enabled);            break;
+            case vehiclesPerRunnable: tfVehiclesPerRunnable.setEnabled(enabled); break;
+            case nodesPerThread:      tfNodesPerThread.setEnabled(enabled);      break;
         }
     }
 }

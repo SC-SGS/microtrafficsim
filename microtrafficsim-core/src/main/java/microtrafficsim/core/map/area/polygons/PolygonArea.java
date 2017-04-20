@@ -2,6 +2,9 @@ package microtrafficsim.core.map.area.polygons;
 
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.area.Area;
+import microtrafficsim.core.vis.map.projections.Projection;
+import microtrafficsim.math.Vec2d;
+import microtrafficsim.math.geometry.polygons.Polygon;
 
 
 /**
@@ -17,4 +20,17 @@ public interface PolygonArea extends Area {
      * @return the array of coordinate defining this area.
      */
     Coordinate[] getCoordinates();
+
+    /**
+     * Todo: does only support {@link Polygon#outline}
+     */
+    default microtrafficsim.core.vis.scenario.areas.Area getProjectedArea(Projection projection, microtrafficsim.core.vis.scenario.areas.Area.Type type) {
+        Coordinate[] coordinates = getCoordinates();
+
+        Vec2d[] outline = new Vec2d[coordinates.length];
+        for (int i = 0; i < outline.length; i++)
+            outline[i] = projection.project(coordinates[i]);
+
+        return new microtrafficsim.core.vis.scenario.areas.Area(new Polygon(outline), type);
+    }
 }

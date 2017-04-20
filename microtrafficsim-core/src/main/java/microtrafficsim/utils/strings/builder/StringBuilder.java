@@ -61,6 +61,8 @@ public interface StringBuilder {
     int lastIndexOf(String str);
     int lastIndexOf(String str, int fromIndex);
 
+    int length();
+
     StringBuilder reverse();
 
     String toString();

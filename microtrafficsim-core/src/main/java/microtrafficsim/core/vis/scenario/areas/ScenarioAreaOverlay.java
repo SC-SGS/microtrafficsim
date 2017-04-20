@@ -9,7 +9,6 @@ import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.glui.Component;
 import microtrafficsim.core.vis.glui.DirectBatchUIOverlay;
 import microtrafficsim.core.vis.glui.events.MouseEvent;
-import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.core.vis.scenario.areas.ui.*;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Rect2d;
@@ -17,8 +16,10 @@ import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.geometry.polygons.Polygon;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 // TODO: proper line rendering for area outline
 
@@ -26,9 +27,11 @@ import java.util.HashSet;
 // TODO: re-use batches?
 
 
+/**
+ * @author Maximilian Luz
+ */
 public class ScenarioAreaOverlay implements Overlay {
     private DirectBatchUIOverlay ui;
-    private Projection projection;
 
     private HashSet<AreaComponent> selectedAreas = new HashSet<>();
     private HashSet<AreaVertex> selectedVertices = new HashSet<>();
@@ -39,29 +42,37 @@ public class ScenarioAreaOverlay implements Overlay {
     private AreaComponent construction = null;
 
 
-    public ScenarioAreaOverlay(Projection projection) {
+    public ScenarioAreaOverlay() {
         this.ui = new DirectBatchUIOverlay();
         this.ui.getRootComponent().addMouseListener(new MouseListenerImpl());
         this.ui.getRootComponent().addKeyListener(new KeyListenerImpl());
-        this.projection = projection;
 
         SwingUtilities.invokeLater(() -> {
-                properties = new PropertyFrame(ui);
-                properties.setVisible(false);
-                properties.setResizable(false);
-                properties.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-                properties.setAlwaysOnTop(true);
+            properties = new PropertyFrame(ui);
+
+            /* put properties to bottom right */
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice defaultScreen = ge.getDefaultScreenDevice();
+            Rectangle rect = defaultScreen.getDefaultConfiguration().getBounds();
+            int x = (int) rect.getMaxX() - properties.getWidth();
+            int y = 0;
+            properties.setLocation(x - 100, y + 100);
+
+            properties.setVisible(false);
+            properties.setResizable(false);
+            properties.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+            properties.setAlwaysOnTop(true);
         });
 
         this.rectangle = new SelectionRectangle();
     }
 
 
-    public void addArea(Area area) {
+    public void add(Area area) {
         ui.addComponent(new AreaComponent(this, area));
     }
 
-    public void addRemove(Area area) {
+    public void remove(Area area) {
         for (Component c : ui.getComponents()) {
             if (c instanceof AreaComponent) {
                 if (((AreaComponent) c).getArea() == area) {
@@ -69,6 +80,16 @@ public class ScenarioAreaOverlay implements Overlay {
                 }
             }
         }
+    }
+
+    public void removeAllAreas() {
+        LinkedList<Component> removeObjects = new LinkedList<>();
+
+        ui.getComponents().stream()
+                .filter(c -> c instanceof AreaComponent)
+                .forEach(removeObjects::add);
+
+        removeObjects.forEach(ui::removeComponent);
     }
 
     public ArrayList<Area> getAreas() {
@@ -117,9 +138,21 @@ public class ScenarioAreaOverlay implements Overlay {
         rectangle.display(context);
     }
 
+    /**
+     * Enables (disables) the ui and sets the properties-frame visible (not visible).
+     *
+     * @param enabled set to {@code true} to enable this layer.
+     */
     @Override
     public void setEnabled(boolean enabled) {
         ui.setEnabled(enabled);
+        properties.setVisible(enabled);
+    }
+
+    public void setEnabled(boolean uiEnabled, boolean eventsEnabled, boolean propertiesVisible) {
+        ui.setEnabled(uiEnabled);
+        ui.setEventsEnabled(eventsEnabled);
+        properties.setVisible(propertiesVisible);
     }
 
     @Override
@@ -127,12 +160,22 @@ public class ScenarioAreaOverlay implements Overlay {
         return ui.isEnabled();
     }
 
-    public void setEventsEnabled(boolean enabled) {
-        ui.setEventsEnabled(enabled);
+    public boolean arePropertiesVisible() {
+        return properties.isVisible();
+    }
+
+    public void setPropertiesVisible(boolean visible) {
+        properties.setVisible(visible);
     }
 
     public boolean hasEventsEnabled() {
         return ui.hasEventsEnabled();
+    }
+
+    public void setEventsEnabled(boolean enabled) {
+        ui.setEventsEnabled(enabled);
+        if (!enabled)
+            clearAreaSelection();
     }
 
     @Override

@@ -18,7 +18,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        LoggingLevel.setEnabledGlobally(false, false, true, true, true);
+        LoggingLevel.setEnabledGlobally(false, true, true, true, true);
 
         /* handle input arguments */
         final File file;
@@ -61,7 +61,8 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> {
             GUIController controller = new SimulationController();
-            controller.transiate(GUIEvent.CREATE, file);
+            if (file != null)
+                controller.transiate(GUIEvent.LOAD_MAP, file);
         });
     }
 

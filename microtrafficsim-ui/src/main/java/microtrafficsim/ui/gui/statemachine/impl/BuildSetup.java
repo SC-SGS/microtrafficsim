@@ -2,14 +2,18 @@ package microtrafficsim.ui.gui.statemachine.impl;
 
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
-import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
+import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
+import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
+import microtrafficsim.utils.Descriptor;
 
 /**
  * <p>
@@ -24,7 +28,7 @@ import microtrafficsim.core.vis.simulation.VehicleOverlay;
 public class BuildSetup {
 
     /* general */
-    public ScenarioConfig config;
+    public SimulationConfig config;
 
     /* visualization and parsing */
     public MapViewer mapviewer;
@@ -40,7 +44,18 @@ public class BuildSetup {
     public BuildSetup() {
 
         /* general */
-        config = new ScenarioConfig();
+        config = new SimulationConfig();
+
+        config.scenario.supportedClasses.add(new Descriptor<>(
+                AreaScenario.class,
+                "own defined areas"));
+        config.scenario.supportedClasses.add(new Descriptor<>(
+                EndOfTheWorldScenario.class,
+                "everywhere -> border"));
+        config.scenario.supportedClasses.add(new Descriptor<>(
+                RandomRouteScenario.class,
+                "everywhere -> everywhere"));
+        config.scenario.selectedClass = config.scenario.supportedClasses.get(0);
 
         /* visualization and parsing */
         mapviewer = new TileBasedMapViewer(config.visualization.style);
@@ -51,6 +66,6 @@ public class BuildSetup {
         scenarioBuilder     = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
 
         /* gui */
-        this.frameTitle = "MicroTrafficSim - GUI Example";
+        this.frameTitle = "MicroTrafficSim";
     }
 }

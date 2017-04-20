@@ -4,7 +4,7 @@ import microtrafficsim.core.convenience.DefaultParserConfig;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.math.random.distributions.impl.Random;
@@ -52,9 +52,9 @@ public class RandomScenarioDeterminismTest extends AbstractDeterminismTest {
     }
 
     @Override
-    protected ScenarioConfig createConfig() {
+    protected SimulationConfig createConfig() {
 
-        ScenarioConfig config = new ScenarioConfig();
+        SimulationConfig config = new SimulationConfig();
 
         // general
         config.speedup           = Integer.MAX_VALUE;
@@ -74,7 +74,7 @@ public class RandomScenarioDeterminismTest extends AbstractDeterminismTest {
     }
 
     @Override
-    protected Graph createGraph(ScenarioConfig config) {
+    protected Graph createGraph(SimulationConfig config) {
 
         Graph graph;
         try {
@@ -92,12 +92,12 @@ public class RandomScenarioDeterminismTest extends AbstractDeterminismTest {
     }
 
     @Override
-    protected Scenario createScenario(ScenarioConfig config, Graph graph) {
+    protected Scenario createScenario(SimulationConfig config, Graph graph) {
         return new RandomRouteScenario(config.seed, config, graph);
     }
 
     @Override
-    protected Scenario prepareScenario(ScenarioConfig config, Scenario scenario) {
+    protected Scenario prepareScenario(SimulationConfig config, Scenario scenario) {
 
         VehicleScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(config.seed);
 

@@ -11,7 +11,7 @@ import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.astar.AStars;
 import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.id.BasicLongIDGenerator;
 import microtrafficsim.utils.id.LongGenerator;
@@ -39,7 +39,7 @@ public class TestShortestPathAlgorithms {
 
     private static final Logger logger = new EasyMarkableLogger(TestShortestPathAlgorithms.class);
 
-    private static ScenarioConfig                            config;
+    private static SimulationConfig config;
     private static ShortestPathAlgorithm<Node, DirectedEdge> shortestPathAlgorithm;
     private static Vec2d                                     rubbishVec2d;
     private static LongGenerator                             idGenerator;
@@ -54,7 +54,7 @@ public class TestShortestPathAlgorithms {
 
     @BeforeClass
     public static void setupClass() {
-        config       = new ScenarioConfig();
+        config       = new SimulationConfig();
         rubbishVec2d = new Vec2d(1.0f, 1.0f);
         idGenerator  = new BasicLongIDGenerator();
     }

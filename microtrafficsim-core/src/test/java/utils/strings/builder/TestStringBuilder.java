@@ -1,7 +1,9 @@
 package utils.strings.builder;
 
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import static org.junit.Assert.assertEquals;
 
@@ -10,9 +12,19 @@ import static org.junit.Assert.assertEquals;
  */
 public class TestStringBuilder {
 
+    public static final Logger logger = new EasyMarkableLogger(TestStringBuilder.class);
+
     @Test
     public void simpleTestLevelStringBuilder() {
 
+        EasyMarkableLogger.setEnabledGlobally(true, true, true, true, true);
+
+        subtestLevelStringBuilder(
+                null,
+                "....",
+                null,
+                ",,,,"
+        );
         subtestLevelStringBuilder(
                 "\n",
                 "....",
@@ -59,6 +71,12 @@ public class TestStringBuilder {
      */
     private void subtestLevelStringBuilder(String innerLevelSeparator, String innerLevelSubString,
                                            String outerLevelSeparator, String outerLevelSubString) {
+
+        logger.debug("innerLevelSeparator = " + innerLevelSeparator);
+        logger.debug("innerLevelSubString = " + innerLevelSubString);
+        logger.debug("outerLevelSeparator = " + outerLevelSeparator);
+        logger.debug("outerLevelSubString = " + outerLevelSubString);
+
         /* create and fill inner builder */
         LevelStringBuilder innerBuilder = new LevelStringBuilder();
         innerBuilder.setLevelSubString(innerLevelSubString);
@@ -77,6 +95,9 @@ public class TestStringBuilder {
         expected += innerLevelSubString + "b";
         expected += innerLevelSubString + "cd";
         assertEquals(expected, innerBuilder.toString());
+        logger.debug("\n");
+        logger.debug("expected = \n" + expected);
+        logger.debug("actual   = \n" + innerBuilder.toString());
 
 
         /* create and fill outer builder */
@@ -89,10 +110,15 @@ public class TestStringBuilder {
         /* check outer builder */
         expected = "";
         expected += outerLevelSubString + innerLevelSubString + "a\n";
-        if (outerLevelSeparator.contains("\n"))
-            expected += outerLevelSubString;
+        if (outerLevelSeparator != null)
+            if (outerLevelSeparator.contains("\n"))
+                expected += outerLevelSubString;
         expected += innerLevelSubString + "b";
         expected += innerLevelSubString + "cd";
         assertEquals(expected, outerBuilder.toString());
+        logger.debug("\n");
+        logger.debug("expected = \n" + expected);
+        logger.debug("actual   = \n" + outerBuilder.toString());
+
     }
 }

@@ -5,19 +5,21 @@ import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
+import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
+import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.ui.gui.menues.MTSMenuBar;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
-import microtrafficsim.ui.preferences.PrefElement;
-import microtrafficsim.ui.preferences.impl.PreferencesFrame;
+import microtrafficsim.ui.preferences.model.PrefElement;
+import microtrafficsim.ui.preferences.view.PreferencesFrame;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
@@ -61,7 +63,7 @@ public class SimulationController implements GUIController {
     // TODO simulation double buffering (in the way that you ask for changing the map after parsing has finished)
 
     /* multithreading: user input and task execution */
-    private final AtomicBoolean isExecuting;
+    private final AtomicBoolean isExecutingUserTask;
     private final ReentrantLock lock_user_input;
 
     /* multithreading: interrupting parsing */
@@ -77,11 +79,12 @@ public class SimulationController implements GUIController {
     private boolean isCreated;
 
     /* general */
-    private final ScenarioConfig config;
+    private final SimulationConfig config;
 
     /* visualization and parsing */
     private final MapViewer      mapviewer;
     private final VehicleOverlay overlay;
+    private ScenarioAreaOverlay  scenarioAreaOverlay;
     private       OSMParser      parser;
     private       Graph          streetgraph;
 
@@ -90,6 +93,7 @@ public class SimulationController implements GUIController {
     private ScenarioBuilder scenarioBuilder;
 
     /* gui */
+    private final String           frameTitleRaw;
     private final JFrame           frame;
     private final MTSMenuBar       menubar;
     private final PreferencesFrame preferences;
@@ -102,7 +106,7 @@ public class SimulationController implements GUIController {
     public SimulationController(BuildSetup buildSetup) {
 
         /* multithreading */
-        isExecuting        = new AtomicBoolean(false);
+        isExecutingUserTask = new AtomicBoolean(false);
         lock_user_input    = new ReentrantLock();
         isParsing          = new AtomicBoolean(false);
         isBuildingScenario = new AtomicBoolean(false);
@@ -124,7 +128,8 @@ public class SimulationController implements GUIController {
         overlay.setSimulation(simulation);
 
         /* gui */
-        frame            = new JFrame(buildSetup.frameTitle);
+        frameTitleRaw    = buildSetup.frameTitle;
+        frame            = new JFrame(frameTitleRaw);
         menubar          = new MTSMenuBar();
         preferences      = new PreferencesFrame(this);
         mapfileChooser   = new JFileChooser();
@@ -157,256 +162,14 @@ public class SimulationController implements GUIController {
                 }
             }
         });
+
+
+        /* create */
+        create();
+        show();
+        updateMenuBar();
     }
 
-    /*
-    |===================|
-    | (i) GUIController |
-    |===================|
-    */
-    /**
-     * <p>
-     * Works like a transition of a state machine. Depending on the event, several functions are called.<br>
-     * NOTE: If not differently mentioned below, all events initializes executions if and only if no other execution
-     * is currently active.
-     *
-     * <ul>
-     * <li> {@link GUIEvent#EXIT} - If this is called, all running executions are interrupted and the application
-     * exits. So this event is getting executed even if there are other executions active. <br>
-     * <li> {@link GUIEvent#CREATE} - Creates and shows the GUI. If the file is not null, the map is parsed and
-     * shown. <br>
-     * <li> {@link GUIEvent#LOAD_MAP} - Asks the user to choose a map file. If (and only if) a parsing is already
-     * running, the user is asked to cancel the currently running parsing task. <br>
-     * <li> {@link GUIEvent#NEW_SCENARIO} - Pauses a running simulation and shows the scenario-preferences-window for
-     * choosing scenario parameters. If (and only if) a scenario is already preparing (not finished), the user is
-     * asked to cancel the currently running scenario-building task. <br>
-     * <li> {@link GUIEvent#ACCEPT} - Closes the scenario-preferences-window if all settings are correctly formatted.
-     * If the scenario should be a new one (due to {@code GUIEvent#NEW_SCENARIO}), a new scenario is build. This
-     * event does ignore other running tasks because it has to be called after choosing scenario parameters. It
-     * is only closing the scenario-preferences-window and updating the GUI, if no new scenario is chosen. BUT it
-     * unlocks the lock of other executions, so we recommend to call it only to finish the event NEW_SCENARIO. <br>
-     *
-     * <li> {@link GUIEvent#CANCEL} Analogue to {@code GUIEvent.ACCEPT}: It is only closing the
-     * scenario-preferences-window and updating the GUI. BUT it unlocks the lock of other executions, so we recommend to
-     * call it only to finish the event NEW_SCENARIO. <br>
-     * <li> {@link GUIEvent#EDIT_SCENARIO} Pauses a running simulation and shows the scenario-preferences-window for
-     * choosing scenario parameters. <br>
-     * <li> {@link GUIEvent#RUN_SIM} Runs the simulation. <br>
-     * <li> {@link GUIEvent#RUN_SIM_ONE_STEP} Pauses the simulation and runs it one step. <br>
-     * <li> {@link GUIEvent#PAUSE_SIM} Pauses the simulation. <br>
-     * </ul>
-     */
-    @Override
-    public void transiate(GUIEvent event, final File file) {
-        logger.debug("GUIEvent called = GUIEvent." + event);
-
-        if (event == GUIEvent.EXIT)
-            exit();
-        if (!lock_user_input.tryLock())
-            return;
-
-        switch (event) {
-            case CREATE:
-                if (isExecuting.compareAndSet(false, true)) {
-                    new Thread(() -> {
-                        create();
-                        show();
-
-                        if (file != null) {
-                            if (isParsing.compareAndSet(false, true)) {
-                                parseAndShow(file);
-                                isParsing.set(false);
-                            }
-                        }
-
-                        updateMenuBar();
-                        isExecuting.set(false);
-                    }).start();
-                }
-            case LOAD_MAP:
-                if (isParsing.get()) {
-                    new Thread(() -> {
-                        // ask user to cancel parsing
-                        Object[] options = { "Yes", "No" };
-                        int choice = JOptionPane.showOptionDialog(
-                                null,
-                                "Are you sure to cancel the parsing?",
-                                "Cancel parsing?",
-                                JOptionPane.YES_NO_OPTION,
-                                JOptionPane.WARNING_MESSAGE,
-                                null,
-                                options,
-                                options[1]);
-                        // if yes: cancel
-                        if (choice == JOptionPane.YES_OPTION)
-                            cancelParsing();
-                    }).start();
-                } else if (isExecuting.compareAndSet(false, true)) {
-                    parsingThread = new Thread(() -> {
-                        isParsing.set(true);
-
-                        closePreferences();
-                        pauseSim();
-
-                        File loadedFile = file == null ? askForMapFile() : file;
-                        if (loadedFile != null)
-                            parseAndShow(loadedFile);
-
-                        isParsing.set(false);
-                        updateMenuBar();
-                        isExecuting.set(false);
-                    });
-                    parsingThread.start();
-                }
-                break;
-            case NEW_SCENARIO:
-                if (isBuildingScenario.get()) {
-                    new Thread(() -> {
-                        // ask user to cancel scenario building
-                        Object[] options = { "Yes", "No" };
-                        int choice = JOptionPane.showOptionDialog(
-                                null,
-                                "Are you sure to cancel the scenario building?",
-                                "Cancel scenario building?",
-                                JOptionPane.YES_NO_OPTION,
-                                JOptionPane.WARNING_MESSAGE,
-                                null,
-                                options,
-                                options[1]);
-                        // if yes: cancel
-                        if (choice == JOptionPane.YES_OPTION)
-                            cancelScenarioBuilding();
-                    }).start();
-                } else if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
-                    new Thread(() -> {
-                        if (streetgraph != null) {
-                            pauseSim();
-                            newSim = true;
-                            showPreferences();
-                        } else
-                            isExecuting.set(false);
-                    }).start();
-                }
-                break;
-            case ACCEPT:
-                scenarioBuildThread = new Thread(() -> {
-                    if (isBuildingScenario.compareAndSet(false, true)) {
-
-                        /* get new config */
-                        ScenarioConfig newConfig = null;
-                        try {
-                            newConfig = preferences.getCorrectSettings();
-                        } catch (IncorrectSettingsException e) {
-                            JOptionPane.showMessageDialog(
-                                    null,
-                                    e.getMessage(),
-                                    "Error: wrong preferences values",
-                                    JOptionPane.ERROR_MESSAGE);
-                        }
-
-                        /* process new config if correct input */
-                        if (newConfig != null) {
-                            closePreferences();
-                            config.update(newConfig);
-
-                            if (newSim) {
-                                startNewScenario();
-                                newSim = false;
-                            } else {
-                                updateScenario();
-                            }
-
-                            updateMenuBar();
-                            isExecuting.set(false);
-                        }
-
-                        isBuildingScenario.set(false);
-                    }
-                });
-                scenarioBuildThread.start();
-                break;
-            case CANCEL:
-                new Thread(() -> {
-                    closePreferences();
-                    updateMenuBar();
-                    isExecuting.set(false);
-                }).start();
-                break;
-            case EDIT_SCENARIO:
-                if (isExecuting.compareAndSet(false, true)) { // unlock after accept/cancel
-                    new Thread(() -> {
-                        pauseSim();
-                        newSim = false;
-                        showPreferences();
-
-                        updateMenuBar();
-                    }).start();
-                }
-                break;
-            case RUN_SIM:
-                if (isExecuting.compareAndSet(false, true)) {
-                    if (!simulation.hasScenario())
-                        isExecuting.set(false);
-                    else {
-                        new Thread(() -> {
-                            runSim();
-
-                            updateMenuBar();
-                            isExecuting.set(false);
-                        }).start();
-                    }
-                }
-                break;
-            case RUN_SIM_ONE_STEP:
-                if (isExecuting.compareAndSet(false, true)) {
-                    if (!simulation.hasScenario())
-                        isExecuting.set(false);
-                    else {
-                        new Thread(() -> {
-                            pauseSim();
-                            runSimOneStep();
-
-                            updateMenuBar();
-                            isExecuting.set(false);
-                        }).start();
-                    }
-                }
-                break;
-            case PAUSE_SIM:
-                if (isExecuting.compareAndSet(false, true)) {
-                    new Thread(() -> {
-                        pauseSim();
-
-                        updateMenuBar();
-                        isExecuting.set(false);
-                    }).start();
-                }
-                break;
-        }
-
-        lock_user_input.unlock();
-    }
-
-    private void updateMenuBar() {
-        if (!isCreated) return;
-
-        boolean hasStreetgraph = streetgraph != null;
-        boolean hasScenario    = simulation.getScenario() != null;
-
-        menubar.menuMap.setEnabled(true);
-        menubar.menuMap.itemLoadMap.setEnabled(true);
-
-        menubar.menuLogic.setEnabled(true);
-        menubar.menuLogic.itemRunPause.setEnabled(  hasStreetgraph && hasScenario);
-        menubar.menuLogic.itemRunOneStep.setEnabled(hasStreetgraph && hasScenario);
-        menubar.menuLogic.itemEditSim.setEnabled(true);
-        menubar.menuLogic.itemNewSim.setEnabled(    hasStreetgraph);
-    }
-
-    @Override
-    public void addKeyCommand(short event, short vk, KeyCommand command) {
-        mapviewer.addKeyCommand(event, vk, command);
-    }
 
     /*
     |=========|
@@ -423,19 +186,24 @@ public class SimulationController implements GUIController {
         parser = DefaultParserConfig.get(config).build();
 
         /* create preferences */
-        preferences.create();
         preferences.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         preferences.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                transiate(GUIEvent.CANCEL);
+                transiate(GUIEvent.CANCEL_PREFS);
             }
         });
         preferences.pack();
         preferences.setLocationRelativeTo(null);    // center on screen; close to setVisible
         preferences.setVisible(false);
 
-        mapviewer.addOverlay(0, overlay);
+        /* overlays */
+        scenarioAreaOverlay = new ScenarioAreaOverlay();
+        SwingUtilities.invokeLater(() -> {
+            scenarioAreaOverlay.setEnabled(false, false, false);
+        });
+        mapviewer.addOverlay(0, scenarioAreaOverlay);
+        mapviewer.addOverlay(1, overlay);
 
         /* setup JFrame */
         menubar.menuMap.addActions(this);
@@ -455,11 +223,11 @@ public class SimulationController implements GUIController {
          */
         frame.setMinimumSize(new Dimension(100, 100));
 
-        /* on close: stop the visualization and exit */
+        /* on close: stop the visualization and shutdown */
         frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                exit();
+                shutdown();
             }
         });
 
@@ -475,7 +243,7 @@ public class SimulationController implements GUIController {
         mapviewer.show();
     }
 
-    private void exit() {
+    private void shutdown() {
         int choice = JOptionPane.showConfirmDialog(frame,
                 "Do you really want to exit?", "Close Program",
                 JOptionPane.YES_NO_OPTION,
@@ -490,6 +258,329 @@ public class SimulationController implements GUIController {
             frame.dispose();
             System.exit(0);
         }
+    }
+
+
+    /*
+    |===================|
+    | (i) GUIController |
+    |===================|
+    */
+    /**
+     * <p>
+     * Works like a transition of a state machine. Depending on the event, several functions are called.<br>
+     * NOTE: If not differently mentioned below, all events initializes executions if and only if no other execution
+     * is currently active.
+     *
+     * <ul>
+     * <li> {@link GUIEvent#EXIT} - If this is called, all running executions are interrupted and the application
+     * exits. So this event is getting executed even if there are other executions active. <br>
+     * <li> {@link GUIEvent#LOAD_MAP} - Asks the user to choose a map file. If (and only if) a parsing is already
+     * running, the user is asked to cancel the currently running parsing task. <br>
+     * <li> {@link GUIEvent#NEW_SCENARIO} - Pauses a running simulation and shows the scenario-preferences-window for
+     * choosing scenario parameters. If (and only if) a scenario is already preparing (not finished), the user is
+     * asked to cancel the currently running scenario-building task. <br>
+     * <li> {@link GUIEvent#ACCEPT_PREFS} - Closes the scenario-preferences-window if all settings are correctly formatted.
+     * If the scenario should be a new one (due to {@code GUIEvent#NEW_SCENARIO}), a new scenario is build. This
+     * event does ignore other running tasks because it has to be called after choosing scenario parameters. It
+     * is only closing the scenario-preferences-window and updating the GUI, if no new scenario is chosen. BUT it
+     * unlocks the lock of other executions, so we recommend to call it only to finish the event NEW_SCENARIO. <br>
+     *
+     * <li> {@link GUIEvent#CANCEL_PREFS} Analogue to {@code GUIEvent.ACCEPT_PREFS}: It is only closing the
+     * scenario-preferences-window and updating the GUI. BUT it unlocks the lock of other executions, so we recommend to
+     * call it only to finish the event NEW_SCENARIO. <br>
+     * <li> {@link GUIEvent#EDIT_SCENARIO} Pauses a running simulation and shows the scenario-preferences-window for
+     * choosing scenario parameters. <br>
+     * <li> {@link GUIEvent#RUN_SIM} Runs the simulation. <br>
+     * <li> {@link GUIEvent#RUN_SIM_ONE_STEP} Pauses the simulation and runs it one step. <br>
+     * <li> {@link GUIEvent#PAUSE_SIM} Pauses the simulation. <br>
+     * </ul>
+     */
+    @Override
+    public void transiate(GUIEvent event, final File file) {
+        logger.debug("GUIEvent called = GUIEvent." + event);
+
+        if (event == GUIEvent.EXIT)
+            shutdown();
+        if (!lock_user_input.tryLock())
+            return;
+
+        switch (event) {
+            case LOAD_MAP:
+                transitionLoadMap(file);
+                break;
+            case CHANGE_AREA_SELECTION:
+                transitionChangeAreaSelection();
+                break;
+            case NEW_SCENARIO:
+                transitionNewScenario();
+                break;
+            case ACCEPT_PREFS:
+                transitionAcceptPreferences();
+                break;
+            case CANCEL_PREFS:
+                transitionCancelPreferences();
+                break;
+            case EDIT_SCENARIO:
+                transitionEditScenario();
+                break;
+            case RUN_SIM:
+                transitionRunSim();
+                break;
+            case RUN_SIM_ONE_STEP:
+                transitionRunSimOneStep();
+                break;
+            case PAUSE_SIM:
+                transitionPauseSim();
+                break;
+        }
+
+        lock_user_input.unlock();
+    }
+
+    private void transitionLoadMap(File file) {
+        if (isParsing.get()) {
+            new Thread(() -> {
+                // ask user to cancel parsing
+                Object[] options = { "Yes", "No" };
+                int choice = JOptionPane.showOptionDialog(
+                        null,
+                        "Are you sure to cancel the parsing?",
+                        "Cancel parsing?",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE,
+                        null,
+                        options,
+                        options[1]);
+                // if yes: cancel
+                if (choice == JOptionPane.YES_OPTION)
+                    cancelParsing();
+            }).start();
+        } else if (isExecutingUserTask.compareAndSet(false, true)) {
+            parsingThread = new Thread(() -> {
+                isParsing.set(true);
+
+                closePreferences();
+                pauseSim();
+
+                File loadedFile = file == null ? askForMapFile() : file;
+                if (loadedFile != null)
+                    parseAndShow(loadedFile);
+
+                isParsing.set(false);
+                updateMenuBar();
+                isExecutingUserTask.set(false);
+            });
+            parsingThread.start();
+        }
+    }
+
+    private void transitionChangeAreaSelection() {
+        /* goal: enable scenario area overlay */
+
+        if (isExecutingUserTask.compareAndSet(false, true)) {
+            new Thread(() -> {
+                boolean enableScenarioAreaOverlay =
+                        /* check if overlay is already enabled */
+                        !scenarioAreaOverlay.hasEventsEnabled()
+                        /* check if there is a map */
+                        && streetgraph != null;
+
+                if (enableScenarioAreaOverlay) {
+                    /* check if there is a scenario => ask for removing it */
+                    if (simulation.hasScenario()) {
+                        /* ask user to remove currently running scenario */
+                        Object[] options = {"Yes", "No"};
+                        int choice = JOptionPane.showOptionDialog(
+                                null,
+                                "To change the origin/destination areas, the currently running scenario has to be removed."
+                                        + System.lineSeparator()
+                                        + "Do you still like to change the areas?",
+                                "Remove currently running scenario?",
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.WARNING_MESSAGE,
+                                null,
+                                options,
+                                options[1]);
+                        /* if yes: remove */
+                        if (choice == JOptionPane.YES_OPTION) {
+                            pauseSim();
+                            simulation.removeCurrentScenario();
+                        } else
+                            enableScenarioAreaOverlay = false;
+                    }
+
+                    scenarioAreaOverlay.setEventsEnabled(enableScenarioAreaOverlay);
+                }
+
+                isExecutingUserTask.set(false);
+            }).start();
+        }
+    }
+
+    private void transitionNewScenario() {
+        if (isBuildingScenario.get()) {
+            askUserToCancelScenarioBuilding();
+        } else if (isExecutingUserTask.compareAndSet(false, true)) { // unlock after accept/cancel
+            new Thread(() -> {
+                if (streetgraph != null) {
+                    pauseSim();
+                    newSim = true;
+                    showPreferences();
+                } else
+                    isExecutingUserTask.set(false);
+            }).start();
+        }
+    }
+
+    private void transitionAcceptPreferences() {
+        scenarioBuildThread = new Thread(() -> {
+            if (isBuildingScenario.compareAndSet(false, true)) {
+
+                /* get new config */
+                SimulationConfig newConfig = null;
+                try {
+                    newConfig = preferences.getCorrectSettings();
+                } catch (IncorrectSettingsException e) {
+                    JOptionPane.showMessageDialog(
+                            null,
+                            e.getMessage(),
+                            "Error: wrong preferences values",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+
+                /* process new config if correct input */
+                if (newConfig != null) {
+                    closePreferences();
+                    config.update(newConfig);
+
+                    updateScenario();
+                    if (newSim) {
+                        startNewScenario();
+                        newSim = false;
+                    }
+
+                    updateMenuBar();
+                    isExecutingUserTask.set(false);
+                }
+
+                isBuildingScenario.set(false);
+            }
+        });
+        scenarioBuildThread.start();
+    }
+
+    private void transitionCancelPreferences() {
+        new Thread(() -> {
+            closePreferences();
+            updateMenuBar();
+            isExecutingUserTask.set(false);
+        }).start();
+    }
+
+    private void transitionEditScenario() {
+        if (isExecutingUserTask.compareAndSet(false, true)) { // unlock after accept/cancel
+            new Thread(() -> {
+                pauseSim();
+                newSim = false;
+                showPreferences();
+
+                updateMenuBar();
+            }).start();
+        }
+    }
+
+    private void transitionRunSim() {
+        if (isExecutingUserTask.compareAndSet(false, true)) {
+            if (!simulation.hasScenario())
+                isExecutingUserTask.set(false);
+            else {
+                new Thread(() -> {
+                    runSim();
+
+                    updateMenuBar();
+                    isExecutingUserTask.set(false);
+                }).start();
+            }
+        }
+    }
+
+    private void transitionRunSimOneStep() {
+        if (isExecutingUserTask.compareAndSet(false, true)) {
+            if (!simulation.hasScenario())
+                isExecutingUserTask.set(false);
+            else {
+                new Thread(() -> {
+                    pauseSim();
+                    runSimOneStep();
+
+                    updateMenuBar();
+                    isExecutingUserTask.set(false);
+                }).start();
+            }
+        }
+    }
+
+    private void transitionPauseSim() {
+        if (isExecutingUserTask.compareAndSet(false, true)) {
+            new Thread(() -> {
+                pauseSim();
+
+                updateMenuBar();
+                isExecutingUserTask.set(false);
+            }).start();
+        }
+    }
+
+    @Override
+    public void addKeyCommand(short event, short vk, KeyCommand command) {
+        mapviewer.addKeyCommand(event, vk, command);
+    }
+
+
+    /*
+    |========|
+    | window |
+    |========|
+    */
+    private String getDefaultFrameTitle() {
+        return frameTitleRaw;
+    }
+
+    /**
+     * Return the default window title.
+     * @return the default frame title.
+     */
+    private String getDefaultFrameTitle(File file) {
+        if (file != null)
+            return getDefaultFrameTitle() + " - [" + file + "]";
+
+        return getDefaultFrameTitle();
+    }
+
+    private String getParsingFrameTitle() {
+        return getDefaultFrameTitle() + " - Parsing new map, please wait...";
+    }
+
+    private String getParsingFrameTitle(File file) {
+        return getDefaultFrameTitle() + " - Parsing [" + file + "]";
+    }
+
+    private void updateMenuBar() {
+        if (!isCreated) return;
+
+        boolean hasStreetgraph = streetgraph != null;
+        boolean hasScenario    = simulation.getScenario() != null;
+
+        menubar.menuMap.setEnabled(true);
+        menubar.menuMap.itemLoadMap.setEnabled(true);
+
+        menubar.menuLogic.setEnabled(true);
+        menubar.menuLogic.itemRunPause.setEnabled(hasStreetgraph && hasScenario);
+        menubar.menuLogic.itemRunOneStep.setEnabled(hasStreetgraph && hasScenario);
+        menubar.menuLogic.itemEditSim.setEnabled(true);
+        menubar.menuLogic.itemNewSim.setEnabled(hasStreetgraph);
+        menubar.menuLogic.itemChangeAreaSelection.setEnabled(hasStreetgraph);
     }
 
     /*
@@ -507,7 +598,7 @@ public class SimulationController implements GUIController {
 
     private void parseAndShow(File file) {
         String cachedTitle = frame.getTitle();
-        frame.setTitle("Parsing new map, please wait...");
+        frame.setTitle(getParsingFrameTitle(file));
 
         OSMParser.Result result;
 
@@ -532,13 +623,15 @@ public class SimulationController implements GUIController {
             if (result.streetgraph != null) {
                 simulation.removeCurrentScenario();
                 streetgraph = result.streetgraph;
+                overlay.setEnabled(true);
+                scenarioAreaOverlay.setEnabled(true, true, false);
 
                 try {
                     mapviewer.setMap(result.segment);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                cachedTitle = "MicroTrafficSim - " + file.getName();
+                cachedTitle = getDefaultFrameTitle(file);
             }
         }
 
@@ -590,10 +683,32 @@ public class SimulationController implements GUIController {
 
         /* remove old scenario */
         simulation.removeCurrentScenario();
+        scenarioAreaOverlay.setEventsEnabled(false);
+        scenarioAreaOverlay.setPropertiesVisible(false);
 
 
         /* create and prepare new scenario */
-        Scenario scenario = new RandomRouteScenario(config.seed, config, streetgraph);
+        AreaScenario scenario;
+        if (config.scenario.selectedClass.getObj() == AreaScenario.class) {
+            scenario = new AreaScenario(config.seed, config, streetgraph);
+            /* get areas from overlay */
+            scenarioAreaOverlay.getAreas().stream()
+                    .map(area -> area.getUnprojectedArea(mapviewer.getProjection()))
+                    .forEach(scenario::addArea);
+            scenario.refillNodeLists();
+        } else if (config.scenario.selectedClass.getObj() == EndOfTheWorldScenario.class) {
+            scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
+        } else {
+            if (config.scenario.selectedClass.getObj() != RandomRouteScenario.class)
+                logger.error("Chosen scenario could not be found. " + RandomRouteScenario.class.getSimpleName() + " is used instead.");
+            scenario = new RandomRouteScenario(config.seed, config, streetgraph);
+        }
+        /* update area overlay */
+        scenarioAreaOverlay.removeAllAreas();
+        scenario.getAreas().stream()
+                .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
+                .forEach(scenarioAreaOverlay::add);
+
         try {
             scenarioBuilder.prepare(
                     scenario,
@@ -607,6 +722,7 @@ public class SimulationController implements GUIController {
             simulation.runOneStep();
         } catch (InterruptedException ignored) {
             logger.info("Scenario building interrupted by user");
+            scenarioAreaOverlay.setEnabled(true, true, true);
         }
 
 
@@ -616,6 +732,30 @@ public class SimulationController implements GUIController {
 
     private void updateScenario() {
         // todo update scenario although it is not new => activate PrefElements
+
+        if(config.scenario.showAreasWhileSimulating)
+            scenarioAreaOverlay.setEnabled(true, false, false);
+        else
+            scenarioAreaOverlay.setEnabled(false, false, false);
+    }
+
+    private void askUserToCancelScenarioBuilding() {
+        new Thread(() -> {
+            // ask user to cancel scenario building
+            Object[] options = { "Yes", "No" };
+            int choice = JOptionPane.showOptionDialog(
+                    null,
+                    "Are you sure to cancel the scenario building?",
+                    "Cancel scenario building?",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null,
+                    options,
+                    options[1]);
+            // if yes: cancel
+            if (choice == JOptionPane.YES_OPTION)
+                cancelScenarioBuilding();
+        }).start();
     }
 
     private void cancelScenarioBuilding() {
@@ -637,10 +777,15 @@ public class SimulationController implements GUIController {
         boolean hasScenario    = simulation.getScenario() != null;
 
         /* general */
-        preferences.setEnabled(PrefElement.sliderSpeedup,         newSim || hasScenario);
-        preferences.setEnabled(PrefElement.maxVehicleCount,       newSim);
-        preferences.setEnabled(PrefElement.seed,                  newSim);
-        preferences.setEnabled(PrefElement.metersPerCell,         newSim);
+        preferences.setEnabled(PrefElement.sliderSpeedup,   true);
+        preferences.setEnabled(PrefElement.maxVehicleCount, newSim);
+        preferences.setEnabled(PrefElement.seed,            newSim);
+        preferences.setEnabled(PrefElement.metersPerCell,   newSim);
+
+        /* scenario */
+        preferences.setEnabled(PrefElement.showAreasWhileSimulating,  true);
+        preferences.setEnabled(PrefElement.nodesAreWeightedUniformly, newSim);
+        preferences.setEnabled(PrefElement.scenarioSelection,         newSim);
 
         /* crossing logic */
         preferences.setEnabled(PrefElement.edgePriority,          newSim);

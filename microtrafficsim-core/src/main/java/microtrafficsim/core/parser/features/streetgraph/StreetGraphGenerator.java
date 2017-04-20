@@ -9,7 +9,7 @@ import microtrafficsim.core.parser.processing.Connector;
 import microtrafficsim.core.parser.processing.GraphWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.DistanceCalculator;
 import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.math.Vec2d;
@@ -37,7 +37,7 @@ import java.util.Set;
 public class StreetGraphGenerator implements FeatureGenerator {
     private static Logger logger = new EasyMarkableLogger(StreetGraphGenerator.class);
 
-    private ScenarioConfig     config;
+    private SimulationConfig config;
     private Graph              graph;
     private DistanceCalculator distcalc;
 
@@ -47,10 +47,10 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * HaversineDistanceCalculator } as {@code DistanceCalculator}.
      * <p>
      * This is equivalent to
-     * {@link StreetGraphGenerator#StreetGraphGenerator(ScenarioConfig, DistanceCalculator)
+     * {@link StreetGraphGenerator#StreetGraphGenerator(SimulationConfig, DistanceCalculator)
      * StreetGraphGenerator(config, HaversineDistanceCalculator::getDistance) }
      */
-    public StreetGraphGenerator(ScenarioConfig config) {
+    public StreetGraphGenerator(SimulationConfig config) {
         this(config, HaversineDistanceCalculator::getDistance);
     }
 
@@ -61,7 +61,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * @param distcalc the {@code DistanceCalculator} used to calculate the length of
      *                 streets.
      */
-    public StreetGraphGenerator(ScenarioConfig config, DistanceCalculator distcalc) {
+    public StreetGraphGenerator(SimulationConfig config, DistanceCalculator distcalc) {
         this.config      = config;
         this.distcalc    = distcalc;
         this.graph       = null;
@@ -135,7 +135,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * @param graph   the StreetGraph to which the generated edges should be added.
      * @param way     the {@code WayEntity} for which the edges should be generated.
      */
-    private void createAndAddEdges(DataSet dataset, Graph graph, WayEntity way, ScenarioConfig config) {
+    private void createAndAddEdges(DataSet dataset, Graph graph, WayEntity way, SimulationConfig config) {
         NodeEntity      node0          = dataset.nodes.get(way.nodes[0]);
         NodeEntity      node1          = dataset.nodes.get(way.nodes[1]);
         NodeEntity      secondLastNode = dataset.nodes.get(way.nodes[way.nodes.length - 2]);

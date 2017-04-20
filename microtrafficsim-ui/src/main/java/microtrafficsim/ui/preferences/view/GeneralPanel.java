@@ -1,47 +1,63 @@
-package microtrafficsim.ui.preferences.impl;
+package microtrafficsim.ui.preferences.view;
 
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
-import microtrafficsim.utils.id.ConcurrentSeedGenerator;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
-import microtrafficsim.ui.preferences.PrefElement;
+import microtrafficsim.ui.preferences.model.GeneralModel;
+import microtrafficsim.ui.preferences.model.PrefElement;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Hashtable;
 
-
 /**
  * @author Dominic Parga Cacheiro
  */
 public class GeneralPanel extends PreferencesPanel {
-    private JSlider    sliderSpeedup;
-    private JTextField tfMaxVehicleCount, tfSeed, tfMetersPerCell;
 
+    private final GeneralModel model;
+    private final JSlider sliderSpeedup;
+    private final JTextField tfMaxVehicleCount;
+    private final JTextField tfSeed;
+    private final JTextField tfMetersPerCell;
+
+    /**
+     * You should call {@link #create()} before you use this frame.
+     */
     public GeneralPanel() {
-        super("General");
+        super();
+        model = new GeneralModel();
+
+        sliderSpeedup     = new JSlider(0, 100);
+        tfMaxVehicleCount = new JTextField();
+        tfSeed            = new JTextField();
+        tfMetersPerCell   = new JTextField();
+
+        create();
     }
 
-    /*
-    |============|
-    | components |
-    |============|
-    */
-    private void addSpeedup() {
-        incRow();
+    private void create() {
 
-        /* components */
-        sliderSpeedup = new JSlider(0, 100);
+        setLayout(new GridBagLayout());
 
-        /* JLabel */
+        int row = 0;
+        addSlider(row++);
+        addTextFieldToGridBagLayout(row++, "max vehicle count: ", tfMaxVehicleCount);
+        addTextFieldToGridBagLayout(row++, "seed: ", tfSeed);
+        addTextFieldToGridBagLayout(row++, "meters per cell: ", tfMetersPerCell);
+    }
+
+    private void addSlider(int row) {
         GridBagConstraints constraints = new GridBagConstraints();
-        constraints.weightx            = 0;
-        constraints.anchor             = GridBagConstraints.WEST;
-        JLabel label                   = new JLabel("speedup: ");
+
+        /* speedup slider */
+        constraints.gridx   = 0;
+        constraints.gridy   = row;
+        constraints.weightx = 0;
+        constraints.anchor  = GridBagConstraints.WEST;
+        JLabel label        = new JLabel("speedup: ");
         label.setFont(PreferencesFrame.TEXT_FONT);
-        incColumn();
         add(label, constraints);
 
-        /* JSlider */
         sliderSpeedup.setMajorTickSpacing(5);
         sliderSpeedup.setMinorTickSpacing(1);
         // set labels for slider
@@ -52,49 +68,27 @@ public class GeneralPanel extends PreferencesPanel {
         sliderSpeedup.setPaintTicks(true);
         sliderSpeedup.setSnapToTicks(true);
         sliderSpeedup.setPaintLabels(true);
-        sliderSpeedup.setPreferredSize(
-                new Dimension(2 * sliderSpeedup.getPreferredSize().width, sliderSpeedup.getPreferredSize().height));
+
 
         constraints           = new GridBagConstraints();
-        constraints.fill      = GridBagConstraints.HORIZONTAL;
+        constraints.gridx     = 1;
+        constraints.gridy     = row;
         constraints.weightx   = 1;
         constraints.gridwidth = 2;
         constraints.anchor    = GridBagConstraints.WEST;
-        incColumn();
+        constraints.fill      = GridBagConstraints.HORIZONTAL;
+        sliderSpeedup.setMinimumSize(new Dimension(420, 1));
         add(sliderSpeedup, constraints);
     }
 
-    private void addMaxVehicleCount() {
-        tfMaxVehicleCount = new JTextField();
-        configureAndAddJTextFieldRow("max vehicle count: ", tfMaxVehicleCount);
-    }
 
-    private void addSeed() {
-        tfSeed = new JTextField();
-        configureAndAddJTextFieldRow("seed: ", tfSeed);
-    }
-
-    private void addMetersPerCell() {
-        tfMetersPerCell = new JTextField();
-        configureAndAddJTextFieldRow("meters per cell", tfMetersPerCell);
-    }
-
-    /*
-    |=================|
-    | (i) Preferences |
-    |=================|
-    */
     @Override
-    public void create() {
-        addSpeedup();
-        addMaxVehicleCount();
-        addSeed();
-        addMetersPerCell();
-        setAllEnabled(false);
+    public GeneralModel getModel() {
+        return model;
     }
 
     @Override
-    public void setSettings(ScenarioConfig config) {
+    public void setSettings(SimulationConfig config) {
         sliderSpeedup.setValue(config.speedup);
         tfMaxVehicleCount.setText("" + config.maxVehicleCount);
         tfSeed.setText("" + config.seed);
@@ -102,10 +96,10 @@ public class GeneralPanel extends PreferencesPanel {
     }
 
     @Override
-    public ScenarioConfig getCorrectSettings() throws IncorrectSettingsException {
-        ScenarioConfig             config           = new ScenarioConfig();
-        boolean                    exceptionOccured = false;
-        IncorrectSettingsException exception        = new IncorrectSettingsException();
+    public SimulationConfig getCorrectSettings() throws IncorrectSettingsException {
+        SimulationConfig config              = new SimulationConfig();
+        boolean exceptionOccured             = false;
+        IncorrectSettingsException exception = new IncorrectSettingsException();
 
 
         config.speedup = sliderSpeedup.getValue();
@@ -140,10 +134,10 @@ public class GeneralPanel extends PreferencesPanel {
         enabled = id.isEnabled() && enabled;
 
         switch (id) {
-        case sliderSpeedup:   sliderSpeedup.setEnabled(enabled);     break;
-        case maxVehicleCount: tfMaxVehicleCount.setEnabled(enabled); break;
-        case seed:            tfSeed.setEnabled(enabled);            break;
-        case metersPerCell:   tfMetersPerCell.setEnabled(enabled);   break;
+            case sliderSpeedup:   sliderSpeedup.setEnabled(enabled);     break;
+            case maxVehicleCount: tfMaxVehicleCount.setEnabled(enabled); break;
+            case seed:            tfSeed.setEnabled(enabled);            break;
+            case metersPerCell:   tfMetersPerCell.setEnabled(enabled);   break;
         }
     }
 }

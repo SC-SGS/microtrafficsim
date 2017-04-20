@@ -2,7 +2,7 @@ package logic.validation.scenarios.pluscrossroad;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 
 import java.util.function.Supplier;
 
@@ -11,7 +11,7 @@ import java.util.function.Supplier;
  */
 public class FullPlusCrossroadScenario extends AbstractPlusCrossroadScenario {
 
-    public FullPlusCrossroadScenario(ScenarioConfig config,
+    public FullPlusCrossroadScenario(SimulationConfig config,
                                      Graph graph,
                                      Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph, visVehicleFactory);
@@ -21,7 +21,7 @@ public class FullPlusCrossroadScenario extends AbstractPlusCrossroadScenario {
      * @param config
      * @return the given config updated; just for practical purpose
      */
-    public static ScenarioConfig setupConfig(ScenarioConfig config) {
+    public static SimulationConfig setupConfig(SimulationConfig config) {
 
         AbstractPlusCrossroadScenario.setupConfig(config);
 

@@ -104,7 +104,7 @@ public class MapViewerExample {
         viewer.create();
 
         /* Create and add a new ScenarioAreaOverlay */
-        viewer.addOverlay(0, new ScenarioAreaOverlay(viewer.getProjection()));
+        viewer.addOverlay(0, new ScenarioAreaOverlay());
 
         setUpShortcuts(viewer);
 

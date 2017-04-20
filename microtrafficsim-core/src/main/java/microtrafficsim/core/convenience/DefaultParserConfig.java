@@ -6,7 +6,7 @@ import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefini
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponentFactory;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 
 
 public class DefaultParserConfig {
-    public static OSMParser.Config get(ScenarioConfig config) {
+    public static OSMParser.Config get(SimulationConfig config) {
         return get(config.visualization.style, config);
     }
 
@@ -26,7 +26,7 @@ public class DefaultParserConfig {
         return get(style, null);
     }
 
-    public static OSMParser.Config get(MapStyleSheet style, ScenarioConfig config) {
+    public static OSMParser.Config get(MapStyleSheet style, SimulationConfig config) {
         /* global properties for (all) generators */
         FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
         genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.CLIP;

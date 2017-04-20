@@ -18,7 +18,7 @@ import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 
 import java.util.HashMap;
 import java.util.function.Function;
@@ -223,7 +223,7 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
             this.seed = seed;
         }
 
-        public Config(ScenarioConfig cfg) {
+        public Config(SimulationConfig cfg) {
             this.metersPerCell = cfg.metersPerCell;
             this.priorityFn = cfg.streetPriorityLevel;
             this.crossingLogic = cfg.crossingLogic;

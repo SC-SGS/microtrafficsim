@@ -5,14 +5,17 @@ import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
+import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 
 import java.util.function.Supplier;
 
 /**
+ * The type of scenario represented by this class chooses start and end nodes randomly out of node-collections.
+ *
  * @author Dominic Parga Cacheiro
  */
 public abstract class BasicRandomScenario extends BasicScenario implements Seeded {
@@ -24,14 +27,26 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
     private final ShortestPathAlgorithm<Node, DirectedEdge> shortestPathAlg;
 
     protected BasicRandomScenario(long seed,
-                                  ScenarioConfig config,
+                                  SimulationConfig config,
+                                  Graph graph) {
+        this(new Random(seed), config, graph);
+    }
+
+    protected BasicRandomScenario(Random random,
+                                  SimulationConfig config,
+                                  Graph graph) {
+        this(random, config, graph, new ConcurrentVehicleContainer());
+    }
+
+    protected BasicRandomScenario(long seed,
+                                  SimulationConfig config,
                                   Graph graph,
                                   VehicleContainer vehicleContainer) {
         this(new Random(seed), config, graph, vehicleContainer);
     }
 
     protected BasicRandomScenario(Random random,
-                                  ScenarioConfig config,
+                                  SimulationConfig config,
                                   Graph graph,
                                   VehicleContainer vehicleContainer) {
         super(config, graph, vehicleContainer);

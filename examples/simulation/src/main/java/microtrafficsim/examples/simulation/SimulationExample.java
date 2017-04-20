@@ -20,7 +20,7 @@ import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
@@ -57,7 +57,7 @@ public class SimulationExample {
     private ExchangeFormat exfmt;
 
     private JFrame frame;
-    private ScenarioConfig config;
+    private SimulationConfig config;
     private TileBasedMapViewer viewer;
     private VehicleOverlay overlay;
 
@@ -101,8 +101,8 @@ public class SimulationExample {
      * Create and return the ScenarioConfig used for this example.
      * @return the {@code ScenarioConfig} used for this example.
      */
-    private ScenarioConfig config() {
-        ScenarioConfig config = new ScenarioConfig();
+    private SimulationConfig config() {
+        SimulationConfig config = new SimulationConfig();
 
         config.maxVehicleCount                            = 1000;
         config.speedup                                    = 5;
@@ -122,7 +122,7 @@ public class SimulationExample {
     /**
      * Set up the {@code TileBasedMapViewer}.
      */
-    private TileBasedMapViewer setUpMapViewer(ScenarioConfig config) throws UnsupportedFeatureException {
+    private TileBasedMapViewer setUpMapViewer(SimulationConfig config) throws UnsupportedFeatureException {
         TileBasedMapViewer viewer = new TileBasedMapViewer(config.visualization.style);
         viewer.create(config);
 
@@ -157,7 +157,7 @@ public class SimulationExample {
         return frame;
     }
 
-    private void setUpSerializer(TileBasedMapViewer viewer, ScenarioConfig config) {
+    private void setUpSerializer(TileBasedMapViewer viewer, SimulationConfig config) {
         serializer = ExchangeFormatSerializer.create();
         exfmt = ExchangeFormat.getDefault();
 
@@ -210,7 +210,7 @@ public class SimulationExample {
      * @param overlay the overlay displaying the vehicles.
      * @return the created simulation.
      */
-    private Simulation createAndInitSimulation(ScenarioConfig config, Graph graph, VehicleOverlay overlay)
+    private Simulation createAndInitSimulation(SimulationConfig config, Graph graph, VehicleOverlay overlay)
             throws InterruptedException
     {
         Random seedgen = new Random(config.seed);

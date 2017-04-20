@@ -9,7 +9,7 @@ import microtrafficsim.core.logic.Direction;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.math.Geometry;
@@ -37,7 +37,7 @@ public class TestNodeCrossingIndices {
         for (int priorityRun = 0; priorityRun < 2; priorityRun++) {
 
             /* setup config */
-            ScenarioConfig config = new ScenarioConfig();
+            SimulationConfig config = new SimulationConfig();
             AbstractPlusCrossroadScenario.setupConfig(config);
             config.crossingLogic.drivingOnTheRight = priorityRun == 0; // first right-before-left
 

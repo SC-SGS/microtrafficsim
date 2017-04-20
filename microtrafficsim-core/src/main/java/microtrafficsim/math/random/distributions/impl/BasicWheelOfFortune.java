@@ -1,7 +1,10 @@
 package microtrafficsim.math.random.distributions.impl;
 
 import microtrafficsim.math.random.distributions.WheelOfFortune;
+import microtrafficsim.utils.collections.skiplist.PrioritySkipListSet;
+import microtrafficsim.utils.collections.skiplist.SkipList;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -11,11 +14,12 @@ import java.util.Iterator;
  *
  * @author Dominic Parga Cacheiro
  */
-public class BasicWheelOfFortune implements WheelOfFortune {
+public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
 
     private Random random;
-    private HashMap<Object, Integer> fields;
-    private int               n;
+    private SkipList<T> elements;
+    private HashMap<T, Integer> fields;
+    private int n;
 
     public BasicWheelOfFortune(long seed) {
         this(new Random(seed));
@@ -23,6 +27,7 @@ public class BasicWheelOfFortune implements WheelOfFortune {
 
     public BasicWheelOfFortune(Random random) {
         this.random = random;
+        elements    = new PrioritySkipListSet<>(Comparator.comparingLong(Object::hashCode));
         fields      = new HashMap<>();
         n           = 0;
     }
@@ -31,9 +36,10 @@ public class BasicWheelOfFortune implements WheelOfFortune {
      * The runtime of this implementation is determined by
      * {@link HashMap#containsKey(Object)} and {@link HashMap#put(Object, Object)}.
      */
-    public void add(Object obj, int weight) {
-        if (!fields.containsKey(obj) && weight > 0) {
-            fields.put(obj, weight);
+    public void add(T t, int weight) {
+        if (!fields.containsKey(t) && weight > 0) {
+            elements.add(t);
+            fields.put(t, weight);
             n += weight;
         }
     }
@@ -42,50 +48,110 @@ public class BasicWheelOfFortune implements WheelOfFortune {
      * The runtime of this implementation is determined by
      * {@link HashMap#containsKey(Object)} and {@link HashMap#put(Object, Object)}.
      */
-    public void update(Object obj, int weight) {
+    public void update(T t, int weight) {
 
         if (weight < 0)
             throw new IllegalArgumentException("The weight should be updated to < 0, which is forbidden.");
 
-        if (weight > 0 && fields.containsKey(obj))
-            n += weight - fields.put(obj, weight);
+        if (fields.containsKey(t)) {
+            if (weight == 0)
+                remove(t);
+            else {
+                elements.remove(t);
+                elements.add(t);
+                n += weight - fields.put(t, weight);
+            }
+        }
+    }
+
+    @Override
+    public void incWeight(T t) {
+        Integer weight = fields.get(t);
+        if (weight != null) {
+            elements.remove(t);
+            elements.add(t);
+            fields.put(t, weight + 1);
+        } else {
+            elements.add(t);
+            fields.put(t, 1);
+        }
+        n++;
+    }
+
+    @Override
+    public void decWeight(T t) {
+        Integer weight = fields.get(t);
+        if (weight != null) {
+            if (--weight > 0) {
+                elements.remove(t);
+                elements.add(t);
+                fields.put(t, weight);
+                n--;
+            } else remove(t);
+        }
     }
 
     /**
      * The runtime of this implementation is determined by {@link HashMap#remove(Object)}.
      */
-    public void remove(Object obj) {
-        fields.remove(obj);
+    @Override
+    public void remove(T t) {
+        elements.remove(t);
+        n -= fields.remove(t);
+    }
+
+    @Override
+    public void clear() {
+        elements.clear();
+        fields.clear();
+        n = 0;
+    }
+
+    @Override
+    public int size() {
+        return fields.size();
     }
 
     /**
-     * The runtime of this method is O(n) where n is the number of elements in this wheel.
+     * The runtime of this method is O(n) where n is the number of elements in this wheel. Unweighted, the runtime is
+     * in O(log(n)) due to {@link SkipList}.
      */
-    public Object nextObject() {
+    @Override
+    public T nextObject(boolean weightedUniformly) {
+        if (weightedUniformly)
+            return elements.get(random.nextInt(size()));
+        else {
+            if (n <= 0) return null;
 
-        if (n <= 0) return null;
+            int i = random.nextInt(n);
+            Iterator<T> objects = elements.iterator();
+            T lastObj = null;
 
-        int              i       = random.nextInt(n);
-        Iterator<Object> objects = fields.keySet().iterator();
-        Object           lastObj = null;
+            while (i >= 0) {
+                lastObj = objects.next();
+                i -= fields.get(lastObj);
+            }
 
-        while (i >= 0) {
-            lastObj = objects.next();
-            i -= fields.get(lastObj);
+            return lastObj;
         }
-
-        return lastObj;
     }
 
-    /*
-    |================|
-    | (i) Resettable |
-    |================|
-    */
+
+    @Override
+    public long getSeed() {
+        return random.getSeed();
+    }
+
+    @Override
+    public void setSeed(long seed) {
+        random.setSeed(seed);
+    }
+
+    /**
+     * Resets the used random variable but does not clear this wheel.
+     */
     @Override
     public void reset() {
         random.reset();
-        fields.clear();
-        n = 0;
     }
 }

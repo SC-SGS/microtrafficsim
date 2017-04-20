@@ -1,8 +1,5 @@
 package microtrafficsim.osm.parser;
 
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
-import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.osm.parser.Parser;
 import microtrafficsim.osm.parser.base.DataSet;
 
 

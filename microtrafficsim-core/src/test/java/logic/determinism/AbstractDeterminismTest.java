@@ -2,7 +2,7 @@ package logic.determinism;
 
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
@@ -48,7 +48,7 @@ public abstract class AbstractDeterminismTest {
     private static Logger logger = new EasyMarkableLogger(AbstractDeterminismTest.class);
 
     /* (part of) tested parameters */
-    private final ScenarioConfig config;
+    private final SimulationConfig config;
     private Graph graph;
     private final Simulation simulation;
     private int expectedAge;
@@ -74,10 +74,10 @@ public abstract class AbstractDeterminismTest {
     protected abstract int getMaxStep();
     protected abstract int getSimulationRuns();
 
-    protected abstract ScenarioConfig createConfig();
-    protected abstract Graph createGraph(ScenarioConfig config);
-    protected abstract Scenario createScenario(ScenarioConfig config, Graph graph);
-    protected abstract Scenario prepareScenario(ScenarioConfig config, Scenario scenario);
+    protected abstract SimulationConfig createConfig();
+    protected abstract Graph createGraph(SimulationConfig config);
+    protected abstract Scenario createScenario(SimulationConfig config, Graph graph);
+    protected abstract Scenario prepareScenario(SimulationConfig config, Scenario scenario);
 
 
     /*

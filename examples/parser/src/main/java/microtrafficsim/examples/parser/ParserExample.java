@@ -8,7 +8,7 @@ import microtrafficsim.core.parser.features.*;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphGenerator;
 import microtrafficsim.core.parser.features.streets.StreetFeatureGenerator;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.osm.parser.features.FeatureDependency;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
@@ -114,7 +114,7 @@ public class ParserExample {
 
         // create the feature generators
         MapFeatureGenerator<Street> streetsGenerator = new StreetFeatureGenerator();
-        StreetGraphGenerator        sgGenerator      = new StreetGraphGenerator(new ScenarioConfig());
+        StreetGraphGenerator        sgGenerator      = new StreetGraphGenerator(new SimulationConfig());
 
         // define the features
         StreetGraphFeatureDefinition sg = new StreetGraphFeatureDefinition(

@@ -4,13 +4,12 @@ import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.Car;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
-import microtrafficsim.core.simulation.configs.ScenarioConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.ODMatrix;
@@ -33,9 +32,9 @@ public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
      * Initializes the matrices (for routes and spawn delays). For this, it has to sort the few nodes to guarantee
      * determinism independent of complicated coordinate calculations.
      *
-     * @see QueueScenarioSmall#QueueScenarioSmall(ScenarioConfig, Graph)
+     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph)
      */
-    public MotorwaySlipRoadScenario(ScenarioConfig config,
+    public MotorwaySlipRoadScenario(SimulationConfig config,
                                     Graph graph,
                                     Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
@@ -52,7 +51,7 @@ public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
      * @param config
      * @return the given config updated; just for practical purpose
      */
-    public static ScenarioConfig setupConfig(ScenarioConfig config) {
+    public static SimulationConfig setupConfig(SimulationConfig config) {
 
         QueueScenarioSmall.setupConfig(config);
 
