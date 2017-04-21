@@ -8,6 +8,7 @@ import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.TileFeatureProvider;
@@ -107,6 +108,7 @@ public class SimulationController implements GUIController {
     private ExchangeFormatSerializer serializer;
 
     private Graph               streetgraph;
+    private GraphGUID           streetgraphGUID;
     private TileFeatureProvider map;
 
     /* simulation */
@@ -369,7 +371,7 @@ public class SimulationController implements GUIController {
                 closePreferences();
                 pauseSim();
 
-                File loadedFile = file == null ? askForMapFile() : file;
+                File loadedFile = file == null ? askForMapLoadFile() : file;
                 if (loadedFile != null)
                     loadAndShowMap(loadedFile);
 
@@ -387,7 +389,7 @@ public class SimulationController implements GUIController {
             closePreferences();
             pauseSim();
 
-            File file = askForSaveFile();
+            File file = askForMapSaveFile();
             if (file != null) {
                 int status = JOptionPane.OK_OPTION;
                 if (file.exists()) {
@@ -572,29 +574,6 @@ public class SimulationController implements GUIController {
     | window |
     |========|
     */
-    private String getDefaultFrameTitle() {
-        return frameTitleRaw;
-    }
-
-    /**
-     * Return the default window title.
-     * @return the default frame title.
-     */
-    private String getDefaultFrameTitle(File file) {
-        if (file != null)
-            return getDefaultFrameTitle() + " - [" + file + "]";
-
-        return getDefaultFrameTitle();
-    }
-
-    private String getParsingFrameTitle() {
-        return getDefaultFrameTitle() + " - Parsing new map, please wait...";
-    }
-
-    private String getParsingFrameTitle(File file) {
-        return getDefaultFrameTitle() + " - Parsing [" + file + "]";
-    }
-
     private void updateMenuBar() {
         if (!isCreated) return;
 
@@ -612,12 +591,34 @@ public class SimulationController implements GUIController {
         menubar.menuLogic.itemChangeAreaSelection.setEnabled(hasStreetgraph);
     }
 
+    private void updateFrameTitle() {
+        String fileName = this.fileName.get();
+        String fileNameLoading = this.fileNameLoading.get();
+        String fileNameSaving = this.fileNameSaving.get();
+
+        StringBuilder title = new StringBuilder(frameTitleRaw);
+        if (fileName != null) {
+            title.append(" - [").append(fileName).append("]");
+        }
+
+        if (fileNameLoading != null) {
+            title.append(" - Loading: [").append(fileNameLoading).append("]");
+        }
+
+        if (fileNameSaving != null) {
+            title.append(" - Saving: [").append(fileNameSaving).append("]");
+        }
+
+        SwingUtilities.invokeLater(() -> frame.setTitle(title.toString()));
+    }
+
+
     /*
     |================|
     | map and parser |
     |================|
     */
-    private File askForMapFile() {
+    private File askForMapLoadFile() {
         int action = mapfileChooser.showOpenDialog(frame);
         if (action == JFileChooser.APPROVE_OPTION)
             return mapfileChooser.getSelectedFile();
@@ -655,9 +656,12 @@ public class SimulationController implements GUIController {
                 graph = xmp.extract(StreetGraph.class);
             }
 
+            GraphGUID guid = GraphGUID.from(graph);
+
             lockMap.lock();
             this.map = map;
             this.streetgraph = graph;
+            this.streetgraphGUID = guid;
             lockMap.unlock();
 
             fileName.set(file.getPath());
@@ -687,7 +691,7 @@ public class SimulationController implements GUIController {
     }
 
 
-    private File askForSaveFile() {
+    private File askForMapSaveFile() {
         int action = mapfileChooser.showSaveDialog(frame);
         if (action == JFileChooser.APPROVE_OPTION)
             return mapfileChooser.getSelectedFile();
@@ -719,28 +723,6 @@ public class SimulationController implements GUIController {
 
         fileNameSaving.set(null);
         updateFrameTitle();
-    }
-
-
-    private void updateFrameTitle() {
-        String fileName = this.fileName.get();
-        String fileNameLoading = this.fileNameLoading.get();
-        String fileNameSaving = this.fileNameSaving.get();
-
-        StringBuilder title = new StringBuilder("MicroTrafficSim");
-        if (fileName != null) {
-            title.append(" - [").append(fileName).append("]");
-        }
-
-        if (fileNameLoading != null) {
-            title.append(" - Loading: [").append(fileNameLoading).append("]");
-        }
-
-        if (fileNameSaving != null) {
-            title.append(" - Saving: [").append(fileNameSaving).append("]");
-        }
-
-        SwingUtilities.invokeLater(() -> frame.setTitle(title.toString()));
     }
 
 

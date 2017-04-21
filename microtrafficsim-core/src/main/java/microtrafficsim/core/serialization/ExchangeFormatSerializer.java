@@ -10,10 +10,12 @@ import microtrafficsim.core.exfmt.ecs.components.*;
 import microtrafficsim.core.exfmt.ecs.entities.LineEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PointEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PolygonEntity;
+import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.FeatureDescriptor;
 import microtrafficsim.core.map.StreetType;
+import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.serialization.kryo.impl.*;
@@ -99,6 +101,8 @@ public class ExchangeFormatSerializer {
         kryo.register(GraphEdgeComponent.class, new GraphEdgeComponentSerializer());
 
         // map stuff
+        kryo.register(GraphGUID.class, new GraphGUIDSerializer());
+
         kryo.register(FeatureDescriptor.class, new FeatureDescriptorSerializer());
 
         kryo.register(Coordinate.class, new CoordinateSerializer());
@@ -111,6 +115,8 @@ public class ExchangeFormatSerializer {
         kryo.register(MercatorProjection.class);
 
         kryo.register(QuadTreeTilingScheme.class, new QuadTreeTilingSchemeSerializer());
+
+        kryo.register(TypedPolygonArea.class, new TypedPolygonAreaSerializer());
 
         return kryo;
     }
