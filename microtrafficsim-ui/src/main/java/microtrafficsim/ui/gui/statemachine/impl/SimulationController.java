@@ -617,6 +617,10 @@ public class SimulationController implements GUIController {
     }
 
     private File askForMapSaveFile() {
+        String filename = mapfileChooser.getSelectedFile().getName();
+        filename = filename.substring(0, filename.lastIndexOf('.'));
+        mapfileChooser.setSelectedFile(new File(filename + "." + FileFilters.MAP_EXFMT_POSTFIX));
+
         int action = mapfileChooser.showSaveDialog(frame);
         if (action == JFileChooser.APPROVE_OPTION)
             return mapfileChooser.getSelectedFile();

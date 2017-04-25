@@ -9,8 +9,8 @@ import java.io.File;
  */
 public class FileFilters {
 
-    private static final String MAP_OSM_XML_POSTFIX = "osm";
-    private static final String MAP_EXFMT_POSTFIX   = "mtsm";
+    public static final String MAP_OSM_XML_POSTFIX = "osm";
+    public static final String MAP_EXFMT_POSTFIX   = "mtsm";
 
 
     private FileFilters() {}
