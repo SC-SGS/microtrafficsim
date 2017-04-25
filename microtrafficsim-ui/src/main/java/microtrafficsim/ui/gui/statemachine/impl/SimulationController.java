@@ -78,7 +78,7 @@ public class SimulationController implements GUIController {
 
     /* multithreading: user input and task execution */
     private final AtomicBoolean isExecutingUserTask;
-    private final ReentrantLock lock_user_input;
+    private final ReentrantLock lockUserInput;
 
     /* multithreading: interrupting parsing */
     private final AtomicBoolean isParsing;
@@ -123,7 +123,7 @@ public class SimulationController implements GUIController {
 
         /* multithreading */
         isExecutingUserTask = new AtomicBoolean(false);
-        lock_user_input     = new ReentrantLock();
+        lockUserInput       = new ReentrantLock();
         isParsing           = new AtomicBoolean(false);
         isBuildingScenario  = new AtomicBoolean(false);
 
@@ -197,9 +197,7 @@ public class SimulationController implements GUIController {
 
         /* overlays */
         scenarioAreaOverlay = new ScenarioAreaOverlay();
-        SwingUtilities.invokeLater(() -> {
-            scenarioAreaOverlay.setEnabled(false, false, false);
-        });
+        SwingUtilities.invokeLater(() -> scenarioAreaOverlay.setEnabled(false, false, false));
         mapviewer.addOverlay(0, scenarioAreaOverlay);
         mapviewer.addOverlay(1, overlay);
 
@@ -303,7 +301,7 @@ public class SimulationController implements GUIController {
 
         if (event == GUIEvent.EXIT)
             shutdown();
-        if (!lock_user_input.tryLock())
+        if (!lockUserInput.tryLock())
             return;
 
         switch (event) {
@@ -339,7 +337,7 @@ public class SimulationController implements GUIController {
                 break;
         }
 
-        lock_user_input.unlock();
+        lockUserInput.unlock();
     }
 
     private void transitionLoadMap(File file) {
