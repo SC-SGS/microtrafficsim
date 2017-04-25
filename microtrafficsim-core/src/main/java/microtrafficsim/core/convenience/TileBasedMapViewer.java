@@ -1,7 +1,6 @@
 package microtrafficsim.core.convenience;
 
 import com.jogamp.newt.event.KeyEvent;
-import microtrafficsim.core.convenience.utils.Utils;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.layers.LayerDefinition;
@@ -31,6 +30,7 @@ import java.util.Collection;
 public class TileBasedMapViewer extends BasicMapViewer {
 
     private TileBasedVisualization visualization;
+    private TileFeatureProvider map;
     private TileLayerProvider layerProvider;
 
     private TilingScheme preferredTilingScheme;
@@ -204,16 +204,22 @@ public class TileBasedMapViewer extends BasicMapViewer {
     }
 
     @Override
-    public void setMap(SegmentFeatureProvider segment) throws InterruptedException {
-        TileFeatureProvider tiled = null;
+    public TileFeatureProvider getMap() {
+        return map;
+    }
 
+    @Override
+    public void setMap(SegmentFeatureProvider segment) throws InterruptedException {
         if (segment instanceof TileFeatureProvider) {
-            tiled = (TileFeatureProvider) segment;
+            map = (TileFeatureProvider) segment;
         } else {
-            tiled = new QuadTreeTiledMapSegment.Generator().generate(segment, preferredTilingScheme, preferredTileGridLevel);
+            map = new QuadTreeTiledMapSegment.Generator().generate(
+                    segment,
+                    preferredTilingScheme,
+                    preferredTileGridLevel);
         }
 
-        setMap(tiled);
+        setMap(map);
     }
 
     public void setMap(TileFeatureProvider tiles) {
@@ -222,6 +228,7 @@ public class TileBasedMapViewer extends BasicMapViewer {
          * thus often better to specify the tiling-scheme while loading/generating the feature provider and other
          * sources.
          */
+        map = tiles;
         layerProvider.setTilingScheme(tiles.getTilingScheme());
 
         /* update the feature sources, so that they will use the created provider */

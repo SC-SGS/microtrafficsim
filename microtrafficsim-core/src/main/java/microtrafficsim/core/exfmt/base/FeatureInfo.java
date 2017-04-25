@@ -1,14 +1,10 @@
 package microtrafficsim.core.exfmt.base;
 
 import microtrafficsim.core.exfmt.Container;
-import microtrafficsim.core.exfmt.ecs.Entity;
 import microtrafficsim.core.map.FeatureDescriptor;
-import microtrafficsim.core.map.FeaturePrimitive;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 
 // contains info for map-features

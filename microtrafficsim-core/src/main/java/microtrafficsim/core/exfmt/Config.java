@@ -2,7 +2,11 @@ package microtrafficsim.core.exfmt;
 
 import microtrafficsim.utils.collections.Composite;
 
-
+/**
+ * Describes how entries are stored/loaded. In contrary, {@link Container} describes, what is stored/loaded.
+ *
+ * @author Maximilian Luz
+ */
 public class Config extends Composite<Config.Entry> {
 
     public Config.Entry set(Config.Entry entry) {

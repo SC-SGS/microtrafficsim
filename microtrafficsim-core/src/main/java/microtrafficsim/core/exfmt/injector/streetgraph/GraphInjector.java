@@ -14,6 +14,16 @@ import microtrafficsim.core.logic.streets.DirectedEdge;
  */
 public class GraphInjector implements ExchangeFormat.Injector<Graph> {
 
+    /**
+     * Takes the {@link EntitySet} from the given container {@code dst} and adds the given {@code graph's nodes} and
+     * {@code edges} using the given {@code format}
+     *
+     * @param fmt
+     * @param ctx
+     * @param dst
+     * @param src
+     * @throws Exception
+     */
     @Override
     public void inject(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container dst, Graph src) throws Exception {
         EntitySet entities = dst.get(EntitySet.class, EntitySet::new);

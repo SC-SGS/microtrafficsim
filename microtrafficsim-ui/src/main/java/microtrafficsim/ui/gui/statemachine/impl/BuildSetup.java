@@ -36,9 +36,6 @@ public class BuildSetup {
     public Simulation simulation;
     public ScenarioBuilder scenarioBuilder;
 
-    /* gui */
-    public String frameTitle;
-
     public BuildSetup() {
 
         /* general */
@@ -62,8 +59,5 @@ public class BuildSetup {
         /* simulation */
         simulation          = new VehicleSimulation();
         scenarioBuilder     = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
-
-        /* gui */
-        this.frameTitle = "MicroTrafficSim";
     }
 }

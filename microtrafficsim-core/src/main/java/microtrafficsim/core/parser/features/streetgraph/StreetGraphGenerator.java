@@ -122,6 +122,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
         for (Node node : graph.getNodes()) {
             node.updateEdgeIndices();
         }
+        graph.updateGraphGUID();
 
         this.graph = graph;
         logger.info("finished generating StreetGraph");

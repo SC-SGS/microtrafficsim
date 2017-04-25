@@ -8,6 +8,9 @@ import java.awt.*;
 import java.util.ArrayList;
 
 
+/**
+ * @author Maximilian Luz
+ */
 public class MapFileChooser extends JFileChooser {
 
     private ArrayList<FileFilter> saveFilters = new ArrayList<>();
@@ -17,6 +20,8 @@ public class MapFileChooser extends JFileChooser {
     private FileFilter openSelected;
 
     public MapFileChooser() {
+        super();
+
         saveFilters.add(FileFilters.MAP_EXFMT);
         saveFilters.add(super.getAcceptAllFileFilter());
 

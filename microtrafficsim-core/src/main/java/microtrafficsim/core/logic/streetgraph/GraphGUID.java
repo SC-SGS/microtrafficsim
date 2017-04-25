@@ -1,36 +1,35 @@
 package microtrafficsim.core.logic.streetgraph;
 
-import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
 
+/**
+ * {@code GUID} stands for Globally Unique IDentifier.
+ */
 public class GraphGUID {
     private final Bounds bounds;
-    private final int nodes;
-    private final int edges;
+    private final int nodeHash;
+    private final int edgeHash;
 
 
     public static GraphGUID from(Graph graph) {
         Bounds bounds = new Bounds(graph.getBounds());
 
         FNVHashBuilder nodes = new FNVHashBuilder();
-        for (Node node : graph.getNodes())
-            nodes.add(node);
+        graph.getNodes().forEach(nodes::add);
 
         FNVHashBuilder edges = new FNVHashBuilder();
-        for (DirectedEdge edge : graph.getEdges())
-            nodes.add(edge);
+        graph.getEdges().forEach(nodes::add);
 
         return new GraphGUID(bounds, nodes.getHash(), edges.getHash());
     }
 
 
-    public GraphGUID(Bounds bounds, int nodes, int edges) {
+    public GraphGUID(Bounds bounds, int nodeHash, int edgeHash) {
         this.bounds = bounds;
-        this.nodes = nodes;
-        this.edges = edges;
+        this.nodeHash = nodeHash;
+        this.edgeHash = edgeHash;
     }
 
     public Bounds getBounds() {
@@ -38,11 +37,11 @@ public class GraphGUID {
     }
 
     public int getNodeHash() {
-        return nodes;
+        return nodeHash;
     }
 
     public int getEdgeHash() {
-        return edges;
+        return edgeHash;
     }
 
     @Override
@@ -53,16 +52,16 @@ public class GraphGUID {
         GraphGUID other = (GraphGUID) obj;
 
         return this.bounds.equals(other.bounds)
-                && this.nodes == other.nodes
-                && this.edges == other.edges;
+                && this.nodeHash == other.nodeHash
+                && this.edgeHash == other.edgeHash;
     }
 
     @Override
     public int hashCode() {
         return new FNVHashBuilder()
                 .add(bounds)
-                .add(nodes)
-                .add(edges)
+                .add(nodeHash)
+                .add(edgeHash)
                 .getHash();
     }
 }

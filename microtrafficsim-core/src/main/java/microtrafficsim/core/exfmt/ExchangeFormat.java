@@ -51,6 +51,9 @@ import java.util.HashMap;
 // - add load/unload functions to Interfaces (Injector, Extractor, EntityProcessor, PostProcessor, ...) for perf?
 
 
+/**
+ * @author Maximilian Luz
+ */
 public class ExchangeFormat {
 
     public static ExchangeFormat getDefault() {
@@ -194,6 +197,9 @@ public class ExchangeFormat {
         T extract(ExchangeFormat fmt, Context ctx, Container src) throws Exception;
     }
 
+    /**
+     * A context is used as temporary storage while injecting/extracting a map file.
+     */
     public static class Context extends Composite<Object> {}
 
     public static class Manipulator {

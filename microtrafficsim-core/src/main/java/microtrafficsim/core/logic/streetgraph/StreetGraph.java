@@ -21,6 +21,7 @@ import java.util.Set;
  */
 public class StreetGraph implements Graph {
 
+    private GraphGUID             guid;
     private Bounds                bounds;
     private HashSet<Node>         nodes;
     private HashSet<DirectedEdge> edges;
@@ -44,6 +45,7 @@ public class StreetGraph implements Graph {
                 .setLevelSubString("    ")
                 .setLevelSeparator(System.lineSeparator())
                 .append(StreetGraph.class.toString())
+                .append(":GUID_hash=" + guid.hashCode())
                 .appendln(": {").incLevel();
 
         output.appendln("Nodes: {").incLevel();
@@ -57,6 +59,17 @@ public class StreetGraph implements Graph {
         return output.decLevel().append("}").toString();
     }
 
+
+    @Override
+    public GraphGUID getGUID() {
+        return guid;
+    }
+
+    @Override
+    public GraphGUID updateGraphGUID() {
+        guid = GraphGUID.from(this);
+        return guid;
+    }
 
     @Override
     public Bounds getBounds() {

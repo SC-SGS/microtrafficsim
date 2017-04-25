@@ -29,6 +29,9 @@ import java.util.HashSet;
 import java.util.List;
 
 
+/**
+ * @author Maximilian Luz
+ */
 public class QuadTreeTiledMapSegmentExtractor implements ExchangeFormat.Extractor<QuadTreeTiledMapSegment> {
 
     @Override
@@ -89,8 +92,7 @@ public class QuadTreeTiledMapSegmentExtractor implements ExchangeFormat.Extracto
     @SuppressWarnings("unchecked")
     private void process(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src, EntitySet ecs,
                          FeatureManager extractors, TileGridInfo.Grid grid, HashMap<String, FeatureGrid<?>> dst,
-                         Entity entity)
-    {
+                         Entity entity) {
         FeatureComponent fc = entity.get(FeatureComponent.class);
         if (fc == null) return;
 

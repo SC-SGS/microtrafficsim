@@ -7,6 +7,9 @@ import microtrafficsim.core.exfmt.ExchangeFormat;
 import java.util.ArrayList;
 
 
+/**
+ * @author Maximilian Luz
+ */
 public class EntityManager extends Config.Entry {
     private ArrayList<Processor> processors = new ArrayList<>();
 
@@ -30,7 +33,19 @@ public class EntityManager extends Config.Entry {
     }
 
 
+    /**
+     * This processor can be added to an {@link EntityManager entity manager}, so it will be processed in
+     * injections/extractions.
+     */
     public interface Processor {
+        /**
+         * Takes information from the given {@code context} and adds it to the given {@code entity}.
+         *
+         * @param fmt
+         * @param ctx
+         * @param container
+         * @param entity
+         */
         void process(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container container, Entity entity);
     }
 }

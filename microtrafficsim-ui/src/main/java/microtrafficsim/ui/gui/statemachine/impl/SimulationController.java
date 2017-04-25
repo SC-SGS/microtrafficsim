@@ -3,12 +3,12 @@ package microtrafficsim.ui.gui.statemachine.impl;
 import microtrafficsim.core.convenience.DefaultParserConfig;
 import microtrafficsim.core.convenience.MapFileChooser;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.convenience.utils.FileFilters;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.TileFeatureProvider;
@@ -28,10 +28,13 @@ import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.ui.gui.menues.MTSMenuBar;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
+import microtrafficsim.ui.gui.utils.FrameTitle;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.view.PreferencesFrame;
+import microtrafficsim.utils.functional.Procedure;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
+import microtrafficsim.utils.strings.WrappedString;
 import org.slf4j.Logger;
 
 import javax.swing.*;
@@ -39,8 +42,8 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -76,17 +79,10 @@ public class SimulationController implements GUIController {
     /* multithreading: user input and task execution */
     private final AtomicBoolean isExecutingUserTask;
     private final ReentrantLock lock_user_input;
-    private final ReentrantLock lockMap;
 
     /* multithreading: interrupting parsing */
-    private final AtomicBoolean isSaving;
-    private final AtomicBoolean isLoading;
+    private final AtomicBoolean isParsing;
     private       Thread        parsingThread;
-
-    /* strings for frame-title */
-    private final AtomicReference<String> fileName = new AtomicReference<>(null);
-    private final AtomicReference<String> fileNameLoading = new AtomicReference<>(null);
-    private final AtomicReference<String> fileNameSaving = new AtomicReference<>(null);
 
     /* multithreading: interrupting scenario preparation */
     private final AtomicBoolean isBuildingScenario;
@@ -108,15 +104,12 @@ public class SimulationController implements GUIController {
     private ExchangeFormatSerializer serializer;
 
     private Graph               streetgraph;
-    private GraphGUID           streetgraphGUID;
-    private TileFeatureProvider map;
 
     /* simulation */
     private Simulation      simulation;
     private ScenarioBuilder scenarioBuilder;
 
     /* gui */
-    private final String           frameTitleRaw;
     private final JFrame           frame;
     private final MTSMenuBar       menubar;
     private final PreferencesFrame preferences;
@@ -131,9 +124,7 @@ public class SimulationController implements GUIController {
         /* multithreading */
         isExecutingUserTask = new AtomicBoolean(false);
         lock_user_input     = new ReentrantLock();
-        lockMap             = new ReentrantLock();
-        isLoading           = new AtomicBoolean(false);
-        isSaving            = new AtomicBoolean(false);
+        isParsing           = new AtomicBoolean(false);
         isBuildingScenario  = new AtomicBoolean(false);
 
         /* state marker */
@@ -153,8 +144,7 @@ public class SimulationController implements GUIController {
         overlay.setSimulation(simulation);
 
         /* gui */
-        frameTitleRaw    = buildSetup.frameTitle;
-        frame            = new JFrame(frameTitleRaw);
+        frame            = new JFrame(FrameTitle.DEFAULT.get());
         menubar          = new MTSMenuBar();
         preferences      = new PreferencesFrame(this);
         mapfileChooser   = new MapFileChooser();
@@ -181,6 +171,7 @@ public class SimulationController implements GUIController {
 
         parser = DefaultParserConfig.get(config).build();
 
+
         /* create exchange format and serializer */
         serializer = ExchangeFormatSerializer.create();
         exfmt = ExchangeFormat.getDefault();
@@ -189,6 +180,7 @@ public class SimulationController implements GUIController {
                 mapviewer.getPreferredTilingScheme(), mapviewer.getPreferredTileGridLevel()));
 
         exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
+
 
         /* create preferences */
         preferences.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -202,6 +194,7 @@ public class SimulationController implements GUIController {
         preferences.setLocationRelativeTo(null);    // center on screen; close to setVisible
         preferences.setVisible(false);
 
+
         /* overlays */
         scenarioAreaOverlay = new ScenarioAreaOverlay();
         SwingUtilities.invokeLater(() -> {
@@ -209,6 +202,7 @@ public class SimulationController implements GUIController {
         });
         mapviewer.addOverlay(0, scenarioAreaOverlay);
         mapviewer.addOverlay(1, overlay);
+
 
         /* setup JFrame */
         menubar.menuMap.addActions(this);
@@ -220,6 +214,7 @@ public class SimulationController implements GUIController {
         frame.add(menubar, BorderLayout.NORTH);
         frame.setSize(mapviewer.getInitialWindowWidth(), mapviewer.getInitialWindowHeight());
         frame.add(mapviewer.getVisualizationPanel());
+
 
         /*
          * Note: JOGL automatically calls glViewport, we need to make sure that this
@@ -235,6 +230,7 @@ public class SimulationController implements GUIController {
                 shutdown();
             }
         });
+
 
         /* set state */
         isCreated = true;
@@ -347,7 +343,7 @@ public class SimulationController implements GUIController {
     }
 
     private void transitionLoadMap(File file) {
-        if (isLoading.get()) {
+        if (isParsing.get()) {
             new Thread(() -> {
                 // ask user to cancel parsing
                 Object[] options = { "Yes", "No" };
@@ -366,7 +362,7 @@ public class SimulationController implements GUIController {
             }).start();
         } else if (isExecutingUserTask.compareAndSet(false, true)) {
             parsingThread = new Thread(() -> {
-                isLoading.set(true);
+                isParsing.set(true);
 
                 closePreferences();
                 pauseSim();
@@ -375,7 +371,7 @@ public class SimulationController implements GUIController {
                 if (loadedFile != null)
                     loadAndShowMap(loadedFile);
 
-                isLoading.set(false);
+                isParsing.set(false);
                 updateMenuBar();
                 isExecutingUserTask.set(false);
             });
@@ -384,26 +380,28 @@ public class SimulationController implements GUIController {
     }
 
     private void transitionSaveMap() {
-        new Thread(() -> {
-            isSaving.set(true);
-            closePreferences();
-            pauseSim();
+        if (isExecutingUserTask.compareAndSet(false, true)) {
+            new Thread(() -> {
+                closePreferences();
+                pauseSim();
 
-            File file = askForMapSaveFile();
-            if (file != null) {
-                int status = JOptionPane.OK_OPTION;
-                if (file.exists()) {
-                    status = JOptionPane.showConfirmDialog(frame,
-                            "The selected file already exists. Continue?", "Save File", JOptionPane.OK_CANCEL_OPTION);
+                File file = askForMapSaveFile();
+                if (file != null) {
+                    int status = JOptionPane.OK_OPTION;
+                    if (file.exists()) {
+                        status = JOptionPane.showConfirmDialog(frame,
+                                "The selected file already exists. Continue?", "Save File",
+                                JOptionPane.OK_CANCEL_OPTION);
+                    }
+
+                    if (status == JOptionPane.OK_OPTION)
+                        saveMap(file);
                 }
 
-                if (status == JOptionPane.OK_OPTION) {
-                    saveMap(file);
-                }
-            }
-
-            isSaving.set(false);
-        }).start();
+                updateMenuBar();
+                isExecutingUserTask.set(false);
+            }).start();
+        }
     }
 
     private void transitionChangeAreaSelection() {
@@ -574,6 +572,18 @@ public class SimulationController implements GUIController {
     | window |
     |========|
     */
+    private void rememberCurrentFrameTitleIn(WrappedString cache) {
+        EventQueue.invokeLater(() -> cache.set(frame.getTitle()));
+    }
+
+    private void updateFrameTitle(FrameTitle type, File file) {
+        EventQueue.invokeLater(() -> frame.setTitle(type.get(file)));
+    }
+
+    private void updateFrameTitle(WrappedString newTitle) {
+        EventQueue.invokeLater(() -> frame.setTitle(newTitle.get()));
+    }
+
     private void updateMenuBar() {
         if (!isCreated) return;
 
@@ -582,6 +592,7 @@ public class SimulationController implements GUIController {
 
         menubar.menuMap.setEnabled(true);
         menubar.menuMap.itemLoadMap.setEnabled(true);
+        menubar.menuMap.itemSaveMap.setEnabled(hasStreetgraph);
 
         menubar.menuLogic.setEnabled(true);
         menubar.menuLogic.itemRunPause.setEnabled(hasStreetgraph && hasScenario);
@@ -589,27 +600,6 @@ public class SimulationController implements GUIController {
         menubar.menuLogic.itemEditSim.setEnabled(true);
         menubar.menuLogic.itemNewSim.setEnabled(hasStreetgraph);
         menubar.menuLogic.itemChangeAreaSelection.setEnabled(hasStreetgraph);
-    }
-
-    private void updateFrameTitle() {
-        String fileName = this.fileName.get();
-        String fileNameLoading = this.fileNameLoading.get();
-        String fileNameSaving = this.fileNameSaving.get();
-
-        StringBuilder title = new StringBuilder(frameTitleRaw);
-        if (fileName != null) {
-            title.append(" - [").append(fileName).append("]");
-        }
-
-        if (fileNameLoading != null) {
-            title.append(" - Loading: [").append(fileNameLoading).append("]");
-        }
-
-        if (fileNameSaving != null) {
-            title.append(" - Saving: [").append(fileNameSaving).append("]");
-        }
-
-        SwingUtilities.invokeLater(() -> frame.setTitle(title.toString()));
     }
 
 
@@ -626,61 +616,123 @@ public class SimulationController implements GUIController {
         return null;
     }
 
+    private File askForMapSaveFile() {
+        int action = mapfileChooser.showSaveDialog(frame);
+        if (action == JFileChooser.APPROVE_OPTION)
+            return mapfileChooser.getSelectedFile();
+
+        return null;
+    }
+
     private void loadAndShowMap(File file) {
-        fileNameLoading.set(file.getPath());
-        updateFrameTitle();
+        /* update frame title and remember old one */
+        WrappedString cachedTitle = new WrappedString();
+        rememberCurrentFrameTitleIn(cachedTitle);
+        updateFrameTitle(FrameTitle.LOADING, file);
+        Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
 
-        boolean xml = file.getName().endsWith(".osm");
-        try {
-            TileFeatureProvider map;
-            Graph graph;
 
-            if (xml) {
-                /* parse file and create tiled provider */
-                OSMParser.Result result = parser.parse(file);
-                MapSegment segment = result.segment;
-                graph = result.streetgraph;
+        /* parse/load map */
+        boolean success = false;
+        if (FileFilters.MAP_OSM_XML.accept(file))
+            success = parseAndUpdate(file);
+        else if (FileFilters.MAP_EXFMT.accept(file)) {
+            success = loadAndUpdate(file);
+        }
 
-                map = new QuadTreeTiledMapSegment.Generator()
-                        .generate(segment, mapviewer.getPreferredTilingScheme(), mapviewer.getPreferredTileGridLevel());
 
-            } else {
-                ExchangeFormat.Manipulator xmp = exfmt.manipulator(serializer.read(file));
-                try {
-                    map = xmp.extract(QuadTreeTiledMapSegment.class);
-                } catch (NotAvailableException e) {     // thrown when no TileGrid available
-                    MapSegment segment = xmp.extract(MapSegment.class);
-                    map = new QuadTreeTiledMapSegment.Generator()
-                            .generate(segment, mapviewer.getPreferredTilingScheme(), mapviewer.getPreferredTileGridLevel());
-                }
-                graph = xmp.extract(StreetGraph.class);
-            }
-
-            GraphGUID guid = GraphGUID.from(graph);
-
-            lockMap.lock();
-            this.map = map;
-            this.streetgraph = graph;
-            this.streetgraphGUID = guid;
-            lockMap.unlock();
-
-            fileName.set(file.getPath());
-            mapviewer.setMap(map);
+        /* show map */
+        if (success) {
             simulation.removeCurrentScenario();
             overlay.setEnabled(true);
             scenarioAreaOverlay.setEnabled(true, true, false);
-        } catch (InterruptedException e) {
-            logger.info("Loading interrupted by user");
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(frame,
-                    "Failed to load file: '" + file.getPath() + "'.\n"
-                            + "Please make sure this file exists and is a valid OSM XML or MTS binary file.",
-                    "Error loading file", JOptionPane.ERROR_MESSAGE);
+
+            setNewFrameTitle = () -> updateFrameTitle(FrameTitle.DEFAULT, file);
+        } else {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "The chosen file '" + file.getName() + "' has a wrong format.\n" +
+                            "Therefore it could be neither loaded nor parsed.\n" +
+                            "Please make sure this file exists and is a valid OSM XML or MTS binary file.",
+                    "Error: wrong map-file format",
+                    JOptionPane.ERROR_MESSAGE);
         }
 
-        fileNameLoading.set(null);
-        updateFrameTitle();
+        setNewFrameTitle.invoke();
+    }
+
+    /**
+     * Parses the given file and updates all attributes influenced by the file, e.g. the graph
+     *
+     * @return true, if parsing was successful; false otherwise
+     */
+    private boolean parseAndUpdate(File file) {
+        updateFrameTitle(FrameTitle.PARSING, file);
+
+        OSMParser.Result result = null;
+
+        try {
+            /* parse file and create tiled provider */
+            result = parser.parse(file);
+        } catch (InterruptedException e) {
+            logger.info("Parsing interrupted by user");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (result != null) {
+            if (result.streetgraph != null) {
+                try {
+                    mapviewer.setMap(result.segment);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                streetgraph = result.streetgraph;
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Loads the given file and updates all attributes influenced by the file, e.g. the graph
+     *
+     * @return true, if loading was successful; false otherwise
+     */
+    private boolean loadAndUpdate(File file) {
+        ExchangeFormat.Manipulator manipulator = null;
+
+        try {
+            manipulator = exfmt.manipulator(serializer.read(file));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        if (manipulator != null) {
+            try {
+                try {
+                    TileFeatureProvider newMap = manipulator.extract(QuadTreeTiledMapSegment.class);
+                    mapviewer.setMap(newMap);
+                } catch (NotAvailableException e) { // thrown when no TileGrid available
+                    MapSegment segment = manipulator.extract(MapSegment.class);
+                    mapviewer.setMap(segment);
+                }
+
+                streetgraph = manipulator.extract(StreetGraph.class);
+
+                return true;
+            } catch (InterruptedException e) {
+                logger.info("Loading interrupted");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        return false;
     }
 
     private void cancelParsing() {
@@ -690,39 +742,34 @@ public class SimulationController implements GUIController {
         } catch (InterruptedException ignored) {}
     }
 
-
-    private File askForMapSaveFile() {
-        int action = mapfileChooser.showSaveDialog(frame);
-        if (action == JFileChooser.APPROVE_OPTION)
-            return mapfileChooser.getSelectedFile();
-
-        return null;
-    }
-
     private void saveMap(File file) {
-        lockMap.lock();
-        TileFeatureProvider map = this.map;
-        Graph graph = this.streetgraph;
-        lockMap.unlock();
+        /* update frame title and remember old one */
+        WrappedString cachedTitle = new WrappedString();
+        rememberCurrentFrameTitleIn(cachedTitle);
+        updateFrameTitle(FrameTitle.SAVING, file);
+        Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
 
-        fileNameSaving.set(file.getPath());
-        updateFrameTitle();
+
 
         try {
             serializer.write(file, exfmt.manipulator()
-                    .inject(map)
-                    .inject(graph)
+                    .inject(mapviewer.getMap())
+                    .inject(streetgraph)
                     .getContainer());
 
+            JOptionPane.showMessageDialog(frame,
+                    "Map saved.",
+                    "Saving map successful",
+                    JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(frame,
                     "Failed to save file: '" + file.getPath() + "'",
-                    "Error saving file", JOptionPane.ERROR_MESSAGE);
+                    "Error saving file",
+                    JOptionPane.ERROR_MESSAGE);
         }
 
-        fileNameSaving.set(null);
-        updateFrameTitle();
+        setNewFrameTitle.invoke();
     }
 
 
@@ -748,8 +795,11 @@ public class SimulationController implements GUIController {
 
     private void startNewScenario() {
 
-        String oldTitle = frame.getTitle();
-        EventQueue.invokeLater(() -> frame.setTitle("Starting new scenario"));
+        WrappedString cachedTitle = new WrappedString();
+        rememberCurrentFrameTitleIn(cachedTitle);
+
+        WrappedString tmpTitle = new WrappedString("Starting new scenario");
+        updateFrameTitle(tmpTitle);
 
 
         /* update streetgraph */
@@ -759,7 +809,8 @@ public class SimulationController implements GUIController {
 
 
         /* create new scenario */
-        EventQueue.invokeLater(() -> frame.setTitle("Calculating vehicle routes 0%"));
+        tmpTitle.set("Calculating vehicle routes 0%");
+        updateFrameTitle(tmpTitle);
 
 
         /* remove old scenario */
@@ -781,7 +832,9 @@ public class SimulationController implements GUIController {
             scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
         } else {
             if (config.scenario.selectedClass.getObj() != RandomRouteScenario.class)
-                logger.error("Chosen scenario could not be found. " + RandomRouteScenario.class.getSimpleName() + " is used instead.");
+                logger.error(
+                        "Chosen scenario could not be found. " +
+                        RandomRouteScenario.class.getSimpleName() + " is used instead.");
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);
         }
         /* update area overlay */
@@ -793,9 +846,10 @@ public class SimulationController implements GUIController {
         try {
             scenarioBuilder.prepare(
                     scenario,
-                    currentInPercent -> EventQueue.invokeLater(() -> {
-                        frame.setTitle("Calculating vehicle routes " + currentInPercent + "%");
-                    }));
+                    currentInPercent -> {
+                        tmpTitle.set("Calculating vehicle routes " + currentInPercent + "%");
+                        updateFrameTitle(tmpTitle);
+                    });
 
 
             /* initialize the scenario */
@@ -808,7 +862,7 @@ public class SimulationController implements GUIController {
 
 
         /* finish creation */
-        EventQueue.invokeLater(() -> frame.setTitle(oldTitle));
+        updateFrameTitle(cachedTitle);
     }
 
     private void updateScenario() {

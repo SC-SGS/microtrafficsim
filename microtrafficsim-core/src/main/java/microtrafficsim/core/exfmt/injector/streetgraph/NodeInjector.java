@@ -19,7 +19,8 @@ public class NodeInjector implements ExchangeFormat.Injector<Node> {
     @Override
     public void inject(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container dst, Node src) throws Exception {
         EntitySet ecs = dst.get(EntitySet.class, EntitySet::new);
-        PointEntity entity = ecs.getPoints().computeIfAbsent(src.getId(), k -> new PointEntity(src.getId(), src.getCoordinate()));
+        PointEntity entity = ecs.getPoints().computeIfAbsent(src.getId(),
+                k -> new PointEntity(src.getId(), src.getCoordinate()));
 
         GraphNodeComponent gnc = entity.get(GraphNodeComponent.class, () -> new GraphNodeComponent(entity));
         gnc.setCrossingLogicConfig(src.getCrossingLogicConfig());

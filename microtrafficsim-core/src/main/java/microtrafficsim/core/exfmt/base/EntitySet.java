@@ -5,13 +5,16 @@ import microtrafficsim.core.exfmt.ecs.entities.LineEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PointEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PolygonEntity;
 import microtrafficsim.core.map.Bounds;
-import microtrafficsim.math.Rect2d;
 
 import java.util.HashMap;
 import java.util.Map;
 
 
-// contains all entities
+/**
+ * Contains all geometry entities.
+ *
+ * @author Maximilian Luz
+ */
 public class EntitySet extends Container.Entry {
     private Bounds bounds;
 

@@ -13,7 +13,8 @@ import microtrafficsim.utils.collections.Composite;
 
 
 /**
- * Container for the exchange-format.
+ * Container for the exchange-format. Describes, what is stored/loaded. In contrary, {@link Config} describes how
+ * entries are stored/loaded.
  *
  * @author Maximilian Luz
  */

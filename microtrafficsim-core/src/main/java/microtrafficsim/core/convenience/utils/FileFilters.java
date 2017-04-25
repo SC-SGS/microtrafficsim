@@ -4,7 +4,15 @@ import javax.swing.filechooser.FileFilter;
 import java.io.File;
 
 
+/**
+ * @author Maximilian Luz, Dominic Parga Cacheiro
+ */
 public class FileFilters {
+
+    private static final String MAP_OSM_XML_POSTFIX = "osm";
+    private static final String MAP_EXFMT_POSTFIX   = "mtsm";
+
+
     private FileFilters() {}
 
 
@@ -14,14 +22,14 @@ public class FileFilters {
             if (file.isDirectory()) return true;
 
             switch (extension(file)) {
-                case "osm": return true;
-                default:    return false;
+                case MAP_OSM_XML_POSTFIX: return true;
+                default:                  return false;
             }
         }
 
         @Override
         public String getDescription() {
-            return "OpenStreetMap XML Files (*.osm)";
+            return "OpenStreetMap XML Files (*." + MAP_OSM_XML_POSTFIX + ")";
         }
     };
 
@@ -31,14 +39,14 @@ public class FileFilters {
             if (file.isDirectory()) return true;
 
             switch (extension(file)) {
-                case "mtsm": return true;
+                case MAP_EXFMT_POSTFIX: return true;
                 default:     return false;
             }
         }
 
         @Override
         public String getDescription() {
-            return "MTS ExchangeFormat Map Files (*.mtsm)";
+            return "MTS ExchangeFormat Map Files (*." + MAP_EXFMT_POSTFIX + ")";
         }
     };
 
@@ -48,15 +56,15 @@ public class FileFilters {
             if (file.isDirectory()) return true;
 
             switch (extension(file)) {
-                case "mtsm": return true;
-                case "osm":  return true;
-                default:     return false;
+                case MAP_EXFMT_POSTFIX:    return true;
+                case MAP_OSM_XML_POSTFIX:  return true;
+                default:                   return false;
             }
         }
 
         @Override
         public String getDescription() {
-            return "All Map Files (*.mtsm *.osm)";
+            return "All Map Files (*." + MAP_EXFMT_POSTFIX + " *." + MAP_OSM_XML_POSTFIX + ")";
         }
     };
 

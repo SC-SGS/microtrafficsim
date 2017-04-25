@@ -49,6 +49,8 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
         for (Node node : graph.getNodes()) {
             node.updateEdgeIndices();
         }
+        graph.updateGraphGUID();
+
 
         return graph;
     }
