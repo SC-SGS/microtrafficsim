@@ -34,6 +34,9 @@ import microtrafficsim.utils.collections.Grid;
 import java.io.*;
 
 
+/**
+ * @author Maximilian Luz
+ */
 public class ExchangeFormatSerializer {
     public static final Version VERSION = new Version(0, 1, 0);
 

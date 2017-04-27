@@ -120,8 +120,7 @@ public class OrthoInputController implements MouseListener, KeyController {
     @Override
     public KeyCommand addKeyCommand(short event, short vk, KeyCommand command) {
         switch (event) {
-        case KeyEvent.EVENT_KEY_PRESSED: return cmdPressed.put(vk, command);
-
+        case KeyEvent.EVENT_KEY_PRESSED:  return cmdPressed.put(vk, command);
         case KeyEvent.EVENT_KEY_RELEASED: return cmdReleased.put(vk, command);
         }
 

@@ -233,6 +233,7 @@ public class TestShortestPathAlgorithms {
         d.addConnector(cd.getLane(0), de.getLane(0));
         e.addConnector(de.getLane(0), ec.getLane(0));
 
+        graph.updateGraphGUID();
         String graphBefore = graph.toString();
 
         // shortest path
@@ -368,6 +369,9 @@ public class TestShortestPathAlgorithms {
         h.addConnector(fh.getLane(0), he.getLane(0));
         h.addConnector(fh.getLane(0), hg.getLane(0));
 
+        // finish
+        graph.updateGraphGUID();
+
         // shortest path
         start = g;
         end   = c;
@@ -493,6 +497,9 @@ public class TestShortestPathAlgorithms {
         g.addConnector(hg.getLane(0), gf.getLane(0));
         h.addConnector(fh.getLane(0), he.getLane(0));
         h.addConnector(fh.getLane(0), hg.getLane(0));
+
+        // finish
+        graph.updateGraphGUID();
 
         // shortest path
         start = g;

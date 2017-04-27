@@ -3,15 +3,24 @@ package microtrafficsim.core.exfmt.injector.streetgraph;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.base.ScenarioAreaSet;
-import microtrafficsim.core.exfmt.base.ScenarioConfigInfo;
+import microtrafficsim.core.exfmt.base.SimulationConfigInfo;
 import microtrafficsim.core.exfmt.base.ScenarioMetaInfo;
 import microtrafficsim.core.exfmt.base.ScenarioRouteSet;
 import microtrafficsim.core.logic.streetgraph.GraphGUID;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 
 
 public class AreaScenarioInjector implements ExchangeFormat.Injector<AreaScenario> {
 
+    /**
+     *
+     * @param fmt
+     * @param ctx
+     * @param dst
+     * @param src all vehicles in this scenario needs full route-stacks, otherwise they are not fully stored
+     * @throws Exception
+     */
     @Override
     public void inject(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container dst, AreaScenario src) throws Exception {
         Config cfg = fmt.getConfig().getOr(Config.class, Config::getDefault);
@@ -23,8 +32,8 @@ public class AreaScenarioInjector implements ExchangeFormat.Injector<AreaScenari
         dst.set(meta);
 
         // store config information
-        ScenarioConfigInfo sconfig = new ScenarioConfigInfo();
-        // TODO: store scenario-/simulation-config
+        SimulationConfigInfo sconfig = new SimulationConfigInfo();
+        sconfig.update(src.getConfig());
         dst.set(sconfig);
 
         // store areas
@@ -35,7 +44,9 @@ public class AreaScenarioInjector implements ExchangeFormat.Injector<AreaScenari
         // store routes
         if (cfg.storeRoutes) {
             ScenarioRouteSet routes = new ScenarioRouteSet();
-            // TODO: store complete routes
+            for (Vehicle vehicle : src.getVehicleContainer()) {
+                routes.put(vehicle.getDriver().getRoute());
+            }
             dst.set(routes);
         }
     }

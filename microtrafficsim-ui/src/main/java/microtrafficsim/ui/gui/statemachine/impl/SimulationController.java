@@ -78,7 +78,7 @@ public class SimulationController implements GUIController {
 
     /* multithreading: user input and task execution */
     private final AtomicBoolean isExecutingUserTask;
-    private final ReentrantLock lockUserInput;
+    private final ReentrantLock lockTransition;
 
     /* multithreading: interrupting parsing */
     private final AtomicBoolean isParsing;
@@ -123,7 +123,7 @@ public class SimulationController implements GUIController {
 
         /* multithreading */
         isExecutingUserTask = new AtomicBoolean(false);
-        lockUserInput       = new ReentrantLock();
+        lockTransition = new ReentrantLock();
         isParsing           = new AtomicBoolean(false);
         isBuildingScenario  = new AtomicBoolean(false);
 
@@ -211,7 +211,7 @@ public class SimulationController implements GUIController {
         //            addToTopBar(toolbar);
         frame.add(menubar, BorderLayout.NORTH);
         frame.setSize(mapviewer.getInitialWindowWidth(), mapviewer.getInitialWindowHeight());
-        frame.add(mapviewer.getVisualizationPanel());
+        frame.add(mapviewer.getVisualizationPanel(), BorderLayout.CENTER);
 
 
         /*
@@ -301,7 +301,7 @@ public class SimulationController implements GUIController {
 
         if (event == GUIEvent.EXIT)
             shutdown();
-        if (!lockUserInput.tryLock())
+        if (!lockTransition.tryLock())
             return;
 
         switch (event) {
@@ -337,7 +337,7 @@ public class SimulationController implements GUIController {
                 break;
         }
 
-        lockUserInput.unlock();
+        lockTransition.unlock();
     }
 
     private void transitionLoadMap(File file) {
@@ -571,15 +571,15 @@ public class SimulationController implements GUIController {
     |========|
     */
     private void rememberCurrentFrameTitleIn(WrappedString cache) {
-        EventQueue.invokeLater(() -> cache.set(frame.getTitle()));
+        SwingUtilities.invokeLater(() -> cache.set(frame.getTitle()));
     }
 
     private void updateFrameTitle(FrameTitle type, File file) {
-        EventQueue.invokeLater(() -> frame.setTitle(type.get(file)));
+        SwingUtilities.invokeLater(() -> frame.setTitle(type.get(file)));
     }
 
     private void updateFrameTitle(WrappedString newTitle) {
-        EventQueue.invokeLater(() -> frame.setTitle(newTitle.get()));
+        SwingUtilities.invokeLater(() -> frame.setTitle(newTitle.get()));
     }
 
     private void updateMenuBar() {

@@ -3,7 +3,7 @@ package microtrafficsim.core.exfmt.extractor.scenario;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.base.ScenarioAreaSet;
-import microtrafficsim.core.exfmt.base.ScenarioConfigInfo;
+import microtrafficsim.core.exfmt.base.SimulationConfigInfo;
 import microtrafficsim.core.exfmt.base.ScenarioRouteSet;
 import microtrafficsim.core.exfmt.exceptions.ExchangeFormatException;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
@@ -21,7 +21,7 @@ public class AreaScenarioExtractor implements ExchangeFormat.Extractor<AreaScena
         if (cfg == null) throw new ExchangeFormatException("Config for AreaScenarioExtractor missing");
 
         // load scenario/simulation config
-        ScenarioConfigInfo sconfig = src.get(ScenarioConfigInfo.class);
+        SimulationConfigInfo sconfig = src.get(SimulationConfigInfo.class);
         if (sconfig == null) throw new NotAvailableException("ScenarioConfigInfo missing");
         // TODO: load scenario/simulation config
 
