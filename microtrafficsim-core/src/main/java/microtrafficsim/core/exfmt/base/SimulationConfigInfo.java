@@ -11,6 +11,10 @@ public class SimulationConfigInfo extends Container.Entry {
     private SimulationConfig info = new SimulationConfig();
 
 
+    public SimulationConfig getConfig() {
+        return info;
+    }
+
     /**
      * Calls {@link SimulationConfig#update(SimulationConfig)}
      */

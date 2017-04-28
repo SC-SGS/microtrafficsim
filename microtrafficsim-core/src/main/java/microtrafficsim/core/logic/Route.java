@@ -1,5 +1,6 @@
 package microtrafficsim.core.logic;
 
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
@@ -12,7 +13,7 @@ import java.util.Stack;
  *
  * @author Dominic Parga Cacheiro
  */
-public class Route<NodeType extends ShortestPathNode> extends Stack<ShortestPathEdge> {
+public class Route<NodeType extends ShortestPathNode> extends Stack<ShortestPathEdge<Node>> {
 
     private NodeType start;
     private NodeType end;

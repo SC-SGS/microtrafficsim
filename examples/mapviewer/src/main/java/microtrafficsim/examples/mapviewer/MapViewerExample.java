@@ -2,7 +2,7 @@ package microtrafficsim.examples.mapviewer;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.convenience.MapFileChooser;
+import microtrafficsim.core.convenience.filechoosing.MapFileChooser;
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
 import microtrafficsim.core.exfmt.Container;

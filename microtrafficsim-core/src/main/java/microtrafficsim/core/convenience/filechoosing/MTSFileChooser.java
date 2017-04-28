@@ -1,38 +1,19 @@
-package microtrafficsim.core.convenience;
-
-import microtrafficsim.core.convenience.utils.FileFilters;
+package microtrafficsim.core.convenience.filechoosing;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.util.ArrayList;
 
-
 /**
- * @author Maximilian Luz
+ * @author Dominic Parga Cacheiro
  */
-public class MapFileChooser extends JFileChooser {
+public abstract class MTSFileChooser extends JFileChooser {
+    protected ArrayList<FileFilter> saveFilters = new ArrayList<>();
+    protected ArrayList<FileFilter> openFilters = new ArrayList<>();
 
-    private ArrayList<FileFilter> saveFilters = new ArrayList<>();
-    private ArrayList<FileFilter> openFilters = new ArrayList<>();
-
-    private FileFilter saveSelected;
-    private FileFilter openSelected;
-
-    public MapFileChooser() {
-        super();
-
-        saveFilters.add(FileFilters.MAP_EXFMT);
-        saveFilters.add(super.getAcceptAllFileFilter());
-
-        openFilters.add(FileFilters.MAP_ALL);
-        openFilters.add(FileFilters.MAP_EXFMT);
-        openFilters.add(FileFilters.MAP_OSM_XML);
-        openFilters.add(super.getAcceptAllFileFilter());
-
-        saveSelected = saveFilters.get(0);
-        openSelected = openFilters.get(0);
-    }
+    protected FileFilter saveSelected;
+    protected FileFilter openSelected;
 
 
     @Override

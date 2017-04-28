@@ -11,6 +11,7 @@ public class FileFilters {
 
     public static final String MAP_OSM_XML_POSTFIX = "osm";
     public static final String MAP_EXFMT_POSTFIX   = "mtsm";
+    public static final String SCENARIO_POSTFIX    = "mtss";
 
 
     private FileFilters() {}
@@ -65,6 +66,41 @@ public class FileFilters {
         @Override
         public String getDescription() {
             return "All Map Files (*." + MAP_EXFMT_POSTFIX + " *." + MAP_OSM_XML_POSTFIX + ")";
+        }
+    };
+
+
+    public static final FileFilter SCENARIO = new FileFilter() {
+        @Override
+        public boolean accept(File file) {
+            if (file.isDirectory()) return true;
+
+            switch (extension(file)) {
+                case SCENARIO_POSTFIX:  return true;
+                default:                return false;
+            }
+        }
+
+        @Override
+        public String getDescription() {
+            return "Scenario File (*" + SCENARIO_POSTFIX + ")";
+        }
+    };
+
+    public static final FileFilter SCENARIO_ALL = new FileFilter() {
+        @Override
+        public boolean accept(File file) {
+            if (file.isDirectory()) return true;
+
+            switch (extension(file)) {
+                case SCENARIO_POSTFIX:  return true;
+                default:                return false;
+            }
+        }
+
+        @Override
+        public String getDescription() {
+            return "All Scenario Files (*." + SCENARIO_POSTFIX + ")";
         }
     };
 

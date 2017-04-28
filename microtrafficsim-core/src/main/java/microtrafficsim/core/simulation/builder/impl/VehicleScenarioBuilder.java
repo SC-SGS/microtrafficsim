@@ -132,7 +132,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
     }
 
     @Override
-    public Scenario prepare(Scenario scenario, ProgressListener listener, RouteMatrix routes)
+    public Scenario prepare(Scenario scenario, RouteMatrix routes, ProgressListener listener)
             throws InterruptedException, RouteIsNotDefinedException {
         logger.info("PREPARING SCENARIO started");
         long startTimestamp = System.nanoTime();

@@ -28,10 +28,10 @@ public enum FrameTitle {
                 else              return frameTitleRaw + " - Parsing new map, please wait...";
             case LOADING:
                 if (file != null) return frameTitleRaw + " - Loading [" + file + "]";
-                else              return frameTitleRaw + " - Loading new map, please wait...";
+                else              return frameTitleRaw + " - Loading new file, please wait...";
             case SAVING:
                 if (file != null) return frameTitleRaw + " - Saving [" + file + "]";
-                else              return frameTitleRaw + " - Saving new map, please wait...";
+                else              return frameTitleRaw + " - Saving new file, please wait...";
             case DEFAULT:
             default:
                 if (file != null) return frameTitleRaw + " - [" + file + "]";

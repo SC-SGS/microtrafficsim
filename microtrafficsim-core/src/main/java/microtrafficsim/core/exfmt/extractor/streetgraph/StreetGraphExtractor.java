@@ -27,6 +27,9 @@ import java.util.function.Function;
 // NOTE: The order of StreetGraph and feature extraction is important: First map features, then graph if no headless
 // execution is wanted. This ensures that all StreetEntities get set up correctly. Alternatively the street-entities
 // have to be re-created manually.
+/**
+ * @author Maximilian Luz
+ */
 public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGraph> {
 
     @Override

@@ -1,13 +1,17 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
 import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.convenience.MapFileChooser;
+import microtrafficsim.core.convenience.filechoosing.MapFileChooser;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.convenience.filechoosing.ScenarioFileChooser;
 import microtrafficsim.core.convenience.utils.FileFilters;
 import microtrafficsim.core.exfmt.ExchangeFormat;
+import microtrafficsim.core.exfmt.base.ScenarioMetaInfo;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.exfmt.extractor.scenario.AreaScenarioExtractor;
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
+import microtrafficsim.core.exfmt.injector.streetgraph.AreaScenarioInjector;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.map.MapSegment;
@@ -18,6 +22,7 @@ import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
+import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
@@ -110,10 +115,11 @@ public class SimulationController implements GUIController {
     private ScenarioBuilder scenarioBuilder;
 
     /* gui */
-    private final JFrame           frame;
-    private final MTSMenuBar       menubar;
-    private final PreferencesFrame preferences;
-    private final MapFileChooser   mapfileChooser;
+    private final JFrame                frame;
+    private final MTSMenuBar            menubar;
+    private final PreferencesFrame      preferences;
+    private final MapFileChooser        mapfileChooser;
+    private final ScenarioFileChooser   scenariofileChooser;
 
     public SimulationController() {
         this(new BuildSetup());
@@ -147,8 +153,12 @@ public class SimulationController implements GUIController {
         frame            = new JFrame(FrameTitle.DEFAULT.get());
         menubar          = new MTSMenuBar();
         preferences      = new PreferencesFrame(this);
-        mapfileChooser   = new MapFileChooser();
+
+        mapfileChooser = new MapFileChooser();
         mapfileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+
+        scenariofileChooser = new ScenarioFileChooser();
+        scenariofileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
 
         /* create */
         create();
@@ -305,14 +315,20 @@ public class SimulationController implements GUIController {
             return;
 
         switch (event) {
-            case LOAD_MAP:
-                transitionLoadMap(file);
-                break;
             case SAVE_MAP:
                 transitionSaveMap();
                 break;
+            case LOAD_MAP:
+                transitionLoadMap(file);
+                break;
             case CHANGE_AREA_SELECTION:
                 transitionChangeAreaSelection();
+                break;
+            case SAVE_SCENARIO:
+                transitionSaveScenario();
+                break;
+            case LOAD_SCENARIO:
+                transitionLoadScenario();
                 break;
             case NEW_SCENARIO:
                 transitionNewScenario();
@@ -338,6 +354,22 @@ public class SimulationController implements GUIController {
         }
 
         lockTransition.unlock();
+    }
+
+    private void transitionSaveMap() {
+        if (isExecutingUserTask.compareAndSet(false, true)) {
+            new Thread(() -> {
+                closePreferences();
+                pauseSim();
+
+                File file = askForMapSaveFile();
+                if (isFileOkayForSaving(file))
+                    saveMap(file);
+
+                updateMenuBar();
+                isExecutingUserTask.set(false);
+            }).start();
+        }
     }
 
     private void transitionLoadMap(File file) {
@@ -366,7 +398,7 @@ public class SimulationController implements GUIController {
                 pauseSim();
 
                 File loadedFile = file == null ? askForMapLoadFile() : file;
-                if (loadedFile != null)
+                if (isFileOkayForLoading(loadedFile))
                     loadAndShowMap(loadedFile);
 
                 isParsing.set(false);
@@ -374,31 +406,6 @@ public class SimulationController implements GUIController {
                 isExecutingUserTask.set(false);
             });
             parsingThread.start();
-        }
-    }
-
-    private void transitionSaveMap() {
-        if (isExecutingUserTask.compareAndSet(false, true)) {
-            new Thread(() -> {
-                closePreferences();
-                pauseSim();
-
-                File file = askForMapSaveFile();
-                if (file != null) {
-                    int status = JOptionPane.OK_OPTION;
-                    if (file.exists()) {
-                        status = JOptionPane.showConfirmDialog(frame,
-                                "The selected file already exists. Continue?", "Save File",
-                                JOptionPane.OK_CANCEL_OPTION);
-                    }
-
-                    if (status == JOptionPane.OK_OPTION)
-                        saveMap(file);
-                }
-
-                updateMenuBar();
-                isExecutingUserTask.set(false);
-            }).start();
         }
     }
 
@@ -443,6 +450,42 @@ public class SimulationController implements GUIController {
                 isExecutingUserTask.set(false);
             }).start();
         }
+    }
+
+    private void transitionLoadScenario() {
+        if (isExecutingUserTask.compareAndSet(false, true)) {
+            new Thread(() -> {
+                if (streetgraph != null) {
+                    closePreferences();
+                    pauseSim();
+
+                    File file = askForScenarioLoadFile();
+                    if (isFileOkayForLoading(file))
+                        loadScenario(file);
+
+                    updateMenuBar();
+                }
+                isExecutingUserTask.set(false);
+            }).start();
+        };
+    }
+
+    private void transitionSaveScenario() {
+        if (isExecutingUserTask.compareAndSet(false, true)) {
+            new Thread(() -> {
+                if (streetgraph != null) {
+                    closePreferences();
+                    pauseSim();
+
+                    File file = askForScenarioSaveFile();
+                    if (isFileOkayForSaving(file))
+                        saveScenario(file);
+
+                    updateMenuBar();
+                }
+                isExecutingUserTask.set(false);
+            }).start();
+        };
     }
 
     private void transitionNewScenario() {
@@ -598,6 +641,8 @@ public class SimulationController implements GUIController {
         menubar.menuLogic.itemEditSim.setEnabled(true);
         menubar.menuLogic.itemNewSim.setEnabled(hasStreetgraph);
         menubar.menuLogic.itemChangeAreaSelection.setEnabled(hasStreetgraph);
+        menubar.menuLogic.itemSaveScenario.setEnabled(hasStreetgraph && hasScenario);
+        menubar.menuLogic.itemLoadScenario.setEnabled(hasStreetgraph);
     }
 
 
@@ -606,20 +651,20 @@ public class SimulationController implements GUIController {
     | map and parser |
     |================|
     */
-    private File askForMapLoadFile() {
-        int action = mapfileChooser.showOpenDialog(frame);
-        if (action == JFileChooser.APPROVE_OPTION)
-            return mapfileChooser.getSelectedFile();
-
-        return null;
-    }
-
     private File askForMapSaveFile() {
         String filename = mapfileChooser.getSelectedFile().getName();
         filename = filename.substring(0, filename.lastIndexOf('.'));
         mapfileChooser.setSelectedFile(new File(filename + "." + FileFilters.MAP_EXFMT_POSTFIX));
 
         int action = mapfileChooser.showSaveDialog(frame);
+        if (action == JFileChooser.APPROVE_OPTION)
+            return mapfileChooser.getSelectedFile();
+
+        return null;
+    }
+
+    private File askForMapLoadFile() {
+        int action = mapfileChooser.showOpenDialog(frame);
         if (action == JFileChooser.APPROVE_OPTION)
             return mapfileChooser.getSelectedFile();
 
@@ -759,17 +804,166 @@ public class SimulationController implements GUIController {
                     .inject(streetgraph)
                     .getContainer());
 
-            JOptionPane.showMessageDialog(frame,
-                    "Map saved.",
-                    "Saving map successful",
-                    JOptionPane.INFORMATION_MESSAGE);
+            showSavingSuccess();
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(frame,
-                    "Failed to save file: '" + file.getPath() + "'",
-                    "Error saving file",
-                    JOptionPane.ERROR_MESSAGE);
+            showSavingFailure(file);
         }
+
+        setNewFrameTitle.invoke();
+    }
+
+
+    /*
+    |====================|
+    | load/save scenario |
+    |====================|
+    */
+    private File askForScenarioLoadFile() {
+        int action = scenariofileChooser.showOpenDialog(frame);
+        if (action == JFileChooser.APPROVE_OPTION)
+            return scenariofileChooser.getSelectedFile();
+
+        return null;
+    }
+
+    private File askForScenarioSaveFile() {
+        scenariofileChooser.setSelectedFile(new File("New scenario." + FileFilters.SCENARIO_POSTFIX));
+
+        int action = scenariofileChooser.showSaveDialog(frame);
+        if (action == JFileChooser.APPROVE_OPTION)
+            return scenariofileChooser.getSelectedFile();
+
+        return null;
+    }
+
+    private void loadScenario(File file) {
+        /* update frame title and remember old one */
+        WrappedString cachedTitle = new WrappedString();
+        rememberCurrentFrameTitleIn(cachedTitle);
+        updateFrameTitle(FrameTitle.LOADING, file);
+
+        WrappedString tmpTitle = new WrappedString("Loading new scenario");
+        updateFrameTitle(tmpTitle);
+
+
+        /* update streetgraph */
+        // mapviewer.createParser(config) is not needed because the mapviewer gets the final config-reference
+        streetgraph.reset();
+        streetgraph.setSeed(config.seed);
+
+
+        /* prepare exfmt config */
+        AreaScenarioExtractor.Config asecfg = new AreaScenarioExtractor.Config();
+        asecfg.loadRoutes = askUserForDecision(
+                "Do you like to load the routes as well?",
+                "Route storing");
+        asecfg.graph = streetgraph;
+        asecfg.config = config;
+
+        asecfg.scenarioBuilder = scenarioBuilder;
+        asecfg.progressListener = currentInPercent -> {
+            tmpTitle.set("Assigning vehicle routes " + currentInPercent + "%");
+            updateFrameTitle(tmpTitle);
+        };
+        exfmt.getConfig().set(asecfg);
+
+
+        /* load */
+        ExchangeFormat.Manipulator manipulator = null;
+        try {
+            manipulator = exfmt.manipulator(serializer.read(file));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ScenarioMetaInfo scmeta = null;
+        if (manipulator != null) {
+            try {
+                scmeta = manipulator.extract(ScenarioMetaInfo.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        boolean stillLoadScenario = scmeta != null;
+        if (stillLoadScenario) {
+            // check if streetgraphGUID equals scmeta.getGUID()
+            // if not issue warning due to possible incompatibility
+            // and prompt to cancel
+            if (!streetgraph.getGUID().equals(scmeta.getGraphGUID())) {
+                stillLoadScenario = askUserForDecision(
+                        "The graph used in the scenario is different to the current one.\n" +
+                                "Do you want to continue?",
+                        "Inconsistent scenario meta information");
+            }
+        }
+
+        if (stillLoadScenario) {
+            AreaScenario newScenario = null;
+            try {
+                newScenario = manipulator.extract(AreaScenario.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            if (newScenario != null) {
+                /* create new scenario */
+                tmpTitle.set("Assigning vehicle routes 0%");
+                updateFrameTitle(tmpTitle);
+
+
+                /* remove old scenario */
+                simulation.removeCurrentScenario();
+                scenarioAreaOverlay.setEventsEnabled(false);
+                scenarioAreaOverlay.setPropertiesVisible(false);
+
+
+                /* update area overlay */
+                scenarioAreaOverlay.removeAllAreas();
+                newScenario.getAreas().stream()
+                        .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
+                        .forEach(scenarioAreaOverlay::add);
+
+                /* initialize the scenario */
+                simulation.setAndInitPreparedScenario(newScenario);
+                simulation.runOneStep();
+            }
+        }
+
+
+        /* finish creation */
+        updateFrameTitle(cachedTitle);
+    }
+
+    private void saveScenario(File file) {
+        /* update frame title and remember old one */
+        WrappedString cachedTitle = new WrappedString();
+        rememberCurrentFrameTitleIn(cachedTitle);
+        updateFrameTitle(FrameTitle.SAVING, file);
+        Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
+
+
+        AreaScenario scenario = (AreaScenario) simulation.getScenario();
+        AreaScenarioInjector.Config asicfg = new AreaScenarioInjector.Config();
+        asicfg.storeRoutes = askUserForDecision(
+                "Do you like to store the routes as well?\n" +
+                        "\n" +
+                        "Attention! The routes would be stored\n" +
+                        "in the current simulation state,\n" +
+                        "not fresh calculated!",
+                "Route storing");
+        exfmt.getConfig().set(asicfg);
+        try {
+            serializer.write(file, exfmt.manipulator().inject(scenario).getContainer());
+
+            showSavingSuccess();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showSavingFailure(file);
+        }
+
 
         setNewFrameTitle.invoke();
     }
@@ -949,5 +1143,46 @@ public class SimulationController implements GUIController {
     private void closePreferences() {
         preferences.setVisible(false);
         preferences.setAllEnabled(false);
+    }
+
+
+    /*
+    |=======|
+    | utils |
+    |=======|
+    */
+    private boolean isFileOkayForLoading(File file) {
+        return file != null;
+    }
+
+    private boolean isFileOkayForSaving(File file) {
+        if (file == null)
+            return false;
+        if (file.exists()) {
+            return askUserForDecision(
+                    "The selected file already exists. Continue?",
+                    "Save File");
+        }
+        return true;
+    }
+
+    private boolean askUserForDecision(String msg, String title) {
+        int status = JOptionPane.showConfirmDialog(frame, msg, title, JOptionPane.OK_CANCEL_OPTION);
+
+        return status == JOptionPane.OK_OPTION;
+    }
+
+    private void showSavingSuccess() {
+        JOptionPane.showMessageDialog(frame,
+                "File saved.",
+                "Saving file successful",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void showSavingFailure(File file) {
+        JOptionPane.showMessageDialog(frame,
+                "Failed to save file: '" + file.getPath() + "'",
+                "Error saving file",
+                JOptionPane.ERROR_MESSAGE);
     }
 }
