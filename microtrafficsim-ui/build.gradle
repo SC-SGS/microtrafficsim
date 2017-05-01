@@ -1,8 +1,8 @@
 plugins {
     id 'application'
-    id "edu.sc.seis.macAppBundle" version "2.1.6"
+    id 'edu.sc.seis.macAppBundle' version '2.1.6'
+    id 'nebula.ospackage' version '4.4.0'
 }
-
 
 dependencies {
     compile project(':microtrafficsim-core')
@@ -16,13 +16,20 @@ run {
 }
 
 
-mainClassName = "microtrafficsim.ui.Main"
+def distName = 'microtrafficsim'
+def distVersion = '1.0.0'
+def distRelease = '1'
+
+def main = 'microtrafficsim.ui.Main'
+
+
+mainClassName = "$main"
 macAppBundle {
-    mainClassName = "microtrafficsim.ui.Main"
+    mainClassName = "$main"
 }
 jar {
      manifest {
-         attributes "Main-Class": "$mainClassName"
+         attributes "Main-Class": "$main"
      }
 
      from {
@@ -30,6 +37,63 @@ jar {
      }
  }
 
+
+ospackage {
+    packageName = "$distName"
+    version = "$distVersion"
+    release = "$distRelease"
+    os = LINUX
+    type = BINARY
+
+    maintainer = 'github.com/sgs-us'
+    uploaders = 'github.com/sgs-us'
+
+    into "/usr/share/$distName"
+
+    from(jar.outputs.files) {
+        into 'lib'
+    }
+    from(configurations.runtime) {
+        into 'lib'
+    }
+    from(startScripts.outputDir) {
+        into 'bin'
+        exclude '*.bat'
+        fileMode 0550
+    }
+
+    link("/usr/bin/$distName", "/usr/share/$distName/bin/$distName")
+}
+
+task distRpm(type: Rpm) {
+    dependsOn startScripts
+}
+
+task distDeb(type: Deb) {
+    dependsOn startScripts
+}
+
+task distApp(type: Zip) {
+    dependsOn createApp
+
+    from fileTree("${->project.buildDir}/${->project.macAppBundle.appOutputDir}/${->project.macAppBundle.appName}.app") {
+        into 'microtrafficsim.app'
+    }
+
+    destinationDir = file("${->project.buildDir}/distributions")
+    archiveName "$distName" + "_"+ "$distVersion" + "-" + "$distRelease"+ "_all.app.zip"
+}
+
+distZip {
+    archiveName "$distName" + "_"+ "$distVersion" + "-" + "$distRelease"+ "_all.zip"
+}
+
+task distAll {
+    dependsOn distZip
+    dependsOn distRpm
+    dependsOn distDeb
+    dependsOn distApp
+}
 
 
 // set jar, distribution and application name
