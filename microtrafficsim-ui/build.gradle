@@ -85,7 +85,12 @@ task distApp(type: Zip) {
 }
 
 distZip {
-    archiveName "$distName" + "_"+ "$distVersion" + "-" + "$distRelease"+ "_all.zip"
+    archiveName = "$distName"
+
+    doLast {
+        def name = "$distName" + "_"+ "$distVersion" + "-" + "$distRelease"+ "_all.zip"
+        archivePath.renameTo(file("${->project.buildDir}/distributions/${name}"))
+    }
 }
 
 task distAll {
