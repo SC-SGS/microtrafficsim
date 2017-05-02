@@ -5,6 +5,7 @@ import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.simulation.core.Simulation;
@@ -43,7 +44,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
     private static final float VEHICLE_SIZE               = 10.f;
     private static final float VEHICLE_SCALE_NORM         = 1.f / (1 << 18);
-    private static final float VEHICLE_LANE_OFFSET        = 6.f;
+    private static final float VEHICLE_LANE_OFFSET_SCALE  = 12.f;
     private static final int   VIEWPORT_CULLING_EXPANSION = 20;
 
     private static final int TEX_UNIT_SPRITE    = 0;
@@ -59,7 +60,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
     private final Supplier<VisualizationVehicleEntity> vehicleFactory;
 
-    private Simulation simulation;
+    private Simulation       simulation;
     private Projection       projection;
     private OrthographicView view;
 
@@ -258,12 +259,18 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
             Coordinate ctarget = v.getTarget();
             Vec2d      dir     = projection.project(ctarget).sub(pos).normalize();
 
-            DirectedEdge edge = logic.getDirectedEdge();
-            if (edge == null) continue;
+            // adjust position to lane
+            Lane lane = logic.getLane();
+            if (lane == null) continue;
+
+            DirectedEdge edge = lane.getAssociatedEdge();
+            double laneOffset = laneOffsetSign * (edge.getLanes().size() - lane.getIndex() - 0.5)
+                    * VEHICLE_LANE_OFFSET_SCALE * VEHICLE_SCALE_NORM;
+
             StreetEntity street = edge.getEntity();
             if (street.getBackwardEdge() != null && street.getForwardEdge() != null) {
-                pos.x += dir.y * laneOffsetSign * VEHICLE_LANE_OFFSET * VEHICLE_SCALE_NORM;
-                pos.y -= dir.x * laneOffsetSign * VEHICLE_LANE_OFFSET * VEHICLE_SCALE_NORM;
+                pos.x += dir.y * laneOffset;
+                pos.y -= dir.x * laneOffset;
             }
 
             // continue if out of bounds

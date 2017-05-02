@@ -400,4 +400,9 @@ public abstract class BasicVehicle implements Vehicle {
         if (lane == null) return null;
         return lane.getAssociatedEdge();
     }
+
+    @Override
+    public Lane getLane() {
+        return lane;
+    }
 }

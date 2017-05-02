@@ -1,6 +1,7 @@
 package microtrafficsim.core.entities.vehicle;
 
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.streets.Lane;
 
 
 /**
@@ -31,6 +32,13 @@ public interface LogicVehicleEntity {
      * @return the {@code DirectedEdge} of this vehicle.
      */
     DirectedEdge getDirectedEdge();
+
+    /**
+     * Returns the {@code Lane} on which this Vehicle is on.
+     *
+     * @return the {@code Lane} on which this Vehicle is on.
+     */
+    Lane getLane();
 
     /**
      * Returns the cell position of this vehicle on its street.
