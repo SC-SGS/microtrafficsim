@@ -100,8 +100,8 @@ public class SimulationExample {
 
 
     /**
-     * Create and return the ScenarioConfig used for this example.
-     * @return the {@code ScenarioConfig} used for this example.
+     * Create and return the SimulationConfig used for this example.
+     * @return the {@code SimulationConfig} used for this example.
      */
     private SimulationConfig config() {
         SimulationConfig config = new SimulationConfig();

@@ -753,7 +753,7 @@ public class SimulationController implements GUIController {
 
         try {
             manipulator = exfmt.manipulator(serializer.read(file));
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

@@ -80,6 +80,7 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
         lanes[0] = new Lane(this, 0);
     }
 
+    @Override
     public long getId() {
         return streetInfo.raw.id;
     }

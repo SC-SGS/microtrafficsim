@@ -33,8 +33,7 @@ public class AreaScenarioExtractor implements ExchangeFormat.Extractor<AreaScena
 
         // load scenario/simulation config
         SimulationConfigInfo sconfig = src.get(SimulationConfigInfo.class);
-        if (sconfig == null) throw new NotAvailableException("ScenarioConfigInfo missing");
-        // TODO: load scenario/simulation config
+        if (sconfig == null) throw new NotAvailableException("SimulationConfigInfo missing");
         cfg.config.update(sconfig.getConfig());
 
         AreaScenario scenario = new AreaScenario(cfg.config.seed, cfg.config, cfg.graph);
@@ -49,59 +48,20 @@ public class AreaScenarioExtractor implements ExchangeFormat.Extractor<AreaScena
 
         // load routes
         if (cfg.loadRoutes) {
-            ScenarioRouteSet fakeRoutes = src.get(ScenarioRouteSet.class);
-            if (fakeRoutes == null) throw new NotAvailableException("ScenarioRouteSet missing");
+            ScenarioRouteSet routeIDs = src.get(ScenarioRouteSet.class);
+            if (routeIDs == null) throw new NotAvailableException("ScenarioRouteSet missing");
 
-            // TODO: load routes
             /* create node lexicon */
             HashMap<Long, Node> nodes = new HashMap<>();
-            HashMap<Long, DirectedEdge> edges = new HashMap<>();
             for (Node node : cfg.graph.getNodes())
                 nodes.put(node.getId(), node);
             /* create edge lexicon */
+            HashMap<Long, DirectedEdge> edges = new HashMap<>();
             for (DirectedEdge edge : cfg.graph.getEdges())
                 edges.put(edge.getId(), edge);
 
-            /* if scenario does not fit to graph */
-            boolean correctRoutes = true;
             /* create original route matrix referencing to the current graph */
-            RouteMatrix matrix = new RouteMatrix();
-            for (Node fakeOrigin : fakeRoutes.getAll().keySet()) {
-                HashMap<Node, Route<Node>> fakeValue = fakeRoutes.getAll().get(fakeOrigin);
-
-                Node origin = nodes.get(fakeOrigin.getId());
-                if (origin == null) {
-                    correctRoutes = false;
-                    continue;
-                }
-                HashMap<Node, Route<Node>> value = new HashMap<>();
-
-                for (Node fakeDestination : fakeValue.keySet()) {
-                    Node destination = nodes.get(fakeDestination.getId());
-                    if (destination == null) {
-                        correctRoutes = false;
-                        break;
-                    }
-                    Route<Node> route = new Route<>(origin, destination);
-                    for (ShortestPathEdge<Node> fakeSPEdge : fakeValue.get(fakeOrigin)) {
-                        DirectedEdge fakeEdge = (DirectedEdge) fakeSPEdge;
-                        DirectedEdge edge = edges.get(fakeEdge.getId());
-                        if (edge == null) {
-                            correctRoutes = false;
-                            break;
-                        }
-                        route.add(edge);
-                    }
-
-                    value.put(destination, route);
-                }
-
-                if (!value.isEmpty())
-                    matrix.put(origin, value);
-            }
-
-            if (!correctRoutes)
-                throw new RouteIsNotDefinedException("Some routes could not be assigned due to wrong graph.");
+            RouteMatrix matrix = RouteMatrix.fromSparse(routeIDs.getAll(), nodes, edges);
 
             cfg.scenarioBuilder.prepare(scenario, matrix, cfg.progressListener);
         }

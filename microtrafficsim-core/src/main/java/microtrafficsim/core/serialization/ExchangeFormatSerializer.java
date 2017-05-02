@@ -28,6 +28,7 @@ import microtrafficsim.core.serialization.kryo.impl.exfmt.entities.PolygonEntity
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.core.vis.map.projections.PlateCarreeProjection;
 import microtrafficsim.math.Rect2d;
+import microtrafficsim.utils.Descriptor;
 import microtrafficsim.utils.Version;
 import microtrafficsim.utils.collections.Grid;
 
@@ -87,6 +88,9 @@ public class ExchangeFormatSerializer {
 
         kryo.register(Version.class, new VersionSerializer());
         kryo.register(Container.class);
+
+        // general stuff
+        kryo.register(Descriptor.class, new DescriptorSerializer());
 
         // exchange-format
         kryo.register(TileGridInfo.Grid.class, new TileGridSetSerializer.Grid());
