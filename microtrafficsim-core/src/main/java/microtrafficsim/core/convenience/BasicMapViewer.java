@@ -1,11 +1,11 @@
 package microtrafficsim.core.convenience;
 
 import microtrafficsim.core.map.style.MapStyleSheet;
-import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.*;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.map.projections.Projection;
+
 
 /**
  * @author Maximilian Luz, Dominic Parga Cacheiro
@@ -21,7 +21,6 @@ public abstract class BasicMapViewer implements MapViewer {
     private final boolean printFrameStats;
 
     private VisualizationPanel vpanel;
-    private OSMParser          parser;
 
 
     public BasicMapViewer(int width, int height, MapStyleSheet style, Projection projection, boolean printFrameStats) {

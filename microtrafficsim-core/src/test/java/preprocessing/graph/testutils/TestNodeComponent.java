@@ -27,10 +27,6 @@ public class TestNodeComponent extends Component {
         this.restrictions = new HashSet<>();
     }
 
-    @Override
-    public Class<? extends Component> getType() {
-        return TestNodeComponent.class;
-    }
 
     @Override
     public TestNodeComponent clone(Entity e) {

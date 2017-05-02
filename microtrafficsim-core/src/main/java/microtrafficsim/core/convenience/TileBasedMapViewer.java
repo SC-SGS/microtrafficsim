@@ -1,11 +1,10 @@
 package microtrafficsim.core.convenience;
 
 import com.jogamp.newt.event.KeyEvent;
-import microtrafficsim.core.convenience.utils.Utils;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.map.layers.LayerSource;
+import microtrafficsim.core.map.layers.TileLayerSource;
 import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
@@ -31,6 +30,8 @@ import java.util.Collection;
 public class TileBasedMapViewer extends BasicMapViewer {
 
     private TileBasedVisualization visualization;
+    private TileFeatureProvider map;
+    private TileLayerProvider layerProvider;
 
     private TilingScheme preferredTilingScheme;
     private int preferredTileGridLevel;
@@ -59,7 +60,7 @@ public class TileBasedMapViewer extends BasicMapViewer {
      * @see #TileBasedMapViewer(int, int, MapStyleSheet, Projection)
      */
     public TileBasedMapViewer(MapStyleSheet style) {
-        this(1600, 900, style, new MercatorProjection(256));
+        this(1600, 900, style, new MercatorProjection());
     }
 
     /**
@@ -138,8 +139,8 @@ public class TileBasedMapViewer extends BasicMapViewer {
     @Override
     public void createVisualization() {
         /* set up layer and tile provider */
-        TileLayerProvider layerProvider = createLayerProvider(style.getLayers());
-        TileProvider      provider      = new PreRenderedTileProvider(layerProvider);
+        layerProvider = createLayerProvider(style.getLayers());
+        TileProvider provider = new PreRenderedTileProvider(layerProvider);
 
         /* create a new visualization object */
         visualization = new TileBasedVisualization(
@@ -203,22 +204,36 @@ public class TileBasedMapViewer extends BasicMapViewer {
     }
 
     @Override
-    public void setMap(SegmentFeatureProvider segment) throws InterruptedException {
-        TileFeatureProvider tiled = null;
+    public TileFeatureProvider getMap() {
+        return map;
+    }
 
+    @Override
+    public void setMap(SegmentFeatureProvider segment) throws InterruptedException {
         if (segment instanceof TileFeatureProvider) {
-            tiled = (TileFeatureProvider) segment;
+            map = (TileFeatureProvider) segment;
         } else {
-            tiled = new QuadTreeTiledMapSegment.Generator().generate(segment, preferredTilingScheme, preferredTileGridLevel);
+            map = new QuadTreeTiledMapSegment.Generator().generate(
+                    segment,
+                    preferredTilingScheme,
+                    preferredTileGridLevel);
         }
 
-        setMap(tiled);
+        setMap(map);
     }
 
     public void setMap(TileFeatureProvider tiles) {
+        /* Update the tiling-scheme according to the source. Note: All sources must have the same tiling scheme and the
+         * visual appearance (i.e. line-thickness) may depend on the tiling-scheme (specifically its scale). It is
+         * thus often better to specify the tiling-scheme while loading/generating the feature provider and other
+         * sources.
+         */
+        map = tiles;
+        layerProvider.setTilingScheme(tiles.getTilingScheme());
+
         /* update the feature sources, so that they will use the created provider */
         for (LayerDefinition def : style.getLayers()) {
-            LayerSource src = def.getSource();
+            TileLayerSource src = def.getSource();
 
             if (src instanceof FeatureTileLayerSource)
                 ((FeatureTileLayerSource) src).setFeatureProvider(tiles);

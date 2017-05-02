@@ -27,6 +27,7 @@ public class Feature<T extends FeaturePrimitive> {
         this.data = data;
     }
 
+
     /**
      * Returns the name of this feature.
      *
@@ -43,6 +44,15 @@ public class Feature<T extends FeaturePrimitive> {
      */
     public Class<T> getType() {
         return type;
+    }
+
+    /**
+     * Returns the descriptor describing this feature.
+     *
+     * @return the descriptor describing this feature.
+     */
+    public FeatureDescriptor getDescriptor() {
+        return new FeatureDescriptor(name, type);
     }
 
     /**

@@ -68,4 +68,36 @@ public enum StreetType {
             default: return null;
         }
     }
+
+
+    public microtrafficsim.core.map.StreetType toCoreStreetType() {
+        return toCoreStreetType(this);
+    }
+
+    public static microtrafficsim.core.map.StreetType toCoreStreetType(StreetType type) {
+        switch (type) {
+            case MOTORWAY:       return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.MOTORWAY,      false, false);
+            case TRUNK:          return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.TRUNK,         false, false);
+            case PRIMARY:        return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.PRIMARY,       false, false);
+            case SECONDARY:      return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.SECONDARY,     false, false);
+            case TERTIARY:       return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.TERTIARY,      false, false);
+            case UNCLASSIFIED:   return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.UNCLASSIFIED,  false, false);
+            case RESIDENTIAL:    return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.RESIDENTIAL,   false, false);
+            case SERVICE:        return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.SERVICE,       false, false);
+
+            case ROUNDABOUT:     return new microtrafficsim.core.map.StreetType((short) 0x0000,                                    true,  false);
+
+            case MOTORWAY_LINK:  return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.MOTORWAY,      false, true);
+            case TRUNK_LINK:     return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.TRUNK,         false, true);
+            case PRIMARY_LINK:   return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.PRIMARY,       false, true);
+            case SECONDARY_LINK: return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.SECONDARY,     false, true);
+            case TERTIARY_LINK:  return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.TERTIARY,      false, true);
+
+            case LIVING_STREET:  return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.LIVING_STREET, false, false);
+            case TRACK:          return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.TRACK,         false, false);
+            case ROAD:           return new microtrafficsim.core.map.StreetType(microtrafficsim.core.map.StreetType.ROAD,          false, false);
+
+            default: return null;
+        }
+    }
 }

@@ -8,7 +8,10 @@ package microtrafficsim.ui.gui.statemachine;
  */
 public enum GUIEvent {
     LOAD_MAP,
+    SAVE_MAP,
     CHANGE_AREA_SELECTION,
+    SAVE_SCENARIO,
+    LOAD_SCENARIO,
     NEW_SCENARIO,
     ACCEPT_PREFS,
     CANCEL_PREFS,

@@ -116,8 +116,28 @@ public class Bounds implements Cloneable {
     }
 
 
+    public Bounds join(Bounds other) {
+        this.minlat = Math.min(this.minlat, other.minlat);
+        this.minlon = Math.min(this.minlon, other.minlon);
+        this.maxlat = Math.max(this.maxlat, other.maxlat);
+        this.maxlon = Math.max(this.maxlon, other.maxlon);
+
+        return this;
+    }
+
+
     @Override
     public String toString() {
         return this.getClass().getName() + " {" + minlat + ", " + minlon + ", " + maxlat + ", " + maxlon + "}";
+    }
+
+
+    public static Bounds join(Bounds a, Bounds b) {
+        return new Bounds(
+                Math.min(a.minlat, b.minlat),
+                Math.min(a.minlon, b.minlon),
+                Math.max(a.maxlat, b.maxlat),
+                Math.max(a.maxlon, b.maxlon)
+        );
     }
 }

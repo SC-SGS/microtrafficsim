@@ -46,7 +46,7 @@ public class StreetComponentFactory implements ComponentFactory<StreetComponent,
         MaxspeedInfo maxspeed   = MaxspeedInfo.parse(source.tags);
         StreetType   streettype = StreetType.parse(source.tags);
         boolean      roundabout = parseRoundabout(source.tags);
-        float        layer      = parseLayer(source.tags);
+        double       layer      = parseLayer(source.tags);
 
         return new StreetComponent((WayEntity) entity, streettype, lanes, maxspeed, oneway, roundabout, layer);
     }
@@ -63,11 +63,11 @@ public class StreetComponentFactory implements ComponentFactory<StreetComponent,
         return "roundabout".equals(tags.get("junction"));
     }
 
-    private static float parseLayer(Map<String, String> tags) {
-        Float layer = null;
+    private static double parseLayer(Map<String, String> tags) {
+        Double layer = null;
         if (tags.get("layer") != null) {
             try {
-                layer = Float.parseFloat(tags.get("layer"));
+                layer = Double.parseDouble(tags.get("layer"));
             } catch (NumberFormatException e) {
                 logger.warn("on 'layer' tag: '" + tags.get("layer") + "' is not a valid number!");
             }
@@ -77,13 +77,13 @@ public class StreetComponentFactory implements ComponentFactory<StreetComponent,
             if (tags.get("bridge") != null
                 && !(tags.get("bridge").equals("0") || !tags.get("bridge").equals("false")
                      || !tags.get("bridge").equals("no"))) {
-                layer = 1.f;
+                layer = 1.0;
             } else if (tags.get("tunnel") != null
                        && !(tags.get("tunnel").equals("0") || !tags.get("tunnel").equals("false")
                             || !tags.get("tunnel").equals("no"))) {
-                layer = -1.f;
+                layer = -1.0;
             } else {
-                layer = 0.f;
+                layer = 0.0;
             }
         }
 

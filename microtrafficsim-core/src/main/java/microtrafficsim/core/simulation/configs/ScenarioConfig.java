@@ -1,10 +1,10 @@
 package microtrafficsim.core.simulation.configs;
 
-
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.utils.Descriptor;
 
 import java.util.ArrayList;
+
 
 /**
  * This class isolates the scenario attributes from the other config
@@ -29,7 +29,7 @@ public final class ScenarioConfig {
     /**
      * Setup the parameters of this config file.
      */
-    public void setup() {
+    private void setup() {
         showAreasWhileSimulating = false;
         nodesAreWeightedUniformly = true;
     }

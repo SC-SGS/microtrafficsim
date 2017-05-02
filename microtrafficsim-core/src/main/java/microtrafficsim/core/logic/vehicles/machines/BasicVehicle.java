@@ -93,7 +93,7 @@ public abstract class BasicVehicle implements Vehicle {
             strBuilder.appendln("");
             strBuilder.appendln("-- infos from next node --");
             strBuilder.appendln("permission = " + lane.getAssociatedEdge().getDestination().permissionToCross(this));
-            strBuilder.appendln("node.id = " + lane.getAssociatedEdge().getDestination().id);
+            strBuilder.appendln("node.id = " + lane.getAssociatedEdge().getDestination().getId());
         }
         strBuilder.decLevel();
         strBuilder.appendln("<\\vehicle>");

@@ -11,7 +11,7 @@ public class LayerDefinition {
     private int             index;
     private int             minzoom;
     private int             maxzoom;
-    private LayerSource source;
+    private TileLayerSource source;
 
     /**
      * Constructs a new {@code LayerDefinition}.
@@ -22,7 +22,7 @@ public class LayerDefinition {
      * @param maxzoom the maximum zoom level at which the layer is active.
      * @param source  the source of the layer.
      */
-    public LayerDefinition(String name, int index, int minzoom, int maxzoom, LayerSource source) {
+    public LayerDefinition(String name, int index, int minzoom, int maxzoom, TileLayerSource source) {
         this.name    = name;
         this.index   = index;
         this.minzoom = minzoom;
@@ -53,7 +53,7 @@ public class LayerDefinition {
      *
      * @return the source of the layer.
      */
-    public LayerSource getSource() {
+    public TileLayerSource getSource() {
         return source;
     }
 

@@ -18,6 +18,21 @@ import java.util.Set;
 public interface Graph extends Seeded, Resettable, ShortestPathGraph {
 
     /**
+     * The graph's GUID has to be updated depending on its bounds, nodes and edges using {@link #updateGraphGUID()}.
+     *
+     * @return The Globally Unique IDentifier of this graph
+     */
+    GraphGUID getGUID();
+
+    /**
+     * Recalculates the graph's GUID depending on its bounds, nodes and edges.
+     *
+     * @return updated {@code GraphGUID}
+     */
+    GraphGUID updateGraphGUID();
+
+
+    /**
      * Returns the bounding rectangle enclosing this graph.
      *
      * @return the bounds of this graph.
