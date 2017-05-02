@@ -2,9 +2,8 @@ package microtrafficsim.core.logic.streets.information;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.map.StreetType;
+import microtrafficsim.core.simulation.configs.SimulationConfig.StreetPriorityFunction;
 import microtrafficsim.math.Vec2d;
-
-import java.util.function.Function;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -28,11 +27,11 @@ public class RawStreetInfo {
     public int nLanes;
     public float maxVelocity;
     public float metersPerCell;
-    public Function<StreetType, Byte> priorityFn;
+    public StreetPriorityFunction priorityFn;
 
     /**
      * For parameter information
-     * see {@link #RawStreetInfo(long, double, Vec2d, Vec2d, Node, Node, StreetType, int, float, float, Function)}
+     * see {@link #RawStreetInfo(long, double, Vec2d, Vec2d, Node, Node, StreetType, int, float, float, StreetPriorityFunction)}
      */
     public RawStreetInfo() {}
 
@@ -60,7 +59,7 @@ public class RawStreetInfo {
                          int nLanes,
                          float maxVelocity,
                          float metersPerCell,
-                         Function<StreetType, Byte> priorityFn) {
+                         StreetPriorityFunction priorityFn) {
         this.id                   = id;
         this.lengthInMeters       = lengthInMeters;
         this.originDirection      = originDirection.normalize();

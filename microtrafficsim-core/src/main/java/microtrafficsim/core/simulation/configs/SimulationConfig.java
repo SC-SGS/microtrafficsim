@@ -2,8 +2,9 @@ package microtrafficsim.core.simulation.configs;
 
 import microtrafficsim.core.map.StreetType;
 import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.functional.Function1;
 
-import java.util.function.Function;
+import java.io.Serializable;
 
 
 /**
@@ -42,7 +43,7 @@ public final class SimulationConfig {
     public int maxVehicleCount;
 
     /* street type priorities */
-    public Function<StreetType, Byte> streetPriorityLevel;
+    public StreetPriorityFunction streetPriorityLevel;
 
     /* multithreading */
     public final MultiThreadingConfig multiThreading;
@@ -135,5 +136,13 @@ public final class SimulationConfig {
         streetPriorityLevel = config.streetPriorityLevel;
         /* multithreading */
         multiThreading.update(config.multiThreading);
+    }
+
+
+    /**
+     * @author Maximilian Luz, Dominic Parga Cacheiro
+     */
+    public interface StreetPriorityFunction extends Serializable {
+        byte get(StreetType type);
     }
 }

@@ -13,13 +13,13 @@ public class DescriptorSerializer extends Serializer<Descriptor<?>> {
 
     @Override
     public void write(Kryo kryo, Output output, Descriptor<?> object) {
-        kryo.writeObject(output, object.getObj());
+        kryo.writeClassAndObject(output, object.getObj());
         kryo.writeObject(output, object.getDescription());
     }
 
     @Override
     public Descriptor<?> read(Kryo kryo, Input input, Class<Descriptor<?>> type) {
-        Object obj = kryo.readObject(input, Object.class);
+        Object obj = kryo.readClassAndObject(input);
         String str = kryo.readObject(input, String.class);
         return new Descriptor<>(obj, str);
     }

@@ -7,6 +7,7 @@ import microtrafficsim.core.logic.streets.information.FullStreetInfo;
 import microtrafficsim.core.logic.streets.information.RawStreetInfo;
 import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
@@ -48,7 +49,7 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                         Vec2d originDirection,
                         Vec2d destinationDirection,
                         float metersPerCell,
-                        Function<StreetType, Byte> priorityFn)
+                        SimulationConfig.StreetPriorityFunction priorityFn)
     {
         this(new RawStreetInfo(
                 id,

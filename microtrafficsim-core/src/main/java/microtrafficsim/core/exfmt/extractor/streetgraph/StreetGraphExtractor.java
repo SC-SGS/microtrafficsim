@@ -217,11 +217,14 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
 
     public static class Config extends microtrafficsim.core.exfmt.Config.Entry {
         public float metersPerCell;
-        public Function<StreetType, Byte> priorityFn;
+        public SimulationConfig.StreetPriorityFunction priorityFn;
         public CrossingLogicConfig crossingLogic;
         public long seed;
 
-        public Config(float metersPerCell, Function<StreetType, Byte> priorityFn, CrossingLogicConfig crossingLogic, long seed) {
+        public Config(float metersPerCell,
+                      SimulationConfig.StreetPriorityFunction priorityFn,
+                      CrossingLogicConfig crossingLogic,
+                      long seed) {
             this.metersPerCell = metersPerCell;
             this.priorityFn = priorityFn;
             this.crossingLogic = crossingLogic;

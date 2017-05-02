@@ -467,7 +467,7 @@ public class SimulationController implements GUIController {
                 }
                 isExecutingUserTask.set(false);
             }).start();
-        };
+        }
     }
 
     private void transitionSaveScenario() {
