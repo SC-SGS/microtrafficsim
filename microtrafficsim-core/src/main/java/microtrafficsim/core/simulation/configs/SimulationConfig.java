@@ -76,33 +76,7 @@ public final class SimulationConfig {
         // vehicles
         maxVehicleCount = 100;
         // street type priorities
-        streetPriorityLevel = streetType -> {
-            byte prioLevel = (byte) 0x00;
-
-            if (streetType.isRoundabout())
-                return (byte) 0xFF;
-
-            switch (streetType.getType()) {
-                case StreetType.MOTORWAY:       prioLevel++;
-                case StreetType.TRUNK:          prioLevel++;
-                case StreetType.PRIMARY:        prioLevel++;
-                case StreetType.SECONDARY:      prioLevel++;
-                case StreetType.TERTIARY:       prioLevel++;
-                case StreetType.UNCLASSIFIED:   prioLevel++;
-                case StreetType.RESIDENTIAL:    prioLevel++;
-                case StreetType.LIVING_STREET:  prioLevel++;
-                case StreetType.SERVICE:        prioLevel++;
-                case StreetType.TRACK:          prioLevel++;
-                case StreetType.ROAD:           prioLevel++;
-            }
-
-            prioLevel *= 2;
-
-            if (streetType.isLink())
-                prioLevel += 1;
-
-            return prioLevel;
-        };
+        streetPriorityLevel = new DefaultStreetPriorityFunction();
     }
 
     /*
@@ -142,7 +116,41 @@ public final class SimulationConfig {
     /**
      * @author Maximilian Luz, Dominic Parga Cacheiro
      */
-    public interface StreetPriorityFunction extends Serializable {
-        byte get(StreetType type);
+    public interface StreetPriorityFunction {
+        byte getPriority(StreetType type);
+    }
+
+    /**
+     * @author Maximilian Luz, Dominic Parga Cacheiro
+     */
+    public static class DefaultStreetPriorityFunction implements StreetPriorityFunction {
+        @Override
+        public byte getPriority(StreetType type) {
+            byte priority = (byte) 0x00;
+
+            if (type.isRoundabout())
+                return (byte) 0xFF;
+
+            switch (type.getType()) {
+                case StreetType.MOTORWAY:       priority++;
+                case StreetType.TRUNK:          priority++;
+                case StreetType.PRIMARY:        priority++;
+                case StreetType.SECONDARY:      priority++;
+                case StreetType.TERTIARY:       priority++;
+                case StreetType.UNCLASSIFIED:   priority++;
+                case StreetType.RESIDENTIAL:    priority++;
+                case StreetType.LIVING_STREET:  priority++;
+                case StreetType.SERVICE:        priority++;
+                case StreetType.TRACK:          priority++;
+                case StreetType.ROAD:           priority++;
+            }
+
+            priority *= 2;
+
+            if (type.isLink())
+                priority += 1;
+
+            return priority;
+        }
     }
 }
