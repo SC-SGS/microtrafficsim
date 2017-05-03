@@ -15,7 +15,7 @@ import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.utils.RouteMatrix;
-import microtrafficsim.interesting.progressable.ProgressListener;
+import microtrafficsim.utils.progressable.ProgressListener;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.collections.Triple;
@@ -28,7 +28,6 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.strings.StringUtils;
 import org.slf4j.Logger;
 
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 

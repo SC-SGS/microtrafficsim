@@ -1,6 +1,5 @@
 package microtrafficsim.core.exfmt;
 
-import microtrafficsim.core.exfmt.base.ScenarioMetaInfo;
 import microtrafficsim.core.exfmt.ecs.EntityManager;
 import microtrafficsim.core.exfmt.ecs.FeatureManager;
 import microtrafficsim.core.exfmt.ecs.features.MultiLineFeatureExtractor;
@@ -11,9 +10,7 @@ import microtrafficsim.core.exfmt.ecs.processors.FeatureProcessor;
 import microtrafficsim.core.exfmt.ecs.processors.TileGridProcessor;
 import microtrafficsim.core.exfmt.extractor.map.MapSegmentExtractor;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
-import microtrafficsim.core.exfmt.extractor.scenario.AreaScenarioExtractor;
-import microtrafficsim.core.exfmt.extractor.scenario.ScenarioExtractor;
-import microtrafficsim.core.exfmt.extractor.scenario.ScenarioMetaInfoExtractor;
+import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.exfmt.injector.map.QuadTreeTiledMapSegmentInjector;
 import microtrafficsim.core.exfmt.injector.map.SegmentFeatureProviderInjector;
@@ -23,7 +20,7 @@ import microtrafficsim.core.exfmt.injector.map.features.primitives.MultiLineInje
 import microtrafficsim.core.exfmt.injector.map.features.primitives.PointInjector;
 import microtrafficsim.core.exfmt.injector.map.features.primitives.PolygonInjector;
 import microtrafficsim.core.exfmt.injector.map.features.primitives.StreetInjector;
-import microtrafficsim.core.exfmt.injector.streetgraph.AreaScenarioInjector;
+import microtrafficsim.core.exfmt.injector.simulation.SimulationConfigInjector;
 import microtrafficsim.core.exfmt.injector.streetgraph.DirectedEdgeInjector;
 import microtrafficsim.core.exfmt.injector.streetgraph.GraphInjector;
 import microtrafficsim.core.exfmt.injector.streetgraph.NodeInjector;
@@ -40,8 +37,7 @@ import microtrafficsim.core.map.features.Polygon;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.TileFeatureGrid;
-import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.utils.collections.Composite;
 
 import java.util.HashMap;
@@ -102,12 +98,9 @@ public class ExchangeFormat {
             format.injector(StreetGraph.class, new GraphInjector());
             format.extractor(StreetGraph.class, new StreetGraphExtractor());
 
-            // scenario
-            format.extractor(ScenarioMetaInfo.class, new ScenarioMetaInfoExtractor());
-
-            format.extractor(Scenario.class, new ScenarioExtractor());
-            format.extractor(AreaScenario.class, new AreaScenarioExtractor());
-            format.injector(AreaScenario.class, new AreaScenarioInjector());
+            // simulation
+            format.injector(SimulationConfig.class, new SimulationConfigInjector());
+            format.extractor(SimulationConfig.class, new SimulationConfigExtractor());
         }
 
         return format;

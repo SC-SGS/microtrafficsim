@@ -61,6 +61,15 @@ public final class SimulationConfig {
     }
 
     /**
+     * Calls the {@link #SimulationConfig() default constructor} and sets all values using
+     * {@link #update(SimulationConfig)}.
+     */
+    public SimulationConfig(SimulationConfig init) {
+        this();
+        update(init);
+    }
+
+    /**
      * <p>
      * Resets the parameter of this config file. This method keeps references of<br>
      * &bull {@link VisualizationConfig}<br>

@@ -16,8 +16,10 @@ public class MTSMenuLogic extends JMenu {
     public final JMenuItem itemNewSim;
     public final JMenuItem itemEditSim;
     public final JMenuItem itemChangeAreaSelection;
-    public final JMenuItem itemSaveScenario;
-    public final JMenuItem itemLoadScenario;
+    public final JMenuItem itemLoadRoutes;
+    public final JMenuItem itemSaveRoutes;
+    public final JMenuItem itemLoadAreas;
+    public final JMenuItem itemSaveAreas;
     private boolean isPaused;
 
     public MTSMenuLogic() {
@@ -46,11 +48,17 @@ public class MTSMenuLogic extends JMenu {
 
         addSeparator();
 
-        itemLoadScenario = new JMenuItem("Load scenario...");
-        add(itemLoadScenario);
+        itemLoadRoutes = new JMenuItem("Load simulation routes...");
+        add(itemLoadRoutes);
 
-        itemSaveScenario = new JMenuItem("Save scenario...");
-        add(itemSaveScenario);
+        itemSaveRoutes = new JMenuItem("Save simulation routes...");
+        add(itemSaveRoutes);
+
+        itemLoadAreas = new JMenuItem("Load simulation areas...");
+        add(itemLoadAreas);
+
+        itemSaveAreas = new JMenuItem("Save simulation areas...");
+        add(itemSaveAreas);
     }
 
     public void simIsPaused(boolean isPaused) {
@@ -64,8 +72,10 @@ public class MTSMenuLogic extends JMenu {
         itemEditSim.addActionListener(e -> guiController.transiate(GUIEvent.EDIT_SCENARIO));
         itemNewSim.addActionListener(e -> guiController.transiate(GUIEvent.NEW_SCENARIO));
         itemChangeAreaSelection.addActionListener(e -> guiController.transiate(GUIEvent.CHANGE_AREA_SELECTION));
-        itemLoadScenario.addActionListener(e -> guiController.transiate(GUIEvent.LOAD_SCENARIO));
-        itemSaveScenario.addActionListener(e -> guiController.transiate(GUIEvent.SAVE_SCENARIO));
+        itemLoadRoutes.addActionListener(e -> guiController.transiate(GUIEvent.LOAD_ROUTES));
+        itemSaveRoutes.addActionListener(e -> guiController.transiate(GUIEvent.SAVE_ROUTES));
+        itemLoadAreas.addActionListener(e -> guiController.transiate(GUIEvent.LOAD_AREAS));
+        itemSaveAreas.addActionListener(e -> guiController.transiate(GUIEvent.SAVE_AREAS));
 
         /* run/pause */
         guiController.addKeyCommand(KeyEvent.EVENT_KEY_RELEASED,

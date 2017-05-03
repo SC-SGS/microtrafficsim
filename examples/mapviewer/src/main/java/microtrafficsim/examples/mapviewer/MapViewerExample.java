@@ -2,7 +2,7 @@ package microtrafficsim.examples.mapviewer;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.convenience.filechoosing.MapFileChooser;
+import microtrafficsim.core.convenience.filechoosing.MapfileChooser;
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
 import microtrafficsim.core.exfmt.Container;
@@ -51,7 +51,7 @@ public class MapViewerExample {
     private static final MapStyleSheet STYLE = new MonochromeStyleSheet();
 
 
-    private MapFileChooser filechooser;
+    private MapfileChooser filechooser;
     private OSMParser parser;
     private ExchangeFormat exfmt;
     private ExchangeFormatSerializer serializer;
@@ -82,7 +82,7 @@ public class MapViewerExample {
      * @throws UnsupportedFeatureException if not all required OpenGL features are available
      */
     private void run(File file) throws UnsupportedFeatureException {
-        filechooser = new MapFileChooser();
+        filechooser = new MapfileChooser();
         filechooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
 
         parser = DefaultParserConfig.get(STYLE).build();

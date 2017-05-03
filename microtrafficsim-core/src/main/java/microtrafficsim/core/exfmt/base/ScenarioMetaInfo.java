@@ -5,6 +5,9 @@ import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
 
+/**
+ * @deprecated
+ */
 public class ScenarioMetaInfo extends Container.Entry {
     private GraphGUID guid;
     private Class<? extends Scenario> type;

@@ -4,7 +4,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
+import microtrafficsim.core.logic.NagelSchreckenbergException;
 
 
 /**

@@ -4,7 +4,7 @@ import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.utils.RouteMatrix;
-import microtrafficsim.interesting.progressable.ProgressListener;
+import microtrafficsim.utils.progressable.ProgressListener;
 
 /**
  * <p>

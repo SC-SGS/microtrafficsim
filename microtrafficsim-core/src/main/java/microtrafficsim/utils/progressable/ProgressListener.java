@@ -1,4 +1,4 @@
-package microtrafficsim.interesting.progressable;
+package microtrafficsim.utils.progressable;
 
 
 /**

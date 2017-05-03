@@ -1,4 +1,4 @@
-package microtrafficsim.exceptions.core.logic;
+package microtrafficsim.core.logic;
 
 /**
  * Represents an exception thrown while executing simulation steps of the Nagel-Schreckenberg-model.

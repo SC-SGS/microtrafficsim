@@ -168,7 +168,7 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                 + streetInfo.raw.destination.getId() + ")");
 
         stringBuilder.decLevel();
-        stringBuilder.appendln("<\\DirectedEdge>");
+        stringBuilder.append("<\\DirectedEdge>");
         return stringBuilder.toString();
     }
 

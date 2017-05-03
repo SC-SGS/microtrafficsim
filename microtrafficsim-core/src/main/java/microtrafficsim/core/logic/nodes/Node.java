@@ -1,5 +1,6 @@
 package microtrafficsim.core.logic.nodes;
 
+import microtrafficsim.core.logic.CrossingLogicException;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.vehicles.VehicleState;
@@ -8,7 +9,6 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.exceptions.core.logic.CrossingLogicException;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.random.Seeded;

@@ -1,4 +1,4 @@
-package microtrafficsim.core.exfmt.extractor.scenario;
+package microtrafficsim.core.exfmt.extractor.simulation;
 
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
@@ -7,6 +7,9 @@ import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
 
+/**
+ * @deprecated
+ */
 public class ScenarioExtractor implements ExchangeFormat.Extractor<Scenario> {
 
     @Override

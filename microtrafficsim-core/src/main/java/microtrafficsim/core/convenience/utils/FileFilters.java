@@ -12,6 +12,7 @@ public class FileFilters {
     public static final String MAP_OSM_XML_POSTFIX = "osm";
     public static final String MAP_EXFMT_POSTFIX   = "mtsm";
     public static final String SCENARIO_POSTFIX    = "mtss";
+    public static final String CONFIG_POSTFIX      = "mtscfg";
 
 
     private FileFilters() {}
@@ -101,6 +102,24 @@ public class FileFilters {
         @Override
         public String getDescription() {
             return "All Scenario Files (*." + SCENARIO_POSTFIX + ")";
+        }
+    };
+
+
+    public static final FileFilter CONFIG = new FileFilter() {
+        @Override
+        public boolean accept(File file) {
+            if (file.isDirectory()) return true;
+
+            switch (extension(file)) {
+                case CONFIG_POSTFIX:  return true;
+                default:              return false;
+            }
+        }
+
+        @Override
+        public String getDescription() {
+            return "MTS config file (*" + CONFIG_POSTFIX + ")";
         }
     };
 

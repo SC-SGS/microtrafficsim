@@ -1,4 +1,4 @@
-package microtrafficsim.core.exfmt.extractor.scenario;
+package microtrafficsim.core.exfmt.extractor.simulation;
 
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
@@ -7,22 +7,23 @@ import microtrafficsim.core.exfmt.base.ScenarioRouteSet;
 import microtrafficsim.core.exfmt.base.SimulationConfigInfo;
 import microtrafficsim.core.exfmt.exceptions.ExchangeFormatException;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
-import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
-import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.builder.RouteIsNotDefinedException;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.utils.RouteMatrix;
-import microtrafficsim.interesting.progressable.ProgressListener;
+import microtrafficsim.utils.progressable.ProgressListener;
 
 import java.util.HashMap;
 
 
+/**
+ * @deprecated
+ */
 public class AreaScenarioExtractor implements ExchangeFormat.Extractor<AreaScenario> {
 
     @Override
@@ -34,7 +35,7 @@ public class AreaScenarioExtractor implements ExchangeFormat.Extractor<AreaScena
         // load scenario/simulation config
         SimulationConfigInfo sconfig = src.get(SimulationConfigInfo.class);
         if (sconfig == null) throw new NotAvailableException("SimulationConfigInfo missing");
-        cfg.config.update(sconfig.getConfig());
+        sconfig.update(cfg.config);
 
         AreaScenario scenario = new AreaScenario(cfg.config.seed, cfg.config, cfg.graph);
 

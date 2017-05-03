@@ -1,4 +1,4 @@
-package microtrafficsim.exceptions.core.logic;
+package microtrafficsim.core.logic;
 
 /**
  * Just for unified exception messages.

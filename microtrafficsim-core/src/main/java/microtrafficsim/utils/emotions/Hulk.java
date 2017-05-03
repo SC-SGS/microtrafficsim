@@ -1,4 +1,4 @@
-package microtrafficsim.interesting.emotions;
+package microtrafficsim.utils.emotions;
 
 
 /**

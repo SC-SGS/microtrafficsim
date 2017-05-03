@@ -1,4 +1,4 @@
-package microtrafficsim.core.exfmt.injector.streetgraph;
+package microtrafficsim.core.exfmt.injector.simulation;
 
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
@@ -11,6 +11,9 @@ import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 
 
+/**
+ * @deprecated
+ */
 public class AreaScenarioInjector implements ExchangeFormat.Injector<AreaScenario> {
 
     /**
@@ -33,7 +36,7 @@ public class AreaScenarioInjector implements ExchangeFormat.Injector<AreaScenari
 
         // store config information
         SimulationConfigInfo sconfig = new SimulationConfigInfo();
-        sconfig.update(src.getConfig());
+        sconfig.set(src.getConfig());
         dst.set(sconfig);
 
         // store areas

@@ -6,9 +6,9 @@ import microtrafficsim.core.convenience.utils.FileFilters;
 /**
  * @author Maximilian Luz
  */
-public class MapFileChooser extends MTSFileChooser {
+public class MapfileChooser extends MTSFileChooser {
 
-    public MapFileChooser() {
+    public MapfileChooser() {
         super();
 
         saveFilters.add(FileFilters.MAP_EXFMT);
