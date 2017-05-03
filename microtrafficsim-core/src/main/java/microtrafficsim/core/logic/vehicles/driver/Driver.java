@@ -4,8 +4,8 @@ import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
-import microtrafficsim.utils.emotions.Hulk;
 import microtrafficsim.utils.Resettable;
+import microtrafficsim.utils.emotions.Hulk;
 
 /**
  * <p>
