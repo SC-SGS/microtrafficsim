@@ -15,6 +15,7 @@ import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.*;
 
@@ -74,6 +75,56 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
     @Override
     public String toString() {
         return "Node id = " + id + " at " + coordinate.toString();
+    }
+
+    public String toStringVerbose() {
+        LevelStringBuilder builder = new LevelStringBuilder()
+                .setLevelSeparator(System.lineSeparator())
+                .setLevelSubString("    ");
+
+        builder.appendln("<Node>").incLevel(); {
+            /* id */
+            builder.appendln("<id>").incLevel(); {
+                builder.appendln(id);
+            } builder.decLevel().appendln("<\\id>").appendln();
+
+
+            /* coordinate */
+            builder.appendln("<coordinate>").incLevel(); {
+                builder.appendln(coordinate.toString());
+            } builder.decLevel().appendln("<\\coordinate>").appendln();
+
+
+            /* incoming lanes */
+            builder.appendln("<incoming edges>").incLevel(); {
+                Iterator<DirectedEdge> iter = incoming.keySet().iterator();
+                while (iter.hasNext()) {
+                    DirectedEdge edge = iter.next();
+                    builder.appendln(edge);
+                    builder.appendln("with crossing index = " + incoming.get(edge));
+
+                    if (iter.hasNext())
+                        builder.appendln();
+                }
+            } builder.decLevel().appendln("<\\incoming edges>").appendln();
+
+
+            /* leaving lanes */
+            builder.appendln("<leaving edges>").incLevel(); {
+                Iterator<DirectedEdge> iter = leaving.keySet().iterator();
+                while (iter.hasNext()) {
+                    DirectedEdge edge = iter.next();
+                    builder.appendln(edge);
+                    builder.appendln("with crossing index = " + leaving.get(edge));
+
+                    if (iter.hasNext())
+                        builder.appendln();
+                }
+            } builder.decLevel().appendln("<\\leaving edges>");
+
+        } builder.decLevel().appendln("<\\Node>");
+
+        return builder.toString();
     }
 
 
