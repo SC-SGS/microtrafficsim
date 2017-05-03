@@ -15,13 +15,11 @@ import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 
 import java.util.HashMap;
-import java.util.function.Function;
 
 
 // NOTE: The order of StreetGraph and feature extraction is important: First map features, then graph if no headless
@@ -179,39 +177,42 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
             if (gnc == null) continue;
 
             for (GraphNodeComponent.Connector connector : gnc.getConnectors()) {
-                DirectedEdge from = getFromEdge(edges.get(connector.fromEdge), entity.getId());
-                DirectedEdge to   = getToEdge(edges.get(connector.toEdge), entity.getId());
-                if (from == null || to == null) continue;
+                StreetEntity entityFrom = edges.get(connector.fromEdge);
+                StreetEntity entityTo = edges.get(connector.toEdge);
+                if (entityFrom == null || entityTo == null) continue;
+
+                DirectedEdge from;
+                if (connector.fromEdgeIsForward)
+                    from = (DirectedEdge) entityFrom.getForwardEdge();
+                else
+                    from = (DirectedEdge) entityFrom.getBackwardEdge();
+
+                DirectedEdge to;
+                if (connector.toEdgeIsForward)
+                    to = (DirectedEdge) entityTo.getForwardEdge();
+                else
+                    to = (DirectedEdge) entityTo.getBackwardEdge();
+
+                if (from == null)
+                    System.err.println(entityFrom.getForwardEdge());
 
                 node.addConnector(from.getLane(connector.fromLane), to.getLane(connector.toLane));
             }
         }
     }
 
-    private DirectedEdge getFromEdge(StreetEntity entity, long node) {
-        if (entity == null) return null;
+    private DirectedEdge getEdgeByIds(StreetEntity entity, long orig, long dest) {
+        DirectedEdge fwd = (DirectedEdge) entity.getForwardEdge();
+        if (fwd != null)
+            if (fwd.getOrigin().getId() == orig && fwd.getDestination().getId() == dest)
+                return fwd;
 
-        if (entity.getForwardEdge() != null) {
-            DirectedEdge edge = (DirectedEdge) entity.getForwardEdge();
+        DirectedEdge bwd = (DirectedEdge) entity.getBackwardEdge();
+        if (bwd != null)
+            if (bwd.getOrigin().getId() == orig && bwd.getDestination().getId() == dest)
+                return bwd;
 
-            if (edge.getDestination().getId() == node)
-                return edge;
-        }
-
-        return (DirectedEdge) entity.getBackwardEdge();
-    }
-
-    private DirectedEdge getToEdge(StreetEntity entity, long node) {
-        if (entity == null) return null;
-
-        if (entity.getForwardEdge() != null) {
-            DirectedEdge edge = (DirectedEdge) entity.getForwardEdge();
-
-            if (edge.getOrigin().getId() == node)
-                return edge;
-        }
-
-        return (DirectedEdge) entity.getBackwardEdge();
+        return null;
     }
 
 

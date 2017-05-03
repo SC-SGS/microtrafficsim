@@ -36,17 +36,16 @@ public class NodeInjector implements ExchangeFormat.Injector<Node> {
 
         // add connectors
         for (Map.Entry<Lane, ArrayList<Lane>> connector : src.getConnectors().entrySet()) {
-            Lane from = connector.getKey();
+            Lane fromLane = connector.getKey();
             ArrayList<Lane> connected = connector.getValue();
+            DirectedEdge fromEdge = fromLane.getAssociatedEdge();
 
-            long fromEdge = from.getAssociatedEdge().getId();
-            int  fromLane = from.getIndex();
+            for (Lane toLane : connected) {
+                DirectedEdge toEdge = toLane.getAssociatedEdge();
 
-            for (Lane to : connected) {
-                long toEdge = to.getAssociatedEdge().getId();
-                int  toLane = to.getIndex();
-
-                connectors.add(new GraphNodeComponent.Connector(fromEdge, fromLane, toEdge, toLane));
+                connectors.add(new GraphNodeComponent.Connector(
+                        fromEdge.getId(), fromEdge.getEntity().getForwardEdge() == fromEdge, fromLane.getIndex(),
+                        toEdge.getId(), toEdge.getEntity().getForwardEdge() == toEdge, toLane.getIndex()));
             }
         }
     }

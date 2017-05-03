@@ -49,15 +49,19 @@ public class GraphNodeComponent extends Component {
 
     public static class Connector {
         public final long fromEdge;
+        public final boolean fromEdgeIsForward;
         public final int  fromLane;
         public final long toEdge;
+        public final boolean toEdgeIsForward;
         public final int  toLane;
 
-        public Connector(long fromEdge, int fromLane, long toEdge, int toLane) {
+        public Connector(long fromEdge, boolean fromEdgeIsForward, int fromLane, long toEdge, boolean toEdgeIsForward, int toLane) {
             this.fromEdge = fromEdge;
+            this.fromEdgeIsForward = fromEdgeIsForward;
             this.fromLane = fromLane;
-            this.toLane = toLane;
             this.toEdge = toEdge;
+            this.toEdgeIsForward = toEdgeIsForward;
+            this.toLane = toLane;
         }
 
         @Override
@@ -68,8 +72,10 @@ public class GraphNodeComponent extends Component {
             Connector other = (Connector) obj;
 
             return this.fromEdge == other.fromEdge
+                    && this.fromEdgeIsForward == other.fromEdgeIsForward
                     && this.fromLane == other.fromLane
                     && this.toEdge == other.toEdge
+                    && this.toEdgeIsForward == other.toEdgeIsForward
                     && this.toLane == other.toLane;
         }
 
@@ -77,8 +83,10 @@ public class GraphNodeComponent extends Component {
         public int hashCode() {
             return new FNVHashBuilder()
                     .add(fromEdge)
+                    .add(fromEdgeIsForward)
                     .add(fromLane)
                     .add(toEdge)
+                    .add(toEdgeIsForward)
                     .add(toLane)
                     .getHash();
         }

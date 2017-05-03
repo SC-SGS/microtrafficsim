@@ -41,19 +41,24 @@ public class GraphNodeComponentSerializer extends Serializer<GraphNodeComponent>
         @Override
         public void write(Kryo kryo, Output output, GraphNodeComponent.Connector object) {
             kryo.writeObject(output, object.fromEdge);
+            kryo.writeObject(output, object.fromEdgeIsForward);
             kryo.writeObject(output, object.fromLane);
             kryo.writeObject(output, object.toEdge);
+            kryo.writeObject(output, object.toEdgeIsForward);
             kryo.writeObject(output, object.toLane);
         }
 
         @Override
         public GraphNodeComponent.Connector read(Kryo kryo, Input input, Class<GraphNodeComponent.Connector> type) {
             long fromEdge = kryo.readObject(input, Long.class);
+            boolean fromEdgeIsForward = kryo.readObject(input, Boolean.class);
             int  fromLane = kryo.readObject(input, Integer.class);
             long toEdge = kryo.readObject(input, Long.class);
+            boolean toEdgeIsForward = kryo.readObject(input, Boolean.class);
             int  toLane = kryo.readObject(input, Integer.class);
 
-            return new GraphNodeComponent.Connector(fromEdge, fromLane, toEdge, toLane);
+            return new GraphNodeComponent.Connector(fromEdge, fromEdgeIsForward, fromLane,
+                    toEdge, toEdgeIsForward, toLane);
         }
     }
 }
