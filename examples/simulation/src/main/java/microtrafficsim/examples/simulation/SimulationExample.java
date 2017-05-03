@@ -7,6 +7,7 @@ import microtrafficsim.core.convenience.TileBasedMapViewer;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
+import microtrafficsim.core.map.style.impl.LightMonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
@@ -106,7 +107,7 @@ public class SimulationExample {
         config.crossingLogic.priorityToTheRightEnabled    = true;
         config.crossingLogic.friendlyStandingInJamEnabled = true;
         config.crossingLogic.onlyOneVehicleEnabled        = false;
-        config.visualization.style                        = new DarkStyleSheet();
+        config.visualization.style                        = new LightMonochromeStyleSheet();
 
         return config;
     }

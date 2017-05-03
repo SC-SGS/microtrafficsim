@@ -10,8 +10,8 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
  *
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
-public class MonochromeStyleSheet extends BasicStyleSheet {
-    private final EasyMarkableLogger logger = new EasyMarkableLogger(MonochromeStyleSheet.class);
+public class DarkMonochromeStyleSheet extends BasicStyleSheet {
+    private final EasyMarkableLogger logger = new EasyMarkableLogger(DarkMonochromeStyleSheet.class);
 
     private final static LineWidthBaseFunction LINE_WIDTH_BASE_FUNCTION = (offset, base, exp1, exp2, zoom) -> {
         if (zoom >= 12)
@@ -60,6 +60,7 @@ public class MonochromeStyleSheet extends BasicStyleSheet {
         }
     }
 
+    @Override
     protected float getStreetLineWidthOutline(String streetType, int zoom) {
         float offset = 0;
         float exp1 = 0;
@@ -93,6 +94,7 @@ public class MonochromeStyleSheet extends BasicStyleSheet {
         return LINE_WIDTH_BASE_FUNCTION.get(offset, 20.f, exp1, 0.75f, zoom);
     }
 
+    @Override
     protected float getStreetLineWidthInline(String streetType, int zoom) {
         float offset = 0;
         float exp1 = 0;

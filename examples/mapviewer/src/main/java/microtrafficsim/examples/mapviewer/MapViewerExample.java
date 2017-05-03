@@ -43,7 +43,7 @@ public class MapViewerExample {
     /**
      * The used style sheet, defining style and content of the visualization.
      */
-    private static final MapStyleSheet STYLE = new MonochromeStyleSheet();
+    private static final MapStyleSheet STYLE = new DarkMonochromeStyleSheet();
 
 
     private JFileChooser filechooser;

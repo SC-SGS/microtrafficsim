@@ -7,7 +7,7 @@ import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.map.layers.LayerSource;
 import microtrafficsim.core.map.style.MapStyleSheet;
-import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
+import microtrafficsim.core.map.style.impl.DarkMonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TilingScheme;
@@ -38,12 +38,12 @@ public class TileBasedMapViewer extends BasicMapViewer {
     private final int numTileWorkers;
 
     /**
-     * Default constructor using {@link MonochromeStyleSheet} as default style sheet.
+     * Default constructor using {@link DarkMonochromeStyleSheet} as default style sheet.
      *
      * @see #TileBasedMapViewer(MapStyleSheet)
      */
     public TileBasedMapViewer() {
-        this(new MonochromeStyleSheet());
+        this(new DarkMonochromeStyleSheet());
     }
 
     /**
