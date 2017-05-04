@@ -1,6 +1,6 @@
 package serialization.graph;
 
-import microtrafficsim.core.convenience.DefaultParserConfig;
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;

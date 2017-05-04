@@ -1,7 +1,7 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
-import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
+import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.filechoosing.ConfigFileChooser;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
 import microtrafficsim.core.convenience.filechoosing.MapfileChooser;
@@ -36,6 +36,7 @@ import microtrafficsim.ui.gui.menues.MTSMenuBar;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
 import microtrafficsim.ui.gui.utils.FrameTitle;
+import microtrafficsim.ui.gui.utils.UserInteractionUtils;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.view.PreferencesFrame;
@@ -409,7 +410,7 @@ public class SimulationController implements GUIController {
                 pauseSim();
 
                 File loadedFile = file == null ? askForOpenMapfile() : file;
-                if (isFileOkayForLoading(loadedFile))
+                if (UserInteractionUtils.isFileOkayForLoading(loadedFile))
                     loadAndShowMap(loadedFile);
 
                 isParsing.set(false);
@@ -427,7 +428,7 @@ public class SimulationController implements GUIController {
                 pauseSim();
 
                 File file = askForSaveMapfile();
-                if (isFileOkayForSaving(file))
+                if (UserInteractionUtils.isFileOkayForSaving(file, frame))
                     saveMap(file);
 
                 updateMenuBar();
@@ -557,7 +558,7 @@ public class SimulationController implements GUIController {
     private void transitionLoadConfig() {
         preferences.requestAnExecutionThread(() -> {
             File file = askForOpenConfigfile();
-            if (isFileOkayForLoading(file))
+            if (UserInteractionUtils.isFileOkayForLoading(file))
                 loadConfig(file);
 
             preferences.toFront();
@@ -569,7 +570,7 @@ public class SimulationController implements GUIController {
     private void transitionSaveConfig() {
         preferences.requestAnExecutionThread(() -> {
             File file = askForSaveConfigfile();
-            if (isFileOkayForSaving(file))
+            if (UserInteractionUtils.isFileOkayForSaving(file, frame))
                 saveConfig(file);
 
             preferences.toFront();
@@ -705,7 +706,7 @@ public class SimulationController implements GUIController {
     |================|
     */
     private File askForOpenMapfile() {
-        return askForOpenFile(fileChoosers.get(MapfileChooser.class));
+        return UserInteractionUtils.askForOpenFile(fileChoosers.get(MapfileChooser.class), frame);
     }
 
     private File askForSaveMapfile() {
@@ -715,7 +716,7 @@ public class SimulationController implements GUIController {
         filename = filename.substring(0, filename.lastIndexOf('.'));
         filename += "." + FileFilters.MAP_EXFMT_POSTFIX;
 
-        return askForSaveFile(chooser, filename);
+        return UserInteractionUtils.askForSaveFile(chooser, filename, frame);
     }
 
     private void loadAndShowMap(File file) {
@@ -849,10 +850,10 @@ public class SimulationController implements GUIController {
                     .inject(streetgraph)
                     .getContainer());
 
-            showSavingSuccess();
+            UserInteractionUtils.showSavingSuccess(frame);
         } catch (Exception e) {
             e.printStackTrace();
-            showSavingFailure(file);
+            UserInteractionUtils.showSavingFailure(file, frame);
         }
 
         setNewFrameTitle.invoke();
@@ -865,13 +866,14 @@ public class SimulationController implements GUIController {
     |==================|
     */
     private File askForOpenConfigfile() {
-        return askForOpenFile(fileChoosers.get(ConfigFileChooser.class));
+        return UserInteractionUtils.askForOpenFile(fileChoosers.get(ConfigFileChooser.class), frame);
     }
 
     private File askForSaveConfigfile() {
-        return askForSaveFile(
+        return UserInteractionUtils.askForSaveFile(
                 fileChoosers.get(ConfigFileChooser.class),
-                "New config file." + FileFilters.CONFIG_POSTFIX
+                "New config file." + FileFilters.CONFIG_POSTFIX,
+                frame
         );
     }
 
@@ -925,10 +927,10 @@ public class SimulationController implements GUIController {
             serializer.write(file, exfmt.manipulator()
                     .inject(config)
                     .getContainer());
-            showSavingSuccess();
+            UserInteractionUtils.showSavingSuccess(frame);
         } catch (Exception e) {
             e.printStackTrace();
-            showSavingFailure(file);
+            UserInteractionUtils.showSavingFailure(file, frame);
         }
     }
 
@@ -939,9 +941,10 @@ public class SimulationController implements GUIController {
     |====================|
     */
     private File askForScenarioSaveFile() {
-        return askForSaveFile(
+        return UserInteractionUtils.askForSaveFile(
                 fileChoosers.get(ScenarioFileChooser.class),
-                "New scenario." + FileFilters.SCENARIO_POSTFIX
+                "New scenario." + FileFilters.SCENARIO_POSTFIX,
+                frame
         );
     }
 
@@ -963,9 +966,10 @@ public class SimulationController implements GUIController {
 
         /* prepare exfmt config */
         AreaScenarioExtractor.Config asecfg = new AreaScenarioExtractor.Config();
-        asecfg.loadRoutes = askUserForDecision(
+        asecfg.loadRoutes = UserInteractionUtils.askUserForDecision(
                 "Do you like to load the routes as well?",
-                "Route storing");
+                "Route storing",
+                frame);
         asecfg.graph = streetgraph;
         asecfg.config = config;
 
@@ -1000,10 +1004,11 @@ public class SimulationController implements GUIController {
             // if not issue warning due to possible incompatibility
             // and prompt to cancel
             if (!streetgraph.getGUID().equals(scmeta.getGraphGUID())) {
-                stillLoadScenario = askUserForDecision(
+                stillLoadScenario = UserInteractionUtils.askUserForDecision(
                         "The graph used in the scenario is different to the current one.\n" +
                                 "Do you want to continue?",
-                        "Inconsistent scenario meta information");
+                        "Inconsistent scenario meta information",
+                        frame);
             }
         }
 
@@ -1055,21 +1060,22 @@ public class SimulationController implements GUIController {
 
         AreaScenario scenario = (AreaScenario) simulation.getScenario();
         AreaScenarioInjector.Config asicfg = new AreaScenarioInjector.Config();
-        asicfg.storeRoutes = askUserForDecision(
+        asicfg.storeRoutes = UserInteractionUtils.askUserForDecision(
                 "Do you like to store the routes as well?\n" +
                         "\n" +
                         "Attention! The routes would be stored\n" +
                         "in the current simulation state,\n" +
                         "not fresh calculated!",
-                "Route storing");
+                "Route storing",
+                frame);
         exfmt.getConfig().set(asicfg);
         try {
             serializer.write(file, exfmt.manipulator().inject(scenario).getContainer());
 
-            showSavingSuccess();
+            UserInteractionUtils.showSavingSuccess(frame);
         } catch (Exception e) {
             e.printStackTrace();
-            showSavingFailure(file);
+            UserInteractionUtils.showSavingFailure(file, frame);
         }
 
 
@@ -1249,64 +1255,5 @@ public class SimulationController implements GUIController {
     private void closePreferences() {
         preferences.setVisible(false);
         preferences.setAllEnabled(false);
-    }
-
-
-    /*
-    |=======|
-    | utils |
-    |=======|
-    */
-    private File askForOpenFile(MTSFileChooser chooser) {
-        int action = chooser.showOpenDialog(frame);
-        if (action == JFileChooser.APPROVE_OPTION)
-            return chooser.getSelectedFile();
-
-        return null;
-    }
-
-    private File askForSaveFile(MTSFileChooser chooser, String defaultFilename) {
-        chooser.setSelectedFile(new File(defaultFilename));
-
-        int action = chooser.showSaveDialog(frame);
-        if (action == JFileChooser.APPROVE_OPTION)
-            return chooser.getSelectedFile();
-
-        return null;
-    }
-
-    private boolean isFileOkayForLoading(File file) {
-        return file != null;
-    }
-
-    private boolean isFileOkayForSaving(File file) {
-        if (file == null)
-            return false;
-        if (file.exists()) {
-            return askUserForDecision(
-                    "The selected file already exists. Continue?",
-                    "Save File");
-        }
-        return true;
-    }
-
-    private boolean askUserForDecision(String msg, String title) {
-        int status = JOptionPane.showConfirmDialog(frame, msg, title, JOptionPane.OK_CANCEL_OPTION);
-
-        return status == JOptionPane.OK_OPTION;
-    }
-
-    private void showSavingSuccess() {
-        JOptionPane.showMessageDialog(frame,
-                "File saved.",
-                "Saving file successful",
-                JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void showSavingFailure(File file) {
-        JOptionPane.showMessageDialog(frame,
-                "Failed to save file: '" + file.getPath() + "'",
-                "Error saving file",
-                JOptionPane.ERROR_MESSAGE);
     }
 }

@@ -1,4 +1,4 @@
-package microtrafficsim.core.convenience;
+package microtrafficsim.core.convenience.mapviewer;
 
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.TileFeatureProvider;

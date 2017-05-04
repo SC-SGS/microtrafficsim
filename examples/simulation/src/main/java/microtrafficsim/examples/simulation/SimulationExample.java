@@ -1,10 +1,10 @@
 package microtrafficsim.examples.simulation;
 
 import com.jogamp.newt.event.KeyEvent;
-import microtrafficsim.core.convenience.DefaultParserConfig;
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.convenience.filechoosing.MapfileChooser;
-import microtrafficsim.core.convenience.MapViewer;
-import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.convenience.mapviewer.MapViewer;
+import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
@@ -14,7 +14,6 @@ import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.SegmentFeatureProvider;
-import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.map.style.impl.LightMonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.TilingScheme;

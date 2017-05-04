@@ -1,4 +1,4 @@
-package microtrafficsim.core.convenience;
+package microtrafficsim.core.convenience.mapviewer;
 
 import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.simulation.configs.SimulationConfig;

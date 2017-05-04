@@ -1,4 +1,4 @@
-package microtrafficsim.core.convenience;
+package microtrafficsim.core.convenience.parser;
 
 import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.parser.OSMParser;

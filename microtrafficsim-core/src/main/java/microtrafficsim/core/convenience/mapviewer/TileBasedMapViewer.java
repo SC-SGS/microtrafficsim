@@ -1,4 +1,4 @@
-package microtrafficsim.core.convenience;
+package microtrafficsim.core.convenience.mapviewer;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.map.SegmentFeatureProvider;
