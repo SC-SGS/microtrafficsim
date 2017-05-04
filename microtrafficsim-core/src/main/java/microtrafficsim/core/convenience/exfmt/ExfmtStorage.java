@@ -62,7 +62,7 @@ public class ExfmtStorage {
     /**
      * Loads the given file depending on its map type (OSM or MTSM)
      */
-    public Tuple<Graph, MapProvider> loadMap(File file) {
+    public Tuple<Graph, MapProvider> loadMap(File file) throws InterruptedException {
 
         try {
             if (FileFilters.MAP_OSM_XML.accept(file)) {
@@ -80,6 +80,8 @@ public class ExfmtStorage {
 
                 return new Tuple<>(manipulator.extract(StreetGraph.class), provider);
             }
+        } catch (InterruptedException e) {
+            throw e;
         } catch (Exception e) {
             e.printStackTrace();
         }

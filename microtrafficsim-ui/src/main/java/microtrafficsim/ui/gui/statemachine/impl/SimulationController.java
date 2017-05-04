@@ -707,24 +707,27 @@ public class SimulationController implements GUIController {
 
 
         /* parse/load map */
-        boolean success = loadMapAndUpdate(file);
+        try {
+            boolean success = loadMapAndUpdate(file);
 
+            /* show map */
+            if (success) {
+                simulation.removeCurrentScenario();
+                overlay.setEnabled(true);
+                scenarioAreaOverlay.setEnabled(true, true, false);
 
-        /* show map */
-        if (success) {
-            simulation.removeCurrentScenario();
-            overlay.setEnabled(true);
-            scenarioAreaOverlay.setEnabled(true, true, false);
-
-            setNewFrameTitle = () -> updateFrameTitle(FrameTitle.DEFAULT, file);
-        } else {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "The chosen file '" + file.getName() + "' has a wrong format.\n" +
-                            "Therefore it could be neither loaded nor parsed.\n" +
-                            "Please make sure this file exists and is a valid OSM XML or MTS binary file.",
-                    "Error: wrong map-file format",
-                    JOptionPane.ERROR_MESSAGE);
+                setNewFrameTitle = () -> updateFrameTitle(FrameTitle.DEFAULT, file);
+            } else {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "The chosen file '" + file.getName() + "' has a wrong format.\n" +
+                                "Therefore it could be neither loaded nor parsed.\n" +
+                                "Please make sure this file exists and is a valid OSM XML or MTS binary file.",
+                        "Error: wrong map-file format",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (InterruptedException e) {
+            logger.info("Loading map interrupted by user");
         }
 
         setNewFrameTitle.invoke();
@@ -735,21 +738,18 @@ public class SimulationController implements GUIController {
      *
      * @return true, if loading was successful; false otherwise
      */
-    private boolean loadMapAndUpdate(File file) {
+    private boolean loadMapAndUpdate(File file) throws InterruptedException {
         Tuple<Graph, MapProvider> result = exfmtStorage.loadMap(file);
         if (result != null) {
             if (result.obj0 != null) {
-                try {
-                    mapviewer.setMap(result.obj1);
-                } catch (InterruptedException e) {
-                    logger.info("Loading map interrupted by user");
-                }
-
+                mapviewer.setMap(result.obj1);
                 streetgraph = result.obj0;
+
+                return true;
             }
         }
 
-        return result != null;
+        return false;
     }
 
     private void cancelParsing() {
