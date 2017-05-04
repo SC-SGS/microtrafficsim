@@ -1,7 +1,8 @@
 package microtrafficsim.core.simulation.configs;
 
 import microtrafficsim.core.map.style.StyleSheet;
-import microtrafficsim.core.map.style.impl.DarkStyleSheet;
+import microtrafficsim.core.map.style.impl.LightMonochromeStyleSheet;
+
 
 /**
  * This class isolates the visualization configs from the other config
@@ -24,7 +25,7 @@ public final class VisualizationConfig {
      * Resets the parameter of this config file.
      */
     public void setup() {
-        style = new DarkStyleSheet();
+        style = new LightMonochromeStyleSheet();
     }
 
     /**
