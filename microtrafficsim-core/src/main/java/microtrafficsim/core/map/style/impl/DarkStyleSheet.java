@@ -1,7 +1,10 @@
 package microtrafficsim.core.map.style.impl;
 
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.style.BasicStyleSheet;
+import microtrafficsim.core.map.style.VehicleColorSchemes;
 import microtrafficsim.core.vis.opengl.utils.Color;
+import microtrafficsim.math.MathUtils;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 
 
@@ -163,5 +166,13 @@ public class DarkStyleSheet extends BasicStyleSheet {
         }
         logger.info("The inline line width of " + streetType + " is not defined.");
         return 0;
+    }
+
+
+    @Override
+    public Color getColor(Vehicle vehicle) {
+        Color[] colors = VehicleColorSchemes.RED_TO_GREEN;
+        int v = MathUtils.clamp(vehicle.getVelocity(), 0, colors.length - 1);
+        return colors[v];
     }
 }
