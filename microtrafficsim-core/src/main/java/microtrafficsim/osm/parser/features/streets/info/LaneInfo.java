@@ -1,5 +1,6 @@
 package microtrafficsim.osm.parser.features.streets.info;
 
+import microtrafficsim.osm.parser.ecs.components.traits.Reversible;
 import microtrafficsim.osm.parser.features.streets.ReverseEquals;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -13,7 +14,7 @@ import java.util.Map;
  *
  * @author Maximilian Luz
  */
-public class LaneInfo implements ReverseEquals {
+public class LaneInfo implements ReverseEquals, Reversible {
     private static Logger logger = new EasyMarkableLogger(LaneInfo.class);
 
     public static final int UNGIVEN = -1;
@@ -22,7 +23,6 @@ public class LaneInfo implements ReverseEquals {
     public int forward;
     public int backward;
 
-    // TODO: lane-directions
 
     public LaneInfo(int sum, int forward, int backward) {
         this.sum      = sum;
@@ -66,6 +66,13 @@ public class LaneInfo implements ReverseEquals {
                 && this.backward == other.forward;
     }
 
+    @Override
+    public void reverse() {
+        int tmp  = forward;
+        forward  = backward;
+        backward = tmp;
+    }
+
 
     /**
      * Create a {@code LaneInfo} object for a street out of the given
@@ -75,6 +82,8 @@ public class LaneInfo implements ReverseEquals {
      * @return the parsed {@code LaneInfo}
      */
     public static LaneInfo parse(Map<String, String> tags) {
+        // TODO: parse combined lane tags (1|1 / 1;1 / ...)
+
         int lanes    = parseTagValue(tags.get("lanes"));
         int forward  = parseTagValue(tags.get("lanes:forward"));
         int backward = parseTagValue(tags.get("lanes:backward"));

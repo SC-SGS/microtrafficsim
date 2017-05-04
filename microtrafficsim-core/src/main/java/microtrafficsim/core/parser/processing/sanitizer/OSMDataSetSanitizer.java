@@ -173,7 +173,7 @@ public class OSMDataSetSanitizer implements Processor {
         sanitizeMaxspeedInfo(streetcomp.maxspeed, streetcomp.oneway, sancomp.highway);
         sanitizeLaneInfo(streetcomp.lanes, streetcomp.oneway, sancomp.highway);
 
-        streetcomp.lanes.sum = streetcomp.lanes.forward + streetcomp.lanes.backward;
+        // TODO: sanitize lane-directions
     }
 
     /**

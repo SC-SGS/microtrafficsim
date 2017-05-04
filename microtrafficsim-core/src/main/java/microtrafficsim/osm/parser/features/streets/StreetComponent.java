@@ -27,6 +27,8 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
     public boolean      roundabout;
     public float        layer;
 
+    // TODO: lane directions
+
 
     /**
      * Creates a new {@code StreetComponent} based on the given properties.
@@ -136,20 +138,8 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
 
     @Override
     public void reverse() {
-        // oneway
-        if (oneway == OnewayInfo.FORWARD)
-            oneway = OnewayInfo.BACKWARD;
-        else if (oneway == OnewayInfo.BACKWARD)
-            oneway = OnewayInfo.FORWARD;
-
-        // maxspeed
-        float swapf       = maxspeed.forward;
-        maxspeed.forward  = maxspeed.backward;
-        maxspeed.backward = swapf;
-
-        // lanes
-        int swapi      = lanes.forward;
-        lanes.forward  = lanes.backward;
-        lanes.backward = swapi;
+        oneway = OnewayInfo.getReverse(oneway);
+        maxspeed.reverse();
+        lanes.reverse();
     }
 }

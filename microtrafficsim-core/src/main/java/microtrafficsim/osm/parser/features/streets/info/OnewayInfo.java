@@ -32,6 +32,15 @@ public enum OnewayInfo implements ReverseEquals {
                 || (this == OnewayInfo.REVERSIBLE && other == OnewayInfo.REVERSIBLE);
     }
 
+    public static OnewayInfo getReverse(OnewayInfo oneway) {
+        if (oneway == OnewayInfo.FORWARD)
+            return OnewayInfo.BACKWARD;
+        else if (oneway == OnewayInfo.BACKWARD)
+            return OnewayInfo.FORWARD;
+
+        return oneway;
+    }
+
 
     /**
      * Create a {@code OnewayInfo} object for a street out of the given
