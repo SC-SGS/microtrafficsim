@@ -62,5 +62,8 @@ public interface Vehicle extends LogicVehicleEntity {
 
     void didMove();
 
+
+    int getVelocity();
+
     int getMaxVelocity();
 }

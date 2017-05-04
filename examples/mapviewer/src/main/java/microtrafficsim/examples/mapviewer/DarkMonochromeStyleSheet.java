@@ -2,15 +2,9 @@ package microtrafficsim.examples.mapviewer;
 
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Polygon;
-import microtrafficsim.core.map.features.Street;
-import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.map.style.MapStyleSheet;
-import microtrafficsim.core.map.style.predicates.StreetBasePredicate;
 import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.parser.features.MapFeatureGenerator;
 import microtrafficsim.core.parser.features.polygons.PolygonFeatureGenerator;
-import microtrafficsim.core.parser.features.streets.StreetFeatureGenerator;
-import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
 import microtrafficsim.core.vis.mesh.style.Style;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.utils.Color;
@@ -19,9 +13,6 @@ import microtrafficsim.osm.primitives.Way;
 import microtrafficsim.utils.resources.PackagedResource;
 import microtrafficsim.utils.resources.Resource;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 
 
@@ -30,7 +21,7 @@ import java.util.function.Predicate;
  *
  * @author Maximilian Luz
  */
-class MonochromeStyleSheet extends microtrafficsim.core.map.style.impl.MonochromeStyleSheet {
+class DarkMonochromeStyleSheet extends microtrafficsim.core.map.style.impl.DarkMonochromeStyleSheet {
 
 
     @Override
@@ -70,8 +61,8 @@ class MonochromeStyleSheet extends microtrafficsim.core.map.style.impl.Monochrom
      * @return the created shader-sources.
      */
     private ShaderProgramSource getPolygonShader() {
-        Resource vert = new PackagedResource(MonochromeStyleSheet.class, "/shaders/basic.vs");
-        Resource frag = new PackagedResource(MonochromeStyleSheet.class, "/shaders/basic.fs");
+        Resource vert = new PackagedResource(microtrafficsim.examples.mapviewer.DarkMonochromeStyleSheet.class, "/shaders/basic.vs");
+        Resource frag = new PackagedResource(microtrafficsim.examples.mapviewer.DarkMonochromeStyleSheet.class, "/shaders/basic.fs");
 
         ShaderProgramSource prog = new ShaderProgramSource("/shaders/basic");
         prog.addSource(GL3.GL_VERTEX_SHADER, vert);

@@ -3,7 +3,7 @@ package microtrafficsim.core.map.style;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
+import microtrafficsim.core.map.style.impl.DarkMonochromeStyleSheet;
 import microtrafficsim.core.map.style.predicates.MajorStreetBasePredicate;
 import microtrafficsim.core.map.style.predicates.BasicStreetBasePredicate;
 import microtrafficsim.core.map.style.predicates.StreetBasePredicate;
@@ -248,9 +248,9 @@ public abstract class BasicStyleSheet implements StyleSheet {
      * @return the created shader-sources.
      */
     protected ShaderProgramSource getStreetShader() {
-        Resource vert = new PackagedResource(MonochromeStyleSheet.class, "/shaders/features/streets/streets.vs");
-        Resource frag = new PackagedResource(MonochromeStyleSheet.class, "/shaders/features/streets/streets.fs");
-        Resource geom = new PackagedResource(MonochromeStyleSheet.class, "/shaders/features/streets/streets_round.gs");
+        Resource vert = new PackagedResource(DarkMonochromeStyleSheet.class, "/shaders/features/streets/streets.vs");
+        Resource frag = new PackagedResource(DarkMonochromeStyleSheet.class, "/shaders/features/streets/streets.fs");
+        Resource geom = new PackagedResource(DarkMonochromeStyleSheet.class, "/shaders/features/streets/streets_round.gs");
 
         ShaderProgramSource prog = new ShaderProgramSource("streets");
         prog.addSource(GL3.GL_VERTEX_SHADER, vert);

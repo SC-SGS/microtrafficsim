@@ -371,6 +371,11 @@ public abstract class BasicVehicle implements Vehicle {
     }
 
     @Override
+    public int getVelocity() {
+        return velocity;
+    }
+
+    @Override
     public Driver getDriver() {
         return driver;
     }

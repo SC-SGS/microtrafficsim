@@ -6,7 +6,7 @@ with OpenStreetMap data.
 ## News
 Testing the simulation execution for determinism has finished. According to our test cases the simulation execution is deterministic.
 
-Our next task is implementing a scenario handling the input from the polygon overlay, that allows an user to choose polygonial areas on a map with an ui dynamically. Finishing this, we will start developing multilane logic. This will be used in a bachelor thesis for traffic jam cause research.
+Our next task is developing multilane logic. This will be used in a bachelor thesis for traffic jam cause research.
 
 In parallel, we implement a serialization for our graphs, route calculations and scenarios. This feature allows us simulating scenarios with more than a few 1000 vehicles without the need to wait every time for finishing the route calculations. This is helpful for the bachelor thesis.
 
@@ -53,9 +53,10 @@ All following attributes can be en-/disabled.
 
 #### Main-ui features
 * parse any map file in OSM MAP format
+* start and end areas can be chosen using the shortcuts described [in our wiki](https://github.com/sgs-us/microtrafficsim/wiki/Controls)
 * interrupt parsing or route calculations without exiting the main-ui
-* different style sheets can be used (the preferred style sheet has to be chosen in code)
-* different vehicle colors depending on the vehicle's attributes (e.g. anger of its driver)
+* different style sheets can be used (the preferred style sheet has to be chosen in code for now)
+* different vehicle colors depending on the vehicle's attributes (e.g. anger of its driver or the vehicle's velocity)
 
 
 ## Please Note
