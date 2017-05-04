@@ -859,6 +859,7 @@ public class SimulationController implements GUIController {
     | load/save scenario |
     |====================|
     */
+    @Deprecated // todo remove method
     private File askForScenarioSaveFile() {
         return UserInteractionUtils.askForSaveFile(
                 fileChoosers.get(ScenarioFileChooser.class),
@@ -867,6 +868,7 @@ public class SimulationController implements GUIController {
         );
     }
 
+    @Deprecated // todo remove method
     private void loadScenario(File file) {
 //        /* update frame title and remember old one */
 //        WrappedString cachedTitle = new WrappedString();
@@ -969,6 +971,7 @@ public class SimulationController implements GUIController {
 //        updateFrameTitle(cachedTitle);
     }
 
+    @Deprecated // todo remove method
     private void saveScenario(File file) {
 //        /* update frame title and remember old one */
 //        WrappedString cachedTitle = new WrappedString();
@@ -1139,10 +1142,11 @@ public class SimulationController implements GUIController {
         boolean hasScenario    = simulation.getScenario() != null;
 
         /* general */
-        preferences.setEnabledIfEditable(SimulationConfig.Element.sliderSpeedup,   true);
-        preferences.setEnabledIfEditable(SimulationConfig.Element.maxVehicleCount, newSim);
-        preferences.setEnabledIfEditable(SimulationConfig.Element.seed,            newSim);
-        preferences.setEnabledIfEditable(SimulationConfig.Element.metersPerCell,   newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.sliderSpeedup,     true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.maxVehicleCount,   newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.seed,              newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.metersPerCell,     newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.globalMaxVelocity, newSim);
 
         /* scenario */
         preferences.setEnabledIfEditable(SimulationConfig.Element.showAreasWhileSimulating,  true);
@@ -1182,5 +1186,5 @@ public class SimulationController implements GUIController {
     | utils |
     |=======|
     */
-
+    // todo request thread execution like in PreferencesFrame
 }

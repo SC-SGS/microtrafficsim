@@ -78,7 +78,7 @@ public final class SimulationConfig {
     private void setup() {
         // 1/3,6 = 25/90 = 0,277... => 0,277 m/cell means 1 cell/s <=> 1 km/h
         metersPerCell     = 7.5f; // Nagel-Schreckenberg-Model
-        globalMaxVelocity = 6;
+        globalMaxVelocity = 6; // <=> ca. 180 km/h after Nagel-Schreckenberg-Model
         speedup           = 1;
         seed              = new Random().nextLong();
         // vehicles
@@ -114,6 +114,7 @@ public final class SimulationConfig {
         /* multithreading */
         multiThreading.update(config.multiThreading);
     }
+
 
 
     /**
@@ -157,6 +158,8 @@ public final class SimulationConfig {
         }
     }
 
+
+
     /**
      * @author Dominic Parga Cacheiro
      */
@@ -166,6 +169,7 @@ public final class SimulationConfig {
         maxVehicleCount(true),
         seed(true),
         metersPerCell(false),
+        globalMaxVelocity(false),
         /* scenario */
         showAreasWhileSimulating(true),
         nodesAreWeightedUniformly(true),
@@ -196,7 +200,6 @@ public final class SimulationConfig {
             return editable;
         }
     }
-
 
     public static class EnableLexicon {
         private final HashMap<Element, Boolean> lexicon = new HashMap<>();

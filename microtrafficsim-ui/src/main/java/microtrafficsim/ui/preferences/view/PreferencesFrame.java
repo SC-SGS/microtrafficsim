@@ -228,6 +228,7 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
             case maxVehicleCount:
             case seed:
             case metersPerCell:
+            case globalMaxVelocity:
                 generalPanel.setEnabledIfEditable(element, enabled);
                 break;
 
