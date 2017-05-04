@@ -49,7 +49,7 @@ public class StreetGraphExchangeFormatTest {
             osmxml = OPTIONAL_TEST_FILE;
 
         osm = loadGraphOsm(osmxml);
-        xfm = serilizeDeserialize(osm);
+        xfm = serializeDeserialize(osm);
     }
 
     private static Graph loadGraphOsm(File file) throws Exception {
@@ -73,7 +73,7 @@ public class StreetGraphExchangeFormatTest {
         return config;
     }
 
-    private static Graph serilizeDeserialize(Graph graph) throws Exception {
+    private static Graph serializeDeserialize(Graph graph) throws Exception {
         ExchangeFormat fmt = ExchangeFormat.getDefault();
         fmt.getConfig().set(new StreetGraphExtractor.Config(getConfig()));
         ExchangeFormatSerializer ser = ExchangeFormatSerializer.create();

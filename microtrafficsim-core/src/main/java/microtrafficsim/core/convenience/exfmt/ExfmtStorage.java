@@ -5,6 +5,7 @@ import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.convenience.utils.FileFilters;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
+import microtrafficsim.core.exfmt.base.ScenarioRouteSet;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
@@ -18,11 +19,13 @@ import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.utils.RouteMatrix;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Should simplify loading/saving simulation files
@@ -157,6 +160,28 @@ public class ExfmtStorage {
         try {
             serializer.write(file, exfmt.manipulator()
                     .inject(config)
+                    .getContainer());
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    /*
+    |========|
+    | routes |
+    |========|
+    */
+    public RouteMatrix loadRoutes(File file) {
+        return null;
+    }
+
+    public boolean saveRoutes(File file, RouteMatrix routeMatrix) {
+        try {
+            serializer.write(file, exfmt.manipulator()
+                    .inject(routeMatrix)
                     .getContainer());
             return true;
         } catch (Exception e) {

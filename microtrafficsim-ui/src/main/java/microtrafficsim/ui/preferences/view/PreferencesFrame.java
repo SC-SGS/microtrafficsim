@@ -274,13 +274,13 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
         if (!lockUserInput.tryLock())
             return null;
 
+        Thread thread = null;
         if (isBusy.compareAndSet(false, true)) {
-            Thread thread = new Thread(procedure::invoke);
-            lockUserInput.unlock();
-            return thread;
+            thread = new Thread(procedure::invoke);
         }
 
-        return null;
+        lockUserInput.unlock();
+        return thread;
     }
 
     /**

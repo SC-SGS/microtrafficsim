@@ -19,7 +19,7 @@ public class ScenarioRouteSet extends Container.Entry {
 
     /**
      * @param route Takes the route's origin and destination and store the route for this pair
-     * @return
+     * @return output of {@link HashMap#put(Object, Object) HashMap.put(...)}
      */
     public ArrayList<Long> put(Route<Node> route) {
         Node origin = route.getStart();
@@ -31,6 +31,10 @@ public class ScenarioRouteSet extends Container.Entry {
             edges.add(edge.getId());
         }
         return tmp.put(destination.getId(), edges);
+    }
+
+    public void set(RouteMatrix routeMatrix) {
+        routes = RouteMatrix.toSparse(routeMatrix);
     }
 
     public void clear() {

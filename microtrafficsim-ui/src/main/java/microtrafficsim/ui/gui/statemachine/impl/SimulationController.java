@@ -560,6 +560,21 @@ public class SimulationController implements GUIController {
 
     private void transitionSaveRoutes() {
         // todo
+        if (isExecutingUserTask.compareAndSet(false, true)) {
+            new Thread(() -> {
+                if (streetgraph != null) {
+                    closePreferences();
+                    pauseSim();
+
+                    File file = askForSaveMapfile();
+                    if (UserInteractionUtils.isFileOkayForSaving(file, frame))
+                        saveMap(file);
+
+                    updateMenuBar();
+                }
+                isExecutingUserTask.set(false);
+            }).start();
+        }
     }
 
     private void transitionLoadAreas() {
@@ -796,10 +811,16 @@ public class SimulationController implements GUIController {
     }
 
     private void loadConfig(File file) {
-        SimulationConfig newConfig = exfmtStorage.loadConfig(file, config);
+        SimulationConfig newConfig = null;
+        try {
+            newConfig = exfmtStorage.loadConfig(file, preferences.getCorrectSettings());
+        } catch (IncorrectSettingsException e) {
+            e.printStackTrace();
+        }
 
         /* update preferences if successfully loaded */
         if (newConfig != null) {
+            showPreferences();
             preferences.setSettings(newConfig);
         } else {
             JOptionPane.showMessageDialog(
@@ -813,7 +834,13 @@ public class SimulationController implements GUIController {
     }
 
     private void saveConfig(File file) {
-        boolean success = exfmtStorage.saveConfig(file, config);
+        boolean success = false;
+        try {
+            success = exfmtStorage.saveConfig(file, preferences.getCorrectSettings());
+        } catch (IncorrectSettingsException e) {
+            e.printStackTrace();
+        }
+
         if (success)
             UserInteractionUtils.showSavingSuccess(frame);
         else
@@ -1142,4 +1169,12 @@ public class SimulationController implements GUIController {
         preferences.setVisible(false);
         preferences.setAllEnabled(false);
     }
+
+
+    /*
+    |=======|
+    | utils |
+    |=======|
+    */
+
 }

@@ -5,20 +5,19 @@ import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.base.ScenarioRouteSet;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
+import microtrafficsim.core.simulation.utils.RouteMatrix;
 
 /**
  * @author Dominic Parga Cacheiro
  */
-public class RouteInjector implements ExchangeFormat.Injector<VehicleContainer> {
+public class RouteMatrixInjector implements ExchangeFormat.Injector<RouteMatrix> {
 
     @Override
-    public void inject(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container dst, VehicleContainer src)
+    public void inject(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container dst, RouteMatrix src)
             throws Exception {
 
         ScenarioRouteSet routes = new ScenarioRouteSet();
-        for (Vehicle vehicle : src) {
-            routes.put(vehicle.getDriver().getRoute());
-        }
+        routes.set(src);
         dst.set(routes);
     }
 }
