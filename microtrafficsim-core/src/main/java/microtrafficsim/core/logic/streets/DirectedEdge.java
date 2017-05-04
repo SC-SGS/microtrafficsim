@@ -63,11 +63,12 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
      * @param rawStreetInfo contains all relevant, "persistent" information about this edge
      */
     public DirectedEdge(RawStreetInfo rawStreetInfo) {
-
         streetInfo = new FullStreetInfo(rawStreetInfo);
 
-        lanes    = new Lane[rawStreetInfo.noOfLines];
-        lanes[0] = new Lane(this, 0);
+        lanes = new Lane[rawStreetInfo.noOfLines];
+        for (int i = 0; i < rawStreetInfo.noOfLines; i++) {
+            lanes[i] = new Lane(this, i);
+        }
     }
 
     @Override

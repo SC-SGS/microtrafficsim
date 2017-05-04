@@ -22,6 +22,8 @@ public class LaneInfo implements ReverseEquals {
     public int forward;
     public int backward;
 
+    // TODO: lane-directions
+
     public LaneInfo(int sum, int forward, int backward) {
         this.sum      = sum;
         this.forward  = forward;

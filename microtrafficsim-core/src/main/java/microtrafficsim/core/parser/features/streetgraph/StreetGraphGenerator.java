@@ -160,7 +160,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
                                                    lastNode.lat - secondLastNode.lat);
 
             forward = new DirectedEdge(way.id, length, originDirection, destinationDirection, start, end,
-                    config.metersPerCell, 1, streetinfo.maxspeed.forward, priorityLevel);
+                    config.metersPerCell, streetinfo.lanes.forward, streetinfo.maxspeed.forward, priorityLevel);
         }
 
         if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.BACKWARD) {
@@ -170,7 +170,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
             Vec2d destinationDirection = new Vec2d(node0.lon - node1.lon, node0.lat - node1.lat);
 
             backward = new DirectedEdge(way.id, length, originDirection, destinationDirection, end, start,
-                                        config.metersPerCell, 1, streetinfo.maxspeed.backward, priorityLevel);
+                                        config.metersPerCell, streetinfo.lanes.backward, streetinfo.maxspeed.backward,
+                                        priorityLevel);
         }
 
         // create component for ECS
@@ -200,6 +201,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * Creates and adds all lane-connectors leading from the given {@code
      * WayEntity} to any other {@code WayEntity}/{@code DirectedEdge} (including
      * itself).
+     *
+     * TODO: handle multi-lanes
      *
      * @param dataset the {@code DataSet} of which {@code wayFrom} is a part of.
      * @param wayFrom the {@code WayEntity} for which all outgoing lane-connectors
