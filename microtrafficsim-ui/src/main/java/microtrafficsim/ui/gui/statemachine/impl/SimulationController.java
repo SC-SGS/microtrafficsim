@@ -1,6 +1,6 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
-import microtrafficsim.core.convenience.parser.DefaultParserConfig;
+import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.filechoosing.ConfigFileChooser;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
@@ -9,19 +9,12 @@ import microtrafficsim.core.convenience.filechoosing.ScenarioFileChooser;
 import microtrafficsim.core.convenience.utils.FileFilters;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.base.ScenarioMetaInfo;
-import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
-import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.AreaScenarioExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
-import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.exfmt.injector.simulation.AreaScenarioInjector;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.logic.streetgraph.StreetGraph;
-import microtrafficsim.core.map.MapSegment;
-import microtrafficsim.core.map.TileFeatureProvider;
-import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
+import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
@@ -41,6 +34,7 @@ import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.view.PreferencesFrame;
 import microtrafficsim.utils.collections.Composite;
+import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.functional.Procedure;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.strings.WrappedString;
@@ -102,15 +96,13 @@ public class SimulationController implements GUIController {
     private boolean isCreated;
 
     /* general */
-    private final SimulationConfig config;
+    private final SimulationConfig config; // has to be final for correct map/simulation behaviour
+    private ExfmtStorage exfmtStorage;
 
     /* visualization and parsing */
     private final TileBasedMapViewer mapviewer;
     private final VehicleOverlay     overlay;
     private ScenarioAreaOverlay      scenarioAreaOverlay;
-    private OSMParser                parser;
-    private ExchangeFormat           exfmt;
-    private ExchangeFormatSerializer serializer;
 
     private Graph               streetgraph;
 
@@ -186,17 +178,7 @@ public class SimulationController implements GUIController {
             mapviewer.create(config);
         } catch (UnsupportedFeatureException e) { e.printStackTrace(); }
 
-        parser = DefaultParserConfig.get(config).build();
-
-
-        /* create exchange format and serializer */
-        serializer = ExchangeFormatSerializer.create();
-        exfmt = ExchangeFormat.getDefault();
-
-        exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(
-                mapviewer.getPreferredTilingScheme(), mapviewer.getPreferredTileGridLevel()));
-
-        exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
+        exfmtStorage = new ExfmtStorage(config, mapviewer);
 
 
         /* create preferences */
@@ -723,17 +705,16 @@ public class SimulationController implements GUIController {
         /* update frame title and remember old one */
         WrappedString cachedTitle = new WrappedString();
         rememberCurrentFrameTitleIn(cachedTitle);
-        updateFrameTitle(FrameTitle.LOADING, file);
         Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
+        if (FileFilters.MAP_OSM_XML.accept(file)) {
+            updateFrameTitle(FrameTitle.PARSING, file);
+        } else if (FileFilters.MAP_EXFMT.accept(file)) {
+            updateFrameTitle(FrameTitle.LOADING, file);
+        }
 
 
         /* parse/load map */
-        boolean success = false;
-        if (FileFilters.MAP_OSM_XML.accept(file))
-            success = parseAndUpdate(file);
-        else if (FileFilters.MAP_EXFMT.accept(file)) {
-            success = loadAndUpdate(file);
-        }
+        boolean success = loadMapAndUpdate(file);
 
 
         /* show map */
@@ -757,76 +738,25 @@ public class SimulationController implements GUIController {
     }
 
     /**
-     * Parses the given file and updates all attributes influenced by the file, e.g. the graph
-     *
-     * @return true, if parsing was successful; false otherwise
-     */
-    private boolean parseAndUpdate(File file) {
-        updateFrameTitle(FrameTitle.PARSING, file);
-
-        OSMParser.Result result = null;
-
-        try {
-            /* parse file and create tiled provider */
-            result = parser.parse(file);
-        } catch (InterruptedException e) {
-            logger.info("Parsing interrupted by user");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (result != null) {
-            if (result.streetgraph != null) {
-                try {
-                    mapviewer.setMap(result.segment);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                streetgraph = result.streetgraph;
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Loads the given file and updates all attributes influenced by the file, e.g. the graph
      *
      * @return true, if loading was successful; false otherwise
      */
-    private boolean loadAndUpdate(File file) {
-        ExchangeFormat.Manipulator manipulator = null;
-        try {
-            manipulator = exfmt.manipulator(serializer.read(file));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        if (manipulator != null) {
-            try {
+    private boolean loadMapAndUpdate(File file) {
+        Tuple<Graph, MapProvider> result = exfmtStorage.loadMap(file);
+        if (result != null) {
+            if (result.obj0 != null) {
                 try {
-                    TileFeatureProvider newMap = manipulator.extract(QuadTreeTiledMapSegment.class);
-                    mapviewer.setMap(newMap);
-                } catch (NotAvailableException e) { // thrown when no TileGrid available
-                    MapSegment segment = manipulator.extract(MapSegment.class);
-                    mapviewer.setMap(segment);
+                    mapviewer.setMap(result.obj1);
+                } catch (InterruptedException e) {
+                    logger.info("Loading map interrupted by user");
                 }
 
-                streetgraph = manipulator.extract(StreetGraph.class);
-
-                return true;
-            } catch (InterruptedException e) {
-                logger.info("Loading interrupted");
-            } catch (Exception e) {
-                e.printStackTrace();
+                streetgraph = result.obj0;
             }
         }
 
-
-        return false;
+        return result != null;
     }
 
     private void cancelParsing() {
@@ -844,17 +774,12 @@ public class SimulationController implements GUIController {
         Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
 
 
-        try {
-            serializer.write(file, exfmt.manipulator()
-                    .inject(mapviewer.getMap())
-                    .inject(streetgraph)
-                    .getContainer());
-
+        boolean success = exfmtStorage.saveMap(file, new Tuple<>(streetgraph, mapviewer.getMap()));
+        if (success)
             UserInteractionUtils.showSavingSuccess(frame);
-        } catch (Exception e) {
-            e.printStackTrace();
+        else
             UserInteractionUtils.showSavingFailure(file, frame);
-        }
+
 
         setNewFrameTitle.invoke();
     }
@@ -878,32 +803,7 @@ public class SimulationController implements GUIController {
     }
 
     private void loadConfig(File file) {
-        // todo
-        /* prepare exfmt config */
-        SimulationConfigExtractor.Config cfg = new SimulationConfigExtractor.Config();
-        cfg.setConfig(config);
-        exfmt.getConfig().set(cfg);
-
-
-        /* prepare extractor */
-        ExchangeFormat.Manipulator manipulator = null;
-        try {
-            manipulator = exfmt.manipulator(serializer.read(file));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        /* load config */
-        SimulationConfig newConfig = null;
-        if (manipulator != null) {
-            try {
-                newConfig = manipulator.extract(SimulationConfig.class);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
+        SimulationConfig newConfig = exfmtStorage.loadConfig(file, config);
 
         /* update preferences if successfully loaded */
         if (newConfig != null) {
@@ -920,18 +820,11 @@ public class SimulationController implements GUIController {
     }
 
     private void saveConfig(File file) {
-        // todo
-        SimulationConfig config = new SimulationConfig(this.config);
-
-        try {
-            serializer.write(file, exfmt.manipulator()
-                    .inject(config)
-                    .getContainer());
+        boolean success = exfmtStorage.saveConfig(file, config);
+        if (success)
             UserInteractionUtils.showSavingSuccess(frame);
-        } catch (Exception e) {
-            e.printStackTrace();
+        else
             UserInteractionUtils.showSavingFailure(file, frame);
-        }
     }
 
 
@@ -949,137 +842,137 @@ public class SimulationController implements GUIController {
     }
 
     private void loadScenario(File file) {
-        /* update frame title and remember old one */
-        WrappedString cachedTitle = new WrappedString();
-        rememberCurrentFrameTitleIn(cachedTitle);
-        updateFrameTitle(FrameTitle.LOADING, file);
-
-        WrappedString tmpTitle = new WrappedString("Loading new scenario");
-        updateFrameTitle(tmpTitle);
-
-
-        /* update streetgraph */
-        // mapviewer.createParser(config) is not needed because the mapviewer gets the final config-reference
-        streetgraph.reset();
-        streetgraph.setSeed(config.seed);
-
-
-        /* prepare exfmt config */
-        AreaScenarioExtractor.Config asecfg = new AreaScenarioExtractor.Config();
-        asecfg.loadRoutes = UserInteractionUtils.askUserForDecision(
-                "Do you like to load the routes as well?",
-                "Route storing",
-                frame);
-        asecfg.graph = streetgraph;
-        asecfg.config = config;
-
-        asecfg.scenarioBuilder = scenarioBuilder;
-        asecfg.progressListener = currentInPercent -> {
-            tmpTitle.set("Assigning vehicle routes " + currentInPercent + "%");
-            updateFrameTitle(tmpTitle);
-        };
-        exfmt.getConfig().set(asecfg);
-
-
-        /* load */
-        ExchangeFormat.Manipulator manipulator = null;
-        try {
-            manipulator = exfmt.manipulator(serializer.read(file));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        ScenarioMetaInfo scmeta = null;
-        if (manipulator != null) {
-            try {
-                scmeta = manipulator.extract(ScenarioMetaInfo.class);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        boolean stillLoadScenario = scmeta != null;
-        if (stillLoadScenario) {
-            // check if streetgraphGUID equals scmeta.getGUID()
-            // if not issue warning due to possible incompatibility
-            // and prompt to cancel
-            if (!streetgraph.getGUID().equals(scmeta.getGraphGUID())) {
-                stillLoadScenario = UserInteractionUtils.askUserForDecision(
-                        "The graph used in the scenario is different to the current one.\n" +
-                                "Do you want to continue?",
-                        "Inconsistent scenario meta information",
-                        frame);
-            }
-        }
-
-        if (stillLoadScenario) {
-            AreaScenario newScenario = null;
-            try {
-                newScenario = manipulator.extract(AreaScenario.class);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-            if (newScenario != null) {
-                /* create new scenario */
-                tmpTitle.set("Assigning vehicle routes 0%");
-                updateFrameTitle(tmpTitle);
-
-
-                /* remove old scenario */
-                simulation.removeCurrentScenario();
-                scenarioAreaOverlay.setEventsEnabled(false);
-                scenarioAreaOverlay.setPropertiesVisible(false);
-
-
-                /* update area overlay */
-                scenarioAreaOverlay.removeAllAreas();
-                newScenario.getAreas().stream()
-                        .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
-                        .forEach(scenarioAreaOverlay::add);
-
-                /* initialize the scenario */
-                simulation.setAndInitPreparedScenario(newScenario);
-                simulation.runOneStep();
-            }
-        }
-
-
-        /* finish creation */
-        updateFrameTitle(cachedTitle);
+//        /* update frame title and remember old one */
+//        WrappedString cachedTitle = new WrappedString();
+//        rememberCurrentFrameTitleIn(cachedTitle);
+//        updateFrameTitle(FrameTitle.LOADING, file);
+//
+//        WrappedString tmpTitle = new WrappedString("Loading new scenario");
+//        updateFrameTitle(tmpTitle);
+//
+//
+//        /* update streetgraph */
+//        // mapviewer.createParser(config) is not needed because the mapviewer gets the final config-reference
+//        streetgraph.reset();
+//        streetgraph.setSeed(config.seed);
+//
+//
+//        /* prepare exfmt config */
+//        AreaScenarioExtractor.Config asecfg = new AreaScenarioExtractor.Config();
+//        asecfg.loadRoutes = UserInteractionUtils.askUserForDecision(
+//                "Do you like to load the routes as well?",
+//                "Route storing",
+//                frame);
+//        asecfg.graph = streetgraph;
+//        asecfg.config = config;
+//
+//        asecfg.scenarioBuilder = scenarioBuilder;
+//        asecfg.progressListener = currentInPercent -> {
+//            tmpTitle.set("Assigning vehicle routes " + currentInPercent + "%");
+//            updateFrameTitle(tmpTitle);
+//        };
+//        exfmt.getConfig().set(asecfg);
+//
+//
+//        /* load */
+//        ExchangeFormat.Manipulator manipulator = null;
+//        try {
+//            manipulator = exfmt.manipulator(serializer.read(file));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        ScenarioMetaInfo scmeta = null;
+//        if (manipulator != null) {
+//            try {
+//                scmeta = manipulator.extract(ScenarioMetaInfo.class);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        boolean stillLoadScenario = scmeta != null;
+//        if (stillLoadScenario) {
+//            // check if streetgraphGUID equals scmeta.getGUID()
+//            // if not issue warning due to possible incompatibility
+//            // and prompt to cancel
+//            if (!streetgraph.getGUID().equals(scmeta.getGraphGUID())) {
+//                stillLoadScenario = UserInteractionUtils.askUserForDecision(
+//                        "The graph used in the scenario is different to the current one.\n" +
+//                                "Do you want to continue?",
+//                        "Inconsistent scenario meta information",
+//                        frame);
+//            }
+//        }
+//
+//        if (stillLoadScenario) {
+//            AreaScenario newScenario = null;
+//            try {
+//                newScenario = manipulator.extract(AreaScenario.class);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//
+//            if (newScenario != null) {
+//                /* create new scenario */
+//                tmpTitle.set("Assigning vehicle routes 0%");
+//                updateFrameTitle(tmpTitle);
+//
+//
+//                /* remove old scenario */
+//                simulation.removeCurrentScenario();
+//                scenarioAreaOverlay.setEventsEnabled(false);
+//                scenarioAreaOverlay.setPropertiesVisible(false);
+//
+//
+//                /* update area overlay */
+//                scenarioAreaOverlay.removeAllAreas();
+//                newScenario.getAreas().stream()
+//                        .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
+//                        .forEach(scenarioAreaOverlay::add);
+//
+//                /* initialize the scenario */
+//                simulation.setAndInitPreparedScenario(newScenario);
+//                simulation.runOneStep();
+//            }
+//        }
+//
+//
+//        /* finish creation */
+//        updateFrameTitle(cachedTitle);
     }
 
     private void saveScenario(File file) {
-        /* update frame title and remember old one */
-        WrappedString cachedTitle = new WrappedString();
-        rememberCurrentFrameTitleIn(cachedTitle);
-        updateFrameTitle(FrameTitle.SAVING, file);
-        Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
-
-
-        AreaScenario scenario = (AreaScenario) simulation.getScenario();
-        AreaScenarioInjector.Config asicfg = new AreaScenarioInjector.Config();
-        asicfg.storeRoutes = UserInteractionUtils.askUserForDecision(
-                "Do you like to store the routes as well?\n" +
-                        "\n" +
-                        "Attention! The routes would be stored\n" +
-                        "in the current simulation state,\n" +
-                        "not fresh calculated!",
-                "Route storing",
-                frame);
-        exfmt.getConfig().set(asicfg);
-        try {
-            serializer.write(file, exfmt.manipulator().inject(scenario).getContainer());
-
-            UserInteractionUtils.showSavingSuccess(frame);
-        } catch (Exception e) {
-            e.printStackTrace();
-            UserInteractionUtils.showSavingFailure(file, frame);
-        }
-
-
-        setNewFrameTitle.invoke();
+//        /* update frame title and remember old one */
+//        WrappedString cachedTitle = new WrappedString();
+//        rememberCurrentFrameTitleIn(cachedTitle);
+//        updateFrameTitle(FrameTitle.SAVING, file);
+//        Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
+//
+//
+//        AreaScenario scenario = (AreaScenario) simulation.getScenario();
+//        AreaScenarioInjector.Config asicfg = new AreaScenarioInjector.Config();
+//        asicfg.storeRoutes = UserInteractionUtils.askUserForDecision(
+//                "Do you like to store the routes as well?\n" +
+//                        "\n" +
+//                        "Attention! The routes would be stored\n" +
+//                        "in the current simulation state,\n" +
+//                        "not fresh calculated!",
+//                "Route storing",
+//                frame);
+//        exfmt.getConfig().set(asicfg);
+//        try {
+//            serializer.write(file, exfmt.manipulator().inject(scenario).getContainer());
+//
+//            UserInteractionUtils.showSavingSuccess(frame);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            UserInteractionUtils.showSavingFailure(file, frame);
+//        }
+//
+//
+//        setNewFrameTitle.invoke();
     }
 
 

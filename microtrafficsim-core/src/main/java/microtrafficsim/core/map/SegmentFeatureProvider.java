@@ -9,7 +9,7 @@ import java.util.Set;
  *
  * @author Maximilian Luz
  */
-public interface SegmentFeatureProvider {
+public interface SegmentFeatureProvider extends MapProvider {
 
     /**
      * Returns the bounds of the segment provided by this provider.

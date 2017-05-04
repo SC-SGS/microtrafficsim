@@ -1,5 +1,6 @@
 package microtrafficsim.core.convenience.mapviewer;
 
+import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -111,7 +112,7 @@ public interface MapViewer {
 
     TileFeatureProvider getMap();
 
-    void setMap(SegmentFeatureProvider segment) throws InterruptedException;
+    <MP extends MapProvider> void setMap(MP provider) throws InterruptedException;
 
 
     /**

@@ -1,6 +1,7 @@
 package microtrafficsim.core.convenience.mapviewer;
 
 import com.jogamp.newt.event.KeyEvent;
+import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.layers.LayerDefinition;
@@ -209,34 +210,31 @@ public class TileBasedMapViewer extends BasicMapViewer {
     }
 
     @Override
-    public void setMap(SegmentFeatureProvider segment) throws InterruptedException {
-        if (segment instanceof TileFeatureProvider) {
-            map = (TileFeatureProvider) segment;
-        } else {
+    public <MP extends MapProvider> void setMap(MP provider) throws InterruptedException {
+        if (provider instanceof TileFeatureProvider) {
+            map = (TileFeatureProvider) provider;
+        } else if (provider instanceof SegmentFeatureProvider) {
             map = new QuadTreeTiledMapSegment.Generator().generate(
-                    segment,
+                    (SegmentFeatureProvider) provider,
                     preferredTilingScheme,
                     preferredTileGridLevel);
+        } else {
+            throw new IllegalArgumentException("The given provider has an unsupported type.");
         }
 
-        setMap(map);
-    }
-
-    public void setMap(TileFeatureProvider tiles) {
         /* Update the tiling-scheme according to the source. Note: All sources must have the same tiling scheme and the
          * visual appearance (i.e. line-thickness) may depend on the tiling-scheme (specifically its scale). It is
          * thus often better to specify the tiling-scheme while loading/generating the feature provider and other
          * sources.
          */
-        map = tiles;
-        layerProvider.setTilingScheme(tiles.getTilingScheme());
+        layerProvider.setTilingScheme(map.getTilingScheme());
 
         /* update the feature sources, so that they will use the created provider */
         for (LayerDefinition def : style.getLayers()) {
             TileLayerSource src = def.getSource();
 
             if (src instanceof FeatureTileLayerSource)
-                ((FeatureTileLayerSource) src).setFeatureProvider(tiles);
+                ((FeatureTileLayerSource) src).setFeatureProvider(map);
         }
 
         /* center the view to the parsed area */

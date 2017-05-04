@@ -17,14 +17,14 @@ public class SimulationConfigInjector implements ExchangeFormat.Injector<Simulat
      * @param fmt unused
      * @param ctx unused
      * @param dst The given {@code src} is stored here.
-     * @param src Is getting stored
+     * @param src Is getting stored, but wrapped!
      * @throws Exception
      */
     @Override
     public void inject(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container dst, SimulationConfig src) throws Exception {
 
         SimulationConfigInfo sconfig = new SimulationConfigInfo();
-        sconfig.set(src);
+        sconfig.set(new SimulationConfig(src));
         dst.set(sconfig);
     }
 }
