@@ -1,5 +1,6 @@
 package microtrafficsim.core.parser.features.streetgraph;
 
+import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
@@ -178,6 +179,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
         StreetGraphWayComponent graphinfo = new StreetGraphWayComponent(way, forward, backward);
         way.set(StreetGraphWayComponent.class, graphinfo);
 
+        StreetEntity entity = new StreetEntity(forward, backward, null);
+
         // register
         if (forward != null || backward != null) {
             graph.addNode(start);
@@ -185,12 +188,14 @@ public class StreetGraphGenerator implements FeatureGenerator {
         }
 
         if (forward != null) {
+            forward.setEntity(entity);
             graph.addEdge(forward);
             start.addLeavingEdge(forward);
             end.addIncomingEdge(forward);
         }
 
         if (backward != null) {
+            backward.setEntity(entity);
             graph.addEdge(backward);
             start.addIncomingEdge(backward);
             end.addLeavingEdge(backward);
