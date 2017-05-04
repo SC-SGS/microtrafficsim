@@ -30,7 +30,7 @@ public class SimulationConfigInfo extends Container.Entry {
      *
      * <p>
      * {@code ATTENTION!} Usually, the caller of this method (= this class) is updated by the given config file.
-     * Here, it is the other way, the given config is updated by the caller.
+     * Here, it is the other way: the given config is updated by the caller.
      *
      * @param config This config file is getting updated by the values stored here.
      */

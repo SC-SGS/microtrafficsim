@@ -16,7 +16,7 @@ public class SimulationConfigExtractor implements ExchangeFormat.Extractor<Simul
      * @param fmt
      * @param ctx unused
      * @param src
-     * @return The given config via this {@link Config#config extractor config}
+     * @return The config initialized in {@link Config Extractor.Config} updated by the attributes in the stored file
      * @throws Exception
      */
     @Override
@@ -28,6 +28,7 @@ public class SimulationConfigExtractor implements ExchangeFormat.Extractor<Simul
         SimulationConfig config = fmtcfg.config;
 
 
+        /* extract from file data */
         SimulationConfigInfo info = src.get(SimulationConfigInfo.class);
         if (info == null) throw new NotAvailableException(SimulationConfigInfo.class.getSimpleName() + " missing");
         info.update(config);
@@ -37,6 +38,15 @@ public class SimulationConfigExtractor implements ExchangeFormat.Extractor<Simul
 
 
     public static class Config extends microtrafficsim.core.exfmt.Config.Entry {
-        public SimulationConfig config;
+        private SimulationConfig config;
+
+        /**
+         * Initializes a new {@link SimulationConfig config} setting all values to the given ones.
+         *
+         * @param draft The new config gets its attributes set to the given ones.
+         */
+        public void setConfig(SimulationConfig draft) {
+            this.config = new SimulationConfig(draft);
+        }
     }
 }

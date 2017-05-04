@@ -12,6 +12,7 @@ import microtrafficsim.core.exfmt.base.ScenarioMetaInfo;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.AreaScenarioExtractor;
+import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.exfmt.injector.simulation.AreaScenarioInjector;
 import microtrafficsim.core.logic.streetgraph.Graph;
@@ -271,6 +272,9 @@ public class SimulationController implements GUIController {
             mapviewer.destroy();
             frame.dispose();
             System.exit(0);
+        } else {
+            if (preferences.isVisible())
+                preferences.toFront();
         }
     }
 
@@ -551,10 +555,15 @@ public class SimulationController implements GUIController {
 
     /* load/save scenario */
     private void transitionLoadConfig() {
-        // todo
         preferences.requestAnExecutionThread(() -> {
+            File file = askForOpenConfigfile();
+            if (isFileOkayForLoading(file))
+                loadConfig(file);
 
-        });
+            preferences.toFront();
+            updateMenuBar();
+            preferences.hasFinishedProcedureExecution();
+        }).start();
     }
 
     private void transitionSaveConfig() {
@@ -788,7 +797,6 @@ public class SimulationController implements GUIController {
      */
     private boolean loadAndUpdate(File file) {
         ExchangeFormat.Manipulator manipulator = null;
-
         try {
             manipulator = exfmt.manipulator(serializer.read(file));
         } catch (Exception e) {
@@ -869,6 +877,44 @@ public class SimulationController implements GUIController {
 
     private void loadConfig(File file) {
         // todo
+        /* prepare exfmt config */
+        SimulationConfigExtractor.Config cfg = new SimulationConfigExtractor.Config();
+        cfg.setConfig(config);
+        exfmt.getConfig().set(cfg);
+
+
+        /* prepare extractor */
+        ExchangeFormat.Manipulator manipulator = null;
+        try {
+            manipulator = exfmt.manipulator(serializer.read(file));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        /* load config */
+        SimulationConfig newConfig = null;
+        if (manipulator != null) {
+            try {
+                newConfig = manipulator.extract(SimulationConfig.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        /* update preferences if successfully loaded */
+        if (newConfig != null) {
+            preferences.setSettings(newConfig);
+        } else {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "The chosen file '" + file.getName() + "' has a wrong format.\n" +
+                            "Therefore it could not be loaded.\n" +
+                            "Please make sure this file exists and is a valid MTS config.",
+                    "Error: wrong config-file format",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void saveConfig(File file) {
