@@ -55,8 +55,7 @@ public class BasicPolygonArea implements PolygonArea {
             double y2 = c.lat - p.lat;
 
             if (y1 * y2 < 0) {    // (1) --> (2) crosses the x-axis
-                double r = x1
-                           + (y1 * (x2 - x1)) / (y1 - y2);    // x-coordinate of intersection of (1) --> (2) and x-axis
+                double r = x1 + (y1 * (x2 - x1)) / (y1 - y2); // x-coordinate of intersection of (1) --> (2) and x-axis
                 if (r > 0) {                                  // (1) --> (2) crosses positive x-axis
                     if (y1 < 0)
                         windings += 2;

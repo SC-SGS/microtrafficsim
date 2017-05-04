@@ -64,6 +64,8 @@ public class PreRenderedTileProvider implements TileProvider {
 
     private static final BucketComparator CMP_BUCKET = new BucketComparator();
 
+    private RenderContext context;
+
     private TileLayerProvider           provider;
     private HashSet<TileChangeListener> tileListener;
 
@@ -140,6 +142,7 @@ public class PreRenderedTileProvider implements TileProvider {
 
     @Override
     public void initialize(RenderContext context) throws IOException, ShaderCompileException, ShaderLinkException {
+        this.context = context;
         GL3 gl = context.getDrawable().getGL().getGL3();
 
         tilecopy = context.getShaderManager().load(TILE_COPY_SHADER_SRC);
@@ -716,6 +719,17 @@ public class PreRenderedTileProvider implements TileProvider {
      * Implementation of the layer provider's {@code LayerChangeListener}.
      */
     private class LayerChangeListenerImpl implements TileLayerProvider.LayerChangeListener {
+
+        @Override
+        public void tilingSchemeChanged() {
+            context.addTask(c -> {
+                TileBufferPool old = PreRenderedTileProvider.this.pool;
+                pool = new TileBufferPool(provider.getTilingScheme().getTileSize(), pool.targetPoolSize);
+
+                old.dispose(c);
+                return null;
+            });
+        }
 
         @Override
         public void layersChanged() {

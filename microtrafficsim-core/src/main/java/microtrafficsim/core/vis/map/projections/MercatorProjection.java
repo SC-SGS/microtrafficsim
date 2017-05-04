@@ -17,7 +17,7 @@ public class MercatorProjection implements Projection {
     private double scale;
 
     public MercatorProjection() {
-        this(180);
+        this(256);
     }
 
     public MercatorProjection(double scale) {

@@ -2,17 +2,24 @@ package microtrafficsim.examples.simulation;
 
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.convenience.DefaultParserConfig;
+import microtrafficsim.core.convenience.filechoosing.MapfileChooser;
 import microtrafficsim.core.convenience.MapViewer;
 import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.exfmt.Container;
+import microtrafficsim.core.exfmt.ExchangeFormat;
+import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
+import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.StreetGraph;
+import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.map.style.impl.LightMonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.serialization.Serializer;
-import microtrafficsim.core.serialization.Container;
+import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -46,9 +53,10 @@ public class SimulationExample {
 
     private static final long SEED = Random.createSeed();
 
-    private JFileChooser filechooser;
-    private Serializer serializer;
+    private MapfileChooser filechooser;
     private OSMParser parser;
+    private ExchangeFormatSerializer serializer;
+    private ExchangeFormat exfmt;
 
     private JFrame frame;
     private SimulationConfig config;
@@ -69,8 +77,8 @@ public class SimulationExample {
         /* Set up logging */
         LoggingLevel.setEnabledGlobally(false, false, true, true, true);
 
-        filechooser = new JFileChooser();
-        serializer = Serializer.create();
+        filechooser = new MapfileChooser();
+        filechooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
 
         /* Create configuration for scenarios, parser and map-viewer */
         config = config();
@@ -83,6 +91,7 @@ public class SimulationExample {
 
         /* Create the window and display the visualization */
         frame = setUpFrame(viewer);
+        setUpSerializer(viewer, config);
         show();
 
         /* Load the OSM file asynchronously */
@@ -92,8 +101,8 @@ public class SimulationExample {
 
 
     /**
-     * Create and return the ScenarioConfig used for this example.
-     * @return the {@code ScenarioConfig} used for this example.
+     * Create and return the SimulationConfig used for this example.
+     * @return the {@code SimulationConfig} used for this example.
      */
     private SimulationConfig config() {
         SimulationConfig config = new SimulationConfig();
@@ -149,6 +158,16 @@ public class SimulationExample {
         });
 
         return frame;
+    }
+
+    private void setUpSerializer(TileBasedMapViewer viewer, SimulationConfig config) {
+        serializer = ExchangeFormatSerializer.create();
+        exfmt = ExchangeFormat.getDefault();
+
+        exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(
+                viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel()));
+
+        exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
     }
 
     /**
@@ -391,10 +410,16 @@ public class SimulationExample {
                     OSMParser.Result result = parser.parse(file);
                     segment = tiler.generate(result.segment, scheme, viewer.getPreferredTileGridLevel());
                     graph = result.streetgraph;
+
                 } else {
-                    Container result = serializer.read(file);
-                    segment = result.getMapSegment();
-                    graph = result.getMapGraph();
+                    // NOTE: the order of the following calls is important: first features, then graph
+                    ExchangeFormat.Manipulator xmp = exfmt.manipulator(serializer.read(file));
+                    try {
+                        segment = xmp.extract(QuadTreeTiledMapSegment.class);
+                    } catch (NotAvailableException e) {     // thrown when no TileGrid available
+                        segment = xmp.extract(MapSegment.class);
+                    }
+                    graph = xmp.extract(StreetGraph.class);
                 }
             } catch (InterruptedException e) {
                 throw new CancellationException();
@@ -481,10 +506,12 @@ public class SimulationExample {
             SwingUtilities.invokeAndWait(() ->
                     frame.setTitle(getDefaultFrameTitle() + " - [Saving: " + file.getPath() + "]"));
 
-            new Container()
-                    .setMapSegment(segment)
-                    .setMapGraph(graph)
-                    .write(serializer, file);
+            Container container = exfmt.manipulator()
+                    .inject(segment)
+                    .inject(graph)
+                    .getContainer();
+
+            serializer.write(file, container);
 
         } catch (Throwable t) {
             t.printStackTrace();

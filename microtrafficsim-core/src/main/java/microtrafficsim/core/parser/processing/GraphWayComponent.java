@@ -70,11 +70,6 @@ public class GraphWayComponent extends Component implements Mergeable<GraphWayCo
         this.cyclicEndToStart = cyclicEndToStart;
     }
 
-    @Override
-    public Class<? extends Component> getType() {
-        return GraphWayComponent.class;
-    }
-
 
     @Override
     public boolean forwardMergeable(DataSet dataset, WayLayout layout, NodeEntity node, GraphWayComponent other) {

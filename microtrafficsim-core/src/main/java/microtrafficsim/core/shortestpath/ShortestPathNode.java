@@ -22,5 +22,5 @@ public interface ShortestPathNode<E extends ShortestPathEdge> extends Mappable {
     /**
      * @return A set of all edges that are coming in this node
      */
-    Set<? extends E> getIncoming();
+    Set<? extends E> getIncomingEdges();
 }

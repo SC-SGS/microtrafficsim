@@ -21,7 +21,7 @@ public class Street extends MultiLine {
      *
      * @param id        the (unique) id of the street.
      * @param nodes     the ordered set of coordinates describing the geometry of the street.
-     * @param layer     the layer layer on which the street is.
+     * @param layer     the layer on which the street is.
      * @param length    the length of the street.
      * @param distances the distances of the single line segments.
      */

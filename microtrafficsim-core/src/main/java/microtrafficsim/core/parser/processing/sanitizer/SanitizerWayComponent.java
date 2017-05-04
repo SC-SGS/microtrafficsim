@@ -28,10 +28,6 @@ public class SanitizerWayComponent extends Component {
         this.highway = highway;
     }
 
-    @Override
-    public Class<? extends Component> getType() {
-        return SanitizerWayComponent.class;
-    }
 
     /**
      * Clones this component and all contained objects.

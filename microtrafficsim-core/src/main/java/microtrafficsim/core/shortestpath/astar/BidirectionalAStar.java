@@ -145,7 +145,7 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
                     backwardVisitedNodes.put(current.node, current);
 
                     // iterate over all incoming edges
-                    for (E incoming : current.node.getIncoming()) {
+                    for (E incoming : current.node.getIncomingEdges()) {
                         N orig = incoming.getOrigin();
                         double g = current.g + edgeWeightFunction.applyAsDouble(incoming);
 

@@ -20,7 +20,7 @@ public abstract class BasicScenario implements Scenario {
     private final Graph graph;
     private final VehicleContainer  vehicleContainer;
     private       boolean           isPrepared;
-    protected     ODMatrix          odMatrix;
+    protected     SparseODMatrix    odMatrix;
 
     /**
      * Default constructor

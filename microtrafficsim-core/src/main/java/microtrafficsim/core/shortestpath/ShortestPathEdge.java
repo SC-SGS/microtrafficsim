@@ -9,6 +9,13 @@ package microtrafficsim.core.shortestpath;
 public interface ShortestPathEdge<N> {
 
     /**
+     * @return -1 per default
+     */
+    default long getId() {
+        return -1;
+    }
+
+    /**
      * @return Length of this edge in a certain unit.
      */
     int getLength();

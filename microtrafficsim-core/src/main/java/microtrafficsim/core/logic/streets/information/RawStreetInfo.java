@@ -1,6 +1,8 @@
 package microtrafficsim.core.logic.streets.information;
 
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.map.StreetType;
+import microtrafficsim.core.simulation.configs.SimulationConfig.StreetPriorityFunction;
 import microtrafficsim.math.Vec2d;
 
 /**
@@ -12,7 +14,7 @@ public class RawStreetInfo {
     public long id;
 
     /* geometry information */
-    public float lengthInMeters;
+    public double lengthInMeters;
     public Vec2d originDirection;
     public Vec2d destinationDirection;
 
@@ -21,18 +23,17 @@ public class RawStreetInfo {
     public Node destination;
 
     /* traffic information */
-    public float metersPerCell;
-    public int noOfLines;
+    public StreetType type;
+    public int nLanes;
     public float maxVelocity;
-    public byte priorityLevel;
+    public float metersPerCell;
+    public StreetPriorityFunction priorityFn;
 
     /**
      * For parameter information
-     * see {@link #RawStreetInfo(long, float, Vec2d, Vec2d, Node, Node, float, int, float, byte)}
+     * see {@link #RawStreetInfo(long, double, Vec2d, Vec2d, Node, Node, StreetType, int, float, float, StreetPriorityFunction)}
      */
-    public RawStreetInfo() {
-
-    }
+    public RawStreetInfo() {}
 
     /**
      * @param id                   id of the street this edge is belonging to. The forward and backward edge of the
@@ -44,29 +45,31 @@ public class RawStreetInfo {
      * @param origin               Origin node of this edge
      * @param destination          Destination node of this edge
      * @param metersPerCell        determines number of cells in this edge
-     * @param noOfLines            Number of lines that will be created in this constructor
+     * @param nLanes               Number of lines that will be created in this constructor
      * @param maxVelocity          The max velocity of this edge. It's valid for all lanes.
-     * @param priorityLevel        the priority used for the crossing logic; smaller means higher priority
+     * @param priorityFn           the priority function used for the crossing logic; higher values for higher priority
      */
     public RawStreetInfo(long id,
-                         float lengthInMeters,
+                         double lengthInMeters,
                          Vec2d originDirection,
                          Vec2d destinationDirection,
                          Node origin,
                          Node destination,
-                         float metersPerCell,
-                         int noOfLines,
+                         StreetType type,
+                         int nLanes,
                          float maxVelocity,
-                         byte priorityLevel) {
+                         float metersPerCell,
+                         StreetPriorityFunction priorityFn) {
         this.id                   = id;
         this.lengthInMeters       = lengthInMeters;
         this.originDirection      = originDirection.normalize();
         this.destinationDirection = destinationDirection.normalize();
         this.origin               = origin;
         this.destination          = destination;
-        this.metersPerCell        = metersPerCell;
-        this.noOfLines            = noOfLines;
+        this.type                 = type;
+        this.nLanes               = nLanes;
         this.maxVelocity          = maxVelocity;
-        this.priorityLevel        = priorityLevel;
+        this.metersPerCell        = metersPerCell;
+        this.priorityFn           = priorityFn;
     }
 }

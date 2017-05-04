@@ -1,5 +1,6 @@
 package microtrafficsim.core.logic.nodes;
 
+import microtrafficsim.core.logic.CrossingLogicException;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.vehicles.VehicleState;
@@ -8,7 +9,6 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.exceptions.core.logic.CrossingLogicException;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.random.Seeded;
@@ -29,7 +29,7 @@ import java.util.*;
  */
 public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded {
 
-    public final long           id;
+    private final long          id;
     private Coordinate          coordinate;
     private CrossingLogicConfig config;
     private final Random        random;
@@ -127,6 +127,18 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         return builder.toString();
     }
 
+
+    public long getId() {
+        return id;
+    }
+
+    public CrossingLogicConfig getCrossingLogicConfig() {
+        return config;
+    }
+
+    public HashMap<Lane, ArrayList<Lane>> getConnectors() {
+        return connectors;
+    }
 
     /*
     |================|
@@ -522,8 +534,12 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         return result;
     }
 
+    public Set<DirectedEdge> getLeavingEdges() {
+        return Collections.unmodifiableSet(leaving.keySet());
+    }
+
     @Override
-    public Set<DirectedEdge> getIncoming() {
+    public Set<DirectedEdge> getIncomingEdges() {
         return Collections.unmodifiableSet(incoming.keySet());
     }
 

@@ -1,9 +1,10 @@
 package microtrafficsim.core.simulation.configs;
 
+import microtrafficsim.core.map.StreetType;
 import microtrafficsim.math.random.distributions.impl.Random;
-import microtrafficsim.osm.parser.features.streets.info.StreetType;
+import microtrafficsim.utils.functional.Function1;
 
-import java.util.function.Function;
+import java.io.Serializable;
 
 
 /**
@@ -42,7 +43,7 @@ public final class SimulationConfig {
     public int maxVehicleCount;
 
     /* street type priorities */
-    public Function<StreetType, Byte> streetPriorityLevel;
+    public StreetPriorityFunction streetPriorityLevel;
 
     /* multithreading */
     public final MultiThreadingConfig multiThreading;
@@ -57,6 +58,15 @@ public final class SimulationConfig {
         visualization   = new VisualizationConfig();
         multiThreading  = new MultiThreadingConfig();
         setup();
+    }
+
+    /**
+     * Calls the {@link #SimulationConfig() default constructor} and sets all values using
+     * {@link #update(SimulationConfig)}.
+     */
+    public SimulationConfig(SimulationConfig init) {
+        this();
+        update(init);
     }
 
     /**
@@ -75,29 +85,7 @@ public final class SimulationConfig {
         // vehicles
         maxVehicleCount = 100;
         // street type priorities
-        streetPriorityLevel = streetType -> {
-            byte prioLevel = 0;
-            switch (streetType) {
-            case ROUNDABOUT:     prioLevel++;
-            case MOTORWAY:       prioLevel++;
-            case MOTORWAY_LINK:  prioLevel++;
-            case TRUNK:          prioLevel++;
-            case TRUNK_LINK:     prioLevel++;
-            case PRIMARY:        prioLevel++;
-            case PRIMARY_LINK:   prioLevel++;
-            case SECONDARY:      prioLevel++;
-            case SECONDARY_LINK: prioLevel++;
-            case TERTIARY:       prioLevel++;
-            case TERTIARY_LINK:  prioLevel++;
-            case UNCLASSIFIED:   prioLevel++;
-            case RESIDENTIAL:    prioLevel++;
-            case LIVING_STREET:  prioLevel++;
-            case SERVICE:        prioLevel++;
-            case TRACK:          prioLevel++;
-            case ROAD:           prioLevel++;
-            }
-            return prioLevel;
-        };
+        streetPriorityLevel = new DefaultStreetPriorityFunction();
     }
 
     /*
@@ -131,5 +119,47 @@ public final class SimulationConfig {
         streetPriorityLevel = config.streetPriorityLevel;
         /* multithreading */
         multiThreading.update(config.multiThreading);
+    }
+
+
+    /**
+     * @author Maximilian Luz, Dominic Parga Cacheiro
+     */
+    public interface StreetPriorityFunction {
+        byte getPriority(StreetType type);
+    }
+
+    /**
+     * @author Maximilian Luz, Dominic Parga Cacheiro
+     */
+    public static class DefaultStreetPriorityFunction implements StreetPriorityFunction {
+        @Override
+        public byte getPriority(StreetType type) {
+            byte priority = (byte) 0x00;
+
+            if (type.isRoundabout())
+                return (byte) 0xFF;
+
+            switch (type.getType()) {
+                case StreetType.MOTORWAY:       priority++;
+                case StreetType.TRUNK:          priority++;
+                case StreetType.PRIMARY:        priority++;
+                case StreetType.SECONDARY:      priority++;
+                case StreetType.TERTIARY:       priority++;
+                case StreetType.UNCLASSIFIED:   priority++;
+                case StreetType.RESIDENTIAL:    priority++;
+                case StreetType.LIVING_STREET:  priority++;
+                case StreetType.SERVICE:        priority++;
+                case StreetType.TRACK:          priority++;
+                case StreetType.ROAD:           priority++;
+            }
+
+            priority *= 2;
+
+            if (type.isLink())
+                priority += 1;
+
+            return priority;
+        }
     }
 }

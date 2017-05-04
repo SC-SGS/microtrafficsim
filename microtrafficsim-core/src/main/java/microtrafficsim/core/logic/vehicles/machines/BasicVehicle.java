@@ -7,7 +7,7 @@ import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
-import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
+import microtrafficsim.core.logic.NagelSchreckenbergException;
 import microtrafficsim.math.MathUtils;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
@@ -93,7 +93,7 @@ public abstract class BasicVehicle implements Vehicle {
             strBuilder.appendln("");
             strBuilder.appendln("-- infos from next node --");
             strBuilder.appendln("permission = " + lane.getAssociatedEdge().getDestination().permissionToCross(this));
-            strBuilder.appendln("node.id = " + lane.getAssociatedEdge().getDestination().id);
+            strBuilder.appendln("node.id = " + lane.getAssociatedEdge().getDestination().getId());
         }
         strBuilder.decLevel();
         strBuilder.appendln("<\\vehicle>");

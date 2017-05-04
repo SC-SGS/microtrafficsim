@@ -9,7 +9,7 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.StepListener;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
-import microtrafficsim.core.simulation.utils.ODMatrix;
+import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
 import microtrafficsim.utils.Resettable;
 
 import java.util.function.Supplier;
@@ -68,7 +68,7 @@ public interface Scenario extends StepListener, Resettable {
     /**
      * @return the matrix used in this scenario determining the routes of this scenario
      */
-    ODMatrix getODMatrix();
+    UnmodifiableODMatrix getODMatrix();
 
     /*
     |================|

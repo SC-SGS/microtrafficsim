@@ -36,8 +36,6 @@ public class IndicesCalculator {
      * BEST_CASE := 9
      *
      *
-     * @param s1 String indices of vehicle 1, sorted in an ascending order
-     * @param s2 String indices of vehicle 2, sorted in an ascending order
      * @return The first index of this unique matching or
      * StringMatcher.NO_MATCH, if there is no matching.
      */

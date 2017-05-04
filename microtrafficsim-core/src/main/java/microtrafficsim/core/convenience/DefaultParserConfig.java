@@ -17,6 +17,9 @@ import microtrafficsim.osm.primitives.Way;
 import java.util.function.Predicate;
 
 
+/**
+ * @author Maximilian Luz
+ */
 public class DefaultParserConfig {
     public static OSMParser.Config get(SimulationConfig config) {
         return get(config.visualization.style, config);

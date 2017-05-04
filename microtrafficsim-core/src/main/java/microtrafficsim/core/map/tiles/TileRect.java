@@ -133,6 +133,7 @@ public class TileRect {
                             a.zoom);
     }
 
+
     /**
      * Returns the minimum xy tile of this rectangle.
      *
@@ -151,6 +152,7 @@ public class TileRect {
         return new TileId(xmax, ymax, zoom);
     }
 
+
     /**
      * Checks if this rectangle contains the given tile.
      *
@@ -160,6 +162,46 @@ public class TileRect {
     public boolean contains(TileId tile) {
         return zoom == tile.z && xmin <= tile.x && xmax >= tile.x && ymin <= tile.y && ymax >= tile.y;
     }
+
+
+    /**
+     * Returns the set of all tiles contained in this rectangle.
+     *
+     * @return the set of all tiles contained in this rectangle.
+     */
+    public Set<TileId> getAll() {
+        int sx = Math.max(0, xmax - xmin + 1);
+        int sy = Math.max(0, ymax - ymin + 1);
+
+        Set<TileId> all = new HashSet<>(sx * sy);
+        for (int x = xmin; x <= xmax; x++)
+            for (int y = ymin; y <= ymax; y++)
+                all.add(new TileId(x, y, zoom));
+
+        return all;
+    }
+
+
+    /**
+     * Returns the number of tiles in x-direction enclosed by this tile-rectangle.
+     * Note: This function may return negative values if {@code xmin > xmax} instead of zero.
+     *
+     * @return the number of tiles in x-direction enclosed by this tile-rectangle.
+     */
+    public int getTilesX() {
+        return xmax - xmin + 1;
+    }
+
+    /**
+     * Returns the number of tiles in y-direction enclosed by this tile-rectangle.
+     * Note: This function may return negative values if {@code ymin > ymax} instead of zero.
+     *
+     * @return the number of tiles in y-direction enclosed by this tile-rectangle.
+     */
+    public int getTilesY() {
+        return ymax - ymin + 1;
+    }
+
 
     @Override
     public boolean equals(Object obj) {
@@ -179,22 +221,5 @@ public class TileRect {
     @Override
     public String toString() {
         return this.getClass() + " {" + xmin + ", " + ymin + ", " + xmax + ", " + ymax + ", " + zoom + "}";
-    }
-
-    /**
-     * Returns the set of all tiles contained in this rectangle.
-     *
-     * @return the set of all tiles contained in this rectangle.
-     */
-    public Set<TileId> getAll() {
-        int sx = Math.max(0, xmax - xmin + 1);
-        int sy = Math.max(0, ymax - ymin + 1);
-
-        Set<TileId> all = new HashSet<>(sx * sy);
-        for (int x = xmin; x <= xmax; x++)
-            for (int y = ymin; y <= ymax; y++)
-                all.add(new TileId(x, y, zoom));
-
-        return all;
     }
 }

@@ -20,10 +20,6 @@ public class StreetGraphNodeComponent extends Component {
         this.node = node;
     }
 
-    @Override
-    public Class<? extends Component> getType() {
-        return StreetGraphNodeComponent.class;
-    }
 
     /**
      * Clones this component and all contained objects.

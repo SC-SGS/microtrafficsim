@@ -44,9 +44,9 @@ public class NodeEntity extends Entity {
         Set<FeatureDefinition> features = new HashSet<>(this.features);
         NodeEntity             ce       = new NodeEntity(this.id, this.lat, this.lon, features);
 
-        for (Component component : this.components.values()) {
+        for (Component component : this.getAll().values()) {
             Component cc = component.clone(ce);
-            ce.components.put(cc.getType(), cc);
+            ce.getAll().put(cc.getType(), cc);
         }
 
         return ce;

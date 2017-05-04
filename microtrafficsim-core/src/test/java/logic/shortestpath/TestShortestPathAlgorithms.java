@@ -7,6 +7,7 @@ import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.astar.AStars;
@@ -187,6 +188,7 @@ public class TestShortestPathAlgorithms {
         finishBuildingGraph();
 
 
+        graph.updateGraphGUID();
         String graphBefore = graph.toString();
 
         // shortest path
@@ -251,6 +253,9 @@ public class TestShortestPathAlgorithms {
 
         finishBuildingGraph();
 
+
+        // finish
+        graph.updateGraphGUID();
 
         // shortest path
         start = nodes.get("g");
@@ -336,34 +341,36 @@ public class TestShortestPathAlgorithms {
     | utils |
     |=======|
     */
-    private StreetEntity createAndAddEdge(int lengthInCells, String originStr, String destinationStr, int noOfLines) {
+    private StreetEntity createAndAddEdge(int lengthInCells, String originStr, String destinationStr, int nLanes) {
         Node origin = nodes.get(originStr);
         Node destination = nodes.get(destinationStr);
 
         DirectedEdge forward = new DirectedEdge(
                 idGenerator.next(),
                 lengthInCells * config.metersPerCell,
-                rubbishVec2d,
-                rubbishVec2d,
+                new StreetType(StreetType.UNCLASSIFIED),
+                nLanes,
+                maxVelocity,
                 origin,
                 destination,
+                rubbishVec2d,
+                rubbishVec2d,
                 config.metersPerCell,
-                noOfLines,
-                maxVelocity,
-                (byte)0
+                type -> (byte) 0
         );
 
         DirectedEdge backward = new DirectedEdge(
                 idGenerator.next(),
                 lengthInCells * config.metersPerCell,
-                rubbishVec2d,
-                rubbishVec2d,
+                new StreetType(StreetType.UNCLASSIFIED),
+                nLanes,
+                maxVelocity,
                 destination,
                 origin,
+                rubbishVec2d,
+                rubbishVec2d,
                 config.metersPerCell,
-                noOfLines,
-                maxVelocity,
-                (byte)0
+                type -> (byte) 0
         );
 
         StreetEntity entity = new StreetEntity(forward, backward, null);
@@ -378,21 +385,25 @@ public class TestShortestPathAlgorithms {
         return entity;
     }
 
-    private StreetEntity createAndAddForwardEdge(int lengthInCells, String originStr, String destinationStr, int noOfLines) {
+    private StreetEntity createAndAddForwardEdge(int lengthInCells,
+                                                 String originStr,
+                                                 String destinationStr,
+                                                 int nLanes) {
         Node origin = nodes.get(originStr);
         Node destination = nodes.get(destinationStr);
 
         DirectedEdge forward = new DirectedEdge(
                 idGenerator.next(),
                 lengthInCells * config.metersPerCell,
-                rubbishVec2d,
-                rubbishVec2d,
+                new StreetType(StreetType.UNCLASSIFIED),
+                nLanes,
+                maxVelocity,
                 origin,
                 destination,
+                rubbishVec2d,
+                rubbishVec2d,
                 config.metersPerCell,
-                noOfLines,
-                maxVelocity,
-                (byte)0
+                type -> (byte) 0
         );
 
         StreetEntity entity = new StreetEntity(forward, null, null);
@@ -404,21 +415,25 @@ public class TestShortestPathAlgorithms {
         return entity;
     }
 
-    private StreetEntity createAndAddBackwardEdge(int lengthInCells, String originStr, String destinationStr, int noOfLines) {
+    private StreetEntity createAndAddBackwardEdge(int lengthInCells,
+                                                  String originStr,
+                                                  String destinationStr,
+                                                  int nLanes) {
         Node origin = nodes.get(originStr);
         Node destination = nodes.get(destinationStr);
 
         DirectedEdge backward = new DirectedEdge(
                 idGenerator.next(),
                 lengthInCells * config.metersPerCell,
-                rubbishVec2d,
-                rubbishVec2d,
+                new StreetType(StreetType.UNCLASSIFIED),
+                nLanes,
+                maxVelocity,
                 destination,
                 origin,
+                rubbishVec2d,
+                rubbishVec2d,
                 config.metersPerCell,
-                noOfLines,
-                maxVelocity,
-                (byte)0
+                type -> (byte) 0
         );
 
         StreetEntity entity = new StreetEntity(backward, null, null);
@@ -449,8 +464,8 @@ public class TestShortestPathAlgorithms {
 
         /* create turning lanes */
         for (Node node : nodes.values()) {
-            for (DirectedEdge incoming : node.getIncoming()) {
-                for (DirectedEdge leaving : node.getLeavingEdges(null)) {
+            for (DirectedEdge incoming : node.getIncomingEdges()) {
+                for (DirectedEdge leaving : node.getLeavingEdges()) {
                     node.addConnector(incoming.getLane(0), leaving.getLane(0));
                 }
             }
