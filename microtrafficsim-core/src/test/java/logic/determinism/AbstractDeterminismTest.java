@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * <p>
@@ -128,8 +129,18 @@ public abstract class AbstractDeterminismTest {
     }
 
     private void assertVehicleStamps(VehicleStamp expected, VehicleStamp actual) {
-        assertEquals(expected.edge, actual.edge);
+        if (expected == null) {
+            assertNull(actual);
+            return;
+        }
+
         assertEquals(expected.cellPosition, actual.cellPosition);
+        if (expected.edge == null) {
+            assertNull(actual.edge);
+            return;
+        }
+
+        assertEquals(expected.edge.hashCode(), actual.edge.hashCode());
     }
 
 

@@ -77,24 +77,8 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                 // origin and destination needed because the id is used by forward and backward edge of the same street
                 .add(streetInfo.raw.origin)
                 .add(streetInfo.raw.destination)
+                .add(getEntity().getForwardEdge() == this)
                 .getHash();
-    }
-
-    /**
-     * In addition to basic equality-checks (e.g. same instance), this method checks equality using the hashcode.
-     */
-    @Override
-    public boolean equals(Object obj) {
-
-        if (obj == this)
-            return true;
-
-        if (!(obj instanceof DirectedEdge))
-            return false;
-
-        DirectedEdge other = (DirectedEdge) obj;
-
-        return hashCode() == other.hashCode();
     }
 
     public Collection<Lane> getLanes() {

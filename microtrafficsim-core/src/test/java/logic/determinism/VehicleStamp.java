@@ -25,6 +25,7 @@ public class VehicleStamp {
             return false;
 
         VehicleStamp stamp = (VehicleStamp) obj;
-        return edge.equals(stamp.edge) && cellPosition == stamp.cellPosition;
+
+        return edge.hashCode() == stamp.edge.hashCode() && cellPosition == stamp.cellPosition;
     }
 }
