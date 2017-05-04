@@ -14,6 +14,8 @@ import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
+import microtrafficsim.utils.collections.Tuple;
+import microtrafficsim.utils.functional.Procedure2;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
@@ -95,32 +97,23 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
             } builder.decLevel().appendln("<\\coordinate>").appendln();
 
 
-            /* incoming lanes */
-            builder.appendln("<incoming edges>").incLevel(); {
-                Iterator<DirectedEdge> iter = incoming.keySet().iterator();
-                while (iter.hasNext()) {
-                    DirectedEdge edge = iter.next();
-                    builder.appendln(edge);
-                    builder.appendln("with crossing index = " + incoming.get(edge));
+            Procedure2<String, HashMap<DirectedEdge, Byte>> edgesToString = (type, map) -> {
+                builder.appendln("<" + type + " edges>").incLevel(); {
+                    Iterator<DirectedEdge> iter = map.keySet().iterator();
+                    while (iter.hasNext()) {
+                        DirectedEdge edge = iter.next();
+                        builder.appendln(edge);
+                        builder.appendln("with crossing index = " + map.get(edge));
 
-                    if (iter.hasNext())
-                        builder.appendln();
-                }
-            } builder.decLevel().appendln("<\\incoming edges>").appendln();
+                        if (iter.hasNext())
+                            builder.appendln();
+                    }
+                } builder.decLevel().appendln("<\\" + type + " edges>").appendln();
+            };
 
 
-            /* leaving lanes */
-            builder.appendln("<leaving edges>").incLevel(); {
-                Iterator<DirectedEdge> iter = leaving.keySet().iterator();
-                while (iter.hasNext()) {
-                    DirectedEdge edge = iter.next();
-                    builder.appendln(edge);
-                    builder.appendln("with crossing index = " + leaving.get(edge));
-
-                    if (iter.hasNext())
-                        builder.appendln();
-                }
-            } builder.decLevel().appendln("<\\leaving edges>");
+            edgesToString.invoke("incoming", incoming);
+            edgesToString.invoke("leaving", leaving);
 
         } builder.decLevel().appendln("<\\Node>");
 
@@ -445,7 +438,9 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
     public void updateEdgeIndices() {
 
         /* init */
-        HashMap<Vec2d, ArrayList<DirectedEdge>> edges = new HashMap<>();
+        final boolean IS_LEAVING = true;
+        final boolean IS_INCOMING = false;
+        HashMap<Vec2d, ArrayList<Tuple<DirectedEdge, Boolean>>> edges = new HashMap<>();
         Vec2d zero = null;
 
 
@@ -460,8 +455,8 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
                 zero = v;
 
             // add edge to its vector
-            ArrayList<DirectedEdge> vectorsEdges = edges.computeIfAbsent(v, k -> new ArrayList<>(2));
-            vectorsEdges.add(edge);
+            ArrayList<Tuple<DirectedEdge, Boolean>> vectorsEdges = edges.computeIfAbsent(v, k -> new ArrayList<>(2));
+            vectorsEdges.add(new Tuple<>(edge, IS_LEAVING));
         }
 
 
@@ -474,8 +469,8 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
                 zero = v;
 
             // add edge to its vector
-            ArrayList<DirectedEdge> vectorsEdges = edges.computeIfAbsent(v, k -> new ArrayList<>(2));
-            vectorsEdges.add(edge);
+            ArrayList<Tuple<DirectedEdge, Boolean>> vectorsEdges = edges.computeIfAbsent(v, k -> new ArrayList<>(2));
+            vectorsEdges.add(new Tuple<>(edge, IS_INCOMING));
         }
 
 
@@ -486,16 +481,21 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         while (!sortedVectors.isEmpty()) {
             Vec2d v = sortedVectors.poll();
             // take the current vector's edges
-            ArrayList<DirectedEdge> nextEdges = edges.remove(v);
+            ArrayList<Tuple<DirectedEdge, Boolean>> nextEdges = edges.remove(v);
+
 
             // add its leaving edges before its incoming edges
-            for (DirectedEdge nextEdge : nextEdges)
-                if (leaving.containsKey(nextEdge))
-                    leaving.put(nextEdge, nextCrossingIndex++);
+            for (Tuple<DirectedEdge, Boolean> nextEdge : nextEdges) {
+                if (nextEdge.obj1 == IS_LEAVING) {
+                    leaving.put(nextEdge.obj0, nextCrossingIndex++);
+                }
+            }
 
-            for (DirectedEdge nextEdge : nextEdges)
-                if (incoming.containsKey(nextEdge))
-                    incoming.put(nextEdge, nextCrossingIndex++);
+            for (Tuple<DirectedEdge, Boolean> nextEdge : nextEdges) {
+                if (nextEdge.obj1 == IS_INCOMING) {
+                    incoming.put(nextEdge.obj0, nextCrossingIndex++);
+                }
+            }
         }
     }
 
