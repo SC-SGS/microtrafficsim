@@ -1,20 +1,14 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
 import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
-import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.filechoosing.ConfigFileChooser;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
 import microtrafficsim.core.convenience.filechoosing.MapfileChooser;
 import microtrafficsim.core.convenience.filechoosing.ScenarioFileChooser;
+import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.utils.FileFilters;
-import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.base.ScenarioMetaInfo;
-import microtrafficsim.core.exfmt.extractor.simulation.AreaScenarioExtractor;
-import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
-import microtrafficsim.core.exfmt.injector.simulation.AreaScenarioInjector;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.MapProvider;
-import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
@@ -45,7 +39,6 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -100,11 +93,11 @@ public class SimulationController implements GUIController {
     private ExfmtStorage exfmtStorage;
 
     /* visualization and parsing */
-    private final TileBasedMapViewer mapviewer;
+    private final TileBasedMapViewer mapviewer; // has to be final for correct map update
     private final VehicleOverlay     overlay;
     private ScenarioAreaOverlay      scenarioAreaOverlay;
 
-    private Graph               streetgraph;
+    private Graph streetgraph;
 
     /* simulation */
     private Simulation      simulation;
@@ -124,7 +117,7 @@ public class SimulationController implements GUIController {
 
         /* multithreading */
         isExecutingUserTask = new AtomicBoolean(false);
-        lockTransition = new ReentrantLock();
+        lockTransition      = new ReentrantLock();
         isParsing           = new AtomicBoolean(false);
         isBuildingScenario  = new AtomicBoolean(false);
 
@@ -136,8 +129,8 @@ public class SimulationController implements GUIController {
         config = buildSetup.config;
 
         /* visualization and parsing */
-        mapviewer        = buildSetup.mapviewer;
-        overlay          = buildSetup.overlay;
+        mapviewer = buildSetup.mapviewer;
+        overlay   = buildSetup.overlay;
 
         /* simulation */
         simulation      = buildSetup.simulation;
@@ -145,9 +138,9 @@ public class SimulationController implements GUIController {
         overlay.setSimulation(simulation);
 
         /* gui */
-        frame            = new JFrame(FrameTitle.DEFAULT.get());
-        menubar          = new MTSMenuBar();
-        preferences      = new PreferencesFrame(this);
+        frame       = new JFrame(FrameTitle.DEFAULT.get());
+        menubar     = new MTSMenuBar();
+        preferences = new PreferencesFrame(this);
 
 
         /* file chooser */
