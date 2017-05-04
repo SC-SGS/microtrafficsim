@@ -69,7 +69,7 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
      * leaving edges.
      *
      * For detailed parameter information
-     * see {@link RawStreetInfo#RawStreetInfo(long, double, Vec2d, Vec2d, Node, Node, StreetType, int, float, float, Function)}
+     * see {@link RawStreetInfo#RawStreetInfo(long, double, Vec2d, Vec2d, Node, Node, StreetType, int, float, float, SimulationConfig.StreetPriorityFunction)}
      *
      * @param rawStreetInfo contains all relevant, "persistent" information about this edge
      */
@@ -102,7 +102,6 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                 // origin and destination needed because the id is used by forward and backward edge of the same street
                 .add(streetInfo.raw.origin)
                 .add(streetInfo.raw.destination)
-                .add(getEntity().getForwardEdge() == this)
                 .getHash();
     }
 
