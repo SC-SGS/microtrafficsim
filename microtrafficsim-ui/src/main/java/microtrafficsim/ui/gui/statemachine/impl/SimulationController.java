@@ -25,7 +25,6 @@ import microtrafficsim.ui.gui.statemachine.GUIEvent;
 import microtrafficsim.ui.gui.utils.FrameTitle;
 import microtrafficsim.ui.gui.utils.UserInteractionUtils;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
-import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.view.PreferencesFrame;
 import microtrafficsim.utils.collections.Composite;
 import microtrafficsim.utils.collections.Tuple;
@@ -141,6 +140,7 @@ public class SimulationController implements GUIController {
         frame       = new JFrame(FrameTitle.DEFAULT.get());
         menubar     = new MTSMenuBar();
         preferences = new PreferencesFrame(this);
+        preferences.setSettings(true, config);
 
 
         /* file chooser */
@@ -307,6 +307,8 @@ public class SimulationController implements GUIController {
             case SAVE_MAP:
                 transitionSaveMap();
                 break;
+
+
             /* simulation */
             case RUN_SIM:
                 transitionRunSim();
@@ -326,6 +328,8 @@ public class SimulationController implements GUIController {
             case CHANGE_AREA_SELECTION:
                 transitionChangeAreaSelection();
                 break;
+
+
             /* load/save scenario */
             case LOAD_CONFIG:
                 transitionLoadConfig();
@@ -345,6 +349,8 @@ public class SimulationController implements GUIController {
             case SAVE_AREAS:
                 transitionSaveAreas();
                 break;
+
+
             /* preferences */
             case ACCEPT_PREFS:
                 transitionAcceptPreferences();
@@ -1133,29 +1139,29 @@ public class SimulationController implements GUIController {
         boolean hasScenario    = simulation.getScenario() != null;
 
         /* general */
-        preferences.setEnabled(PrefElement.sliderSpeedup,   true);
-        preferences.setEnabled(PrefElement.maxVehicleCount, newSim);
-        preferences.setEnabled(PrefElement.seed,            newSim);
-        preferences.setEnabled(PrefElement.metersPerCell,   newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.sliderSpeedup,   true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.maxVehicleCount, newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.seed,            newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.metersPerCell,   newSim);
 
         /* scenario */
-        preferences.setEnabled(PrefElement.showAreasWhileSimulating,  true);
-        preferences.setEnabled(PrefElement.nodesAreWeightedUniformly, newSim);
-        preferences.setEnabled(PrefElement.scenarioSelection,         newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.showAreasWhileSimulating,  true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.nodesAreWeightedUniformly, newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.scenarioSelection,         newSim);
 
         /* crossing logic */
-        preferences.setEnabled(PrefElement.edgePriority,          newSim);
-        preferences.setEnabled(PrefElement.priorityToThe,         newSim);
-        preferences.setEnabled(PrefElement.onlyOneVehicle,        newSim);
-        preferences.setEnabled(PrefElement.friendlyStandingInJam, newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.edgePriority,          newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.priorityToThe,         newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.onlyOneVehicle,        newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.friendlyStandingInJam, newSim);
 
         /* visualization */
-        preferences.setEnabled(PrefElement.style, true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.style, true);
 
         /* concurrency */
-        preferences.setEnabled(PrefElement.nThreads,            newSim);
-        preferences.setEnabled(PrefElement.vehiclesPerRunnable, true);
-        preferences.setEnabled(PrefElement.nodesPerThread,      true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.nThreads,            newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.vehiclesPerRunnable, true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.nodesPerThread,      true);
 
         /* init values */
         preferences.setSettings(config);

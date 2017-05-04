@@ -1,11 +1,10 @@
 package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.ui.gui.utils.ScrollablePanel;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
+import microtrafficsim.ui.gui.utils.ScrollablePanel;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
-import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.model.PreferencesFrameModel;
 import microtrafficsim.ui.preferences.model.PreferencesModel;
 import microtrafficsim.utils.functional.Procedure;
@@ -166,12 +165,12 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
-        generalPanel.setSettings(config);
-        scenarioPanel.setSettings(config);
-        crossingLogicPanel.setSettings(config);
-        visualizationPanel.setSettings(config);
-        concurrencyPanel.setSettings(config);
+    public void setSettings(boolean indeed, SimulationConfig config) {
+        generalPanel.setSettings(indeed, config);
+        scenarioPanel.setSettings(indeed, config);
+        crossingLogicPanel.setSettings(indeed, config);
+        visualizationPanel.setSettings(indeed, config);
+        concurrencyPanel.setSettings(indeed, config);
     }
 
     @Override
@@ -220,21 +219,23 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
     }
 
     @Override
-    public void setEnabled(PrefElement id, boolean enabled) {
-        switch (id) {
+    public boolean setEnabledIfEditable(SimulationConfig.Element element, boolean enabled) {
+        enabled = PreferencesView.super.setEnabledIfEditable(element, enabled);
+
+        switch (element) {
             // General
             case sliderSpeedup:
             case maxVehicleCount:
             case seed:
             case metersPerCell:
-                generalPanel.setEnabled(id, enabled);
+                generalPanel.setEnabledIfEditable(element, enabled);
                 break;
 
             // scenario
             case showAreasWhileSimulating:
             case nodesAreWeightedUniformly:
             case scenarioSelection:
-                scenarioPanel.setEnabled(id, enabled);
+                scenarioPanel.setEnabledIfEditable(element, enabled);
                 break;
 
             // crossing logic
@@ -242,22 +243,23 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
             case priorityToThe:
             case onlyOneVehicle:
             case friendlyStandingInJam:
-                crossingLogicPanel.setEnabled(id, enabled);
+                crossingLogicPanel.setEnabledIfEditable(element, enabled);
                 break;
 
             // Visualization
             case style:
-                visualizationPanel.setEnabled(id, enabled);
+                visualizationPanel.setEnabledIfEditable(element, enabled);
 
             // concurrency
             case nThreads:
             case vehiclesPerRunnable:
             case nodesPerThread:
-                concurrencyPanel.setEnabled(id, enabled);
+                concurrencyPanel.setEnabledIfEditable(element, enabled);
                 break;
         }
-    }
 
+        return enabled;
+    }
 
     /*
     |=============|

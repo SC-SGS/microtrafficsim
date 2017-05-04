@@ -1,9 +1,9 @@
 package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig.Element;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.GeneralModel;
-import microtrafficsim.ui.preferences.model.PrefElement;
 
 import javax.swing.*;
 import java.awt.*;
@@ -88,11 +88,22 @@ public class GeneralPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
-        sliderSpeedup.setValue(config.speedup);
-        tfMaxVehicleCount.setText("" + config.maxVehicleCount);
-        tfSeed.setText("" + config.seed);
-        tfMetersPerCell.setText("" + config.metersPerCell);
+    public void setSettings(boolean indeed, SimulationConfig config) {
+        if (indeed) {
+            sliderSpeedup.setValue(config.speedup);
+            tfMaxVehicleCount.setText("" + config.maxVehicleCount);
+            tfSeed.setText("" + config.seed);
+            tfMetersPerCell.setText("" + config.metersPerCell);
+        } else {
+            if (model.getEnableLexicon().isEnabled(Element.sliderSpeedup))
+                sliderSpeedup.setValue(config.speedup);
+            if (model.getEnableLexicon().isEnabled(Element.maxVehicleCount))
+                tfMaxVehicleCount.setText("" + config.maxVehicleCount);
+            if (model.getEnableLexicon().isEnabled(Element.seed))
+                tfSeed.setText("" + config.seed);
+            if (model.getEnableLexicon().isEnabled(Element.metersPerCell))
+                tfMetersPerCell.setText("" + config.metersPerCell);
+        }
     }
 
     @Override
@@ -130,14 +141,16 @@ public class GeneralPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setEnabled(PrefElement id, boolean enabled) {
-        enabled = id.isEnabled() && enabled;
+    public boolean setEnabledIfEditable(Element element, boolean enabled) {
+        enabled = super.setEnabledIfEditable(element, enabled);
 
-        switch (id) {
+        switch (element) {
             case sliderSpeedup:   sliderSpeedup.setEnabled(enabled);     break;
             case maxVehicleCount: tfMaxVehicleCount.setEnabled(enabled); break;
             case seed:            tfSeed.setEnabled(enabled);            break;
             case metersPerCell:   tfMetersPerCell.setEnabled(enabled);   break;
         }
+
+        return enabled;
     }
 }

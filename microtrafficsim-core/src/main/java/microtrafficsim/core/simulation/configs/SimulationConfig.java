@@ -2,9 +2,8 @@ package microtrafficsim.core.simulation.configs;
 
 import microtrafficsim.core.map.StreetType;
 import microtrafficsim.math.random.distributions.impl.Random;
-import microtrafficsim.utils.functional.Function1;
 
-import java.io.Serializable;
+import java.util.HashMap;
 
 
 /**
@@ -88,11 +87,6 @@ public final class SimulationConfig {
         streetPriorityLevel = new DefaultStreetPriorityFunction();
     }
 
-    /*
-    |========|
-    | update |
-    |========|
-    */
     /**
      * Updates the parameter of this config file. This method keeps references of<br>
      * &bull {@link VisualizationConfig}<br>
@@ -160,6 +154,64 @@ public final class SimulationConfig {
                 priority += 1;
 
             return priority;
+        }
+    }
+
+    /**
+     * @author Dominic Parga Cacheiro
+     */
+    public enum Element {
+        // General
+        sliderSpeedup(true),
+        maxVehicleCount(true),
+        seed(true),
+        metersPerCell(false),
+        /* scenario */
+        showAreasWhileSimulating(true),
+        nodesAreWeightedUniformly(true),
+        scenarioSelection(true),
+        // crossing logic
+        edgePriority(true),
+        priorityToThe(true),
+        onlyOneVehicle(true),
+        friendlyStandingInJam(true),
+        // Visualization
+        style(false),
+        // concurrency
+        nThreads(true),
+        vehiclesPerRunnable(true),
+        nodesPerThread(true);
+
+        private final boolean editable;
+
+        Element() {
+            this(false);
+        }
+
+        Element(boolean editable) {
+            this.editable = editable;
+        }
+
+        public boolean isEditable() {
+            return editable;
+        }
+    }
+
+
+    public static class EnableLexicon {
+        private final HashMap<Element, Boolean> lexicon = new HashMap<>();
+
+        public boolean isEnabled(Element element) {
+            Boolean enabled = lexicon.get(element);
+            if (enabled == null)
+                return false;
+            return enabled;
+        }
+
+        public boolean setEnabledIfEditable(Element element, boolean enabled) {
+            enabled &= element.editable;
+            lexicon.put(element, enabled);
+            return enabled;
         }
     }
 }
