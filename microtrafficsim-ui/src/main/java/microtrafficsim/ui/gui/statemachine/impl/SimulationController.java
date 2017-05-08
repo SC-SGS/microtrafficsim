@@ -1,12 +1,11 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
 import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
-import microtrafficsim.core.convenience.filechoosing.ConfigFileChooser;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
-import microtrafficsim.core.convenience.filechoosing.MapfileChooser;
-import microtrafficsim.core.convenience.filechoosing.ScenarioFileChooser;
+import microtrafficsim.core.convenience.filechoosing.impl.ConfigFilterSet;
+import microtrafficsim.core.convenience.filechoosing.impl.MapFilterSet;
+import microtrafficsim.core.convenience.filechoosing.impl.ScenarioFilterSet;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
-import microtrafficsim.core.convenience.utils.FileFilters;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
@@ -103,10 +102,10 @@ public class SimulationController implements GUIController {
     private ScenarioBuilder scenarioBuilder;
 
     /* gui */
-    private final JFrame                    frame;
-    private final MTSMenuBar                menubar;
-    private final PreferencesFrame          preferences;
-    private final Composite<MTSFileChooser> fileChoosers;
+    private final JFrame           frame;
+    private final MTSMenuBar       menubar;
+    private final PreferencesFrame preferences;
+    private final MTSFileChooser   filechooser;
 
     public SimulationController() {
         this(new BuildSetup());
@@ -144,13 +143,11 @@ public class SimulationController implements GUIController {
 
 
         /* file chooser */
-        fileChoosers = new Composite<>();
-        fileChoosers.set(MapfileChooser.class,      new MapfileChooser());
-        fileChoosers.set(ScenarioFileChooser.class, new ScenarioFileChooser());
-        fileChoosers.set(ConfigFileChooser.class, new ConfigFileChooser());
-        for (MTSFileChooser chooser : fileChoosers.getAll().values()) {
-            chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
-        }
+        filechooser = new MTSFileChooser();
+        filechooser.addFilterSet(MapFilterSet.class, new MapFilterSet());
+        filechooser.addFilterSet(ConfigFilterSet.class, new ConfigFilterSet());
+        filechooser.addFilterSet(ScenarioFilterSet.class, new ScenarioFilterSet());
+        filechooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
 
         /* create */
         create();
@@ -697,22 +694,23 @@ public class SimulationController implements GUIController {
 
 
     /*
-    |================|
-    | map and parser |
-    |================|
+    |===============|
+    | load/save map |
+    |===============|
     */
     private File askForOpenMapfile() {
-        return UserInteractionUtils.askForOpenFile(fileChoosers.get(MapfileChooser.class), frame);
+        filechooser.selectFilterSet(MapFilterSet.class);
+        return UserInteractionUtils.askForOpenFile(filechooser, frame);
     }
 
     private File askForSaveMapfile() {
-        MapfileChooser chooser = fileChoosers.get(MapfileChooser.class);
+        filechooser.selectFilterSet(MapFilterSet.class);
 
-        String filename = chooser.getSelectedFile().getName();
+        String filename = filechooser.getSelectedFile().getName();
         filename = filename.substring(0, filename.lastIndexOf('.'));
-        filename += "." + FileFilters.MAP_EXFMT_POSTFIX;
+        filename += "." + MTSFileChooser.Filters.MAP_EXFMT_POSTFIX;
 
-        return UserInteractionUtils.askForSaveFile(chooser, filename, frame);
+        return UserInteractionUtils.askForSaveFile(filechooser, filename, frame);
     }
 
     private void loadAndShowMap(File file) {
@@ -720,9 +718,9 @@ public class SimulationController implements GUIController {
         WrappedString cachedTitle = new WrappedString();
         rememberCurrentFrameTitleIn(cachedTitle);
         Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
-        if (FileFilters.MAP_OSM_XML.accept(file)) {
+        if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
             updateFrameTitle(FrameTitle.PARSING, file);
-        } else if (FileFilters.MAP_EXFMT.accept(file)) {
+        } else if (MTSFileChooser.Filters.MAP_EXFMT.accept(file)) {
             updateFrameTitle(FrameTitle.LOADING, file);
         }
 
@@ -805,13 +803,15 @@ public class SimulationController implements GUIController {
     |==================|
     */
     private File askForOpenConfigfile() {
-        return UserInteractionUtils.askForOpenFile(fileChoosers.get(ConfigFileChooser.class), frame);
+        filechooser.selectFilterSet(ConfigFilterSet.class);
+        return UserInteractionUtils.askForOpenFile(filechooser, frame);
     }
 
     private File askForSaveConfigfile() {
+        filechooser.selectFilterSet(ConfigFilterSet.class);
         return UserInteractionUtils.askForSaveFile(
-                fileChoosers.get(ConfigFileChooser.class),
-                "New config file." + FileFilters.CONFIG_POSTFIX,
+                filechooser,
+                "New config file." + MTSFileChooser.Filters.CONFIG_POSTFIX,
                 frame
         );
     }
@@ -855,6 +855,17 @@ public class SimulationController implements GUIController {
 
 
     /*
+    |=================|
+    | load/save areas |
+    |=================|
+    */
+    private File askForOpenAreafile() {
+        // todo filechooser.selectFilterSet(AreaFilterSet.class);
+        return UserInteractionUtils.askForOpenFile(filechooser, frame);
+    }
+
+
+    /*
     |====================|
     | load/save scenario |
     |====================|
@@ -862,8 +873,8 @@ public class SimulationController implements GUIController {
     @Deprecated // todo remove method
     private File askForScenarioSaveFile() {
         return UserInteractionUtils.askForSaveFile(
-                fileChoosers.get(ScenarioFileChooser.class),
-                "New scenario." + FileFilters.SCENARIO_POSTFIX,
+                filechooser,
+                "New scenario." + MTSFileChooser.Filters.SCENARIO_POSTFIX,
                 frame
         );
     }

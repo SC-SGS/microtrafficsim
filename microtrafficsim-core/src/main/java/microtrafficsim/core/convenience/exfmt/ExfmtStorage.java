@@ -1,11 +1,10 @@
 package microtrafficsim.core.convenience.exfmt;
 
+import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
-import microtrafficsim.core.convenience.utils.FileFilters;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.base.ScenarioRouteSet;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
@@ -25,7 +24,6 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Should simplify loading/saving simulation files
@@ -68,10 +66,10 @@ public class ExfmtStorage {
     public Tuple<Graph, MapProvider> loadMap(File file) throws InterruptedException {
 
         try {
-            if (FileFilters.MAP_OSM_XML.accept(file)) {
+            if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
                 OSMParser.Result result = parser.parse(file);
                 return new Tuple<>(result.streetgraph, result.segment);
-            } else if (FileFilters.MAP_EXFMT.accept(file)) {
+            } else if (MTSFileChooser.Filters.MAP_EXFMT.accept(file)) {
                 ExchangeFormat.Manipulator manipulator = exfmt.manipulator(serializer.read(file));
 
                 MapProvider provider;
