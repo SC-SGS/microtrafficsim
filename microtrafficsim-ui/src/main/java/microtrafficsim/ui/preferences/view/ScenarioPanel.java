@@ -2,6 +2,7 @@ package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig.Element;
+import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.ScenarioModel;
 import microtrafficsim.utils.Descriptor;
@@ -145,10 +146,8 @@ public class ScenarioPanel extends PreferencesPanel {
                 config.scenario.supportedClasses.forEach(model::addScenario);
                 /* update checkbox for scenario choice */
                 cbScenarioChoice.removeAllItems();
-                model.getScenarios().stream()
-                        .map(Descriptor::getDescription)
-                        .forEach(cbScenarioChoice::addItem);
-                cbScenarioChoice.setSelectedItem(config.scenario.selectedClass);
+                model.getScenarios().forEach(descriptor -> cbScenarioChoice.addItem(descriptor.getDescription()));
+                cbScenarioChoice.setSelectedItem(config.scenario.selectedClass.getDescription());
             }
         }
     }

@@ -1,5 +1,6 @@
 package microtrafficsim.core.exfmt;
 
+import microtrafficsim.core.exfmt.base.ScenarioAreaSet;
 import microtrafficsim.core.exfmt.ecs.EntityManager;
 import microtrafficsim.core.exfmt.ecs.FeatureManager;
 import microtrafficsim.core.exfmt.ecs.features.MultiLineFeatureExtractor;
@@ -10,6 +11,7 @@ import microtrafficsim.core.exfmt.ecs.processors.FeatureProcessor;
 import microtrafficsim.core.exfmt.ecs.processors.TileGridProcessor;
 import microtrafficsim.core.exfmt.extractor.map.MapSegmentExtractor;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.exfmt.extractor.simulation.AreaSetExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.RouteMatrixExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
@@ -21,6 +23,7 @@ import microtrafficsim.core.exfmt.injector.map.features.primitives.MultiLineInje
 import microtrafficsim.core.exfmt.injector.map.features.primitives.PointInjector;
 import microtrafficsim.core.exfmt.injector.map.features.primitives.PolygonInjector;
 import microtrafficsim.core.exfmt.injector.map.features.primitives.StreetInjector;
+import microtrafficsim.core.exfmt.injector.simulation.AreaSetInjector;
 import microtrafficsim.core.exfmt.injector.simulation.RouteMatrixInjector;
 import microtrafficsim.core.exfmt.injector.simulation.SimulationConfigInjector;
 import microtrafficsim.core.exfmt.injector.streetgraph.DirectedEdgeInjector;
@@ -107,6 +110,9 @@ public class ExchangeFormat {
 
             format.injector(RouteMatrix.class, new RouteMatrixInjector());
             format.extractor(RouteMatrix.class, new RouteMatrixExtractor());
+
+            format.injector(ScenarioAreaSet.class, new AreaSetInjector());
+            format.extractor(ScenarioAreaSet.class, new AreaSetExtractor());
         }
 
         return format;

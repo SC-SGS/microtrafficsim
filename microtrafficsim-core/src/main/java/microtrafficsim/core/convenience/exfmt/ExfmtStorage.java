@@ -5,6 +5,7 @@ import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
+import microtrafficsim.core.exfmt.base.ScenarioAreaSet;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
@@ -64,7 +65,6 @@ public class ExfmtStorage {
      * Loads the given file depending on its map type (OSM or MTSM)
      */
     public Tuple<Graph, MapProvider> loadMap(File file) throws InterruptedException {
-
         try {
             if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
                 OSMParser.Result result = parser.parse(file);
@@ -180,6 +180,47 @@ public class ExfmtStorage {
         try {
             serializer.write(file, exfmt.manipulator()
                     .inject(routeMatrix)
+                    .getContainer());
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    /*
+    |=======|
+    | areas |
+    |=======|
+    */
+    public ScenarioAreaSet loadAreas(File file) {
+        /* prepare extractor */
+        ExchangeFormat.Manipulator manipulator = null;
+        try {
+            manipulator = exfmt.manipulator(serializer.read(file));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        /* load areas */
+        ScenarioAreaSet areas = null;
+        if (manipulator != null) {
+            try {
+                areas = manipulator.extract(ScenarioAreaSet.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return areas;
+    }
+
+    public boolean saveAreas(File file, ScenarioAreaSet areas) {
+        try {
+            serializer.write(file, exfmt.manipulator()
+                    .inject(areas)
                     .getContainer());
             return true;
         } catch (Exception e) {

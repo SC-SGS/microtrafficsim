@@ -32,6 +32,7 @@ public class ScenarioModel extends PreferencesModel {
     }
 
     public Descriptor<Class<? extends Scenario>> get(int index) {
+
         return scenarios.get(index);
     }
 }

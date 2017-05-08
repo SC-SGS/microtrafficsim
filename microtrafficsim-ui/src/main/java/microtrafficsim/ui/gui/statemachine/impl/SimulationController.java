@@ -3,13 +3,12 @@ package microtrafficsim.ui.gui.statemachine.impl;
 import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
 import microtrafficsim.core.convenience.filechoosing.FileFilterSet;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
-import microtrafficsim.core.convenience.filechoosing.impl.AreaFilterSet;
-import microtrafficsim.core.convenience.filechoosing.impl.ConfigFilterSet;
-import microtrafficsim.core.convenience.filechoosing.impl.MapFilterSet;
-import microtrafficsim.core.convenience.filechoosing.impl.ScenarioFilterSet;
+import microtrafficsim.core.convenience.filechoosing.impl.*;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.exfmt.base.ScenarioAreaSet;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.MapProvider;
+import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
@@ -18,6 +17,7 @@ import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
+import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.ui.gui.menues.MTSMenuBar;
@@ -39,6 +39,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.Set;
 
 /**
  * <p>
@@ -162,6 +163,8 @@ public class SimulationController implements GUIController {
         filechooser = new MTSFileChooser();
         filechooser.addFilterSet(MapFilterSet.class, new MapFilterSet());
         filechooser.addFilterSet(ConfigFilterSet.class, new ConfigFilterSet());
+        filechooser.addFilterSet(AreaFilterSet.class, new AreaFilterSet());
+        filechooser.addFilterSet(RouteFilterSet.class, new RouteFilterSet());
         filechooser.addFilterSet(ScenarioFilterSet.class, new ScenarioFilterSet());
         filechooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
 
@@ -501,42 +504,8 @@ public class SimulationController implements GUIController {
     }
 
     private void transitionChangeAreaSelection() {
-        /* goal in this method: enable scenario area overlay */
-
         userInputExecutor.tryStartingExecutionThread(() -> {
-            boolean enableScenarioAreaOverlay =
-                        /* check if overlay is already enabled */
-                    !scenarioAreaOverlay.hasEventsEnabled()
-                        /* check if there is a map */
-                            && streetgraph != null;
-
-            if (enableScenarioAreaOverlay) {
-                    /* check if there is a scenario => ask for removing it */
-                if (simulation.hasScenario()) {
-                        /* ask user to remove currently running scenario */
-                    Object[] options = {"Yes", "No"};
-                    int choice = JOptionPane.showOptionDialog(
-                            null,
-                            "To change the origin/destination areas, the currently running scenario has to be removed."
-                                    + System.lineSeparator()
-                                    + "Do you still like to change the areas?",
-                            "Remove currently running scenario?",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.WARNING_MESSAGE,
-                            null,
-                            options,
-                            options[1]);
-                        /* if yes: remove */
-                    if (choice == JOptionPane.YES_OPTION) {
-                        pauseSim();
-                        simulation.removeCurrentScenario();
-                    } else
-                        enableScenarioAreaOverlay = false;
-                }
-
-                scenarioAreaOverlay.setEventsEnabled(enableScenarioAreaOverlay);
-            }
-
+            enableScenarioOverlayEvents();
             userInputExecutor.finishedProcedureExecution();
         });
     }
@@ -589,11 +558,35 @@ public class SimulationController implements GUIController {
     }
 
     private void transitionLoadAreas() {
-        // todo
+        userInputExecutor.tryStartingExecutionThread(() -> {
+            pauseSim();
+
+            File file = askForOpenFile(AreaFilterSet.class);
+            if (UserInteractionUtils.isFileOkayForLoading(file))
+                loadAndShowAreas(file);
+
+            updateMenuBar();
+            userInputExecutor.finishedProcedureExecution();
+        });
     }
 
     private void transitionSaveAreas() {
-        // todo
+        userInputExecutor.tryStartingExecutionThread(() -> {
+            if (scenarioAreaOverlay.getAreas().isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "You should create areas to save them.",
+                        "No areas to save",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                File file = askForSaveAreafile();
+                if (UserInteractionUtils.isFileOkayForSaving(file, frame))
+                    saveAreas(file);
+
+                updateMenuBar();
+            }
+            userInputExecutor.finishedProcedureExecution();
+        });
     }
 
 
@@ -634,7 +627,7 @@ public class SimulationController implements GUIController {
 
     private void transitionCancelPreferences() {
         preferencesExecutor.tryStartingExecutionThread(() -> {
-           closePreferences();
+            closePreferences();
             updateMenuBar();
 
             preferencesExecutor.finishedProcedureExecution();
@@ -646,48 +639,6 @@ public class SimulationController implements GUIController {
     @Override
     public void addKeyCommand(short event, short vk, KeyCommand command) {
         mapviewer.addKeyCommand(event, vk, command);
-    }
-
-
-    /*
-    |========|
-    | window |
-    |========|
-    */
-    private void rememberCurrentFrameTitleIn(WrappedString cache) {
-        SwingUtilities.invokeLater(() -> cache.set(frame.getTitle()));
-    }
-
-    private void updateFrameTitle(FrameTitle type, File file) {
-        SwingUtilities.invokeLater(() -> frame.setTitle(type.get(file)));
-    }
-
-    private void updateFrameTitle(WrappedString newTitle) {
-        SwingUtilities.invokeLater(() -> frame.setTitle(newTitle.get()));
-    }
-
-    private void updateMenuBar() {
-        if (!isCreated) return;
-
-        boolean hasStreetgraph = streetgraph != null;
-        boolean hasScenario    = simulation.getScenario() != null;
-        boolean hasAreas       = !scenarioAreaOverlay.getAreas().isEmpty();
-
-        menubar.menuMap.setEnabled(true);
-        menubar.menuMap.itemLoadMap.setEnabled(true);
-        menubar.menuMap.itemSaveMap.setEnabled(hasStreetgraph);
-
-        menubar.menuLogic.setEnabled(true);
-        menubar.menuLogic.itemRunPause.setEnabled(hasStreetgraph && hasScenario);
-        menubar.menuLogic.itemRunOneStep.setEnabled(hasStreetgraph && hasScenario);
-        menubar.menuLogic.itemEditSim.setEnabled(true);
-        menubar.menuLogic.itemNewSim.setEnabled(hasStreetgraph);
-        menubar.menuLogic.itemChangeAreaSelection.setEnabled(hasStreetgraph);
-
-        menubar.menuLogic.itemLoadRoutes.setEnabled(hasStreetgraph);
-        menubar.menuLogic.itemSaveRoutes.setEnabled(hasStreetgraph && hasScenario);
-        menubar.menuLogic.itemLoadAreas.setEnabled(hasStreetgraph);
-        menubar.menuLogic.itemSaveAreas.setEnabled(hasStreetgraph && hasAreas);
     }
 
 
@@ -823,7 +774,7 @@ public class SimulationController implements GUIController {
                     frame,
                     "The chosen file '" + file.getName() + "' has a wrong format.\n" +
                             "Therefore it could not be loaded.\n" +
-                            "Please make sure this file exists and is a valid MTS config.",
+                            "Please make sure this file exists and is a valid MTS config file.",
                     "Error: wrong config-file format",
                     JOptionPane.ERROR_MESSAGE);
         }
@@ -849,11 +800,6 @@ public class SimulationController implements GUIController {
     | load/save areas |
     |=================|
     */
-    private File askForOpenAreafile() {
-        filechooser.selectFilterSet(AreaFilterSet.class);
-        return UserInteractionUtils.askForOpenFile(filechooser, frame);
-    }
-
     private File askForSaveAreafile() {
         filechooser.selectFilterSet(AreaFilterSet.class);
         return UserInteractionUtils.askForSaveFile(
@@ -863,12 +809,43 @@ public class SimulationController implements GUIController {
         );
     }
 
-    private void loadAreas(File file) {
-        // todo
+    private void loadAndShowAreas(File file) {
+        ScenarioAreaSet areas = exfmtStorage.loadAreas(file);
+
+        /* update */
+        if (areas != null) {
+            if (simulation.hasScenario()) {
+                if (askUserToRemoveScenario()) {
+                    removeCurrentScenario();
+                } else {
+                    return;
+                }
+            }
+
+            clearAndUpdateAreaOverlay(areas.getAll());
+            scenarioAreaOverlay.setEventsEnabled(true);
+        } else {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "The chosen file '" + file.getName() + "' has a wrong format.\n" +
+                            "Therefore it could not be loaded.\n" +
+                            "Please make sure this file exists and is a valid MTS area file.",
+                    "Error: wrong config-file format",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void saveAreas(File file) {
-        // todo
+        ScenarioAreaSet areas = new ScenarioAreaSet();
+        for (Area area : scenarioAreaOverlay.getAreas()) {
+            areas.add(area.getUnprojectedArea(mapviewer.getProjection()));
+        }
+        boolean success = exfmtStorage.saveAreas(file, areas);
+
+        if (success)
+            UserInteractionUtils.showSavingSuccess(frame);
+        else
+            UserInteractionUtils.showSavingFailure(file, frame);
     }
 
 
@@ -1035,7 +1012,6 @@ public class SimulationController implements GUIController {
     }
 
     private void startNewScenario() {
-
         WrappedString cachedTitle = new WrappedString();
         rememberCurrentFrameTitleIn(cachedTitle);
 
@@ -1078,11 +1054,7 @@ public class SimulationController implements GUIController {
                         RandomRouteScenario.class.getSimpleName() + " is used instead.");
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);
         }
-        /* update area overlay */
-        scenarioAreaOverlay.removeAllAreas();
-        scenario.getAreas().stream()
-                .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
-                .forEach(scenarioAreaOverlay::add);
+        clearAndUpdateAreaOverlay(scenario.getAreas());
 
         try {
             scenarioBuilder.prepare(
@@ -1113,11 +1085,59 @@ public class SimulationController implements GUIController {
             scenarioAreaOverlay.setEnabled(false, false, false);
     }
 
+    private void removeCurrentScenario() {
+        pauseSim();
+        simulation.removeCurrentScenario();
+    }
+
     private void cancelScenarioBuilding() {
         scenarioBuildThread.interrupt();
         try {
             scenarioBuildThread.join();
         } catch (InterruptedException ignored) {}
+    }
+
+    private boolean askUserToRemoveScenario() {
+        return UserInteractionUtils.askUserForDecision(
+                "To change the origin/destination areas, the currently running scenario has to be removed."
+                        + System.lineSeparator()
+                        + "Do you still like to change the areas?",
+                "Remove currently running scenario?",
+                frame
+        );
+    }
+
+
+    /*
+    |=======|
+    | areas |
+    |=======|
+    */
+    private void enableScenarioOverlayEvents() {
+        boolean enableScenarioAreaOverlay =
+                /* check if overlay is already enabled */
+                !scenarioAreaOverlay.hasEventsEnabled()
+                        /* check if there is a map */
+                        && streetgraph != null;
+
+        if (enableScenarioAreaOverlay) {
+            /* check if there is a scenario => ask for removing it */
+            if (simulation.hasScenario()) {
+                if (askUserToRemoveScenario())
+                    removeCurrentScenario();
+                else
+                    enableScenarioAreaOverlay = false;
+            }
+
+            scenarioAreaOverlay.setEventsEnabled(enableScenarioAreaOverlay);
+        }
+    }
+
+    private void clearAndUpdateAreaOverlay(Set<TypedPolygonArea> areas) {
+        scenarioAreaOverlay.removeAllAreas();
+        for (TypedPolygonArea area : areas) {
+            scenarioAreaOverlay.add(area.getProjectedArea(mapviewer.getProjection(), area.getType()));
+        }
     }
 
     /*
@@ -1143,6 +1163,7 @@ public class SimulationController implements GUIController {
         preferences.setEnabledIfEditable(SimulationConfig.Element.nodesAreWeightedUniformly, newSim);
         preferences.setEnabledIfEditable(SimulationConfig.Element.scenarioSelection,         newSim);
 
+
         /* crossing logic */
         preferences.setEnabledIfEditable(SimulationConfig.Element.edgePriority,          newSim);
         preferences.setEnabledIfEditable(SimulationConfig.Element.priorityToThe,         newSim);
@@ -1167,6 +1188,47 @@ public class SimulationController implements GUIController {
     private void closePreferences() {
         preferences.setVisible(false);
         preferences.setAllEnabled(false);
+    }
+
+
+    /*
+    |========|
+    | window |
+    |========|
+    */
+    private void rememberCurrentFrameTitleIn(WrappedString cache) {
+        SwingUtilities.invokeLater(() -> cache.set(frame.getTitle()));
+    }
+
+    private void updateFrameTitle(FrameTitle type, File file) {
+        SwingUtilities.invokeLater(() -> frame.setTitle(type.get(file)));
+    }
+
+    private void updateFrameTitle(WrappedString newTitle) {
+        SwingUtilities.invokeLater(() -> frame.setTitle(newTitle.get()));
+    }
+
+    private void updateMenuBar() {
+        if (!isCreated) return;
+
+        boolean hasStreetgraph = streetgraph != null;
+        boolean hasScenario    = simulation.getScenario() != null;
+
+        menubar.menuMap.setEnabled(true);
+        menubar.menuMap.itemLoadMap.setEnabled(true);
+        menubar.menuMap.itemSaveMap.setEnabled(hasStreetgraph);
+
+        menubar.menuLogic.setEnabled(true);
+        menubar.menuLogic.itemRunPause.setEnabled(hasStreetgraph && hasScenario);
+        menubar.menuLogic.itemRunOneStep.setEnabled(hasStreetgraph && hasScenario);
+        menubar.menuLogic.itemEditSim.setEnabled(true);
+        menubar.menuLogic.itemNewSim.setEnabled(hasStreetgraph);
+        menubar.menuLogic.itemChangeAreaSelection.setEnabled(hasStreetgraph);
+
+        menubar.menuLogic.itemLoadRoutes.setEnabled(hasStreetgraph);
+        menubar.menuLogic.itemSaveRoutes.setEnabled(hasStreetgraph && hasScenario);
+        menubar.menuLogic.itemLoadAreas.setEnabled(hasStreetgraph);
+        menubar.menuLogic.itemSaveAreas.setEnabled(hasStreetgraph);
     }
 
 
