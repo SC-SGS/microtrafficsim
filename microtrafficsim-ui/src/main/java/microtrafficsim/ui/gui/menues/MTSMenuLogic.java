@@ -33,31 +33,31 @@ public class MTSMenuLogic extends JMenu {
 
         addSeparator();
 
-        itemEditSim = new JMenuItem("Edit simulation parameters...");
-        add(itemEditSim);
-
         itemNewSim = new JMenuItem("New simulation...");
         add(itemNewSim);
+
+        itemEditSim = new JMenuItem("Edit simulation parameters...");
+        add(itemEditSim);
 
         addSeparator();
 
         itemChangeAreaSelection = new JMenuItem("Change selected areas...");
         add(itemChangeAreaSelection);
 
-        // todo add defined scenario areas to the map
+        // todo add static defined scenario areas to the map
 
         addSeparator();
 
-        itemLoadRoutes = new JMenuItem("Load simulation routes...");
+        itemLoadRoutes = new JMenuItem("Load routes...");
         add(itemLoadRoutes);
 
-        itemSaveRoutes = new JMenuItem("Save simulation routes...");
+        itemSaveRoutes = new JMenuItem("Save current routes...");
         add(itemSaveRoutes);
 
-        itemLoadAreas = new JMenuItem("Load simulation areas...");
+        itemLoadAreas = new JMenuItem("Load areas...");
         add(itemLoadAreas);
 
-        itemSaveAreas = new JMenuItem("Save simulation areas...");
+        itemSaveAreas = new JMenuItem("Save areas...");
         add(itemSaveAreas);
     }
 

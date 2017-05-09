@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 
-public class ScenarioAreaSet extends Container.Entry {
+public class TypedPolygonAreaSet extends Container.Entry {
     private HashSet<TypedPolygonArea> areas = new HashSet<>();
 
 

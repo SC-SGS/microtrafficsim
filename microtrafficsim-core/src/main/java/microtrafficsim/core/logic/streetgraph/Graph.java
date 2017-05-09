@@ -7,6 +7,7 @@ import microtrafficsim.core.shortestpath.ShortestPathGraph;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.utils.Resettable;
 
+import java.util.Map;
 import java.util.Set;
 
 
@@ -39,6 +40,10 @@ public interface Graph extends Seeded, Resettable, ShortestPathGraph {
      */
     Bounds getBounds();
 
+
+    Map<Long, Node> getNodeMap();
+
+    Map<Long, DirectedEdge> getEdgeMap();
 
     /**
      * Returns the nodes of this graph.

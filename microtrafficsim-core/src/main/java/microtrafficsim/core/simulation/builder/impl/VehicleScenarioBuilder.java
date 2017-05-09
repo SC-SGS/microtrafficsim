@@ -213,9 +213,14 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                 if (Thread.interrupted())
                     throw new InterruptedException();
 
-                Route<Node> route = routeCreator.invoke(start, end);
-                if (route == null)
+                Route<Node> route;
+                try {
+                    route = routeCreator.invoke(start, end);
+                    if (route == null)
+                        throw new RouteIsNotDefinedException();
+                } catch (Exception e) {
                     throw new RouteIsNotDefinedException();
+                }
                 Vehicle vehicle = createVehicle(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
             }
@@ -260,11 +265,16 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                 if (Thread.interrupted())
                     throw new InterruptedException();
 
-                Route<Node> route = routeCreator.invoke(start, end);
+                Route<Node> route;
+                try {
+                    route = routeCreator.invoke(start, end);
+                    if (route == null)
+                        throw new RouteIsNotDefinedException();
+                } catch (Exception e) {
+                    throw new RouteIsNotDefinedException();
+                }
                 if (recalcRoutes)
                     scenario.getScoutFactory().get().findShortestPath(start, end, route);
-                if (route == null)
-                    throw new RouteIsNotDefinedException();
                 Vehicle vehicle = createVehicle(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
                 vehicle.registerInGraph();

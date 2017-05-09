@@ -127,7 +127,7 @@ public class ScenarioPanel extends PreferencesPanel {
 
             /* update model */
             model.clearAllScenarios();
-            config.scenario.supportedClasses.forEach(model::addScenario);
+            config.scenario.supportedClasses.values().forEach(model::addScenario);
             /* update checkbox for scenario choice */
             cbScenarioChoice.removeAllItems();
             model.getScenarios().stream()
@@ -143,7 +143,7 @@ public class ScenarioPanel extends PreferencesPanel {
             if (model.getEnableLexicon().isEnabled(Element.scenarioSelection)) {
                 /* update model */
                 model.clearAllScenarios();
-                config.scenario.supportedClasses.forEach(model::addScenario);
+                config.scenario.supportedClasses.values().forEach(model::addScenario);
                 /* update checkbox for scenario choice */
                 cbScenarioChoice.removeAllItems();
                 model.getScenarios().forEach(descriptor -> cbScenarioChoice.addItem(descriptor.getDescription()));
@@ -159,7 +159,9 @@ public class ScenarioPanel extends PreferencesPanel {
         config.scenario.showAreasWhileSimulating = cbShowAreasWhileSimulating.isSelected();
         config.scenario.nodesAreWeightedUniformly = cbNodesAreWeightedUniformly.isSelected();
 
-        model.getScenarios().forEach(config.scenario.supportedClasses::add);
+        for (Descriptor<Class<? extends Scenario>> descriptor : model.getScenarios()) {
+            config.scenario.supportedClasses.put(descriptor.getObj(), descriptor);
+        }
         config.scenario.selectedClass = model.get(cbScenarioChoice.getSelectedIndex());
 
         return config;

@@ -5,21 +5,25 @@ import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.base.ScenarioAreaSet;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.exfmt.extractor.simulation.RouteMatrixExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
+import microtrafficsim.core.exfmt.injector.simulation.ProjectedAreasInjector;
 import microtrafficsim.core.exfmt.injector.simulation.SimulationConfigInjector;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.map.MapSegment;
+import microtrafficsim.core.map.ProjectedAreas;
+import microtrafficsim.core.map.UnprojectedAreas;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.utils.RouteMatrix;
+import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
@@ -41,6 +45,10 @@ public class ExfmtStorage {
     private ExchangeFormatSerializer serializer;
 
 
+    /**
+     * @param config This reference has to be stable.
+     * @param mapviewer
+     */
     public ExfmtStorage(SimulationConfig config, TileBasedMapViewer mapviewer) {
         parser = DefaultParserConfig.get(config).build();
 
@@ -172,14 +180,44 @@ public class ExfmtStorage {
     | routes |
     |========|
     */
-    public RouteMatrix loadRoutes(File file) {
+    public Tuple<RouteMatrix, UnprojectedAreas> loadRoutes(File file, Graph graph) {
+        /* prepare exfmt config */
+        RouteMatrixExtractor.Config cfg = new RouteMatrixExtractor.Config();
+        cfg.graph = graph;
+        exfmt.getConfig().set(cfg);
+
+
+        /* prepare extractor */
+        ExchangeFormat.Manipulator manipulator = null;
+        try {
+            manipulator = exfmt.manipulator(serializer.read(file));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        /* load routes */
+        RouteMatrix routes = null;
+        UnprojectedAreas areas = null;
+        if (manipulator != null) {
+            try {
+                routes = manipulator.extract(RouteMatrix.class);
+                areas = manipulator.extract(UnprojectedAreas.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return new Tuple<>(routes, areas);
+        }
+
         return null;
     }
 
-    public boolean saveRoutes(File file, RouteMatrix routeMatrix) {
+    public boolean saveRoutes(File file, RouteMatrix routeMatrix, UnprojectedAreas areas) {
         try {
             serializer.write(file, exfmt.manipulator()
                     .inject(routeMatrix)
+                    .inject(areas)
                     .getContainer());
             return true;
         } catch (Exception e) {
@@ -194,7 +232,7 @@ public class ExfmtStorage {
     | areas |
     |=======|
     */
-    public ScenarioAreaSet loadAreas(File file) {
+    public UnprojectedAreas loadAreas(File file) {
         /* prepare extractor */
         ExchangeFormat.Manipulator manipulator = null;
         try {
@@ -205,10 +243,10 @@ public class ExfmtStorage {
 
 
         /* load areas */
-        ScenarioAreaSet areas = null;
+        UnprojectedAreas areas = null;
         if (manipulator != null) {
             try {
-                areas = manipulator.extract(ScenarioAreaSet.class);
+                areas = manipulator.extract(UnprojectedAreas.class);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -217,7 +255,23 @@ public class ExfmtStorage {
         return areas;
     }
 
-    public boolean saveAreas(File file, ScenarioAreaSet areas) {
+    public boolean saveAreas(File file, ProjectedAreas areas, Projection projection) {
+        ProjectedAreasInjector.Config cfg = new ProjectedAreasInjector.Config();
+        cfg.projection = projection;
+        exfmt.getConfig().set(cfg);
+
+        try {
+            serializer.write(file, exfmt.manipulator()
+                    .inject(areas)
+                    .getContainer());
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean saveAreas(File file, UnprojectedAreas areas) {
         try {
             serializer.write(file, exfmt.manipulator()
                     .inject(areas)

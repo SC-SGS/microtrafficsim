@@ -2,9 +2,9 @@ package microtrafficsim.core.exfmt.extractor.simulation;
 
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.base.ScenarioAreaSet;
-import microtrafficsim.core.exfmt.base.ScenarioRouteSet;
+import microtrafficsim.core.exfmt.base.ScenarioRouteInfo;
 import microtrafficsim.core.exfmt.base.SimulationConfigInfo;
+import microtrafficsim.core.exfmt.base.TypedPolygonAreaSet;
 import microtrafficsim.core.exfmt.exceptions.ExchangeFormatException;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.logic.nodes.Node;
@@ -40,7 +40,7 @@ public class AreaScenarioExtractor implements ExchangeFormat.Extractor<AreaScena
         AreaScenario scenario = new AreaScenario(cfg.config.seed, cfg.config, cfg.graph);
 
         // load areas
-        ScenarioAreaSet areas = src.get(ScenarioAreaSet.class);
+        TypedPolygonAreaSet areas = src.get(TypedPolygonAreaSet.class);
         if (areas == null) throw new NotAvailableException("ScenarioAreaSet missing");
 
         for (TypedPolygonArea area : areas.getAll())
@@ -49,7 +49,7 @@ public class AreaScenarioExtractor implements ExchangeFormat.Extractor<AreaScena
 
         // load routes
         if (cfg.loadRoutes) {
-            ScenarioRouteSet routeIDs = src.get(ScenarioRouteSet.class);
+            ScenarioRouteInfo routeIDs = src.get(ScenarioRouteInfo.class);
             if (routeIDs == null) throw new NotAvailableException("ScenarioRouteSet missing");
 
             /* create node lexicon */
@@ -62,7 +62,7 @@ public class AreaScenarioExtractor implements ExchangeFormat.Extractor<AreaScena
                 edges.put(edge.getId(), edge);
 
             /* create original route matrix referencing to the current graph */
-            RouteMatrix matrix = RouteMatrix.fromSparse(routeIDs.getAll(), nodes, edges);
+            RouteMatrix matrix = RouteMatrix.fromSparse(routeIDs.getRoutes(), nodes, edges);
 
             cfg.scenarioBuilder.prepare(scenario, matrix, cfg.progressListener);
         }

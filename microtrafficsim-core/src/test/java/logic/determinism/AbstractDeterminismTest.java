@@ -1,23 +1,31 @@
 package logic.determinism;
 
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
+import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.math.MathUtils;
+import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.collections.Tuple;
+import microtrafficsim.utils.functional.Procedure;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.logging.LoggingLevel;
+import microtrafficsim.utils.resources.PackagedResource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
+import testhelper.ResourceClassLinks;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  * <p>
@@ -75,10 +83,57 @@ public abstract class AbstractDeterminismTest {
     protected abstract int getMaxStep();
     protected abstract int getSimulationRuns();
 
-    protected abstract SimulationConfig createConfig();
-    protected abstract Graph createGraph(SimulationConfig config);
+    protected SimulationConfig createConfig() {
+
+        SimulationConfig config = new SimulationConfig();
+
+        // general
+        config.speedup = Integer.MAX_VALUE;
+        config.seed    = new Random().getSeed();
+        // crossing logic
+        config.crossingLogic.drivingOnTheRight            = true;
+        config.crossingLogic.edgePriorityEnabled          = false;
+        config.crossingLogic.priorityToTheRightEnabled    = false;
+        config.crossingLogic.friendlyStandingInJamEnabled = true;
+        config.crossingLogic.onlyOneVehicleEnabled        = false;
+        // vehicles
+        config.maxVehicleCount = 4000;
+        // multithreading
+        config.multiThreading.nThreads = 1;
+
+        return config;
+    }
+
+    protected Graph createGraph(SimulationConfig config) {
+        Graph graph;
+        try {
+            File file = new PackagedResource(ResourceClassLinks.classBacknangGraph, "Backnang.osm").asTemporaryFile();
+            OSMParser parser = DefaultParserConfig.get(config).build();
+            graph = parser.parse(file).streetgraph;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        logger.debug("\n" + graph);
+
+        return graph;
+    }
+
     protected abstract Scenario createScenario(SimulationConfig config, Graph graph);
-    protected abstract Scenario prepareScenario(SimulationConfig config, Scenario scenario);
+
+    protected Scenario prepareScenario(SimulationConfig config, Scenario scenario) {
+
+        VehicleScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(config.seed);
+
+        try {
+            scenarioBuilder.prepare(scenario);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return scenario;
+    }
 
 
     /*
@@ -87,7 +142,6 @@ public abstract class AbstractDeterminismTest {
     |===============|
     */
     private void storeStateFor(int simulationAge) {
-
         /* add stamps for given simulation age */
         HashMap<Long, VehicleStamp> vehicles = stamps.get(simulationAge);
         if (vehicles == null) {
@@ -102,21 +156,22 @@ public abstract class AbstractDeterminismTest {
 
         /* add stamp per vehicle */
         for (Vehicle vehicle : simulation.getScenario().getVehicleContainer()) {
-            VehicleStamp stamp = new VehicleStamp(vehicle.getDirectedEdge(), vehicle.getCellPosition());
+            VehicleStamp stamp = new VehicleStamp(
+                    vehicle.getId(),
+                    vehicle.getDirectedEdge(),
+                    vehicle.getCellPosition());
             stamps.put(vehicle.getId(), stamp);
         }
     }
 
     private void simulate(int steps) {
-
         for (int i = 0; i < steps; i++)
             simulation.runOneStep();
         expectedAge += steps;
-        assertEquals(expectedAge, simulation.getAge());
+        assertAge();
     }
 
     private void compareStates(int simulationAge) {
-
         HashMap<Long, VehicleStamp> expected = stamps.get(simulationAge);
         HashMap<Long, VehicleStamp> actual = new HashMap<>();
         getCurrentState(actual);
@@ -124,23 +179,23 @@ public abstract class AbstractDeterminismTest {
         msg += expected.size() > actual.size() ? "less" : "many";
         msg += " vehicles.";
         assertEquals(msg, expected.size(), actual.size());
-        for (long id : expected.keySet())
-            assertVehicleStamps(expected.get(id), actual.get(id));
+
+        int correctCount = 0;
+        for (long id : expected.keySet()) {
+            assertEquals(
+                    "Unequal vehicle stamps; correct until now: " + correctCount,
+                    expected.get(id),
+                    actual.get(id));
+            correctCount++;
+        }
     }
 
-    private void assertVehicleStamps(VehicleStamp expected, VehicleStamp actual) {
-        if (expected == null) {
-            assertNull(actual);
-            return;
-        }
+    private void assertAge() {
+        assertEquals("Wrong age", expectedAge, simulation.getAge());
+    }
 
-        assertEquals(expected.cellPosition, actual.cellPosition);
-        if (expected.edge == null) {
-            assertNull(actual.edge);
-            return;
-        }
-
-        assertEquals(expected.edge.hashCode(), actual.edge.hashCode());
+    private void assertVehiclesExist() {
+        assertFalse("Scenario has no vehicles.", simulation.getScenario().getVehicleContainer().isEmpty());
     }
 
 
@@ -150,7 +205,6 @@ public abstract class AbstractDeterminismTest {
     |================|
     */
     private void executeAndRememberFirstRun() {
-
         Iterator<Integer> simulationAges = MathUtils.createSigmoidSequence(1, getMaxStep(), getChecks() - 2);
         int currentCheck = 1;
         int lastSimulationAge = 0;
@@ -158,7 +212,7 @@ public abstract class AbstractDeterminismTest {
 
             // get next sigmoid number
             int simulationAge = simulationAges.next();
-            logger.info("Remember for check #" + currentCheck++ + " after " + simulationAge + " steps.");
+            logger.info("Remember for check #" + currentCheck++ + " after " + simulationAge + " steps (= age).");
             // simulate delta steps between last step and next step
             simulate(simulationAge - lastSimulationAge);
             lastSimulationAge = simulationAge;
@@ -181,12 +235,13 @@ public abstract class AbstractDeterminismTest {
     private void setupScenario(Scenario scenario) {
         prepareScenario(config, scenario);
         simulation.setAndInitPreparedScenario(scenario);
+
         expectedAge = 0;
-        assertEquals(expectedAge, simulation.getAge());
+        assertAge();
+        assertVehiclesExist();
     }
 
     private void executeSimulationRun() {
-
         Iterator<Integer> simulationAges = MathUtils.createSigmoidSequence(1, getMaxStep(), getChecks() - 2);
         int currentCheck = 1;
         int lastSimulationAge = 0;
@@ -194,7 +249,7 @@ public abstract class AbstractDeterminismTest {
 
             // get next sigmoid number
             int simulationAge = simulationAges.next();
-            logger.info("Check #" + currentCheck++ + " after " + simulationAge + " steps.");
+            logger.info("Check #" + currentCheck++ + " after " + simulationAge + " steps (= age).");
             // simulate delta steps between last step and next step
             simulate(simulationAge - lastSimulationAge);
             lastSimulationAge = simulationAge;
@@ -248,5 +303,6 @@ public abstract class AbstractDeterminismTest {
     @BeforeClass
     public static void buildSetup() {
         LoggingLevel.setEnabledGlobally(false, false, true, true, true);
+//        LoggingLevel.setEnabledGlobally(false, false, false, false, false);
     }
 }

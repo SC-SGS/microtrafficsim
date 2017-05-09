@@ -37,6 +37,10 @@ public interface VehicleContainer extends VehicleStateListener, Iterable<Vehicle
      */
     void clearAll();
 
+    default boolean isEmpty() {
+        return getVehicleCount() == 0;
+    }
+
     /**
      * @return The amount of all contained vehicles
      */

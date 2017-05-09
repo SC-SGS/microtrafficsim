@@ -3,19 +3,24 @@ package microtrafficsim.core.exfmt.base;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.streetgraph.GraphGUID;
+import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.utils.RouteMatrix;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 
 /**
  * @author Dominic Parga Cacheiro
  */
-public class ScenarioRouteSet extends Container.Entry {
+public class ScenarioRouteInfo extends Container.Entry {
     private RouteMatrix.Sparse routes = new RouteMatrix.Sparse();
 
+
+    public void setGraphGUID(GraphGUID graphGUID) {
+        routes.setGraphGUID(graphGUID);
+    }
 
     /**
      * @param route Takes the route's origin and destination and store the route for this pair
@@ -37,11 +42,11 @@ public class ScenarioRouteSet extends Container.Entry {
         routes = RouteMatrix.toSparse(routeMatrix);
     }
 
-    public void clear() {
+    public void clearRoutes() {
         this.routes.clear();
     }
 
-    public RouteMatrix.Sparse getAll() {
+    public RouteMatrix.Sparse getRoutes() {
         return this.routes;
     }
 }

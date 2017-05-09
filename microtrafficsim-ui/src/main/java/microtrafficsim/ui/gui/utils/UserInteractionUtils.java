@@ -45,10 +45,30 @@ public class UserInteractionUtils {
         return true;
     }
 
+
     public static boolean askUserForDecision(String msg, String title, Component parent) {
         int status = JOptionPane.showConfirmDialog(parent, msg, title, JOptionPane.OK_CANCEL_OPTION);
 
         return status == JOptionPane.OK_OPTION;
+    }
+
+
+    public static void showScenarioLoadingSuccess(Component parent) {
+        JOptionPane.showMessageDialog(
+                parent,
+                "The scenario has been prepared successfully.\n" +
+                        "You can start it with 'Space' or 'Arrow →'",
+                "Preparation finished successfully",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public static void showResultIsNotDefinedInfo(Component parent) {
+        JOptionPane.showMessageDialog(
+                parent,
+                "There were undefined routes in the loaded route file.\n" +
+                        "Thus nothing but the areas is loaded.",
+                "Scenario loading failed",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     public static void showSavingSuccess(Component parent) {

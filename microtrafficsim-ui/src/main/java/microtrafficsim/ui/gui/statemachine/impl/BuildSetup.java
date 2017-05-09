@@ -41,23 +41,23 @@ public class BuildSetup {
         /* general */
         config = new SimulationConfig();
 
-        config.scenario.supportedClasses.add(new Descriptor<>(
+        config.scenario.supportedClasses.put(AreaScenario.class, new Descriptor<>(
                 AreaScenario.class,
                 "own defined areas"));
-        config.scenario.supportedClasses.add(new Descriptor<>(
+        config.scenario.supportedClasses.put(EndOfTheWorldScenario.class, new Descriptor<>(
                 EndOfTheWorldScenario.class,
                 "everywhere -> border"));
-        config.scenario.supportedClasses.add(new Descriptor<>(
+        config.scenario.supportedClasses.put(RandomRouteScenario.class, new Descriptor<>(
                 RandomRouteScenario.class,
                 "everywhere -> everywhere"));
-        config.scenario.selectedClass = config.scenario.supportedClasses.get(0);
+        config.scenario.selectedClass = config.scenario.supportedClasses.get(AreaScenario.class);
 
         /* visualization and parsing */
         mapviewer = new TileBasedMapViewer(config.visualization.style);
         overlay   = new SpriteBasedVehicleOverlay(mapviewer.getProjection(), config.visualization.style);
 
         /* simulation */
-        simulation          = new VehicleSimulation();
-        scenarioBuilder     = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
+        simulation      = new VehicleSimulation();
+        scenarioBuilder = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
     }
 }

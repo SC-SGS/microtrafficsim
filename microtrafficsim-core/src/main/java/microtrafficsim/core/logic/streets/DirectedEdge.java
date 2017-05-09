@@ -139,19 +139,20 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
 
     @Override
     public String toString() {
-        LevelStringBuilder stringBuilder = new LevelStringBuilder();
-        stringBuilder.appendln("<DirectedEdge>");
-        stringBuilder.incLevel();
+        LevelStringBuilder stringBuilder = new LevelStringBuilder()
+                .setDefaultLevelSeparator()
+                .setDefaultLevelSubString();
 
-        stringBuilder.appendln("id = " + streetInfo.raw.id);
-        stringBuilder.appendln("hash = " + hashCode());
-        stringBuilder.appendln("info = ("
-                + streetInfo.raw.origin.getId()
-                + " -" + streetInfo.numberOfCells + "-> "
-                + streetInfo.raw.destination.getId() + ")");
+        stringBuilder.appendln("<DirectedEdge>").incLevel(); {
+            stringBuilder.appendln("id = " + streetInfo.raw.id);
+            stringBuilder.appendln("hash = " + hashCode());
+            stringBuilder.appendln("info = ("
+                    + streetInfo.raw.origin.getId()
+                    + " -" + streetInfo.numberOfCells + "-> "
+                    + streetInfo.raw.destination.getId() + ")");
 
-        stringBuilder.decLevel();
-        stringBuilder.append("<\\DirectedEdge>");
+        } stringBuilder.decLevel().append("<\\DirectedEdge>");
+
         return stringBuilder.toString();
     }
 
