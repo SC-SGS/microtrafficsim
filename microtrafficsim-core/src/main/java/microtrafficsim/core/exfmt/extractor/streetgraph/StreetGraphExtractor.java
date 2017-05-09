@@ -15,6 +15,7 @@ import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -101,15 +102,13 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
                 forward = new DirectedEdge(
                         entity.getId(),
                         gec.getLength(),
+                        gec.getOriginDirection(), gec.getDestinationDirection(),
+                        Orientation.FORWARD,
+                        origin, destination,
                         gec.getStreetType(),
                         gec.getForwardLanes(),
                         gec.getForwardMaxVelocity(),
-                        origin,
-                        destination,
-                        gec.getOriginDirection(),
-                        gec.getDestinationDirection(),
-                        cfg.metersPerCell,
-                        cfg.priorityFn
+                        cfg.metersPerCell, cfg.priorityFn
                 );
 
                 graph.addEdge(forward);
@@ -123,15 +122,13 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
                 backward = new DirectedEdge(
                         entity.getId(),
                         gec.getLength(),
+                        gec.getDestinationDirection(), gec.getOriginDirection(),
+                        Orientation.BACKWARD,
+                        destination, origin,
                         gec.getStreetType(),
                         gec.getBackwardLanes(),
                         gec.getBackwardMaxVelocity(),
-                        destination,
-                        origin,
-                        gec.getDestinationDirection(),
-                        gec.getOriginDirection(),
-                        cfg.metersPerCell,
-                        cfg.priorityFn
+                        cfg.metersPerCell, cfg.priorityFn
                 );
             }
 

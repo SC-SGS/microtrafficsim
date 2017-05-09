@@ -1,18 +1,11 @@
 package logic.determinism;
 
-import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
-import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
-import microtrafficsim.utils.resources.PackagedResource;
 import org.slf4j.Logger;
-
-import java.io.File;
 
 /**
  * <p>

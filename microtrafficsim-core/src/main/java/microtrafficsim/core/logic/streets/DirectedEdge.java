@@ -4,6 +4,7 @@ import microtrafficsim.core.entities.street.LogicStreetEntity;
 import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.information.FullStreetInfo;
+import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.logic.streets.information.RawStreetInfo;
 import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
@@ -41,20 +42,18 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
      */
     public DirectedEdge(long id,
                         double lengthInMeters,
+                        Vec2d originDirection, Vec2d destinationDirection,
+                        Orientation orientation,
+                        Node origin, Node destination,
                         StreetType type,
                         int nLanes,
                         float maxVelocity,
-                        Node origin,
-                        Node destination,
-                        Vec2d originDirection,
-                        Vec2d destinationDirection,
-                        float metersPerCell,
-                        SimulationConfig.StreetPriorityFunction priorityFn)
-    {
+                        float metersPerCell, SimulationConfig.StreetPriorityFunction priorityFn) {
         this(new RawStreetInfo(
                 id,
                 lengthInMeters,
                 originDirection, destinationDirection,
+                orientation,
                 origin, destination,
                 type,
                 nLanes,
@@ -102,8 +101,8 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                 // origin and destination needed because the id is used by forward and backward edge of the same street
                 .add(streetInfo.raw.origin)
                 .add(streetInfo.raw.destination)
+                .add(streetInfo.raw.orientation)
                 .getHash();
-        // todo forward/backward information
     }
 
     public Collection<Lane> getLanes() {
