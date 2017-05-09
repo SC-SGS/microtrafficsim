@@ -99,7 +99,7 @@ public abstract class AbstractDeterminismTest {
         // vehicles
         config.maxVehicleCount = 4000;
         // multithreading
-        config.multiThreading.nThreads = 1;
+        config.multiThreading.nThreads = 42;
 
         return config;
     }
@@ -153,7 +153,6 @@ public abstract class AbstractDeterminismTest {
     }
 
     private void getCurrentState(HashMap<Long, VehicleStamp> stamps) {
-
         /* add stamp per vehicle */
         for (Vehicle vehicle : simulation.getScenario().getVehicleContainer()) {
             VehicleStamp stamp = new VehicleStamp(

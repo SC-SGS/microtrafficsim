@@ -52,17 +52,12 @@ public class AreaScenarioExtractor implements ExchangeFormat.Extractor<AreaScena
             ScenarioRouteInfo routeIDs = src.get(ScenarioRouteInfo.class);
             if (routeIDs == null) throw new NotAvailableException("ScenarioRouteSet missing");
 
-            /* create node lexicon */
-            HashMap<Long, Node> nodes = new HashMap<>();
-            for (Node node : cfg.graph.getNodes())
-                nodes.put(node.getId(), node);
-            /* create edge lexicon */
-            HashMap<Long, DirectedEdge> edges = new HashMap<>();
-            for (DirectedEdge edge : cfg.graph.getEdges())
-                edges.put(edge.getId(), edge);
 
             /* create original route matrix referencing to the current graph */
-            RouteMatrix matrix = RouteMatrix.fromSparse(routeIDs.getRoutes(), nodes, edges);
+            RouteMatrix matrix = RouteMatrix.fromSparse(
+                    routeIDs.getRoutes(),
+                    cfg.graph.getNodeMap(),
+                    cfg.graph.getEdgeMap());
 
             cfg.scenarioBuilder.prepare(scenario, matrix, cfg.progressListener);
         }

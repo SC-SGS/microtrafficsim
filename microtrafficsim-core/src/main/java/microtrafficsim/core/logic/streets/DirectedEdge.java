@@ -103,6 +103,7 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                 .add(streetInfo.raw.origin)
                 .add(streetInfo.raw.destination)
                 .getHash();
+        // todo forward/backward information
     }
 
     public Collection<Lane> getLanes() {

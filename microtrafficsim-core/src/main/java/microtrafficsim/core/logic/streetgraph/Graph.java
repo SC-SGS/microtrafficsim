@@ -41,9 +41,9 @@ public interface Graph extends Seeded, Resettable, ShortestPathGraph {
     Bounds getBounds();
 
 
-    Map<Long, Node> getNodeMap();
+    Map<Integer, Node> getNodeMap();
 
-    Map<Long, DirectedEdge> getEdgeMap();
+    Map<Integer, DirectedEdge> getEdgeMap();
 
     /**
      * Returns the nodes of this graph.

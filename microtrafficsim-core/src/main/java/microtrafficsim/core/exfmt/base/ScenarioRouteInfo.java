@@ -26,16 +26,16 @@ public class ScenarioRouteInfo extends Container.Entry {
      * @param route Takes the route's origin and destination and store the route for this pair
      * @return output of {@link HashMap#put(Object, Object) HashMap.put(...)}
      */
-    public ArrayList<Long> put(Route<Node> route) {
+    public ArrayList<Integer> put(Route<Node> route) {
         Node origin = route.getStart();
         Node destination = route.getEnd();
 
-        HashMap<Long, ArrayList<Long>> tmp = routes.computeIfAbsent(origin.getId(), id -> new HashMap<>());
-        ArrayList<Long> edges = new ArrayList<>(route.size());
+        HashMap<Integer, ArrayList<Integer>> tmp = routes.computeIfAbsent(origin.hashCode(), hashcode -> new HashMap<>());
+        ArrayList<Integer> edges = new ArrayList<>(route.size());
         for (ShortestPathEdge<?> edge : route) {
-            edges.add(edge.getId());
+            edges.add(edge.hashCode());
         }
-        return tmp.put(destination.getId(), edges);
+        return tmp.put(destination.hashCode(), edges);
     }
 
     public void set(RouteMatrix routeMatrix) {

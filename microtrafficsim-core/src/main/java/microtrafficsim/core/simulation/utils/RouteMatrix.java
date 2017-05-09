@@ -2,7 +2,6 @@ package microtrafficsim.core.simulation.utils;
 
 import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
@@ -78,18 +77,18 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
 
     public static RouteMatrix fromSparse(
             Sparse sparseMatrix,
-            Map<Long, Node> nodeLexicon,
-            Map<Long, ? extends ShortestPathEdge<Node>> edgeLexicon) throws RouteIsNotDefinedException {
+            Map<Integer, Node> nodeLexicon,
+            Map<Integer, ? extends ShortestPathEdge<Node>> edgeLexicon) throws RouteIsNotDefinedException {
         RouteMatrix routeMatrix = new RouteMatrix(sparseMatrix.graphGUID);
 
-        /* go over all origin IDs */
+        /* go over all origin hashcodes */
         boolean isMatrixCorrect = true;
-        for (long originID : sparseMatrix.keySet()) {
-            Map<Long, ArrayList<Long>> tmp = sparseMatrix.get(originID);
+        for (int originHash : sparseMatrix.keySet()) {
+            Map<Integer, ArrayList<Integer>> tmp = sparseMatrix.get(originHash);
 
 
             /* take origin from node lexicon */
-            Node origin = nodeLexicon.get(originID);
+            Node origin = nodeLexicon.get(originHash);
             if (origin == null) {
                 isMatrixCorrect = false;
                 break;
@@ -98,22 +97,22 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
 
             /* add new value if not empty after process */
             HashMap<Node, Route<Node>> newValue = new HashMap<>();
-            for (long destinationID : tmp.keySet()) {
-                ArrayList<Long> edgeIDs = tmp.get(destinationID);
+            for (int destinationHash : tmp.keySet()) {
+                ArrayList<Integer> edgeHashes = tmp.get(destinationHash);
 
 
                 /* take destination from node lexicon */
-                Node destination = nodeLexicon.get(destinationID);
+                Node destination = nodeLexicon.get(destinationHash);
                 if (destination == null) {
                     isMatrixCorrect = false;
                     break;
                 }
 
 
-                /* translate IDs into route */
+                /* translate hashcodes into route */
                 Route<Node> route = new Route<>(origin, destination);
-                for (long edgeID : edgeIDs) {
-                    ShortestPathEdge<Node> nextEdge = edgeLexicon.get(edgeID);
+                for (int edgeHash : edgeHashes) {
+                    ShortestPathEdge<Node> nextEdge = edgeLexicon.get(edgeHash);
                     if (nextEdge == null) {
                         isMatrixCorrect = false;
                         break;
@@ -147,16 +146,16 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
             for (Node destination : tmp.keySet()) {
                 Route<Node> route = tmp.get(destination);
 
-                /* translate route edges into IDs */
-                ArrayList<Long> idList = new ArrayList<>(route.size());
+                /* translate route edges into hashcodes */
+                ArrayList<Integer> hashList = new ArrayList<>(route.size());
                 for (ShortestPathEdge<?> edge : route) {
-                    idList.add(edge.getId());
+                    hashList.add(edge.hashCode());
                 }
 
                 /* put list of IDs into new matrix */
-                Map<Long, ArrayList<Long>> tmp2 = sparseMatrix.computeIfAbsent(
-                        origin.getId(), id -> new HashMap<>());
-                tmp2.put(destination.getId(), idList);
+                Map<Integer, ArrayList<Integer>> tmp2 = sparseMatrix.computeIfAbsent(
+                        origin.hashCode(), hash -> new HashMap<>());
+                tmp2.put(destination.hashCode(), hashList);
             }
         }
         return sparseMatrix;
@@ -166,7 +165,7 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
      * The array list storing all IDs is filled by the default iterator of {@link Stack}. Thus you can iterate over
      * the list and add each element to a new stack.
      */
-    public static class Sparse extends HashMap<Long, HashMap<Long, ArrayList<Long>>> {
+    public static class Sparse extends HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> {
 
         private GraphGUID graphGUID;
 

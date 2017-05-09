@@ -21,8 +21,8 @@ public class StreetGraph implements Graph {
 
     private GraphGUID                   guid;
     private Bounds                      bounds;
-    private HashMap<Long, Node>         nodes;
-    private HashMap<Long, DirectedEdge> edges;
+    private HashMap<Integer, Node>         nodes;
+    private HashMap<Integer, DirectedEdge> edges;
     private long                        seed;
 
     /**
@@ -76,12 +76,12 @@ public class StreetGraph implements Graph {
 
 
     @Override
-    public Map<Long, Node> getNodeMap() {
+    public Map<Integer, Node> getNodeMap() {
         return Collections.unmodifiableMap(nodes);
     }
 
     @Override
-    public Map<Long, DirectedEdge> getEdgeMap() {
+    public Map<Integer, DirectedEdge> getEdgeMap() {
         return Collections.unmodifiableMap(edges);
     }
 
@@ -97,12 +97,12 @@ public class StreetGraph implements Graph {
 
     @Override
     public void addNode(Node node) {
-        nodes.put(node.getId(), node);
+        nodes.put(node.hashCode(), node);
     }
 
     @Override
     public void addEdge(DirectedEdge edge) {
-        edges.put(edge.getId(), edge);
+        edges.put(edge.hashCode(), edge);
     }
 
 
