@@ -230,14 +230,18 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
             if (lane == null) continue;
 
             DirectedEdge edge = lane.getAssociatedEdge();
-            double laneOffset = laneOffsetSign * (edge.getLanes().size() - lane.getIndex() - 0.5)
-                    * VEHICLE_LANE_OFFSET_SCALE * VEHICLE_SCALE_NORM;
-
             StreetEntity street = edge.getEntity();
-            if (street.getBackwardEdge() != null && street.getForwardEdge() != null) {
-                pos.x += dir.y * laneOffset;
-                pos.y -= dir.x * laneOffset;
+
+            double laneOffset;
+            if (street.getForwardEdge() != null && street.getBackwardEdge() != null) {
+                laneOffset = edge.getLanes().size() - lane.getIndex() - 0.5;
+            } else {
+                laneOffset = (edge.getLanes().size() - 1.0) / 2.0 - lane.getIndex();
             }
+            laneOffset *= laneOffsetSign * VEHICLE_LANE_OFFSET_SCALE * VEHICLE_SCALE_NORM;
+
+            pos.x += dir.y * laneOffset;
+            pos.y -= dir.x * laneOffset;
 
             // continue if out of bounds
             if (pos.x < left || pos.x > right || pos.y < bottom || pos.y > top) continue;
