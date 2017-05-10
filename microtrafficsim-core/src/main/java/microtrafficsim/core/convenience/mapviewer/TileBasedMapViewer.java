@@ -30,6 +30,9 @@ import java.util.Collection;
  */
 public class TileBasedMapViewer extends BasicMapViewer {
 
+    public static final int DEFAULT_TILEGRID_LEVEL = 12;
+
+
     private TileBasedVisualization visualization;
     private TileFeatureProvider map;
     private TileLayerProvider layerProvider;
@@ -92,8 +95,8 @@ public class TileBasedMapViewer extends BasicMapViewer {
                 height,
                 style,
                 projection,
-                new QuadTreeTilingScheme(projection, 0, 19),
-                12,
+                new QuadTreeTilingScheme(projection),
+                DEFAULT_TILEGRID_LEVEL,
                 Math.max(Runtime.getRuntime().availableProcessors() - 2, 2),
                 printFrameStats
         );

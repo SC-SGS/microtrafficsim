@@ -2,6 +2,7 @@ package microtrafficsim.core.logic.streetgraph;
 
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 
 /**
@@ -63,5 +64,20 @@ public class GraphGUID {
                 .add(nodeHash)
                 .add(edgeHash)
                 .getHash();
+    }
+
+    @Override
+    public String toString() {
+        LevelStringBuilder builder = new LevelStringBuilder()
+                .setDefaultLevelSeparator()
+                .setDefaultLevelSubString();
+
+        builder.appendln("<" + GraphGUID.class.getSimpleName() + ">").incLevel(); {
+            builder.appendln(bounds);
+            builder.appendln("node hash = " + nodeHash);
+            builder.appendln("edge hash = " + edgeHash);
+        } builder.decLevel().append("<\\" + GraphGUID.class.getSimpleName() + ">");
+
+        return builder.toString();
     }
 }

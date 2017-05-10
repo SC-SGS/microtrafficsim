@@ -21,12 +21,13 @@ public class RouteMatrixExtractor implements ExchangeFormat.Extractor<RouteMatri
 
 
         /* extract data */
-        ScenarioRouteInfo routeIDs = src.get(ScenarioRouteInfo.class);
-        if (routeIDs == null) throw new NotAvailableException(ScenarioRouteInfo.class.getSimpleName() + " missing");
-
+        ScenarioRouteInfo info = src.get(ScenarioRouteInfo.class);
+        if (info == null) throw new NotAvailableException(ScenarioRouteInfo.class.getSimpleName() + " missing");
+        RouteMatrix.Sparse sparseMatrix = info.getRoutes();
+        sparseMatrix.setGraphGUID(info.getGraphGUID());
 
         /* create original route matrix referencing to the current graph */
-        return RouteMatrix.fromSparse(routeIDs.getRoutes(), cfg.graph.getNodeMap(), cfg.graph.getEdgeMap());
+        return RouteMatrix.fromSparse(sparseMatrix, cfg.graph.getNodeMap(), cfg.graph.getEdgeMap());
     }
 
     public static class Config extends microtrafficsim.core.exfmt.Config.Entry {

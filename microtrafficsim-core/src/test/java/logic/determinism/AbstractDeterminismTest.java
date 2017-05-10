@@ -11,8 +11,6 @@ import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.random.distributions.impl.Random;
-import microtrafficsim.utils.collections.Tuple;
-import microtrafficsim.utils.functional.Procedure;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.logging.LoggingLevel;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -92,8 +90,8 @@ public abstract class AbstractDeterminismTest {
         config.seed    = new Random().getSeed();
         // crossing logic
         config.crossingLogic.drivingOnTheRight            = true;
-        config.crossingLogic.edgePriorityEnabled          = false;
-        config.crossingLogic.priorityToTheRightEnabled    = false;
+        config.crossingLogic.edgePriorityEnabled          = true;
+        config.crossingLogic.priorityToTheRightEnabled    = true;
         config.crossingLogic.friendlyStandingInJamEnabled = true;
         config.crossingLogic.onlyOneVehicleEnabled        = false;
         // vehicles
@@ -107,7 +105,7 @@ public abstract class AbstractDeterminismTest {
     protected Graph createGraph(SimulationConfig config) {
         Graph graph;
         try {
-            File file = new PackagedResource(ResourceClassLinks.classBacknangGraph, "Backnang.osm").asTemporaryFile();
+            File file = new PackagedResource(ResourceClassLinks.BACKNANG).asTemporaryFile();
             OSMParser parser = DefaultParserConfig.get(config).build();
             graph = parser.parse(file).streetgraph;
         } catch (Exception e) {

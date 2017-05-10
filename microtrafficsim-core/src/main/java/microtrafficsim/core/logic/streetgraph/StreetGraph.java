@@ -19,11 +19,11 @@ import java.util.*;
  */
 public class StreetGraph implements Graph {
 
-    private GraphGUID                   guid;
-    private Bounds                      bounds;
+    private GraphGUID                      guid;
+    private Bounds                         bounds;
     private HashMap<Integer, Node>         nodes;
     private HashMap<Integer, DirectedEdge> edges;
-    private long                        seed;
+    private long                           seed;
 
     /**
      * Just a standard constructor.

@@ -15,6 +15,7 @@ public class RouteMatrixInjector implements ExchangeFormat.Injector<RouteMatrix>
             throws Exception {
         ScenarioRouteInfo info = new ScenarioRouteInfo();
         info.set(src);
+        info.setGraphGUID(src.getGraphGUID());
         dst.set(info);
     }
 }

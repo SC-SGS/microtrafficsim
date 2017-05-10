@@ -1,6 +1,7 @@
 package microtrafficsim.utils.resources;
 
 import microtrafficsim.utils.Streams;
+import microtrafficsim.utils.collections.Tuple;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +28,13 @@ public class PackagedResource extends Resource {
     public PackagedResource(Class<?> clazz, String name) {
         this.clazz = clazz;
         this.name  = name;
+    }
+
+    /**
+     * Just calls {@link #PackagedResource(Class, String)}
+     */
+    public PackagedResource(Tuple<Class<?>, String> info) {
+        this(info.obj0, info.obj1);
     }
 
     @Override

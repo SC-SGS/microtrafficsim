@@ -106,8 +106,8 @@ public class AreaScenario extends BasicRandomScenario {
         }, type);
     }
 
-    public Set<TypedPolygonArea> getAreas() {
-        HashSet<TypedPolygonArea> areas = new HashSet<>();
+    public UnprojectedAreas getAreas() {
+        UnprojectedAreas areas = new UnprojectedAreas();
         areas.addAll(originNodes.keySet());
         areas.addAll(destinationNodes.keySet());
         return areas;

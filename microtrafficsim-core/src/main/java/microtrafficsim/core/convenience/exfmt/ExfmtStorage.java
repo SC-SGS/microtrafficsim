@@ -19,6 +19,7 @@ import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.ProjectedAreas;
 import microtrafficsim.core.map.UnprojectedAreas;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
+import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -59,6 +60,19 @@ public class ExfmtStorage {
 
         exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(
                 mapviewer.getPreferredTilingScheme(), mapviewer.getPreferredTileGridLevel()));
+
+        exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
+    }
+
+    public ExfmtStorage(SimulationConfig config, TilingScheme tilingScheme, int tileGridLevel) {
+        parser = DefaultParserConfig.get(config).build();
+
+
+        /* create exchange format and serializer */
+        serializer = ExchangeFormatSerializer.create();
+        exfmt = ExchangeFormat.getDefault();
+
+        exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(tilingScheme, tileGridLevel));
 
         exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
     }

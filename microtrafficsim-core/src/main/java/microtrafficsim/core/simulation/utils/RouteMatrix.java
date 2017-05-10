@@ -9,7 +9,10 @@ import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.builder.RouteIsNotDefinedException;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * @author Dominic Parga Cacheiro

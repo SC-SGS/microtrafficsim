@@ -15,10 +15,16 @@ import java.util.*;
  * @author Dominic Parga Cacheiro
  */
 public class ScenarioRouteInfo extends Container.Entry {
+    private GraphGUID graphGUID;
     private RouteMatrix.Sparse routes = new RouteMatrix.Sparse();
 
 
+    public GraphGUID getGraphGUID() {
+        return graphGUID;
+    }
+
     public void setGraphGUID(GraphGUID graphGUID) {
+        this.graphGUID = graphGUID;
         routes.setGraphGUID(graphGUID);
     }
 
@@ -39,10 +45,12 @@ public class ScenarioRouteInfo extends Container.Entry {
     }
 
     public void set(RouteMatrix routeMatrix) {
+        this.graphGUID = routeMatrix.getGraphGUID();
         routes = RouteMatrix.toSparse(routeMatrix);
     }
 
     public void clearRoutes() {
+        graphGUID = null;
         this.routes.clear();
     }
 

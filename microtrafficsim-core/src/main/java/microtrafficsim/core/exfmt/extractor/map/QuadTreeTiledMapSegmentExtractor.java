@@ -143,7 +143,7 @@ public class QuadTreeTiledMapSegmentExtractor implements ExchangeFormat.Extracto
         public GridMatcher matcher;
 
         public static Config getDefault() {
-            return getDefault(new QuadTreeTilingScheme(new MercatorProjection(), 0, 19), 12);
+            return getDefault(new QuadTreeTilingScheme(new MercatorProjection()), 12);
         }
 
         public static Config getDefault(TilingScheme scheme, int level) {
