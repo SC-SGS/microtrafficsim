@@ -105,7 +105,9 @@ public abstract class AbstractDeterminismTest {
     protected Graph createGraph(SimulationConfig config) {
         Graph graph;
         try {
-            File file = new PackagedResource(ResourceClassLinks.BACKNANG).asTemporaryFile();
+            File file = new PackagedResource(
+                    AbstractDeterminismTest.class,
+                    ResourceClassLinks.BACKNANG_MAP_PATH).asTemporaryFile();
             OSMParser parser = DefaultParserConfig.get(config).build();
             graph = parser.parse(file).streetgraph;
         } catch (Exception e) {

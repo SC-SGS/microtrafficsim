@@ -66,7 +66,8 @@ public class RouteExfmtTest {
 
 
         try {
-            File file = new PackagedResource(ResourceClassLinks.BACKNANG).asTemporaryFile();
+            File file = new PackagedResource(RouteExfmtTest.class,
+                    ResourceClassLinks.BACKNANG_MAP_PATH).asTemporaryFile();
             streetgraph = exfmtStorage.loadMap(file).obj0;
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
