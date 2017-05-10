@@ -23,7 +23,7 @@ public class RouteMatrixExtractor implements ExchangeFormat.Extractor<RouteMatri
         /* extract data */
         ScenarioRouteInfo info = src.get(ScenarioRouteInfo.class);
         if (info == null) throw new NotAvailableException(ScenarioRouteInfo.class.getSimpleName() + " missing");
-        RouteMatrix.Sparse sparseMatrix = info.getRoutes();
+        RouteMatrix.Sparse sparseMatrix = new RouteMatrix.Sparse(info.getRoutes());
         sparseMatrix.setGraphGUID(info.getGraphGUID());
 
         /* create original route matrix referencing to the current graph */

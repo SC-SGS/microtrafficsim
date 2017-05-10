@@ -55,7 +55,8 @@ public class AreaScenarioExtractor implements ExchangeFormat.Extractor<AreaScena
 
             /* create original route matrix referencing to the current graph */
             RouteMatrix matrix = RouteMatrix.fromSparse(
-                    routeIDs.getRoutes(),
+//                    routeIDs.getRoutes(),
+                    null,
                     cfg.graph.getNodeMap(),
                     cfg.graph.getEdgeMap());
 

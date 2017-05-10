@@ -142,7 +142,8 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
     }
 
     public static Sparse toSparse(RouteMatrix routeMatrix) {
-        Sparse sparseMatrix = new Sparse(routeMatrix.graphGUID);
+        Sparse sparseMatrix = new Sparse();
+        sparseMatrix.setGraphGUID(routeMatrix.getGraphGUID());
 
         for (Node origin : routeMatrix.keySet()) {
             Map<Node, Route<Node>> tmp = routeMatrix.get(origin);
@@ -174,8 +175,16 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
 
         public Sparse() {}
 
-        public Sparse(GraphGUID graphGUID) {
-            this.graphGUID = graphGUID;
+        public Sparse(int initialCapacity, float loadFactor) {
+            super(initialCapacity, loadFactor);
+        }
+
+        public Sparse(int initialCapacity) {
+            super(initialCapacity);
+        }
+
+        public Sparse(Map<? extends Integer, ? extends HashMap<Integer, ArrayList<Integer>>> m) {
+            super(m);
         }
 
         public GraphGUID getGraphGUID() {

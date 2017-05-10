@@ -16,7 +16,7 @@ import java.util.*;
  */
 public class ScenarioRouteInfo extends Container.Entry {
     private GraphGUID graphGUID;
-    private RouteMatrix.Sparse routes = new RouteMatrix.Sparse();
+    HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> routes = new HashMap<>();
 
 
     public GraphGUID getGraphGUID() {
@@ -25,7 +25,6 @@ public class ScenarioRouteInfo extends Container.Entry {
 
     public void setGraphGUID(GraphGUID graphGUID) {
         this.graphGUID = graphGUID;
-        routes.setGraphGUID(graphGUID);
     }
 
     /**
@@ -45,8 +44,12 @@ public class ScenarioRouteInfo extends Container.Entry {
     }
 
     public void set(RouteMatrix routeMatrix) {
-        this.graphGUID = routeMatrix.getGraphGUID();
-        routes = RouteMatrix.toSparse(routeMatrix);
+        set(RouteMatrix.toSparse(routeMatrix));
+    }
+
+    public void set(RouteMatrix.Sparse sparseMatrix) {
+        this.graphGUID = sparseMatrix.getGraphGUID();
+        routes = new HashMap<>(sparseMatrix);
     }
 
     public void clearRoutes() {
@@ -54,7 +57,7 @@ public class ScenarioRouteInfo extends Container.Entry {
         this.routes.clear();
     }
 
-    public RouteMatrix.Sparse getRoutes() {
+    public HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> getRoutes() {
         return this.routes;
     }
 }

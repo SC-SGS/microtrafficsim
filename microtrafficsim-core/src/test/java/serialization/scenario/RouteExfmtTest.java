@@ -3,6 +3,7 @@ package serialization.scenario;
 import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
@@ -24,8 +25,11 @@ import testhelper.ResourceClassLinks;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -98,18 +102,33 @@ public class RouteExfmtTest {
 
 
         /* remember routes */
-        RouteMatrix routeMatrix = new RouteMatrix(streetgraph.getGUID());
-        routeMatrix.addAll(scenario);
+        RouteMatrix rm = new RouteMatrix(streetgraph.getGUID());
+        rm.addAll(scenario);
+        assertFalse("Original route matrix is already empty", rm.isEmpty());
 
 
         /* save and reload routes */
         File tmp = File.createTempFile("routes", MTSFileChooser.Filters.ROUTE_POSTFIX);
-        exfmtStorage.saveRoutes(tmp, routeMatrix, scenario.getAreas());
-        RouteMatrix loadedRouteMatrix = exfmtStorage.loadRoutes(tmp, streetgraph).obj0;
+        exfmtStorage.saveRoutes(tmp, rm, scenario.getAreas());
+        RouteMatrix loaded = exfmtStorage.loadRoutes(tmp, streetgraph).obj0;
 
 
         /* assertion */
-        assertEquals("GraphGUID is not identical", routeMatrix.getGraphGUID(), loadedRouteMatrix.getGraphGUID());
+        assertEquals("GraphGUID is not identical", rm.getGraphGUID(), loaded.getGraphGUID());
+        assertEquals("Different size", rm.size(), loaded.size());
+        assertTrue("KeySets does not contain same elements", rm.keySet().containsAll(loaded.keySet()));
+        assertTrue("Values does not contain same elements", rm.values().containsAll(loaded.values()));
+
+
+        Iterator<Node> iterKeys = rm.keySet().iterator();
+        Iterator<Node> iterLoadedKeys = loaded.keySet().iterator();
+        while (iterKeys.hasNext()) {
+            Node key = iterKeys.next();
+            Node loadedKey = iterLoadedKeys.next();
+            assertEquals( // todo ERROR?!?!?!?!
+                    "Keys are not equal\n" + "expected: " + key + "\nactual:   " + loadedKey,
+                    key.hashCode(), loadedKey.hashCode());
+        }
         // todo
     }
 

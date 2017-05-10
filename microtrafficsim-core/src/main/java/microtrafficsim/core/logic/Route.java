@@ -2,6 +2,7 @@ package microtrafficsim.core.logic;
 
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
+import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.Stack;
@@ -27,6 +28,14 @@ public class Route<NodeType extends ShortestPathNode> extends Stack<ShortestPath
     public Route(NodeType start, NodeType end) {
         this.start = start;
         this.end = end;
+    }
+
+    @Override
+    public synchronized int hashCode() {
+        return new FNVHashBuilder()
+                .add(start)
+                .add(end)
+                .getHash();
     }
 
     @Override
