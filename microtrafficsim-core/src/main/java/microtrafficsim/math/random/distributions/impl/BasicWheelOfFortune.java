@@ -1,8 +1,8 @@
 package microtrafficsim.math.random.distributions.impl;
 
 import microtrafficsim.math.random.distributions.WheelOfFortune;
-import microtrafficsim.utils.collections.skiplist.PrioritySkipListSet;
-import microtrafficsim.utils.collections.skiplist.SkipList;
+import microtrafficsim.utils.collections.PrioritySkipListSet;
+import microtrafficsim.utils.collections.SkipList;
 
 import java.util.Comparator;
 import java.util.HashMap;

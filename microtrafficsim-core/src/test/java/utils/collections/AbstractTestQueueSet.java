@@ -1,8 +1,9 @@
 package utils.collections;
 
 import microtrafficsim.math.random.distributions.impl.Random;
-import microtrafficsim.utils.collections.skiplist.PrioritySkipList;
-import microtrafficsim.utils.collections.skiplist.SkipList;
+import microtrafficsim.utils.collections.PrioritySkipList;
+import microtrafficsim.utils.collections.QueueSet;
+import microtrafficsim.utils.collections.SkipList;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.logging.LoggingLevel;
 import org.junit.Before;
@@ -19,7 +20,7 @@ import static org.junit.Assert.*;
  *
  * @author Dominic Parga Cacheiro
  */
-public abstract class AbstractTestSkipList implements TestSkipList {
+public abstract class AbstractTestQueueSet implements TestQueueSet {
 
     private static final Logger logger = new EasyMarkableLogger(TestPrioritySkipList.class);
     static {
@@ -27,13 +28,13 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     }
 
     private final Random                random    = new Random();
-    private final int                   fillCount = 1000;
-    private SkipList<Integer>           skipList;
-    private Supplier<SkipList<Integer>> skipListFactory;
+    protected final int                 fillCount = 1000;
+    protected QueueSet<Integer>         queueSet;
+    private Supplier<QueueSet<Integer>> queueSetFactory;
 
 
-    public AbstractTestSkipList(Supplier<SkipList<Integer>> skipListFactory) {
-        this.skipListFactory = skipListFactory;
+    public AbstractTestQueueSet(Supplier<QueueSet<Integer>> queueSetFactory) {
+        this.queueSetFactory = queueSetFactory;
     }
 
 
@@ -44,13 +45,14 @@ public abstract class AbstractTestSkipList implements TestSkipList {
 
     private void resetAttributes() {
         random.reset();
-        skipList = skipListFactory.get();
+        queueSet = queueSetFactory.get();
         logger.debug("random seed    = " + random.getSeed());
-        logger.debug("skip list seed = " + skipList.getSeed());
+        if (queueSet instanceof SkipList)
+            logger.debug("skip list seed = " + ((SkipList) queueSet).getSeed());
     }
 
     @SafeVarargs
-    private final void addRandomly(int n, Collection<Integer>... collections) {
+    protected final void addRandomly(int n, Collection<Integer>... collections) {
         for (int i = 0; i < n; i++) {
             int next = random.nextInt();
             for (Collection<Integer> c : collections)
@@ -66,36 +68,35 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     @Override
     @Test
     public void testGetIndex() {
-
         /* check before adding */
         for (int i = 0; i < fillCount; i++)
-            assertEquals(null, skipList.get(i));
+            assertEquals(null, queueSet.get(i));
 
         /* add */
         List<Integer> expected = new ArrayList<>();
         List<Integer> remain   = new ArrayList<>();
         List<Integer> remove   = new ArrayList<>();
         int halfFillCount = fillCount / 2;
-        addRandomly(halfFillCount, skipList, expected, remain);
-        addRandomly(fillCount - halfFillCount, skipList, expected, remove);
+        addRandomly(halfFillCount, queueSet, expected, remain);
+        addRandomly(fillCount - halfFillCount, queueSet, expected, remove);
 
         /* check after adding, before moving */
         expected.sort(Integer::compareTo);
         for (int index = 0; index < expected.size(); index++) {
             Integer i = expected.get(index);
-            assertEquals(i, skipList.get(index));
-            assertEquals(i, skipList.get(index + expected.size()));
-            assertEquals(i, skipList.get(index - expected.size()));
+            assertEquals(i, queueSet.get(index));
+            assertEquals(i, queueSet.get(index + expected.size()));
+            assertEquals(i, queueSet.get(index - expected.size()));
         }
 
         /* remove */
         for (Integer i : remove)
-            skipList.remove(i);
+            queueSet.remove(i);
 
         /* check after removing */
         remain.sort(Integer::compareTo);
         for (Integer i : remain)
-            assertEquals(i, skipList.get(i));
+            assertEquals(i, queueSet.get(i));
     }
 
     @Override
@@ -104,29 +105,29 @@ public abstract class AbstractTestSkipList implements TestSkipList {
 
         /* check before adding */
         for (int i = 0; i < fillCount; i++)
-            assertEquals(null, skipList.get((Integer) i));
+            assertEquals(null, queueSet.get((Integer) i));
 
         /* add */
         List<Integer> expected = new ArrayList<>();
         List<Integer> remain   = new ArrayList<>();
         List<Integer> remove   = new ArrayList<>();
         int halfFillCount = fillCount / 2;
-        addRandomly(halfFillCount, skipList, expected, remain);
-        addRandomly(fillCount - halfFillCount, skipList, expected, remove);
+        addRandomly(halfFillCount, queueSet, expected, remain);
+        addRandomly(fillCount - halfFillCount, queueSet, expected, remove);
 
         /* check after adding, before moving */
         expected.sort(Integer::compareTo);
         for (Integer i : expected)
-            assertEquals(i, skipList.get(i));
+            assertEquals(i, queueSet.get(i));
 
         /* remove */
         for (Integer i : remove)
-            skipList.remove(i);
+            queueSet.remove(i);
 
         /* check after removing */
         remain.sort(Integer::compareTo);
         for (Integer i : remain)
-            assertEquals(i, skipList.get(i));
+            assertEquals(i, queueSet.get(i));
     }
 
     @Override
@@ -141,11 +142,11 @@ public abstract class AbstractTestSkipList implements TestSkipList {
         List<Integer> expected = new ArrayList<>();
         addRandomly(fillCount, expected);
         for (int i : expected)
-            skipList.offer(i);
+            queueSet.offer(i);
 
         expected.sort(Integer::compareTo);
         for (Integer i : expected)
-            assertEquals(i, skipList.get(i));
+            assertEquals(i, queueSet.get(i));
     }
 
     @Override
@@ -153,18 +154,18 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     public void testRemove() {
 
         List<Integer> expected = new ArrayList<>();
-        addRandomly(fillCount, skipList, expected);
+        addRandomly(fillCount, queueSet, expected);
         expected.sort(Integer::compareTo);
 
         while (!expected.isEmpty()) {
             int expectedRemove = expected.remove(0);
-            int actualRemove   = skipList.remove();
+            int actualRemove   = queueSet.remove();
             assertEquals(expectedRemove, actualRemove);
-            checkForWeakEquality(expected, skipList);
+            checkForWeakEquality(expected, queueSet);
         }
 
         try {
-            skipList.remove();
+            queueSet.remove();
             fail(msgNoSuchElementException("remove()", true));
         } catch (NoSuchElementException ignored) {}
     }
@@ -174,14 +175,14 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     public void testRemoveObj() {
 
         List<Integer> expected = new ArrayList<>();
-        addRandomly(fillCount, skipList, expected);
+        addRandomly(fillCount, queueSet, expected);
         expected.sort(Integer::compareTo);
 
         while (!expected.isEmpty()) {
             int rdmIdx = random.nextInt(expected.size());
             Integer removed = expected.remove(rdmIdx);
-            assertTrue(skipList.remove(removed));
-            checkForWeakEquality(expected, skipList);
+            assertTrue(queueSet.remove(removed));
+            checkForWeakEquality(expected, queueSet);
         }
     }
 
@@ -190,14 +191,14 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     public void testRemoveIndex() {
 
         List<Integer> expected = new ArrayList<>();
-        addRandomly(fillCount, skipList, expected);
+        addRandomly(fillCount, queueSet, expected);
         expected.sort(Integer::compareTo);
 
         while (!expected.isEmpty()) {
             int rdmIdx = random.nextInt(expected.size());
             Integer removed = expected.remove(rdmIdx);
-            assertEquals(removed, skipList.remove(rdmIdx));
-            checkForWeakEquality(expected, skipList);
+            assertEquals(removed, queueSet.remove(rdmIdx));
+            checkForWeakEquality(expected, queueSet);
         }
     }
 
@@ -206,18 +207,18 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     public void testPoll() {
 
         List<Integer> expected = new ArrayList<>();
-        addRandomly(fillCount, skipList, expected);
+        addRandomly(fillCount, queueSet, expected);
         expected.sort(Integer::compareTo);
 
         while (!expected.isEmpty()) {
             int expectedRemove = expected.remove(0);
-            int actualRemove   = skipList.poll();
+            int actualRemove   = queueSet.poll();
             assertEquals(expectedRemove, actualRemove);
-            checkForWeakEquality(expected, skipList);
+            checkForWeakEquality(expected, queueSet);
         }
 
         try {
-            assertEquals(null, skipList.poll());
+            assertEquals(null, queueSet.poll());
         } catch (Exception ignored) {
             fail(msgNoSuchElementException("poll()", false));
         }
@@ -228,7 +229,7 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     public void testElement() {
 
         try {
-            assertEquals(null, skipList.element());
+            assertEquals(null, queueSet.element());
             fail(msgNoSuchElementException("element()", true));
         } catch (Exception ignored) {
         }
@@ -237,9 +238,9 @@ public abstract class AbstractTestSkipList implements TestSkipList {
         for (int i = 0; i < fillCount; i++) {
             int next = random.nextInt();
             expected.add(next);
-            skipList.add(next);
-            assertEquals(expected.element(), skipList.element());
-            assertEquals(expected.size(), skipList.size());
+            queueSet.add(next);
+            assertEquals(expected.element(), queueSet.element());
+            assertEquals(expected.size(), queueSet.size());
         }
     }
 
@@ -248,7 +249,7 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     public void testPeek() {
 
         try {
-            assertEquals(null, skipList.peek());
+            assertEquals(null, queueSet.peek());
         } catch (Exception ignored) {
             fail(msgNoSuchElementException("peek()", false));
         }
@@ -257,9 +258,9 @@ public abstract class AbstractTestSkipList implements TestSkipList {
         for (int i = 0; i < fillCount; i++) {
             int next = random.nextInt();
             expected.add(next);
-            skipList.add(next);
-            assertEquals(expected.peek(), skipList.peek());
-            assertEquals(expected.size(), skipList.size());
+            queueSet.add(next);
+            assertEquals(expected.peek(), queueSet.peek());
+            assertEquals(expected.size(), queueSet.size());
         }
     }
 
@@ -269,29 +270,29 @@ public abstract class AbstractTestSkipList implements TestSkipList {
 
         /* check size after adding */
         for (int i = 0; i < fillCount; i++) {
-            assertEquals(i, skipList.size());
-            skipList.add(i);
+            assertEquals(i, queueSet.size());
+            queueSet.add(i);
         }
-        assertEquals(fillCount, skipList.size());
-        skipList.clear();
+        assertEquals(fillCount, queueSet.size());
+        queueSet.clear();
 
 
         /* check size after clearing */
         for (int i = 0; i < fillCount; i++) {
-            assertEquals(i, skipList.size());
-            skipList.add(i);
+            assertEquals(i, queueSet.size());
+            queueSet.add(i);
         }
 
 
         /* check size after removing */
-        assertEquals(fillCount, skipList.size());
+        assertEquals(fillCount, queueSet.size());
         for (int i = fillCount - 1; i > fillCount / 2; i--) {
-            skipList.remove(i);
-            assertEquals(i, skipList.size());
+            queueSet.remove(i);
+            assertEquals(i, queueSet.size());
         }
         for (int i = fillCount / 2; i >= 0; i--) {
-            skipList.remove((Integer) i);
-            assertEquals(i, skipList.size());
+            queueSet.remove((Integer) i);
+            assertEquals(i, queueSet.size());
         }
     }
 
@@ -299,31 +300,31 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     @Test
     public void testIsEmpty() {
 
-        assertTrue(skipList.isEmpty());
+        assertTrue(queueSet.isEmpty());
 
         for (int i = 0; i < fillCount; i++) {
-            skipList.add(random.nextInt());
-            assertFalse(skipList.isEmpty());
+            queueSet.add(random.nextInt());
+            assertFalse(queueSet.isEmpty());
         }
 
-        skipList.clear();
-        assertTrue(skipList.isEmpty());
+        queueSet.clear();
+        assertTrue(queueSet.isEmpty());
     }
 
     @Override
     @Test
     public void testContainsObj() {
 
-        assertFalse(skipList.contains(fillCount));
+        assertFalse(queueSet.contains(fillCount));
 
         for (int i = 0; i < fillCount; i++) {
             int next = random.nextInt();
-            skipList.add(next);
-            assertTrue(skipList.contains(next));
-            assertFalse(skipList.contains(fillCount));
+            queueSet.add(next);
+            assertTrue(queueSet.contains(next));
+            assertFalse(queueSet.contains(fillCount));
         }
 
-        assertFalse(skipList.contains(fillCount));
+        assertFalse(queueSet.contains(fillCount));
     }
 
     @Override
@@ -331,11 +332,11 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     public void testIterator() {
 
         List<Integer> expected = new ArrayList<>();
-        addRandomly(fillCount, skipList, expected);
+        addRandomly(fillCount, queueSet, expected);
         expected.sort(Integer::compareTo);
 
         Iterator<Integer> expectedIterator = expected.iterator();
-        Iterator<Integer> queueSetIterator = skipList.iterator();
+        Iterator<Integer> queueSetIterator = queueSet.iterator();
         while (expectedIterator.hasNext()) {
             assertTrue(queueSetIterator.hasNext());
             assertEquals(expectedIterator.next(), queueSetIterator.next());
@@ -349,11 +350,11 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     public void testToArrayWithoutParameter() {
 
         List<Integer> expected = new ArrayList<>();
-        addRandomly(fillCount, skipList, expected);
+        addRandomly(fillCount, queueSet, expected);
         expected.sort(Integer::compareTo);
 
         Object[] expectedArray = expected.toArray();
-        Object[] queueSetArray = skipList.toArray();
+        Object[] queueSetArray = queueSet.toArray();
         checkForStrongEquality(expectedArray, queueSetArray);
     }
 
@@ -362,7 +363,7 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     public void testToArrayWithParameter() {
 
         List<Integer> expected = new ArrayList<>();
-        addRandomly(fillCount, skipList, expected);
+        addRandomly(fillCount, queueSet, expected);
         expected.sort(Integer::compareTo);
 
         Integer[] expectedArray = new Integer[expected.size()];
@@ -372,7 +373,7 @@ public abstract class AbstractTestSkipList implements TestSkipList {
 
         for (int i = -1; i < 2; i++) {
             queueSetArray = new Integer[fillCount + i * fillCount / 2];
-            queueSetArray = skipList.toArray(queueSetArray);
+            queueSetArray = queueSet.toArray(queueSetArray);
             if (i == 1)
                 checkForWeakEquality(expectedArray, queueSetArray, expectedArray.length);
             else
@@ -388,15 +389,15 @@ public abstract class AbstractTestSkipList implements TestSkipList {
         List<Integer> notContainedList = new ArrayList<>();
         int halfFillCount = fillCount / 2;
 
-        addRandomly(halfFillCount, containedList, skipList);
+        addRandomly(halfFillCount, containedList, queueSet);
         addRandomly(random.nextInt(fillCount), notContainedList);
 
-        assertTrue(skipList.containsAll(containedList));
-        assertFalse(skipList.containsAll(notContainedList));
+        assertTrue(queueSet.containsAll(containedList));
+        assertFalse(queueSet.containsAll(notContainedList));
 
-        addRandomly(fillCount - halfFillCount, skipList);
-        assertTrue(skipList.containsAll(containedList));
-        assertFalse(skipList.containsAll(notContainedList));
+        addRandomly(fillCount - halfFillCount, queueSet);
+        assertTrue(queueSet.containsAll(containedList));
+        assertFalse(queueSet.containsAll(notContainedList));
     }
 
     @Override
@@ -419,16 +420,16 @@ public abstract class AbstractTestSkipList implements TestSkipList {
             addingBackup.clear();
 
             // fill lists
-            addRandomly(halfFillCount, expected, skipList);
+            addRandomly(halfFillCount, expected, queueSet);
             addRandomly(fillCount - halfFillCount, addingList, addingBackup);
-            checkIsNotEmpty(skipList);
+            checkIsNotEmpty(queueSet);
 
-            checkForWeakEquality(expected, skipList);
+            checkForWeakEquality(expected, queueSet);
 
             expected.addAll(addingList);
-            skipList.addAll(addingList);
+            queueSet.addAll(addingList);
 
-            checkForWeakEquality(expected, skipList);
+            checkForWeakEquality(expected, queueSet);
             checkForStrongEquality(addingBackup, addingList);
         }
     }
@@ -454,14 +455,14 @@ public abstract class AbstractTestSkipList implements TestSkipList {
             removingListBackup.clear();
 
             // fill lists
-            addRandomly(halfFillCount, removingList, removingListBackup, skipList);
-            addRandomly(fillCount - halfFillCount, remainingList, skipList);
-            checkIsNotEmpty(skipList);
+            addRandomly(halfFillCount, removingList, removingListBackup, queueSet);
+            addRandomly(fillCount - halfFillCount, remainingList, queueSet);
+            checkIsNotEmpty(queueSet);
 
-            assertEquals(removingList.size() + remainingList.size(), skipList.size());
-            skipList.removeAll(removingList);
+            assertEquals(removingList.size() + remainingList.size(), queueSet.size());
+            queueSet.removeAll(removingList);
 
-            checkForWeakEquality(remainingList, skipList);
+            checkForWeakEquality(remainingList, queueSet);
             checkForStrongEquality(removingListBackup, removingList);
         }
     }
@@ -478,15 +479,15 @@ public abstract class AbstractTestSkipList implements TestSkipList {
         // this loop is important to guarantee that after calling retainAll, adding is still correct (hence a
         // data structure can sort its elements)
         for (int k = 0; k < 2; k++) {
-            // fill both lists, but fill skipList with more elements
+            // fill both lists, but fill queueSet with more elements
             // note: due to randomness, a bad seed could add two identical numbers
-            addRandomly(halfFillCount, list, backup, skipList);
-            addRandomly(fillCount - halfFillCount, skipList);
-            assertFalse(list.size() == skipList.size());
+            addRandomly(halfFillCount, list, backup, queueSet);
+            addRandomly(fillCount - halfFillCount, queueSet);
+            assertFalse(list.size() == queueSet.size());
 
             // call retain and check for equal elements
-            skipList.retainAll(list);
-            checkForWeakEquality(list, skipList);
+            queueSet.retainAll(list);
+            checkForWeakEquality(list, queueSet);
             checkForStrongEquality(backup, list);
         }
     }
@@ -495,14 +496,14 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     @Test
     public void testClear() {
 
-        skipList.clear();
-        checkIsEmpty(skipList);
+        queueSet.clear();
+        checkIsEmpty(queueSet);
 
-        addRandomly(fillCount, skipList);
-        checkIsNotEmpty(skipList);
+        addRandomly(fillCount, queueSet);
+        checkIsNotEmpty(queueSet);
 
-        skipList.clear();
-        checkIsEmpty(skipList);
+        queueSet.clear();
+        checkIsEmpty(queueSet);
     }
 
     @Override
@@ -510,11 +511,11 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     public void testEquals() {
 
         /* "self" */
-        SkipList<Integer> expected = new PrioritySkipList<>();
-        assertEquals(expected, skipList);
+        QueueSet<Integer> expected = new PrioritySkipList<>();
+        assertEquals(expected, queueSet);
 
-        addRandomly(fillCount, expected, skipList);
-        assertEquals(expected, skipList);
+        addRandomly(fillCount, expected, queueSet);
+        assertEquals(expected, queueSet);
 
 
         /* others */
@@ -529,12 +530,12 @@ public abstract class AbstractTestSkipList implements TestSkipList {
 
         Set<Integer> correctSet = new HashSet<>();
         for (int i = 0; i < fillCount; i++) {
-            skipList.add(i);
-            skipList.add(i);
+            queueSet.add(i);
+            queueSet.add(i);
             correctSet.add(i);
         }
 
-        checkForWeakEquality(correctSet, skipList);
+        checkForWeakEquality(correctSet, queueSet);
     }
 
     /*
@@ -547,7 +548,7 @@ public abstract class AbstractTestSkipList implements TestSkipList {
      * itself, this method asserts true if at least one of both conditions is true ({@code isEmpty()} or
      * {@code size() == 0}).
      */
-    private void checkIsEmpty(Collection<?> collection) {
+    protected void checkIsEmpty(Collection<?> collection) {
         assertTrue(collection.isEmpty() || collection.size() == 0);
     }
 
@@ -556,14 +557,14 @@ public abstract class AbstractTestSkipList implements TestSkipList {
      * itself, this method asserts true if at least one of both conditions is true ({@code !isEmpty()} or
      * {@code size() > 0}).
      */
-    private void checkIsNotEmpty(Collection<?> collection) {
+    protected void checkIsNotEmpty(Collection<?> collection) {
         assertTrue(!collection.isEmpty() || collection.size() > 0);
     }
 
     /**
      * Checks for same size and whether all all elements in {@code original} are contained in {@code copy}.
      */
-    private void checkForWeakEquality(Collection<?> expected, Collection<?> actual) {
+    protected void checkForWeakEquality(Collection<?> expected, Collection<?> actual) {
         assertEquals(expected.size(), actual.size());
         assertTrue(actual.containsAll(expected));
         assertTrue(expected.containsAll(actual)); // needed
@@ -572,7 +573,7 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     /**
      * Checks with {@link Object#equals(Object)}, checks for same object indices and checks for same size.
      */
-    private void checkForStrongEquality(List<Integer> expected, List<Integer> actual) {
+    protected void checkForStrongEquality(List<Integer> expected, List<Integer> actual) {
         assertEquals(expected.size(), actual.size());
         for (int i = 0; i < expected.size(); i++)
             assertEquals(expected.get(i), actual.get(i));
@@ -581,7 +582,7 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     /**
      * Checks with {@link Object#equals(Object)} and checks for same object indices.
      */
-    private void checkForWeakEquality(Object[] expected, Object[] actual, int maxIdx) {
+    protected void checkForWeakEquality(Object[] expected, Object[] actual, int maxIdx) {
         for (int i = 0; i < maxIdx; i++)
             assertEquals(expected[i], actual[i]);
     }
@@ -589,21 +590,29 @@ public abstract class AbstractTestSkipList implements TestSkipList {
     /**
      * Checks with {@link Object#equals(Object)}, checks for same object indices and checks for same length.
      */
-    private void checkForStrongEquality(Object[] expected, Object[] actual) {
+    protected void checkForStrongEquality(Object[] expected, Object[] actual) {
         assertEquals(expected.length, actual.length);
         for (int i = 0; i < expected.length; i++)
             assertEquals(expected[i], actual[i]);
     }
 
-    private <C extends Collection<Integer>> void subTestNotEquals(C collection) {
+    protected <C extends Collection<Integer>> void subTestEquals(C collection) {
         resetAttributes();
-        assertNotEquals(skipList, collection);
+        assertEquals(queueSet, collection);
 
-        addRandomly(fillCount, collection, skipList);
-        assertNotEquals(skipList, collection);
+        addRandomly(fillCount, collection, queueSet);
+        assertNotEquals(queueSet, collection);
     }
 
-    private String msgNoSuchElementException(String methodName, boolean exceptionExpected) {
+    protected <C extends Collection<Integer>> void subTestNotEquals(C collection) {
+        resetAttributes();
+        assertNotEquals(queueSet, collection);
+
+        addRandomly(fillCount, collection, queueSet);
+        assertNotEquals(queueSet, collection);
+    }
+
+    protected String msgNoSuchElementException(String methodName, boolean exceptionExpected) {
 
         String msg = "SkipList does ";
         if (exceptionExpected)

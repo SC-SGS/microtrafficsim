@@ -1,15 +1,13 @@
 package utils.collections;
 
-import microtrafficsim.utils.collections.skiplist.PrioritySkipListSet;
-import microtrafficsim.utils.collections.skiplist.SkipList;
+import microtrafficsim.utils.collections.PrioritySkipListSet;
 
 /**
- * Tests implementations of {@link SkipList}
+ * Tests implementation of {@link PrioritySkipListSet}
  *
  * @author Dominic Parga Cacheiro
  */
-public class TestPrioritySkipListSet extends AbstractTestSkipList {
-
+public class TestPrioritySkipListSet extends AbstractTestQueueSet {
     public TestPrioritySkipListSet() {
         super(PrioritySkipListSet::new);
     }

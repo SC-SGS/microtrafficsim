@@ -1,4 +1,4 @@
-package microtrafficsim.utils.collections.skiplist;
+package microtrafficsim.utils.collections;
 
 import microtrafficsim.math.random.distributions.impl.Random;
 
@@ -23,7 +23,6 @@ import java.util.*;
  * @author Dominic Parga Cacheiro
  */
 public class PrioritySkipListSet<E> implements SkipList<E> {
-
     private PrioritySkipList<E> priorityQueue;
     private HashMap<Object, E>  storedValues;
 
