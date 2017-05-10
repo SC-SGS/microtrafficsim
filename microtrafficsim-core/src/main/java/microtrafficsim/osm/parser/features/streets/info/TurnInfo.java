@@ -20,7 +20,7 @@ public class TurnInfo implements ReverseEquals, Reversible {
 
     @Override
     public boolean equals(Object obj) {
-        return false;   // TODO
+        return true;   // TODO
     }
 
     @Override
