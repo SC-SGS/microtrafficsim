@@ -6,6 +6,7 @@ import microtrafficsim.core.exfmt.base.ScenarioRouteInfo;
 import microtrafficsim.core.exfmt.exceptions.ExchangeFormatException;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.simulation.builder.RouteIsNotDefinedException;
 import microtrafficsim.core.simulation.utils.RouteMatrix;
 
 /**
@@ -14,7 +15,8 @@ import microtrafficsim.core.simulation.utils.RouteMatrix;
 public class RouteMatrixExtractor implements ExchangeFormat.Extractor<RouteMatrix> {
 
     @Override
-    public RouteMatrix extract(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src) throws Exception {
+    public RouteMatrix extract(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src)
+            throws RouteIsNotDefinedException, ExchangeFormatException {
         Config cfg = fmt.getConfig().get(Config.class);
         if (cfg == null) throw new ExchangeFormatException(
                 "Config for " + RouteMatrixExtractor.class.getSimpleName() + " missing");

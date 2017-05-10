@@ -216,6 +216,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                 Route<Node> route;
                 try {
                     route = routeCreator.invoke(start, end);
+                    System.err.println(route);
                     if (route == null)
                         throw new RouteIsNotDefinedException();
                 } catch (Exception e) {

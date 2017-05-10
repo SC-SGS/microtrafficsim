@@ -9,21 +9,21 @@ import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.builder.RouteIsNotDefinedException;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * @author Dominic Parga Cacheiro
  */
-public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
+public class RouteMatrix extends TreeMap<Node, Map<Node, Route<Node>>> {
 
     private GraphGUID graphGUID;
 
-    public RouteMatrix() {}
+    public RouteMatrix() {
+        super(Comparator.comparingLong(Node::hashCode));
+    }
 
     public RouteMatrix(GraphGUID graphGUID) {
+        super(Comparator.comparingLong(Node::hashCode));
         this.graphGUID = graphGUID;
     }
 
@@ -46,7 +46,8 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
         if (origin == null || destination == null)
             throw new NullPointerException();
 
-        Map<Node, Route<Node>> tmp = computeIfAbsent(origin, node -> new HashMap<>());
+        Map<Node, Route<Node>> tmp = computeIfAbsent(origin,
+                node -> new TreeMap<>(Comparator.comparingLong(Node::hashCode)));
         tmp.put(destination, route);
     }
 
@@ -85,7 +86,6 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
         RouteMatrix routeMatrix = new RouteMatrix(sparseMatrix.graphGUID);
 
         /* go over all origin hashcodes */
-        boolean isMatrixCorrect = true;
         for (int originHash : sparseMatrix.keySet()) {
             Map<Integer, ArrayList<Integer>> tmp = sparseMatrix.get(originHash);
 
@@ -93,13 +93,12 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
             /* take origin from node lexicon */
             Node origin = nodeLexicon.get(originHash);
             if (origin == null) {
-                isMatrixCorrect = false;
-                break;
+                throw new RouteIsNotDefinedException("Origin is not defined.");
             }
 
 
             /* add new value if not empty after process */
-            HashMap<Node, Route<Node>> newValue = new HashMap<>();
+            TreeMap<Node, Route<Node>> newValue = new TreeMap<>(Comparator.comparingLong(Node::hashCode));
             for (int destinationHash : tmp.keySet()) {
                 ArrayList<Integer> edgeHashes = tmp.get(destinationHash);
 
@@ -107,8 +106,7 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
                 /* take destination from node lexicon */
                 Node destination = nodeLexicon.get(destinationHash);
                 if (destination == null) {
-                    isMatrixCorrect = false;
-                    break;
+                    throw new RouteIsNotDefinedException("Destination is not in graph.");
                 }
 
 
@@ -117,26 +115,17 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
                 for (int edgeHash : edgeHashes) {
                     ShortestPathEdge<Node> nextEdge = edgeLexicon.get(edgeHash);
                     if (nextEdge == null) {
-                        isMatrixCorrect = false;
-                        break;
+                        throw new RouteIsNotDefinedException("Route should have an edge that is not in the graph.");
                     }
                     route.push(nextEdge);
                 }
 
-                if (!isMatrixCorrect)
-                    break;
                 newValue.put(destination, route);
             }
-
-            if (!isMatrixCorrect)
-                break;
 
             if (!newValue.isEmpty())
                 routeMatrix.put(origin, newValue);
         }
-
-        if (!isMatrixCorrect)
-            throw new RouteIsNotDefinedException("Some routes could not be assigned due to wrong graph.");
 
         return routeMatrix;
     }
@@ -158,7 +147,7 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
 
                 /* put list of IDs into new matrix */
                 Map<Integer, ArrayList<Integer>> tmp2 = sparseMatrix.computeIfAbsent(
-                        origin.hashCode(), hash -> new HashMap<>());
+                        origin.hashCode(), hash -> new TreeMap<>());
                 tmp2.put(destination.hashCode(), hashList);
             }
         }
@@ -169,21 +158,15 @@ public class RouteMatrix extends HashMap<Node, HashMap<Node, Route<Node>>> {
      * The array list storing all IDs is filled by the default iterator of {@link Stack}. Thus you can iterate over
      * the list and add each element to a new stack.
      */
-    public static class Sparse extends HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> {
+    public static class Sparse extends TreeMap<Integer, Map<Integer, ArrayList<Integer>>> {
 
         private GraphGUID graphGUID;
 
-        public Sparse() {}
-
-        public Sparse(int initialCapacity, float loadFactor) {
-            super(initialCapacity, loadFactor);
+        public Sparse() {
+            super();
         }
 
-        public Sparse(int initialCapacity) {
-            super(initialCapacity);
-        }
-
-        public Sparse(Map<? extends Integer, ? extends HashMap<Integer, ArrayList<Integer>>> m) {
+        public Sparse(Map<? extends Integer, ? extends Map<Integer, ArrayList<Integer>>> m) {
             super(m);
         }
 

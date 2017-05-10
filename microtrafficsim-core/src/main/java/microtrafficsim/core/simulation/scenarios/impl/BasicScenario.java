@@ -18,9 +18,9 @@ public abstract class BasicScenario implements Scenario {
 
     private final SimulationConfig config;
     private final Graph graph;
-    private final VehicleContainer  vehicleContainer;
-    private       boolean           isPrepared;
-    protected     SparseODMatrix    odMatrix;
+    private final VehicleContainer vehicleContainer;
+    private       boolean          isPrepared;
+    protected     ODMatrix         odMatrix;
 
     /**
      * Default constructor

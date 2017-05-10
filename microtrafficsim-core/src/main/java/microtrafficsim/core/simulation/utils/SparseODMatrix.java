@@ -3,27 +3,29 @@ package microtrafficsim.core.simulation.utils;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.utils.collections.Triple;
 
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
- * A basic implementation of ODMatrix using a HashMap to save memory.
+ * A basic implementation of ODMatrix using a TreeMap to save memory.
  *
  * @author Dominic Parga Cacheiro
  */
 public class SparseODMatrix implements ODMatrix {
 
-    private HashMap<Node, HashMap<Node, Integer>> matrix;
+    private Map<Node, Map<Node, Integer>> matrix;
 
     /**
      * Default constructor
      */
     public SparseODMatrix() {
-        this.matrix = new HashMap<>();
+        this.matrix = new TreeMap<>(Comparator.comparingLong(Node::hashCode));
     }
 
     private void remove(Node origin, Node destination) {
-        HashMap<Node, Integer> tmp = matrix.get(origin);
+        Map<Node, Integer> tmp = matrix.get(origin);
         if (tmp != null) {
             tmp.remove(destination);
             if (tmp.isEmpty())
@@ -39,10 +41,10 @@ public class SparseODMatrix implements ODMatrix {
     @Override
     public void inc(Node origin, Node destination) {
 
-        HashMap<Node, Integer> tmp = matrix.get(origin);
+        Map<Node, Integer> tmp = matrix.get(origin);
         // if origin is unknown => put in 1
         if (tmp == null) {
-            tmp = new HashMap<>();
+            tmp = new TreeMap<>(Comparator.comparingLong(Node::hashCode));
             matrix.put(origin, tmp);
             tmp.put(destination, 1);
         } else {
@@ -58,7 +60,7 @@ public class SparseODMatrix implements ODMatrix {
 
     @Override
     public void dec(Node origin, Node destination) {
-        HashMap<Node, Integer> tmp = matrix.get(origin);
+        Map<Node, Integer> tmp = matrix.get(origin);
         // if origin is unknown => do nothing
         if (tmp != null) {
             Integer count = tmp.get(destination);
@@ -72,7 +74,7 @@ public class SparseODMatrix implements ODMatrix {
     }
 
     /**
-     * If count == 0, the entry is removed from the internal used {@code HashMap}.
+     * If count == 0, the entry is removed from the internal used {@code TreeMap}.
      */
     @Override
     public void set(int count, Node origin, Node destination) {
@@ -85,9 +87,9 @@ public class SparseODMatrix implements ODMatrix {
             return;
         }
 
-        HashMap<Node, Integer> tmp = matrix.get(origin);
+        Map<Node, Integer> tmp = matrix.get(origin);
         if (tmp == null) {
-            tmp = new HashMap<>();
+            tmp = new TreeMap<>(Comparator.comparingLong(Node::hashCode));
             matrix.put(origin, tmp);
         }
         tmp.put(destination, count);
@@ -95,7 +97,7 @@ public class SparseODMatrix implements ODMatrix {
 
     @Override
     public void add(int count, Node origin, Node destination) {
-        HashMap<Node, Integer> tmp = matrix.get(origin);
+        Map<Node, Integer> tmp = matrix.get(origin);
         if (tmp != null) {
             Integer oldCount = tmp.get(destination);
             if (oldCount != null)
@@ -107,7 +109,7 @@ public class SparseODMatrix implements ODMatrix {
     @Override
     public int get(Node origin, Node destination) {
 
-        HashMap<Node, Integer> tmp = matrix.get(origin);
+        Map<Node, Integer> tmp = matrix.get(origin);
 
         if (tmp == null)
             return 0;
@@ -122,7 +124,7 @@ public class SparseODMatrix implements ODMatrix {
     @Override
     public SparseODMatrix shallowcopy() {
         SparseODMatrix copy = new SparseODMatrix();
-        copy.matrix = new HashMap<>(matrix);
+        copy.matrix = new TreeMap<>(matrix);
         return copy;
     }
 
@@ -180,10 +182,10 @@ public class SparseODMatrix implements ODMatrix {
     }
 
     /**
-     * Re-initializes the internal {@code HashMap} to ensure, the memory usage is minimal.
+     * Re-initializes the internal {@code TreeMap} to ensure, the memory usage is minimal.
      */
     @Override
     public void clear() {
-        matrix = new HashMap<>();
+        matrix = new TreeMap<>(Comparator.comparingLong(Node::hashCode));
     }
 }

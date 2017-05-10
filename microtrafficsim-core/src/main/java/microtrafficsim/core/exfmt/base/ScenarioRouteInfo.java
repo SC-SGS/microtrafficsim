@@ -16,7 +16,7 @@ import java.util.*;
  */
 public class ScenarioRouteInfo extends Container.Entry {
     private GraphGUID graphGUID;
-    HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> routes = new HashMap<>();
+    HashMap<Integer, Map<Integer, ArrayList<Integer>>> routes = new HashMap<>();
 
 
     public GraphGUID getGraphGUID() {
@@ -35,7 +35,7 @@ public class ScenarioRouteInfo extends Container.Entry {
         Node origin = route.getStart();
         Node destination = route.getEnd();
 
-        HashMap<Integer, ArrayList<Integer>> tmp = routes.computeIfAbsent(origin.hashCode(), hashcode -> new HashMap<>());
+        Map<Integer, ArrayList<Integer>> tmp = routes.computeIfAbsent(origin.hashCode(), hashcode -> new HashMap<>());
         ArrayList<Integer> edges = new ArrayList<>(route.size());
         for (ShortestPathEdge<?> edge : route) {
             edges.add(edge.hashCode());
@@ -57,7 +57,7 @@ public class ScenarioRouteInfo extends Container.Entry {
         this.routes.clear();
     }
 
-    public HashMap<Integer, HashMap<Integer, ArrayList<Integer>>> getRoutes() {
+    public HashMap<Integer, Map<Integer, ArrayList<Integer>>> getRoutes() {
         return this.routes;
     }
 }

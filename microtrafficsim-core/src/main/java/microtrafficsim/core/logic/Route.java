@@ -35,6 +35,7 @@ public class Route<NodeType extends ShortestPathNode> extends Stack<ShortestPath
         return new FNVHashBuilder()
                 .add(start)
                 .add(end)
+                .add(super.hashCode())
                 .getHash();
     }
 
@@ -55,6 +56,12 @@ public class Route<NodeType extends ShortestPathNode> extends Stack<ShortestPath
         strBuilder.decLevel();
         strBuilder.appendln("<\\route>");
         return strBuilder.toString();
+    }
+
+    @Override
+    public synchronized boolean equals(Object o) {
+        return hashCode() == o.hashCode()
+                && super.equals(o);
     }
 
     public NodeType getStart() {
