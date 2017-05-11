@@ -15,7 +15,6 @@ import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.Function;
 
 
 /**
@@ -74,11 +73,12 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
      * @param rawStreetInfo contains all relevant, "persistent" information about this edge
      */
     public DirectedEdge(RawStreetInfo rawStreetInfo) {
-
         streetInfo = new FullStreetInfo(rawStreetInfo);
 
         lanes    = new Lane[rawStreetInfo.nLanes];
-        lanes[0] = new Lane(this, 0);
+        for (int i = 0; i < rawStreetInfo.nLanes; i++) {
+            lanes[i] = new Lane(this, i);
+        }
     }
 
     @Override

@@ -42,10 +42,11 @@ public class StreetGraphGenerator implements FeatureGenerator {
     private Graph              graph;
     private DistanceCalculator distcalc;
 
+
     /**
      * Creates a new {@code StreetGraphGenerator} using the
-     * {@link HaversineDistanceCalculator#getDistance(Coordinate, Coordinate)
-     * HaversineDistanceCalculator } as {@code DistanceCalculator}.
+     * {@link HaversineDistanceCalculator#getDistance(Coordinate, Coordinate) HaversineDistanceCalculator } as
+     * {@code DistanceCalculator}.
      * <p>
      * This is equivalent to
      * {@link StreetGraphGenerator#StreetGraphGenerator(SimulationConfig, DistanceCalculator)
@@ -56,11 +57,10 @@ public class StreetGraphGenerator implements FeatureGenerator {
     }
 
     /**
-     * Creates a new {@code StreetGraphGenerator} with the given
-     * {@code DistanceCalculator}.
+     * Creates a new {@code StreetGraphGenerator} with the given * {@code DistanceCalculator}.
      *
-     * @param distcalc the {@code DistanceCalculator} used to calculate the length of
-     *                 streets.
+     * @param config   the simulation-config to be used with the graph.
+     * @param distcalc the {@code DistanceCalculator} used to calculate the length of streets.
      */
     public StreetGraphGenerator(SimulationConfig config, DistanceCalculator distcalc) {
         this.config      = config;
@@ -80,25 +80,6 @@ public class StreetGraphGenerator implements FeatureGenerator {
 
     @Override
     public void execute(DataSet dataset, FeatureDefinition feature, Properties properties) {
-        /*
-         * STATUS: - all edges are added with only one lane and priority=false -
-         * Lane-Connectors are generated directly from Street-Connectors (one to
-         * one)
-         */
-
-        /*
-         * TODO: basics now - tests for StreetGraph/StreetGraphGenerator
-         */
-
-        /*
-         * TODO: basics future - geographical layout of streets (left/right of
-         * ...) - multi-lane support
-         */
-
-        /*
-         * TODO: nice to have - entfernen kleinerer zusammenhangskomponenten
-         */
-
         logger.info("generating StreetGraph");
         this.graph = null;
         Graph graph = new StreetGraph(dataset.bounds);
@@ -161,8 +142,10 @@ public class StreetGraphGenerator implements FeatureGenerator {
             Vec2d destinationDirection = new Vec2d(lastNode.lon - secondLastNode.lon,
                                                    lastNode.lat - secondLastNode.lat);
 
-            forward = new DirectedEdge(way.id, length, type, 1, streetinfo.maxspeed.forward, start, end,
-                    originDirection, destinationDirection, config.metersPerCell, config.streetPriorityLevel);
+            forward = new DirectedEdge(way.id, length, streetinfo.streettype.toCoreStreetType(),
+                    streetinfo.lanes.forward, streetinfo.maxspeed.forward,
+                    start, end, originDirection, destinationDirection,
+                    config.metersPerCell, config.streetPriorityLevel);
         }
 
         if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.BACKWARD) {
@@ -171,8 +154,10 @@ public class StreetGraphGenerator implements FeatureGenerator {
 
             Vec2d destinationDirection = new Vec2d(node0.lon - node1.lon, node0.lat - node1.lat);
 
-            backward = new DirectedEdge(way.id, length, type, 1, streetinfo.maxspeed.backward, end, start,
-                    originDirection, destinationDirection, config.metersPerCell, config.streetPriorityLevel);
+            backward = new DirectedEdge(way.id, length, streetinfo.streettype.toCoreStreetType(),
+                    streetinfo.lanes.backward, streetinfo.maxspeed.backward,
+                    end, start, originDirection, destinationDirection,
+                    config.metersPerCell, config.streetPriorityLevel);
         }
 
         // create component for ECS
@@ -217,21 +202,18 @@ public class StreetGraphGenerator implements FeatureGenerator {
         if (sgwcFrom.forward == null && sgwcFrom.backward == null) return;
 
         Node sgNodeStart = dataset.nodes.get(wayFrom.nodes[0]).get(StreetGraphNodeComponent.class).node;
-        Node sgNodeEnd
-                = dataset.nodes.get(wayFrom.nodes[wayFrom.nodes.length - 1]).get(StreetGraphNodeComponent.class).node;
+        Node sgNodeEnd = dataset.nodes.get(wayFrom.nodes[wayFrom.nodes.length - 1]).get(StreetGraphNodeComponent.class).node;
 
         GraphWayComponent gwcFrom = wayFrom.get(GraphWayComponent.class);
 
-        // obj0-turns
+        // add u-turn connectors
         for (Connector c : gwcFrom.uturn) {
             if (sgwcFrom.forward == null || sgwcFrom.backward == null) continue;
 
-            // XXX obj0-turns should probably have a special direction?
-            if (c.via.id == wayFrom.nodes[0]) {
-                sgNodeStart.addConnector(sgwcFrom.backward.getLane(0), sgwcFrom.forward.getLane(0));
-            } else if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1]) {
-                sgNodeStart.addConnector(sgwcFrom.forward.getLane(0), sgwcFrom.backward.getLane(0));
-            }
+            if (c.via.id == wayFrom.nodes[0])
+                addUTurnConnectors(sgNodeStart, sgwcFrom.backward, sgwcFrom.forward);
+            else if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1])
+                addUTurnConnectors(sgNodeEnd, sgwcFrom.forward, sgwcFrom.backward);
         }
 
         // leaving connectors (no 'else if' because of cyclic connectors)
@@ -240,33 +222,31 @@ public class StreetGraphGenerator implements FeatureGenerator {
             if (sgwcTo == null) continue;
 
             // <---o--->
-            if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[0]) {
-                addEdgeConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.forward);
-            }
+            if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[0])
+                addDirectConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.forward);
 
             // <---o<---
-            if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[c.to.nodes.length - 1]) {
-                addEdgeConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.backward);
-            }
+            if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[c.to.nodes.length - 1])
+                addDirectConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.backward);
 
             // --->o--->
-            if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[0]) {
-                addEdgeConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.forward);
-            }
+            if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[0])
+                addDirectConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.forward);
 
             // --->o<---
-            if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[c.to.nodes.length - 1]) {
-                addEdgeConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.backward);
-            }
+            if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[c.to.nodes.length - 1])
+                addDirectConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.backward);
         }
+    }
 
-        // cyclic connectors
-        if (sgNodeStart == sgNodeEnd) {
-            if (gwcFrom.cyclicEndToStart && sgwcFrom.forward != null)
-                sgNodeStart.addConnector(sgwcFrom.forward.getLane(0), sgwcFrom.forward.getLane(0));
+    private void addUTurnConnectors(Node via, DirectedEdge from, DirectedEdge to) {
+        int nLanesFrom = from.getLanes().size();
+        int nLanesTo = to.getLanes().size();
+        int n = Math.min(nLanesFrom, nLanesTo);
 
-            if (gwcFrom.cyclicStartToEnd && sgwcFrom.backward != null)
-                sgNodeStart.addConnector(sgwcFrom.backward.getLane(0), sgwcFrom.backward.getLane(0));
+        // add connectors from inner to outer lanes respectively
+        for (int i = 1; i <= n; i++) {
+            via.addConnector(from.getLane(nLanesFrom - i), to.getLane(nLanesTo - i));
         }
     }
 
@@ -279,8 +259,16 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * @param to   the {@code DirectedEdge} to which the generated connectors
      *             should lead.
      */
-    private void addEdgeConnectors(Node via, DirectedEdge from, DirectedEdge to) {
+    private void addDirectConnectors(Node via, DirectedEdge from, DirectedEdge to) {
         if (from == null || to == null) return;
+
+        int nLanesFrom = from.getLanes().size();
+        int nLanesTo = to.getLanes().size();
+        int n = Math.min(nLanesFrom, nLanesTo);
+
+        for (int i = 0; i < n; i++) {
+            via.addConnector(from.getLane(i), to.getLane(i));
+        }
 
         via.addConnector(from.getLane(0), to.getLane(0));
     }
@@ -297,11 +285,11 @@ public class StreetGraphGenerator implements FeatureGenerator {
      */
     private double getLength(DataSet dataset, WayEntity way) {
         NodeEntity node = dataset.nodes.get(way.nodes[0]);
-        Coordinate a    = new Coordinate(node.lat, node.lon);
+        Coordinate a = new Coordinate(node.lat, node.lon);
 
         double length = 0;
         for (int i = 1; i < way.nodes.length; i++) {
-            node         = dataset.nodes.get(way.nodes[i]);
+            node = dataset.nodes.get(way.nodes[i]);
             Coordinate b = new Coordinate(node.lat, node.lon);
 
             length += distcalc.getDistance(a, b);
@@ -323,10 +311,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
         StreetGraphNodeComponent graphinfo = entity.get(StreetGraphNodeComponent.class);
 
         if (graphinfo == null) {
-            graphinfo = new StreetGraphNodeComponent(
-                    entity,
-                    new Node(entity.id, new Coordinate(entity.lat, entity.lon), config)
-            );
+            Coordinate coord = new Coordinate(entity.lat, entity.lon);
+            graphinfo = new StreetGraphNodeComponent(entity, new Node(entity.id, coord, config));
             entity.set(StreetGraphNodeComponent.class, graphinfo);
         }
 
