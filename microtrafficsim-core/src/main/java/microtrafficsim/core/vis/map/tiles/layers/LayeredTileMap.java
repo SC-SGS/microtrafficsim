@@ -2,7 +2,7 @@ package microtrafficsim.core.vis.map.tiles.layers;
 
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.map.layers.LayerSource;
+import microtrafficsim.core.map.layers.TileLayerSource;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
@@ -26,9 +26,9 @@ public class LayeredTileMap implements TileLayerProvider {
     private Rect2d bounds;
 
     private HashMap<String, Layer> layers;
-    private HashMap<Class<? extends LayerSource>, TileLayerGenerator> generators;
+    private HashMap<Class<? extends TileLayerSource>, TileLayerGenerator> generators;
 
-    private LayerSource.LayerSourceChangeListener sourceListener;
+    private TileLayerSource.TileLayerSourceChangeListener sourceListener;
     private Layer.LayerStateChangeListener            layerListener;
     private List<LayerChangeListener>                 listeners;
 
@@ -48,7 +48,7 @@ public class LayeredTileMap implements TileLayerProvider {
         this.generators = new HashMap<>();
 
         this.listeners      = new ArrayList<>();
-        this.sourceListener = new LayerSourceChangeListenerImpl();
+        this.sourceListener = new TileLayerSourceChangeListenerImpl();
         this.layerListener  = new LayerStateChangeListenerImpl();
     }
 
@@ -56,6 +56,17 @@ public class LayeredTileMap implements TileLayerProvider {
     @Override
     public TilingScheme getTilingScheme() {
         return scheme;
+    }
+
+    @Override
+    public void setTilingScheme(TilingScheme scheme) {
+        if (!this.scheme.equals(scheme)) {
+            this.scheme = scheme;
+
+            for (LayerChangeListener listener : listeners) {
+                listener.tilingSchemeChanged();
+            }
+        }
     }
 
     @Override
@@ -140,7 +151,7 @@ public class LayeredTileMap implements TileLayerProvider {
      * @param generator the generator to be associated with the given source.
      * @return the generator previously associated with the given source-type.
      */
-    public TileLayerGenerator putGenerator(Class<? extends LayerSource> source, TileLayerGenerator generator) {
+    public TileLayerGenerator putGenerator(Class<? extends TileLayerSource> source, TileLayerGenerator generator) {
         return generators.put(source, generator);
     }
 
@@ -150,7 +161,7 @@ public class LayeredTileMap implements TileLayerProvider {
      * @param source the source-type for which the generator should be removed.
      * @return the generator that has been removed or {@code null} if no generator has been removed.
      */
-    public TileLayerGenerator removeGenerator(Class<? extends LayerSource> source) {
+    public TileLayerGenerator removeGenerator(Class<? extends TileLayerSource> source) {
         return generators.remove(source);
     }
 
@@ -244,10 +255,10 @@ public class LayeredTileMap implements TileLayerProvider {
     /**
      * Implementation of the change listener for {@code LayerSource}es.
      */
-    private class LayerSourceChangeListenerImpl implements LayerSource.LayerSourceChangeListener {
+    private class TileLayerSourceChangeListenerImpl implements TileLayerSource.TileLayerSourceChangeListener {
 
         @Override
-        public void sourceChanged(LayerSource source) {
+        public void sourceChanged(TileLayerSource source) {
             updateBounds();
 
             HashSet<String> changed = layers.values()
@@ -260,7 +271,7 @@ public class LayeredTileMap implements TileLayerProvider {
         }
 
         @Override
-        public void sourceChanged(LayerSource source, TileId tile) {
+        public void sourceChanged(TileLayerSource source, TileId tile) {
             updateBounds();
 
             HashSet<String> changed = layers.values()

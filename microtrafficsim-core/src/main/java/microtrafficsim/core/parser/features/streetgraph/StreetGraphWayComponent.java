@@ -23,11 +23,6 @@ public class StreetGraphWayComponent extends Component {
     }
 
 
-    @Override
-    public Class<? extends Component> getType() {
-        return StreetGraphWayComponent.class;
-    }
-
     /**
      * Clones this component and all contained objects.
      * <p>

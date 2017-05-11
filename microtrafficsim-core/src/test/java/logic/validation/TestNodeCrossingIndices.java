@@ -2,9 +2,9 @@ package logic.validation;
 
 import logic.validation.scenarios.pluscrossroad.AbstractPlusCrossroadScenario;
 import logic.validation.scenarios.pluscrossroad.FullPlusCrossroadScenario;
-import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.convenience.MapViewer;
-import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
+import microtrafficsim.core.convenience.mapviewer.MapViewer;
+import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.logic.Direction;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;

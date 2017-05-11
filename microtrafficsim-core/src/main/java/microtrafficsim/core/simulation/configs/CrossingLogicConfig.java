@@ -22,6 +22,15 @@ public final class CrossingLogicConfig {
     }
 
     /**
+     * Calls the {@link #CrossingLogicConfig() default constructor} and sets all values using
+     * {@link #update(CrossingLogicConfig)}.
+     */
+    public CrossingLogicConfig(CrossingLogicConfig init) {
+        this();
+        update(init);
+    }
+
+    /**
      * Setup the parameters of this config file.
      */
     public void setup() {

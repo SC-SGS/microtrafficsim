@@ -4,7 +4,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.Serializer;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import microtrafficsim.core.serialization.Version;
+import microtrafficsim.utils.Version;
 
 
 public class VersionSerializer extends Serializer<Version> {

@@ -3,7 +3,7 @@ package microtrafficsim.core.vis.map.tiles.layers;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.FeaturePrimitive;
 import microtrafficsim.core.map.TileFeatureProvider;
-import microtrafficsim.core.map.layers.LayerSource;
+import microtrafficsim.core.map.layers.TileLayerSource;
 import microtrafficsim.core.map.tiles.TileId;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.mesh.style.Style;
@@ -17,13 +17,13 @@ import java.util.ArrayList;
  *
  * @author Maximilian Luz
  */
-public class FeatureTileLayerSource implements LayerSource {
+public class FeatureTileLayerSource implements TileLayerSource {
     private String              feature;
     private Style               style;
     private TileFeatureProvider provider;
     private long                revision;
 
-    private ArrayList<LayerSourceChangeListener>      listeners;
+    private ArrayList<TileLayerSourceChangeListener>      listeners;
     private TileFeatureProvider.FeatureChangeListener featureListener;
 
 
@@ -83,7 +83,7 @@ public class FeatureTileLayerSource implements LayerSource {
         this.provider = provider;
         this.revision++;
 
-        for (LayerSourceChangeListener listener : listeners)
+        for (TileLayerSourceChangeListener listener : listeners)
             listener.sourceChanged(this);
     }
 
@@ -125,7 +125,7 @@ public class FeatureTileLayerSource implements LayerSource {
 
 
     @Override
-    public Class<? extends LayerSource> getType() {
+    public Class<? extends TileLayerSource> getType() {
         return FeatureTileLayerSource.class;
     }
 
@@ -159,17 +159,17 @@ public class FeatureTileLayerSource implements LayerSource {
 
 
     @Override
-    public boolean addLayerSourceChangeListener(LayerSourceChangeListener listener) {
+    public boolean addLayerSourceChangeListener(TileLayerSourceChangeListener listener) {
         return listeners.add(listener);
     }
 
     @Override
-    public boolean removeLayerSourceChangeListener(LayerSourceChangeListener listener) {
+    public boolean removeLayerSourceChangeListener(TileLayerSourceChangeListener listener) {
         return listeners.remove(listener);
     }
 
     @Override
-    public boolean hasLayerSourceChangeListener(LayerSourceChangeListener listener) {
+    public boolean hasLayerSourceChangeListener(TileLayerSourceChangeListener listener) {
         return listeners.contains(listener);
     }
 
@@ -182,14 +182,14 @@ public class FeatureTileLayerSource implements LayerSource {
         @Override
         public void featuresChanged() {
             revision++;
-            for (LayerSourceChangeListener l : listeners)
+            for (TileLayerSourceChangeListener l : listeners)
                 l.sourceChanged(FeatureTileLayerSource.this);
         }
 
         @Override
         public void featuresChanged(TileId tile) {
             revision++;
-            for (LayerSourceChangeListener l : listeners)
+            for (TileLayerSourceChangeListener l : listeners)
                 l.sourceChanged(FeatureTileLayerSource.this, tile);
         }
 
@@ -197,7 +197,7 @@ public class FeatureTileLayerSource implements LayerSource {
         public void featureChanged(String name) {
             revision++;
             if (feature != null && feature.equals(name))
-                for (LayerSourceChangeListener l : listeners)
+                for (TileLayerSourceChangeListener l : listeners)
                     l.sourceChanged(FeatureTileLayerSource.this);
         }
 
@@ -205,7 +205,7 @@ public class FeatureTileLayerSource implements LayerSource {
         public void featureChanged(String name, TileId tile) {
             revision++;
             if (feature != null && feature.equals(name))
-                for (LayerSourceChangeListener l : listeners)
+                for (TileLayerSourceChangeListener l : listeners)
                     l.sourceChanged(FeatureTileLayerSource.this, tile);
         }
     }

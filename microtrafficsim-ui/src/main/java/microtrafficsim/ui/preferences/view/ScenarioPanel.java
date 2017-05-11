@@ -1,8 +1,8 @@
 package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig.Element;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
-import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.model.ScenarioModel;
 import microtrafficsim.utils.Descriptor;
 
@@ -119,19 +119,38 @@ public class ScenarioPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
-        cbShowAreasWhileSimulating.setSelected(config.scenario.showAreasWhileSimulating);
-        cbNodesAreWeightedUniformly.setSelected(config.scenario.nodesAreWeightedUniformly);
+    public void setSettings(boolean indeed, SimulationConfig config) {
+        if (indeed) {
+            cbShowAreasWhileSimulating.setSelected(config.scenario.showAreasWhileSimulating);
+            cbNodesAreWeightedUniformly.setSelected(config.scenario.nodesAreWeightedUniformly);
 
-        /* update model */
-        model.clearAllScenarios();
-        config.scenario.supportedClasses.forEach(model::addScenario);
-        /* update checkbox for scenario choice */
-        cbScenarioChoice.removeAllItems();
-        model.getScenarios().stream()
-                .map(Descriptor::getDescription)
-                .forEach(cbScenarioChoice::addItem);
-        cbScenarioChoice.setSelectedItem(config.scenario.selectedClass);
+            /* update model */
+            model.clearAllScenarios();
+            config.scenario.supportedClasses.forEach(model::addScenario);
+            /* update checkbox for scenario choice */
+            cbScenarioChoice.removeAllItems();
+            model.getScenarios().stream()
+                    .map(Descriptor::getDescription)
+                    .forEach(cbScenarioChoice::addItem);
+            cbScenarioChoice.setSelectedItem(config.scenario.selectedClass);
+        } else {
+            if (model.getEnableLexicon().isEnabled(Element.showAreasWhileSimulating))
+                cbShowAreasWhileSimulating.setSelected(config.scenario.showAreasWhileSimulating);
+            if (model.getEnableLexicon().isEnabled(Element.nodesAreWeightedUniformly))
+                cbNodesAreWeightedUniformly.setSelected(config.scenario.nodesAreWeightedUniformly);
+
+            if (model.getEnableLexicon().isEnabled(Element.scenarioSelection)) {
+                /* update model */
+                model.clearAllScenarios();
+                config.scenario.supportedClasses.forEach(model::addScenario);
+                /* update checkbox for scenario choice */
+                cbScenarioChoice.removeAllItems();
+                model.getScenarios().stream()
+                        .map(Descriptor::getDescription)
+                        .forEach(cbScenarioChoice::addItem);
+                cbScenarioChoice.setSelectedItem(config.scenario.selectedClass);
+            }
+        }
     }
 
     @Override
@@ -148,13 +167,15 @@ public class ScenarioPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setEnabled(PrefElement id, boolean enabled) {
-        enabled = id.isEnabled() && enabled;
+    public boolean setEnabledIfEditable(Element element, boolean enabled) {
+        enabled = super.setEnabledIfEditable(element, enabled);
 
-        switch (id) {
+        switch (element) {
             case showAreasWhileSimulating:  cbShowAreasWhileSimulating.setEnabled(enabled); break;
             case nodesAreWeightedUniformly: cbNodesAreWeightedUniformly.setEnabled(enabled);
             case scenarioSelection:         cbScenarioChoice.setEnabled(enabled);           break;
         }
+
+        return enabled;
     }
 }

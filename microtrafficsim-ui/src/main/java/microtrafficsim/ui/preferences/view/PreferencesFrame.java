@@ -1,19 +1,21 @@
 package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.ui.gui.utils.ScrollablePanel;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
+import microtrafficsim.ui.gui.utils.ScrollablePanel;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
-import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.model.PreferencesFrameModel;
 import microtrafficsim.ui.preferences.model.PreferencesModel;
+import microtrafficsim.utils.functional.Procedure;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -22,6 +24,10 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
 
     public static final Font HEADER_FONT = new Font("Arial", Font.BOLD, 14);
     public static final Font TEXT_FONT   = new Font("Arial", Font.PLAIN, 14);
+
+
+    private final ReentrantLock lockUserInput;
+    private final AtomicBoolean isBusy;
 
     private final PreferencesFrameModel model;
     private final GeneralPanel generalPanel;
@@ -39,6 +45,9 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
      */
     public PreferencesFrame(GUIController guiController) {
         super();
+        lockUserInput = new ReentrantLock();
+        isBusy        = new AtomicBoolean(false);
+
         model = new PreferencesFrameModel("Simulation parameter settings", guiController);
         setTitle(model.getTitle());
 
@@ -88,24 +97,39 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
 
 
         /* bottom buttons */
+        GridBagConstraints constraints;
+        JButton button;
+
+        constraints         = new GridBagConstraints();
+        constraints.weightx = 0;
+        button              = new JButton("Load config...");
+        button.addActionListener(e -> model.getGuiController().transiate(GUIEvent.LOAD_CONFIG));
+        bottom.add(button, constraints);
+
+        constraints         = new GridBagConstraints();
+        constraints.weightx = 0;
+        button              = new JButton("Save config...");
+        button.addActionListener(e -> model.getGuiController().transiate(GUIEvent.SAVE_CONFIG));
+        bottom.add(button, constraints);
+
         bottom.setLayout(new GridBagLayout());
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.weightx            = 1;
-        constraints.fill               = GridBagConstraints.HORIZONTAL;
-        JPanel gap                     = new JPanel();
+        constraints         = new GridBagConstraints();
+        constraints.weightx = 1;
+        constraints.fill    = GridBagConstraints.HORIZONTAL;
+        JPanel gap          = new JPanel();
         bottom.add(gap, constraints);
 
         constraints         = new GridBagConstraints();
         constraints.weightx = 0;
-        JButton buAccept    = new JButton("Accept");
-        buAccept.addActionListener(e -> model.getGuiController().transiate(GUIEvent.ACCEPT_PREFS));
-        bottom.add(buAccept, constraints);
+        button              = new JButton("Accept");
+        button.addActionListener(e -> model.getGuiController().transiate(GUIEvent.ACCEPT_PREFS));
+        bottom.add(button, constraints);
 
         constraints         = new GridBagConstraints();
         constraints.weightx = 0;
-        JButton buCancel    = new JButton("Cancel");
-        buCancel.addActionListener(e -> model.getGuiController().transiate(GUIEvent.CANCEL_PREFS));
-        bottom.add(buCancel, constraints);
+        button              = new JButton("Cancel");
+        button.addActionListener(e -> model.getGuiController().transiate(GUIEvent.CANCEL_PREFS));
+        bottom.add(button, constraints);
 
 
         /* finish and return */
@@ -141,12 +165,12 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
-        generalPanel.setSettings(config);
-        scenarioPanel.setSettings(config);
-        crossingLogicPanel.setSettings(config);
-        visualizationPanel.setSettings(config);
-        concurrencyPanel.setSettings(config);
+    public void setSettings(boolean indeed, SimulationConfig config) {
+        generalPanel.setSettings(indeed, config);
+        scenarioPanel.setSettings(indeed, config);
+        crossingLogicPanel.setSettings(indeed, config);
+        visualizationPanel.setSettings(indeed, config);
+        concurrencyPanel.setSettings(indeed, config);
     }
 
     @Override
@@ -195,21 +219,24 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
     }
 
     @Override
-    public void setEnabled(PrefElement id, boolean enabled) {
-        switch (id) {
+    public boolean setEnabledIfEditable(SimulationConfig.Element element, boolean enabled) {
+        enabled = PreferencesView.super.setEnabledIfEditable(element, enabled);
+
+        switch (element) {
             // General
             case sliderSpeedup:
             case maxVehicleCount:
             case seed:
             case metersPerCell:
-                generalPanel.setEnabled(id, enabled);
+            case globalMaxVelocity:
+                generalPanel.setEnabledIfEditable(element, enabled);
                 break;
 
             // scenario
             case showAreasWhileSimulating:
             case nodesAreWeightedUniformly:
             case scenarioSelection:
-                scenarioPanel.setEnabled(id, enabled);
+                scenarioPanel.setEnabledIfEditable(element, enabled);
                 break;
 
             // crossing logic
@@ -217,19 +244,52 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
             case priorityToThe:
             case onlyOneVehicle:
             case friendlyStandingInJam:
-                crossingLogicPanel.setEnabled(id, enabled);
+                crossingLogicPanel.setEnabledIfEditable(element, enabled);
                 break;
 
             // Visualization
             case style:
-                visualizationPanel.setEnabled(id, enabled);
+                visualizationPanel.setEnabledIfEditable(element, enabled);
 
             // concurrency
             case nThreads:
             case vehiclesPerRunnable:
             case nodesPerThread:
-                concurrencyPanel.setEnabled(id, enabled);
+                concurrencyPanel.setEnabledIfEditable(element, enabled);
                 break;
         }
+
+        return enabled;
+    }
+
+    /*
+    |=============|
+    | concurrency |
+    |=============|
+    */
+    /**
+     * Creates a thread executing the given procedure. The thread is NOT started yet. If the preferences frame is busy,
+     * nothing is done. If the procedure has finished, it should call {@link #hasFinishedProcedureExecution()}.
+     *
+     * @return The thread able to execute the procedure; null if busy
+     */
+    public Thread requestAnExecutionThread(Procedure procedure) {
+        if (!lockUserInput.tryLock())
+            return null;
+
+        Thread thread = null;
+        if (isBusy.compareAndSet(false, true)) {
+            thread = new Thread(procedure::invoke);
+        }
+
+        lockUserInput.unlock();
+        return thread;
+    }
+
+    /**
+     * This method just sets this {@code preferences frame} to not busy.
+     */
+    public void hasFinishedProcedureExecution() {
+        isBusy.set(false);
     }
 }

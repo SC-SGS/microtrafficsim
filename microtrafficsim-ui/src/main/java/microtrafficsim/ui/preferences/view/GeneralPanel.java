@@ -1,9 +1,9 @@
 package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig.Element;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.GeneralModel;
-import microtrafficsim.ui.preferences.model.PrefElement;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,6 +19,7 @@ public class GeneralPanel extends PreferencesPanel {
     private final JTextField tfMaxVehicleCount;
     private final JTextField tfSeed;
     private final JTextField tfMetersPerCell;
+    private final JTextField tfGlobalMaxVelocity;
 
     /**
      * You should call {@link #create()} before you use this frame.
@@ -27,10 +28,11 @@ public class GeneralPanel extends PreferencesPanel {
         super();
         model = new GeneralModel();
 
-        sliderSpeedup     = new JSlider(0, 100);
-        tfMaxVehicleCount = new JTextField();
-        tfSeed            = new JTextField();
-        tfMetersPerCell   = new JTextField();
+        sliderSpeedup       = new JSlider(0, 100);
+        tfMaxVehicleCount   = new JTextField();
+        tfSeed              = new JTextField();
+        tfMetersPerCell     = new JTextField();
+        tfGlobalMaxVelocity = new JTextField();
 
         create();
     }
@@ -43,7 +45,8 @@ public class GeneralPanel extends PreferencesPanel {
         addSlider(row++);
         addTextFieldToGridBagLayout(row++, "max vehicle count: ", tfMaxVehicleCount);
         addTextFieldToGridBagLayout(row++, "seed: ", tfSeed);
-        addTextFieldToGridBagLayout(row++, "meters per cell: ", tfMetersPerCell);
+        addTextFieldToGridBagLayout(row++, "m/cell: ", tfMetersPerCell);
+        addTextFieldToGridBagLayout(row++, "global max cells/s: ", tfGlobalMaxVelocity);
     }
 
     private void addSlider(int row) {
@@ -88,11 +91,25 @@ public class GeneralPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
-        sliderSpeedup.setValue(config.speedup);
-        tfMaxVehicleCount.setText("" + config.maxVehicleCount);
-        tfSeed.setText("" + config.seed);
-        tfMetersPerCell.setText("" + config.metersPerCell);
+    public void setSettings(boolean indeed, SimulationConfig config) {
+        if (indeed) {
+            sliderSpeedup.setValue(config.speedup);
+            tfMaxVehicleCount.setText("" + config.maxVehicleCount);
+            tfSeed.setText("" + config.seed);
+            tfMetersPerCell.setText("" + config.metersPerCell);
+            tfGlobalMaxVelocity.setText("" + config.globalMaxVelocity);
+        } else {
+            if (model.getEnableLexicon().isEnabled(Element.sliderSpeedup))
+                sliderSpeedup.setValue(config.speedup);
+            if (model.getEnableLexicon().isEnabled(Element.maxVehicleCount))
+                tfMaxVehicleCount.setText("" + config.maxVehicleCount);
+            if (model.getEnableLexicon().isEnabled(Element.seed))
+                tfSeed.setText("" + config.seed);
+            if (model.getEnableLexicon().isEnabled(Element.metersPerCell))
+                tfMetersPerCell.setText("" + config.metersPerCell);
+            if (model.getEnableLexicon().isEnabled(Element.globalMaxVelocity))
+                tfGlobalMaxVelocity.setText("" + config.metersPerCell);
+        }
     }
 
     @Override
@@ -121,6 +138,12 @@ public class GeneralPanel extends PreferencesPanel {
             exception.appendToMessage("\"Meters per cell\" should be a float.\n");
             exceptionOccured = true;
         }
+        try {
+            config.globalMaxVelocity = Integer.parseInt(tfGlobalMaxVelocity.getText());
+        } catch (NumberFormatException e) {
+            exception.appendToMessage("\"Global max velocity\" should be an integer.\n");
+            exceptionOccured = true;
+        }
 
 
         if (exceptionOccured) throw exception;
@@ -130,14 +153,17 @@ public class GeneralPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setEnabled(PrefElement id, boolean enabled) {
-        enabled = id.isEnabled() && enabled;
+    public boolean setEnabledIfEditable(Element element, boolean enabled) {
+        enabled = super.setEnabledIfEditable(element, enabled);
 
-        switch (id) {
-            case sliderSpeedup:   sliderSpeedup.setEnabled(enabled);     break;
-            case maxVehicleCount: tfMaxVehicleCount.setEnabled(enabled); break;
-            case seed:            tfSeed.setEnabled(enabled);            break;
-            case metersPerCell:   tfMetersPerCell.setEnabled(enabled);   break;
+        switch (element) {
+            case sliderSpeedup:     sliderSpeedup.setEnabled(enabled);       break;
+            case maxVehicleCount:   tfMaxVehicleCount.setEnabled(enabled);   break;
+            case seed:              tfSeed.setEnabled(enabled);              break;
+            case metersPerCell:     tfMetersPerCell.setEnabled(enabled);     break;
+            case globalMaxVelocity: tfGlobalMaxVelocity.setEnabled(enabled); break;
         }
+
+        return enabled;
     }
 }

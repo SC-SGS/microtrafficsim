@@ -2,7 +2,9 @@ package microtrafficsim.core.map.style.impl;
 
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.style.BasicStyleSheet;
+import microtrafficsim.core.map.style.VehicleColorSchemes;
 import microtrafficsim.core.vis.opengl.utils.Color;
+import microtrafficsim.math.MathUtils;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 
 
@@ -21,15 +23,6 @@ public class LightMonochromeStyleSheet extends BasicStyleSheet {
             return offset + base * (float) Math.pow(exp1, (19 - 12)) + base * (float) Math.pow(exp2, 12 - zoom);
         else
             return offset + base * (float) Math.pow(exp1, (19 - 12)) - base * (float) Math.pow(exp2, 12 - 11);
-    };
-
-    private final static Color[] VEHICLE_COLORS = {
-            Color.fromRGB(0xa33a3a),
-            Color.fromRGB(0x72a33a),
-            Color.fromRGB(0x3aa372),
-            Color.fromRGB(0x3a72a3),
-            Color.fromRGB(0x3a3aa3),
-            Color.fromRGB(0x342059),
     };
 
 
@@ -155,12 +148,9 @@ public class LightMonochromeStyleSheet extends BasicStyleSheet {
 
     @Override
     public Color getColor(Vehicle vehicle) {
-        int v = vehicle.getVelocity();
-
-        if (v < 0) return VEHICLE_COLORS[0];
-        if (v >= VEHICLE_COLORS.length) return VEHICLE_COLORS[VEHICLE_COLORS.length];
-
-        return VEHICLE_COLORS[v];
+        Color[] colors = VehicleColorSchemes.RED_TO_GREEN;
+        int v = MathUtils.clamp(vehicle.getVelocity(), 0, colors.length - 1);
+        return colors[v];
     }
 
 

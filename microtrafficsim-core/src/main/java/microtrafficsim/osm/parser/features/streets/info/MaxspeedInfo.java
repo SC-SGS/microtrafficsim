@@ -1,5 +1,6 @@
 package microtrafficsim.osm.parser.features.streets.info;
 
+import microtrafficsim.osm.parser.ecs.components.traits.Reversible;
 import microtrafficsim.osm.parser.features.streets.ReverseEquals;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -16,7 +17,7 @@ import java.util.regex.Pattern;
  *
  * @author Maximilian Luz
  */
-public class MaxspeedInfo implements ReverseEquals {
+public class MaxspeedInfo implements ReverseEquals, Reversible {
     public static final float UNGIVEN = -1;
     public static final float NONE    = -2;
     public static final float WALKING = -3;
@@ -60,6 +61,13 @@ public class MaxspeedInfo implements ReverseEquals {
         MaxspeedInfo other = (MaxspeedInfo) obj;
         return this.forward == other.backward
                 && this.backward == other.forward;
+    }
+
+    @Override
+    public void reverse() {
+        float tmp = forward;
+        forward  = backward;
+        backward = tmp;
     }
 
 

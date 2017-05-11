@@ -4,7 +4,7 @@ import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
-import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
+import microtrafficsim.core.logic.NagelSchreckenbergException;
 
 /**
  * @see Driver

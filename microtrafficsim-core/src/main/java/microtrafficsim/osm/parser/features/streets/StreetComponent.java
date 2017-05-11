@@ -1,5 +1,7 @@
 package microtrafficsim.osm.parser.features.streets;
 
+import microtrafficsim.core.parser.processing.Ways.MergePoint;
+import microtrafficsim.core.parser.processing.Ways.WayLayout;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 import microtrafficsim.osm.parser.ecs.Entity;
@@ -7,8 +9,6 @@ import microtrafficsim.osm.parser.ecs.components.traits.Mergeable;
 import microtrafficsim.osm.parser.ecs.components.traits.Reversible;
 import microtrafficsim.osm.parser.ecs.entities.NodeEntity;
 import microtrafficsim.osm.parser.ecs.entities.WayEntity;
-import microtrafficsim.core.parser.processing.Ways.MergePoint;
-import microtrafficsim.core.parser.processing.Ways.WayLayout;
 import microtrafficsim.osm.parser.features.streets.info.*;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
@@ -22,10 +22,11 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
 
     public StreetType   streettype;
     public LaneInfo     lanes;
+    public TurnInfo     turns;
     public MaxspeedInfo maxspeed;
     public OnewayInfo   oneway;
     public boolean      roundabout;
-    public float        layer;
+    public double       layer;
 
 
     /**
@@ -34,26 +35,24 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
      * @param entity     the entity for which this component should be created.
      * @param streettype the type of the street.
      * @param lanes      the lane information of the street.
+     * @param turns      the turn-lane information of the street.
      * @param maxspeed   the maximum-speed information of the street.
      * @param oneway     the one-way information of the street.
      * @param roundabout set to {@code true} if the street is a roundabout.
      * @param layer      the (vertical) layer on which this street resides.
      */
-    public StreetComponent(WayEntity entity, StreetType streettype, LaneInfo lanes, MaxspeedInfo maxspeed,
-                           OnewayInfo oneway, boolean roundabout, float layer) {
+    public StreetComponent(WayEntity entity, StreetType streettype, LaneInfo lanes, TurnInfo turns,
+                           MaxspeedInfo maxspeed, OnewayInfo oneway, boolean roundabout, double layer) {
         super(entity);
         this.streettype = streettype;
         this.lanes      = lanes;
+        this.turns      = turns;
         this.maxspeed   = maxspeed;
         this.oneway     = oneway;
         this.roundabout = roundabout;
         this.layer      = layer;
     }
 
-    @Override
-    public Class<StreetComponent> getType() {
-        return StreetComponent.class;
-    }
 
     /**
      * Clones this component and all contained objects.
@@ -66,8 +65,9 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
     @Override
     public StreetComponent clone(Entity e) {
         LaneInfo     lanes    = new LaneInfo(this.lanes);
+        TurnInfo     turns    = new TurnInfo(this.turns);
         MaxspeedInfo maxspeed = new MaxspeedInfo(this.maxspeed);
-        return new StreetComponent((WayEntity) e, streettype, lanes, maxspeed, oneway, roundabout, layer);
+        return new StreetComponent((WayEntity) e, streettype, lanes, turns, maxspeed, oneway, roundabout, layer);
     }
 
 
@@ -75,6 +75,7 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
     public boolean forwardMergeable(DataSet dataset, WayLayout layout, NodeEntity node, StreetComponent other) {
         return this.streettype.equals(other.streettype)
                 && this.lanes.equals(other.lanes)
+                && this.turns.equals(other.turns)
                 && this.maxspeed.equals(other.maxspeed)
                 && this.oneway.equals(other.oneway)
                 && this.roundabout == other.roundabout
@@ -84,7 +85,8 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
     @Override
     public boolean reverseMergeable(DataSet dataset, WayLayout layout, NodeEntity node, StreetComponent other) {
         return this.streettype.equals(other.streettype)
-                && this.lanes.reverseEquals(other)
+                && this.lanes.reverseEquals(other.lanes)
+                && this.turns.reverseEquals(other.turns)
                 && this.maxspeed.reverseEquals(other.maxspeed)
                 && this.oneway.reverseEquals(other.oneway)
                 && this.roundabout == other.roundabout
@@ -101,6 +103,7 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
     public int hashCode() {
         return new FNVHashBuilder()
                 .add(lanes)
+                .add(turns)
                 .add(maxspeed)
                 .add(oneway)
                 .add(layer)
@@ -115,6 +118,7 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
         StreetComponent other = (StreetComponent) obj;
         return this.streettype.equals(other.streettype)
                 && this.lanes.equals(other.lanes)
+                && this.turns.equals(other.turns)
                 && this.maxspeed.equals(other.maxspeed)
                 && this.oneway.equals(other.oneway)
                 && this.roundabout == other.roundabout
@@ -128,6 +132,7 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
         StreetComponent other = (StreetComponent) obj;
         return this.streettype.equals(other.streettype)
                 && this.lanes.reverseEquals(other.lanes)
+                && this.turns.reverseEquals(other.turns)
                 && this.maxspeed.reverseEquals(other.maxspeed)
                 && this.oneway.reverseEquals(other.oneway)
                 && this.roundabout == other.roundabout
@@ -136,20 +141,9 @@ public class StreetComponent extends Component implements Mergeable<StreetCompon
 
     @Override
     public void reverse() {
-        // oneway
-        if (oneway == OnewayInfo.FORWARD)
-            oneway = OnewayInfo.BACKWARD;
-        else if (oneway == OnewayInfo.BACKWARD)
-            oneway = OnewayInfo.FORWARD;
-
-        // maxspeed
-        float swapf       = maxspeed.forward;
-        maxspeed.forward  = maxspeed.backward;
-        maxspeed.backward = swapf;
-
-        // lanes
-        int swapi      = lanes.forward;
-        lanes.forward  = lanes.backward;
-        lanes.backward = swapi;
+        oneway = OnewayInfo.getReverse(oneway);
+        maxspeed.reverse();
+        lanes.reverse();
+        turns.reverse();
     }
 }

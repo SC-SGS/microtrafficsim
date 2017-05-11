@@ -1,9 +1,14 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
-import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.convenience.MapViewer;
+import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
+import microtrafficsim.core.convenience.filechoosing.ConfigFileChooser;
+import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
+import microtrafficsim.core.convenience.filechoosing.MapfileChooser;
+import microtrafficsim.core.convenience.filechoosing.ScenarioFileChooser;
+import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.convenience.utils.FileFilters;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
@@ -17,14 +22,18 @@ import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.ui.gui.menues.MTSMenuBar;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
+import microtrafficsim.ui.gui.utils.FrameTitle;
+import microtrafficsim.ui.gui.utils.UserInteractionUtils;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
-import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.view.PreferencesFrame;
+import microtrafficsim.utils.collections.Composite;
+import microtrafficsim.utils.collections.Tuple;
+import microtrafficsim.utils.functional.Procedure;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
+import microtrafficsim.utils.strings.WrappedString;
 import org.slf4j.Logger;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -64,7 +73,7 @@ public class SimulationController implements GUIController {
 
     /* multithreading: user input and task execution */
     private final AtomicBoolean isExecutingUserTask;
-    private final ReentrantLock lock_user_input;
+    private final ReentrantLock lockTransition;
 
     /* multithreading: interrupting parsing */
     private final AtomicBoolean isParsing;
@@ -79,25 +88,25 @@ public class SimulationController implements GUIController {
     private boolean isCreated;
 
     /* general */
-    private final SimulationConfig config;
+    private final SimulationConfig config; // has to be final for correct map/simulation behaviour
+    private ExfmtStorage exfmtStorage;
 
     /* visualization and parsing */
-    private final MapViewer      mapviewer;
-    private final VehicleOverlay overlay;
-    private ScenarioAreaOverlay  scenarioAreaOverlay;
-    private       OSMParser      parser;
-    private       Graph          streetgraph;
+    private final TileBasedMapViewer mapviewer; // has to be final for correct map update
+    private final VehicleOverlay     overlay;
+    private ScenarioAreaOverlay      scenarioAreaOverlay;
+
+    private Graph streetgraph;
 
     /* simulation */
     private Simulation      simulation;
     private ScenarioBuilder scenarioBuilder;
 
     /* gui */
-    private final String           frameTitleRaw;
-    private final JFrame           frame;
-    private final MTSMenuBar       menubar;
-    private final PreferencesFrame preferences;
-    private final JFileChooser     mapfileChooser;
+    private final JFrame                    frame;
+    private final MTSMenuBar                menubar;
+    private final PreferencesFrame          preferences;
+    private final Composite<MTSFileChooser> fileChoosers;
 
     public SimulationController() {
         this(new BuildSetup());
@@ -107,9 +116,9 @@ public class SimulationController implements GUIController {
 
         /* multithreading */
         isExecutingUserTask = new AtomicBoolean(false);
-        lock_user_input    = new ReentrantLock();
-        isParsing          = new AtomicBoolean(false);
-        isBuildingScenario = new AtomicBoolean(false);
+        lockTransition      = new ReentrantLock();
+        isParsing           = new AtomicBoolean(false);
+        isBuildingScenario  = new AtomicBoolean(false);
 
         /* state marker */
         isCreated = false;
@@ -119,8 +128,8 @@ public class SimulationController implements GUIController {
         config = buildSetup.config;
 
         /* visualization and parsing */
-        mapviewer        = buildSetup.mapviewer;
-        overlay          = buildSetup.overlay;
+        mapviewer = buildSetup.mapviewer;
+        overlay   = buildSetup.overlay;
 
         /* simulation */
         simulation      = buildSetup.simulation;
@@ -128,41 +137,20 @@ public class SimulationController implements GUIController {
         overlay.setSimulation(simulation);
 
         /* gui */
-        frameTitleRaw    = buildSetup.frameTitle;
-        frame            = new JFrame(frameTitleRaw);
-        menubar          = new MTSMenuBar();
-        preferences      = new PreferencesFrame(this);
-        mapfileChooser   = new JFileChooser();
-        mapfileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
-        mapfileChooser.setFileFilter(new FileFilter() {
+        frame       = new JFrame(FrameTitle.DEFAULT.get());
+        menubar     = new MTSMenuBar();
+        preferences = new PreferencesFrame(this);
+        preferences.setSettings(true, config);
 
-            @Override
-            public String getDescription() {
-                return ".osm";
-            }
 
-            @Override
-            public boolean accept(File file) {
-                if (file.isDirectory()) return true;
-
-                String extension = null;
-
-                String filename = file.getName();
-                int    i        = filename.lastIndexOf('.');
-
-                if (i > 0)
-                    if (i < filename.length() - 1)
-                        extension = filename.substring(i + 1).toLowerCase();
-
-                if (extension == null) return false;
-
-                switch (extension) {
-                    case "osm": return true;
-                    default:    return false;
-                }
-            }
-        });
-
+        /* file chooser */
+        fileChoosers = new Composite<>();
+        fileChoosers.set(MapfileChooser.class,      new MapfileChooser());
+        fileChoosers.set(ScenarioFileChooser.class, new ScenarioFileChooser());
+        fileChoosers.set(ConfigFileChooser.class, new ConfigFileChooser());
+        for (MTSFileChooser chooser : fileChoosers.getAll().values()) {
+            chooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+        }
 
         /* create */
         create();
@@ -183,7 +171,8 @@ public class SimulationController implements GUIController {
             mapviewer.create(config);
         } catch (UnsupportedFeatureException e) { e.printStackTrace(); }
 
-        parser = DefaultParserConfig.get(config).build();
+        exfmtStorage = new ExfmtStorage(config, mapviewer);
+
 
         /* create preferences */
         preferences.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -197,13 +186,13 @@ public class SimulationController implements GUIController {
         preferences.setLocationRelativeTo(null);    // center on screen; close to setVisible
         preferences.setVisible(false);
 
+
         /* overlays */
         scenarioAreaOverlay = new ScenarioAreaOverlay();
-        SwingUtilities.invokeLater(() -> {
-            scenarioAreaOverlay.setEnabled(false, false, false);
-        });
+        SwingUtilities.invokeLater(() -> scenarioAreaOverlay.setEnabled(false, false, false));
         mapviewer.addOverlay(0, scenarioAreaOverlay);
         mapviewer.addOverlay(1, overlay);
+
 
         /* setup JFrame */
         menubar.menuMap.addActions(this);
@@ -214,7 +203,8 @@ public class SimulationController implements GUIController {
         //            addToTopBar(toolbar);
         frame.add(menubar, BorderLayout.NORTH);
         frame.setSize(mapviewer.getInitialWindowWidth(), mapviewer.getInitialWindowHeight());
-        frame.add(mapviewer.getVisualizationPanel());
+        frame.add(mapviewer.getVisualizationPanel(), BorderLayout.CENTER);
+
 
         /*
          * Note: JOGL automatically calls glViewport, we need to make sure that this
@@ -230,6 +220,7 @@ public class SimulationController implements GUIController {
                 shutdown();
             }
         });
+
 
         /* set state */
         isCreated = true;
@@ -257,6 +248,9 @@ public class SimulationController implements GUIController {
             mapviewer.destroy();
             frame.dispose();
             System.exit(0);
+        } else {
+            if (preferences.isVisible())
+                preferences.toFront();
         }
     }
 
@@ -302,28 +296,20 @@ public class SimulationController implements GUIController {
 
         if (event == GUIEvent.EXIT)
             shutdown();
-        if (!lock_user_input.tryLock())
+        if (!lockTransition.tryLock())
             return;
 
         switch (event) {
+            /* map */
             case LOAD_MAP:
                 transitionLoadMap(file);
                 break;
-            case CHANGE_AREA_SELECTION:
-                transitionChangeAreaSelection();
+            case SAVE_MAP:
+                transitionSaveMap();
                 break;
-            case NEW_SCENARIO:
-                transitionNewScenario();
-                break;
-            case ACCEPT_PREFS:
-                transitionAcceptPreferences();
-                break;
-            case CANCEL_PREFS:
-                transitionCancelPreferences();
-                break;
-            case EDIT_SCENARIO:
-                transitionEditScenario();
-                break;
+
+
+            /* simulation */
             case RUN_SIM:
                 transitionRunSim();
                 break;
@@ -333,11 +319,52 @@ public class SimulationController implements GUIController {
             case PAUSE_SIM:
                 transitionPauseSim();
                 break;
+            case NEW_SCENARIO:
+                transitionNewScenario();
+                break;
+            case EDIT_SCENARIO:
+                transitionEditScenario();
+                break;
+            case CHANGE_AREA_SELECTION:
+                transitionChangeAreaSelection();
+                break;
+
+
+            /* load/save scenario */
+            case LOAD_CONFIG:
+                transitionLoadConfig();
+                break;
+            case SAVE_CONFIG:
+                transitionSaveConfig();
+                break;
+            case LOAD_ROUTES:
+                transitionLoadRoutes();
+                break;
+            case SAVE_ROUTES:
+                transitionSaveRoutes();
+                break;
+            case LOAD_AREAS:
+                transitionLoadAreas();
+                break;
+            case SAVE_AREAS:
+                transitionSaveAreas();
+                break;
+
+
+            /* preferences */
+            case ACCEPT_PREFS:
+                transitionAcceptPreferences();
+                break;
+            case CANCEL_PREFS:
+                transitionCancelPreferences();
+                break;
         }
 
-        lock_user_input.unlock();
+        lockTransition.unlock();
     }
 
+
+    /* map */
     private void transitionLoadMap(File file) {
         if (isParsing.get()) {
             new Thread(() -> {
@@ -363,9 +390,9 @@ public class SimulationController implements GUIController {
                 closePreferences();
                 pauseSim();
 
-                File loadedFile = file == null ? askForMapFile() : file;
-                if (loadedFile != null)
-                    parseAndShow(loadedFile);
+                File loadedFile = file == null ? askForOpenMapfile() : file;
+                if (UserInteractionUtils.isFileOkayForLoading(loadedFile))
+                    loadAndShowMap(loadedFile);
 
                 isParsing.set(false);
                 updateMenuBar();
@@ -375,121 +402,24 @@ public class SimulationController implements GUIController {
         }
     }
 
-    private void transitionChangeAreaSelection() {
-        /* goal: enable scenario area overlay */
-
+    private void transitionSaveMap() {
         if (isExecutingUserTask.compareAndSet(false, true)) {
             new Thread(() -> {
-                boolean enableScenarioAreaOverlay =
-                        /* check if overlay is already enabled */
-                        !scenarioAreaOverlay.hasEventsEnabled()
-                        /* check if there is a map */
-                        && streetgraph != null;
+                closePreferences();
+                pauseSim();
 
-                if (enableScenarioAreaOverlay) {
-                    /* check if there is a scenario => ask for removing it */
-                    if (simulation.hasScenario()) {
-                        /* ask user to remove currently running scenario */
-                        Object[] options = {"Yes", "No"};
-                        int choice = JOptionPane.showOptionDialog(
-                                null,
-                                "To change the origin/destination areas, the currently running scenario has to be removed."
-                                        + System.lineSeparator()
-                                        + "Do you still like to change the areas?",
-                                "Remove currently running scenario?",
-                                JOptionPane.YES_NO_OPTION,
-                                JOptionPane.WARNING_MESSAGE,
-                                null,
-                                options,
-                                options[1]);
-                        /* if yes: remove */
-                        if (choice == JOptionPane.YES_OPTION) {
-                            pauseSim();
-                            simulation.removeCurrentScenario();
-                        } else
-                            enableScenarioAreaOverlay = false;
-                    }
+                File file = askForSaveMapfile();
+                if (UserInteractionUtils.isFileOkayForSaving(file, frame))
+                    saveMap(file);
 
-                    scenarioAreaOverlay.setEventsEnabled(enableScenarioAreaOverlay);
-                }
-
+                updateMenuBar();
                 isExecutingUserTask.set(false);
             }).start();
         }
     }
 
-    private void transitionNewScenario() {
-        if (isBuildingScenario.get()) {
-            askUserToCancelScenarioBuilding();
-        } else if (isExecutingUserTask.compareAndSet(false, true)) { // unlock after accept/cancel
-            new Thread(() -> {
-                if (streetgraph != null) {
-                    pauseSim();
-                    newSim = true;
-                    showPreferences();
-                } else
-                    isExecutingUserTask.set(false);
-            }).start();
-        }
-    }
 
-    private void transitionAcceptPreferences() {
-        scenarioBuildThread = new Thread(() -> {
-            if (isBuildingScenario.compareAndSet(false, true)) {
-
-                /* get new config */
-                SimulationConfig newConfig = null;
-                try {
-                    newConfig = preferences.getCorrectSettings();
-                } catch (IncorrectSettingsException e) {
-                    JOptionPane.showMessageDialog(
-                            null,
-                            e.getMessage(),
-                            "Error: wrong preferences values",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-
-                /* process new config if correct input */
-                if (newConfig != null) {
-                    closePreferences();
-                    config.update(newConfig);
-
-                    updateScenario();
-                    if (newSim) {
-                        startNewScenario();
-                        newSim = false;
-                    }
-
-                    updateMenuBar();
-                    isExecutingUserTask.set(false);
-                }
-
-                isBuildingScenario.set(false);
-            }
-        });
-        scenarioBuildThread.start();
-    }
-
-    private void transitionCancelPreferences() {
-        new Thread(() -> {
-            closePreferences();
-            updateMenuBar();
-            isExecutingUserTask.set(false);
-        }).start();
-    }
-
-    private void transitionEditScenario() {
-        if (isExecutingUserTask.compareAndSet(false, true)) { // unlock after accept/cancel
-            new Thread(() -> {
-                pauseSim();
-                newSim = false;
-                showPreferences();
-
-                updateMenuBar();
-            }).start();
-        }
-    }
-
+    /* simulation */
     private void transitionRunSim() {
         if (isExecutingUserTask.compareAndSet(false, true)) {
             if (!simulation.hasScenario())
@@ -532,6 +462,192 @@ public class SimulationController implements GUIController {
         }
     }
 
+    private void transitionNewScenario() {
+        if (isBuildingScenario.get()) {
+            askUserToCancelScenarioBuilding();
+        } else if (isExecutingUserTask.compareAndSet(false, true)) { // unlock after accept/cancel
+            new Thread(() -> {
+                if (streetgraph != null) {
+                    pauseSim();
+                    newSim = true;
+                    showPreferences();
+
+                    updateMenuBar();
+                } else
+                    isExecutingUserTask.set(false);
+            }).start();
+        }
+    }
+
+    private void transitionEditScenario() {
+        if (isExecutingUserTask.compareAndSet(false, true)) { // unlock after accept/cancel
+            new Thread(() -> {
+                pauseSim();
+                newSim = false;
+                showPreferences();
+
+                updateMenuBar();
+            }).start();
+        }
+    }
+
+    private void transitionChangeAreaSelection() {
+        /* goal in this method: enable scenario area overlay */
+
+        if (isExecutingUserTask.compareAndSet(false, true)) {
+            new Thread(() -> {
+                boolean enableScenarioAreaOverlay =
+                        /* check if overlay is already enabled */
+                        !scenarioAreaOverlay.hasEventsEnabled()
+                        /* check if there is a map */
+                                && streetgraph != null;
+
+                if (enableScenarioAreaOverlay) {
+                    /* check if there is a scenario => ask for removing it */
+                    if (simulation.hasScenario()) {
+                        /* ask user to remove currently running scenario */
+                        Object[] options = {"Yes", "No"};
+                        int choice = JOptionPane.showOptionDialog(
+                                null,
+                                "To change the origin/destination areas, the currently running scenario has to be removed."
+                                        + System.lineSeparator()
+                                        + "Do you still like to change the areas?",
+                                "Remove currently running scenario?",
+                                JOptionPane.YES_NO_OPTION,
+                                JOptionPane.WARNING_MESSAGE,
+                                null,
+                                options,
+                                options[1]);
+                        /* if yes: remove */
+                        if (choice == JOptionPane.YES_OPTION) {
+                            pauseSim();
+                            simulation.removeCurrentScenario();
+                        } else
+                            enableScenarioAreaOverlay = false;
+                    }
+
+                    scenarioAreaOverlay.setEventsEnabled(enableScenarioAreaOverlay);
+                }
+
+                isExecutingUserTask.set(false);
+            }).start();
+        }
+    }
+
+
+    /* load/save scenario */
+    private void transitionLoadConfig() {
+        preferences.requestAnExecutionThread(() -> {
+            File file = askForOpenConfigfile();
+            if (UserInteractionUtils.isFileOkayForLoading(file))
+                loadConfig(file);
+
+            preferences.toFront();
+            updateMenuBar();
+            preferences.hasFinishedProcedureExecution();
+        }).start();
+    }
+
+    private void transitionSaveConfig() {
+        preferences.requestAnExecutionThread(() -> {
+            File file = askForSaveConfigfile();
+            if (UserInteractionUtils.isFileOkayForSaving(file, frame))
+                saveConfig(file);
+
+            preferences.toFront();
+            updateMenuBar();
+            preferences.hasFinishedProcedureExecution();
+        }).start();
+    }
+
+    private void transitionLoadRoutes() {
+        // todo
+    }
+
+    private void transitionSaveRoutes() {
+        // todo
+        if (isExecutingUserTask.compareAndSet(false, true)) {
+            new Thread(() -> {
+                if (streetgraph != null) {
+                    closePreferences();
+                    pauseSim();
+
+                    File file = askForSaveMapfile();
+                    if (UserInteractionUtils.isFileOkayForSaving(file, frame))
+                        saveMap(file);
+
+                    updateMenuBar();
+                }
+                isExecutingUserTask.set(false);
+            }).start();
+        }
+    }
+
+    private void transitionLoadAreas() {
+        // todo
+    }
+
+    private void transitionSaveAreas() {
+        // todo
+    }
+
+
+    /* preferences */
+    private void transitionAcceptPreferences() {
+        Thread thread = preferences.requestAnExecutionThread(() -> {
+            if (!isBuildingScenario.compareAndSet(false, true)) {
+                return;
+            }
+
+
+            /* get new config */
+            SimulationConfig newConfig = null;
+            try {
+                newConfig = preferences.getCorrectSettings();
+            } catch (IncorrectSettingsException e) {
+                JOptionPane.showMessageDialog(
+                        null,
+                        e.getMessage(),
+                        "Error: wrong preferences values",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+
+            /* process new config if correct input */
+            if (newConfig != null) {
+                closePreferences();
+                config.update(newConfig);
+
+                updateScenario();
+                if (newSim) {
+                    startNewScenario();
+                    newSim = false;
+                }
+
+                updateMenuBar();
+                isExecutingUserTask.set(false);
+            }
+
+            isBuildingScenario.set(false);
+            preferences.hasFinishedProcedureExecution();
+        });
+
+        if (thread != null) {
+            scenarioBuildThread = thread;
+            scenarioBuildThread.start();
+        }
+    }
+
+    private void transitionCancelPreferences() {
+        preferences.requestAnExecutionThread(() -> {
+            closePreferences();
+            updateMenuBar();
+
+            isExecutingUserTask.set(false);
+            preferences.hasFinishedProcedureExecution();
+        }).start();
+    }
+
+
     @Override
     public void addKeyCommand(short event, short vk, KeyCommand command) {
         mapviewer.addKeyCommand(event, vk, command);
@@ -543,27 +659,16 @@ public class SimulationController implements GUIController {
     | window |
     |========|
     */
-    private String getDefaultFrameTitle() {
-        return frameTitleRaw;
+    private void rememberCurrentFrameTitleIn(WrappedString cache) {
+        SwingUtilities.invokeLater(() -> cache.set(frame.getTitle()));
     }
 
-    /**
-     * Return the default window title.
-     * @return the default frame title.
-     */
-    private String getDefaultFrameTitle(File file) {
-        if (file != null)
-            return getDefaultFrameTitle() + " - [" + file + "]";
-
-        return getDefaultFrameTitle();
+    private void updateFrameTitle(FrameTitle type, File file) {
+        SwingUtilities.invokeLater(() -> frame.setTitle(type.get(file)));
     }
 
-    private String getParsingFrameTitle() {
-        return getDefaultFrameTitle() + " - Parsing new map, please wait...";
-    }
-
-    private String getParsingFrameTitle(File file) {
-        return getDefaultFrameTitle() + " - Parsing [" + file + "]";
+    private void updateFrameTitle(WrappedString newTitle) {
+        SwingUtilities.invokeLater(() -> frame.setTitle(newTitle.get()));
     }
 
     private void updateMenuBar() {
@@ -571,9 +676,11 @@ public class SimulationController implements GUIController {
 
         boolean hasStreetgraph = streetgraph != null;
         boolean hasScenario    = simulation.getScenario() != null;
+        boolean hasAreas       = !scenarioAreaOverlay.getAreas().isEmpty();
 
         menubar.menuMap.setEnabled(true);
         menubar.menuMap.itemLoadMap.setEnabled(true);
+        menubar.menuMap.itemSaveMap.setEnabled(hasStreetgraph);
 
         menubar.menuLogic.setEnabled(true);
         menubar.menuLogic.itemRunPause.setEnabled(hasStreetgraph && hasScenario);
@@ -581,61 +688,89 @@ public class SimulationController implements GUIController {
         menubar.menuLogic.itemEditSim.setEnabled(true);
         menubar.menuLogic.itemNewSim.setEnabled(hasStreetgraph);
         menubar.menuLogic.itemChangeAreaSelection.setEnabled(hasStreetgraph);
+
+        menubar.menuLogic.itemLoadRoutes.setEnabled(hasStreetgraph);
+        menubar.menuLogic.itemSaveRoutes.setEnabled(hasStreetgraph && hasScenario);
+        menubar.menuLogic.itemLoadAreas.setEnabled(hasStreetgraph);
+        menubar.menuLogic.itemSaveAreas.setEnabled(hasStreetgraph && hasAreas);
     }
+
 
     /*
     |================|
     | map and parser |
     |================|
     */
-    private File askForMapFile() {
-        int action = mapfileChooser.showOpenDialog(null);
-        if (action == JFileChooser.APPROVE_OPTION)
-            return mapfileChooser.getSelectedFile();
-
-        return null;
+    private File askForOpenMapfile() {
+        return UserInteractionUtils.askForOpenFile(fileChoosers.get(MapfileChooser.class), frame);
     }
 
-    private void parseAndShow(File file) {
-        String cachedTitle = frame.getTitle();
-        frame.setTitle(getParsingFrameTitle(file));
+    private File askForSaveMapfile() {
+        MapfileChooser chooser = fileChoosers.get(MapfileChooser.class);
 
-        OSMParser.Result result;
+        String filename = chooser.getSelectedFile().getName();
+        filename = filename.substring(0, filename.lastIndexOf('.'));
+        filename += "." + FileFilters.MAP_EXFMT_POSTFIX;
 
-        try {
-            /* parse file and create tiled provider */
-            result = parser.parse(file);
-        } catch (InterruptedException e) {
-            logger.info("Parsing interrupted by user");
-            result = null; // might be unnecessary here
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(
-                    null,
-                    "The chosen file has a wrong format.\nTherefore it could not be parsed.",
-                    "Error: wrong osm-file format",
-                    JOptionPane.ERROR_MESSAGE);
-            result = null;
+        return UserInteractionUtils.askForSaveFile(chooser, filename, frame);
+    }
+
+    private void loadAndShowMap(File file) {
+        /* update frame title and remember old one */
+        WrappedString cachedTitle = new WrappedString();
+        rememberCurrentFrameTitleIn(cachedTitle);
+        Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
+        if (FileFilters.MAP_OSM_XML.accept(file)) {
+            updateFrameTitle(FrameTitle.PARSING, file);
+        } else if (FileFilters.MAP_EXFMT.accept(file)) {
+            updateFrameTitle(FrameTitle.LOADING, file);
         }
 
 
-        if (result != null) {
-            if (result.streetgraph != null) {
+        /* parse/load map */
+        try {
+            boolean success = loadMapAndUpdate(file);
+
+            /* show map */
+            if (success) {
                 simulation.removeCurrentScenario();
-                streetgraph = result.streetgraph;
                 overlay.setEnabled(true);
                 scenarioAreaOverlay.setEnabled(true, true, false);
 
-                try {
-                    mapviewer.setMap(result.segment);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                cachedTitle = getDefaultFrameTitle(file);
+                setNewFrameTitle = () -> updateFrameTitle(FrameTitle.DEFAULT, file);
+            } else {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "The chosen file '" + file.getName() + "' has a wrong format.\n" +
+                                "Therefore it could be neither loaded nor parsed.\n" +
+                                "Please make sure this file exists and is a valid OSM XML or MTS binary file.",
+                        "Error: wrong map-file format",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (InterruptedException e) {
+            logger.info("Loading map interrupted by user");
+        }
+
+        setNewFrameTitle.invoke();
+    }
+
+    /**
+     * Loads the given file and updates all attributes influenced by the file, e.g. the graph
+     *
+     * @return true, if loading was successful; false otherwise
+     */
+    private boolean loadMapAndUpdate(File file) throws InterruptedException {
+        Tuple<Graph, MapProvider> result = exfmtStorage.loadMap(file);
+        if (result != null) {
+            if (result.obj0 != null) {
+                mapviewer.setMap(result.obj1);
+                streetgraph = result.obj0;
+
+                return true;
             }
         }
 
-        frame.setTitle(cachedTitle);
+        return false;
     }
 
     private void cancelParsing() {
@@ -644,6 +779,231 @@ public class SimulationController implements GUIController {
             parsingThread.join();
         } catch (InterruptedException ignored) {}
     }
+
+    private void saveMap(File file) {
+        /* update frame title and remember old one */
+        WrappedString cachedTitle = new WrappedString();
+        rememberCurrentFrameTitleIn(cachedTitle);
+        updateFrameTitle(FrameTitle.SAVING, file);
+        Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
+
+
+        boolean success = exfmtStorage.saveMap(file, new Tuple<>(streetgraph, mapviewer.getMap()));
+        if (success)
+            UserInteractionUtils.showSavingSuccess(frame);
+        else
+            UserInteractionUtils.showSavingFailure(file, frame);
+
+
+        setNewFrameTitle.invoke();
+    }
+
+
+    /*
+    |==================|
+    | load/save config |
+    |==================|
+    */
+    private File askForOpenConfigfile() {
+        return UserInteractionUtils.askForOpenFile(fileChoosers.get(ConfigFileChooser.class), frame);
+    }
+
+    private File askForSaveConfigfile() {
+        return UserInteractionUtils.askForSaveFile(
+                fileChoosers.get(ConfigFileChooser.class),
+                "New config file." + FileFilters.CONFIG_POSTFIX,
+                frame
+        );
+    }
+
+    private void loadConfig(File file) {
+        SimulationConfig newConfig = null;
+        try {
+            newConfig = exfmtStorage.loadConfig(file, preferences.getCorrectSettings());
+        } catch (IncorrectSettingsException e) {
+            e.printStackTrace();
+        }
+
+        /* update preferences if successfully loaded */
+        if (newConfig != null) {
+            showPreferences();
+            preferences.setSettings(newConfig);
+        } else {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "The chosen file '" + file.getName() + "' has a wrong format.\n" +
+                            "Therefore it could not be loaded.\n" +
+                            "Please make sure this file exists and is a valid MTS config.",
+                    "Error: wrong config-file format",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void saveConfig(File file) {
+        boolean success = false;
+        try {
+            success = exfmtStorage.saveConfig(file, preferences.getCorrectSettings());
+        } catch (IncorrectSettingsException e) {
+            e.printStackTrace();
+        }
+
+        if (success)
+            UserInteractionUtils.showSavingSuccess(frame);
+        else
+            UserInteractionUtils.showSavingFailure(file, frame);
+    }
+
+
+    /*
+    |====================|
+    | load/save scenario |
+    |====================|
+    */
+    @Deprecated // todo remove method
+    private File askForScenarioSaveFile() {
+        return UserInteractionUtils.askForSaveFile(
+                fileChoosers.get(ScenarioFileChooser.class),
+                "New scenario." + FileFilters.SCENARIO_POSTFIX,
+                frame
+        );
+    }
+
+    @Deprecated // todo remove method
+    private void loadScenario(File file) {
+//        /* update frame title and remember old one */
+//        WrappedString cachedTitle = new WrappedString();
+//        rememberCurrentFrameTitleIn(cachedTitle);
+//        updateFrameTitle(FrameTitle.LOADING, file);
+//
+//        WrappedString tmpTitle = new WrappedString("Loading new scenario");
+//        updateFrameTitle(tmpTitle);
+//
+//
+//        /* update streetgraph */
+//        // mapviewer.createParser(config) is not needed because the mapviewer gets the final config-reference
+//        streetgraph.reset();
+//        streetgraph.setSeed(config.seed);
+//
+//
+//        /* prepare exfmt config */
+//        AreaScenarioExtractor.Config asecfg = new AreaScenarioExtractor.Config();
+//        asecfg.loadRoutes = UserInteractionUtils.askUserForDecision(
+//                "Do you like to load the routes as well?",
+//                "Route storing",
+//                frame);
+//        asecfg.graph = streetgraph;
+//        asecfg.config = config;
+//
+//        asecfg.scenarioBuilder = scenarioBuilder;
+//        asecfg.progressListener = currentInPercent -> {
+//            tmpTitle.set("Assigning vehicle routes " + currentInPercent + "%");
+//            updateFrameTitle(tmpTitle);
+//        };
+//        exfmt.getConfig().set(asecfg);
+//
+//
+//        /* load */
+//        ExchangeFormat.Manipulator manipulator = null;
+//        try {
+//            manipulator = exfmt.manipulator(serializer.read(file));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        ScenarioMetaInfo scmeta = null;
+//        if (manipulator != null) {
+//            try {
+//                scmeta = manipulator.extract(ScenarioMetaInfo.class);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        boolean stillLoadScenario = scmeta != null;
+//        if (stillLoadScenario) {
+//            // check if streetgraphGUID equals scmeta.getGUID()
+//            // if not issue warning due to possible incompatibility
+//            // and prompt to cancel
+//            if (!streetgraph.getGUID().equals(scmeta.getGraphGUID())) {
+//                stillLoadScenario = UserInteractionUtils.askUserForDecision(
+//                        "The graph used in the scenario is different to the current one.\n" +
+//                                "Do you want to continue?",
+//                        "Inconsistent scenario meta information",
+//                        frame);
+//            }
+//        }
+//
+//        if (stillLoadScenario) {
+//            AreaScenario newScenario = null;
+//            try {
+//                newScenario = manipulator.extract(AreaScenario.class);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//
+//            if (newScenario != null) {
+//                /* create new scenario */
+//                tmpTitle.set("Assigning vehicle routes 0%");
+//                updateFrameTitle(tmpTitle);
+//
+//
+//                /* remove old scenario */
+//                simulation.removeCurrentScenario();
+//                scenarioAreaOverlay.setEventsEnabled(false);
+//                scenarioAreaOverlay.setPropertiesVisible(false);
+//
+//
+//                /* update area overlay */
+//                scenarioAreaOverlay.removeAllAreas();
+//                newScenario.getAreas().stream()
+//                        .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
+//                        .forEach(scenarioAreaOverlay::add);
+//
+//                /* initialize the scenario */
+//                simulation.setAndInitPreparedScenario(newScenario);
+//                simulation.runOneStep();
+//            }
+//        }
+//
+//
+//        /* finish creation */
+//        updateFrameTitle(cachedTitle);
+    }
+
+    @Deprecated // todo remove method
+    private void saveScenario(File file) {
+//        /* update frame title and remember old one */
+//        WrappedString cachedTitle = new WrappedString();
+//        rememberCurrentFrameTitleIn(cachedTitle);
+//        updateFrameTitle(FrameTitle.SAVING, file);
+//        Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
+//
+//
+//        AreaScenario scenario = (AreaScenario) simulation.getScenario();
+//        AreaScenarioInjector.Config asicfg = new AreaScenarioInjector.Config();
+//        asicfg.storeRoutes = UserInteractionUtils.askUserForDecision(
+//                "Do you like to store the routes as well?\n" +
+//                        "\n" +
+//                        "Attention! The routes would be stored\n" +
+//                        "in the current simulation state,\n" +
+//                        "not fresh calculated!",
+//                "Route storing",
+//                frame);
+//        exfmt.getConfig().set(asicfg);
+//        try {
+//            serializer.write(file, exfmt.manipulator().inject(scenario).getContainer());
+//
+//            UserInteractionUtils.showSavingSuccess(frame);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            UserInteractionUtils.showSavingFailure(file, frame);
+//        }
+//
+//
+//        setNewFrameTitle.invoke();
+    }
+
 
     /*
     |============|
@@ -667,8 +1027,11 @@ public class SimulationController implements GUIController {
 
     private void startNewScenario() {
 
-        String oldTitle = frame.getTitle();
-        EventQueue.invokeLater(() -> frame.setTitle("Starting new scenario"));
+        WrappedString cachedTitle = new WrappedString();
+        rememberCurrentFrameTitleIn(cachedTitle);
+
+        WrappedString tmpTitle = new WrappedString("Starting new scenario");
+        updateFrameTitle(tmpTitle);
 
 
         /* update streetgraph */
@@ -678,7 +1041,8 @@ public class SimulationController implements GUIController {
 
 
         /* create new scenario */
-        EventQueue.invokeLater(() -> frame.setTitle("Calculating vehicle routes 0%"));
+        tmpTitle.set("Calculating vehicle routes 0%");
+        updateFrameTitle(tmpTitle);
 
 
         /* remove old scenario */
@@ -700,7 +1064,9 @@ public class SimulationController implements GUIController {
             scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
         } else {
             if (config.scenario.selectedClass.getObj() != RandomRouteScenario.class)
-                logger.error("Chosen scenario could not be found. " + RandomRouteScenario.class.getSimpleName() + " is used instead.");
+                logger.error(
+                        "Chosen scenario could not be found. " +
+                        RandomRouteScenario.class.getSimpleName() + " is used instead.");
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);
         }
         /* update area overlay */
@@ -712,9 +1078,10 @@ public class SimulationController implements GUIController {
         try {
             scenarioBuilder.prepare(
                     scenario,
-                    currentInPercent -> EventQueue.invokeLater(() -> {
-                        frame.setTitle("Calculating vehicle routes " + currentInPercent + "%");
-                    }));
+                    currentInPercent -> {
+                        tmpTitle.set("Calculating vehicle routes " + currentInPercent + "%");
+                        updateFrameTitle(tmpTitle);
+                    });
 
 
             /* initialize the scenario */
@@ -727,12 +1094,10 @@ public class SimulationController implements GUIController {
 
 
         /* finish creation */
-        EventQueue.invokeLater(() -> frame.setTitle(oldTitle));
+        updateFrameTitle(cachedTitle);
     }
 
     private void updateScenario() {
-        // todo update scenario although it is not new => activate PrefElements
-
         if(config.scenario.showAreasWhileSimulating)
             scenarioAreaOverlay.setEnabled(true, false, false);
         else
@@ -777,29 +1142,30 @@ public class SimulationController implements GUIController {
         boolean hasScenario    = simulation.getScenario() != null;
 
         /* general */
-        preferences.setEnabled(PrefElement.sliderSpeedup,   true);
-        preferences.setEnabled(PrefElement.maxVehicleCount, newSim);
-        preferences.setEnabled(PrefElement.seed,            newSim);
-        preferences.setEnabled(PrefElement.metersPerCell,   newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.sliderSpeedup,     true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.maxVehicleCount,   newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.seed,              newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.metersPerCell,     newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.globalMaxVelocity, newSim);
 
         /* scenario */
-        preferences.setEnabled(PrefElement.showAreasWhileSimulating,  true);
-        preferences.setEnabled(PrefElement.nodesAreWeightedUniformly, newSim);
-        preferences.setEnabled(PrefElement.scenarioSelection,         newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.showAreasWhileSimulating,  true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.nodesAreWeightedUniformly, newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.scenarioSelection,         newSim);
 
         /* crossing logic */
-        preferences.setEnabled(PrefElement.edgePriority,          newSim);
-        preferences.setEnabled(PrefElement.priorityToThe,         newSim);
-        preferences.setEnabled(PrefElement.onlyOneVehicle,        newSim);
-        preferences.setEnabled(PrefElement.friendlyStandingInJam, newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.edgePriority,          newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.priorityToThe,         newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.onlyOneVehicle,        newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.friendlyStandingInJam, newSim);
 
         /* visualization */
-        preferences.setEnabled(PrefElement.style, true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.style, true);
 
         /* concurrency */
-        preferences.setEnabled(PrefElement.nThreads,            newSim);
-        preferences.setEnabled(PrefElement.vehiclesPerRunnable, true);
-        preferences.setEnabled(PrefElement.nodesPerThread,      true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.nThreads,            newSim);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.vehiclesPerRunnable, true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.nodesPerThread,      true);
 
         /* init values */
         preferences.setSettings(config);
@@ -813,4 +1179,12 @@ public class SimulationController implements GUIController {
         preferences.setVisible(false);
         preferences.setAllEnabled(false);
     }
+
+
+    /*
+    |=======|
+    | utils |
+    |=======|
+    */
+    // todo request thread execution like in PreferencesFrame
 }

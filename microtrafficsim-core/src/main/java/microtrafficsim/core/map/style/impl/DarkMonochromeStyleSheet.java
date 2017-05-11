@@ -1,7 +1,10 @@
 package microtrafficsim.core.map.style.impl;
 
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.style.BasicStyleSheet;
+import microtrafficsim.core.map.style.VehicleColorSchemes;
 import microtrafficsim.core.vis.opengl.utils.Color;
+import microtrafficsim.math.MathUtils;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 
 
@@ -128,6 +131,12 @@ public class DarkMonochromeStyleSheet extends BasicStyleSheet {
         return LINE_WIDTH_BASE_FUNCTION.get(offset, 20.f, exp1, 0.3f, zoom);
     }
 
+    @Override
+    public Color getColor(Vehicle vehicle) {
+        Color[] colors = VehicleColorSchemes.RED_TO_GREEN;
+        int v = MathUtils.clamp(vehicle.getVelocity(), 0, colors.length - 1);
+        return colors[v];
+    }
 
     public interface LineWidthBaseFunction {
         float get(float offset, float base, float exp1, float exp2, int zoom);

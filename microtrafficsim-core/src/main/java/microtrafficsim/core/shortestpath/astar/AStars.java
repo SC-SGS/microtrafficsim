@@ -40,8 +40,11 @@ public class AStars {
     {
         return new AStar<>(
                 edge -> (double) edge.getLength(),
-                (node, dest) -> (HaversineDistanceCalculator.getDistance(node.getCoordinate(), dest.getCoordinate())
-                        / metersPerCell)
+                (node, dest) -> {
+                    double distanceInMeters = HaversineDistanceCalculator.getDistance(
+                            node.getCoordinate(), dest.getCoordinate());
+                    return distanceInMeters / metersPerCell;
+                }
         );
     }
 
@@ -53,18 +56,17 @@ public class AStars {
      * {@link HaversineDistanceCalculator}, as heuristic.
      */
     public static <N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>> AStar<N, E>
-        fastestPathAStar(double metersPerCell, double maxCellsPerSec)
+        fastestPathAStar(double metersPerCell, double maxCellsPerSecond)
     {
         return new AStar<>(
                 ShortestPathEdge::getTimeCostMillis,
-                (destination, routeDestination) ->
-                        // after HaversineDistance/metersPerCell: result in cells
-                        // BUT results for estimation should be in milliseconds
-                        // => take maximum speed = 6 cell/s
-                        // => 1000 ms / (6 cells) * ? m / (7.5 m/cell)
-                        // => 1000 / 6 * distance / 7.5 ms
-                        (1000 / maxCellsPerSec * (int) (HaversineDistanceCalculator.getDistance(
-                                destination.getCoordinate(), routeDestination.getCoordinate()) / metersPerCell))
-        );
+                (destination, routeDestination) -> {
+
+                    int distanceInCells = (int) (HaversineDistanceCalculator.getDistance(
+                            destination.getCoordinate(),
+                            routeDestination.getCoordinate()) / metersPerCell);
+
+                    return 1000 * distanceInCells / maxCellsPerSecond;
+                });
     }
 }

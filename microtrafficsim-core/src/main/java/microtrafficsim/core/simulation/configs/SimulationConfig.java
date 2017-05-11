@@ -1,9 +1,9 @@
 package microtrafficsim.core.simulation.configs;
 
+import microtrafficsim.core.map.StreetType;
 import microtrafficsim.math.random.distributions.impl.Random;
-import microtrafficsim.osm.parser.features.streets.info.StreetType;
 
-import java.util.function.Function;
+import java.util.HashMap;
 
 
 /**
@@ -42,7 +42,7 @@ public final class SimulationConfig {
     public int maxVehicleCount;
 
     /* street type priorities */
-    public Function<StreetType, Byte> streetPriorityLevel;
+    public StreetPriorityFunction streetPriorityLevel;
 
     /* multithreading */
     public final MultiThreadingConfig multiThreading;
@@ -60,6 +60,15 @@ public final class SimulationConfig {
     }
 
     /**
+     * Calls the {@link #SimulationConfig() default constructor} and sets all values using
+     * {@link #update(SimulationConfig)}.
+     */
+    public SimulationConfig(SimulationConfig init) {
+        this();
+        update(init);
+    }
+
+    /**
      * <p>
      * Resets the parameter of this config file. This method keeps references of<br>
      * &bull {@link VisualizationConfig}<br>
@@ -69,42 +78,15 @@ public final class SimulationConfig {
     private void setup() {
         // 1/3,6 = 25/90 = 0,277... => 0,277 m/cell means 1 cell/s <=> 1 km/h
         metersPerCell     = 7.5f; // Nagel-Schreckenberg-Model
-        globalMaxVelocity = 6;
+        globalMaxVelocity = 6; // <=> ca. 180 km/h after Nagel-Schreckenberg-Model
         speedup           = 1;
         seed              = new Random().nextLong();
         // vehicles
         maxVehicleCount = 100;
         // street type priorities
-        streetPriorityLevel = streetType -> {
-            byte prioLevel = 0;
-            switch (streetType) {
-            case ROUNDABOUT:     prioLevel++;
-            case MOTORWAY:       prioLevel++;
-            case MOTORWAY_LINK:  prioLevel++;
-            case TRUNK:          prioLevel++;
-            case TRUNK_LINK:     prioLevel++;
-            case PRIMARY:        prioLevel++;
-            case PRIMARY_LINK:   prioLevel++;
-            case SECONDARY:      prioLevel++;
-            case SECONDARY_LINK: prioLevel++;
-            case TERTIARY:       prioLevel++;
-            case TERTIARY_LINK:  prioLevel++;
-            case UNCLASSIFIED:   prioLevel++;
-            case RESIDENTIAL:    prioLevel++;
-            case LIVING_STREET:  prioLevel++;
-            case SERVICE:        prioLevel++;
-            case TRACK:          prioLevel++;
-            case ROAD:           prioLevel++;
-            }
-            return prioLevel;
-        };
+        streetPriorityLevel = new DefaultStreetPriorityFunction();
     }
 
-    /*
-    |========|
-    | update |
-    |========|
-    */
     /**
      * Updates the parameter of this config file. This method keeps references of<br>
      * &bull {@link VisualizationConfig}<br>
@@ -131,5 +113,108 @@ public final class SimulationConfig {
         streetPriorityLevel = config.streetPriorityLevel;
         /* multithreading */
         multiThreading.update(config.multiThreading);
+    }
+
+
+
+    /**
+     * @author Maximilian Luz, Dominic Parga Cacheiro
+     */
+    public interface StreetPriorityFunction {
+        byte getPriority(StreetType type);
+    }
+
+    /**
+     * @author Maximilian Luz, Dominic Parga Cacheiro
+     */
+    public static class DefaultStreetPriorityFunction implements StreetPriorityFunction {
+        @Override
+        public byte getPriority(StreetType type) {
+            byte priority = (byte) 0x00;
+
+            if (type.isRoundabout())
+                return (byte) 0xFF;
+
+            switch (type.getType()) {
+                case StreetType.MOTORWAY:       priority++;
+                case StreetType.TRUNK:          priority++;
+                case StreetType.PRIMARY:        priority++;
+                case StreetType.SECONDARY:      priority++;
+                case StreetType.TERTIARY:       priority++;
+                case StreetType.UNCLASSIFIED:   priority++;
+                case StreetType.RESIDENTIAL:    priority++;
+                case StreetType.LIVING_STREET:  priority++;
+                case StreetType.SERVICE:        priority++;
+                case StreetType.TRACK:          priority++;
+                case StreetType.ROAD:           priority++;
+            }
+
+            priority *= 2;
+
+            if (type.isLink())
+                priority += 1;
+
+            return priority;
+        }
+    }
+
+
+
+    /**
+     * @author Dominic Parga Cacheiro
+     */
+    public enum Element {
+        // General
+        sliderSpeedup(true),
+        maxVehicleCount(true),
+        seed(true),
+        metersPerCell(false),
+        globalMaxVelocity(false),
+        /* scenario */
+        showAreasWhileSimulating(true),
+        nodesAreWeightedUniformly(true),
+        scenarioSelection(true),
+        // crossing logic
+        edgePriority(true),
+        priorityToThe(true),
+        onlyOneVehicle(true),
+        friendlyStandingInJam(true),
+        // Visualization
+        style(false),
+        // concurrency
+        nThreads(true),
+        vehiclesPerRunnable(true),
+        nodesPerThread(true);
+
+        private final boolean editable;
+
+        Element() {
+            this(false);
+        }
+
+        Element(boolean editable) {
+            this.editable = editable;
+        }
+
+        public boolean isEditable() {
+            return editable;
+        }
+    }
+
+    public static class EnableLexicon {
+        private final HashMap<Element, Boolean> lexicon = new HashMap<>();
+
+        public boolean isEnabled(Element element) {
+            Boolean enabled = lexicon.get(element);
+            if (enabled == null)
+                return false;
+            return enabled;
+        }
+
+        public boolean setEnabledIfEditable(Element element, boolean enabled) {
+            enabled &= element.editable;
+            lexicon.put(element, enabled);
+            return enabled;
+        }
     }
 }

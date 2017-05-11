@@ -2,7 +2,7 @@ package microtrafficsim.core.map.style;
 
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.vis.opengl.utils.Color;
-import microtrafficsim.interesting.emotions.Hulk;
+import microtrafficsim.utils.emotions.Hulk;
 
 /**
  * @author Dominic Parga Cacheiro

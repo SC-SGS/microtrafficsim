@@ -1,9 +1,9 @@
 package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig.Element;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.ConcurrencyModel;
-import microtrafficsim.ui.preferences.model.PrefElement;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,10 +50,19 @@ public class ConcurrencyPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
-        tfNThreads.setText("" + config.multiThreading.nThreads);
-        tfVehiclesPerRunnable.setText("" + config.multiThreading.vehiclesPerRunnable);
-        tfNodesPerThread.setText("" + config.multiThreading.nodesPerThread);
+    public void setSettings(boolean indeed, SimulationConfig config) {
+        if (indeed) {
+            tfNThreads.setText("" + config.multiThreading.nThreads);
+            tfVehiclesPerRunnable.setText("" + config.multiThreading.vehiclesPerRunnable);
+            tfNodesPerThread.setText("" + config.multiThreading.nodesPerThread);
+        } else {
+            if (model.getEnableLexicon().isEnabled(Element.nThreads))
+                tfNThreads.setText("" + config.multiThreading.nThreads);
+            if (model.getEnableLexicon().isEnabled(Element.vehiclesPerRunnable))
+                tfVehiclesPerRunnable.setText("" + config.multiThreading.vehiclesPerRunnable);
+            if (model.getEnableLexicon().isEnabled(Element.nodesPerThread))
+                tfNodesPerThread.setText("" + config.multiThreading.nodesPerThread);
+        }
     }
 
     @Override
@@ -90,13 +99,15 @@ public class ConcurrencyPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setEnabled(PrefElement id, boolean enabled) {
-        enabled = id.isEnabled() && enabled;
+    public boolean setEnabledIfEditable(Element element, boolean enabled) {
+        enabled = super.setEnabledIfEditable(element, enabled);
 
-        switch (id) {
+        switch (element) {
             case nThreads:            tfNThreads.setEnabled(enabled);            break;
             case vehiclesPerRunnable: tfVehiclesPerRunnable.setEnabled(enabled); break;
             case nodesPerThread:      tfNodesPerThread.setEnabled(enabled);      break;
         }
+
+        return enabled;
     }
 }

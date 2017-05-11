@@ -1,13 +1,13 @@
 package microtrafficsim.core.logic.vehicles.machines;
 
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
+import microtrafficsim.core.logic.NagelSchreckenbergException;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
-import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
 import microtrafficsim.math.MathUtils;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
@@ -93,7 +93,7 @@ public abstract class BasicVehicle implements Vehicle {
             strBuilder.appendln("");
             strBuilder.appendln("-- infos from next node --");
             strBuilder.appendln("permission = " + lane.getAssociatedEdge().getDestination().permissionToCross(this));
-            strBuilder.appendln("node.id = " + lane.getAssociatedEdge().getDestination().id);
+            strBuilder.appendln("node.id = " + lane.getAssociatedEdge().getDestination().getId());
         }
         strBuilder.decLevel();
         strBuilder.appendln("<\\vehicle>");
@@ -269,7 +269,7 @@ public abstract class BasicVehicle implements Vehicle {
                 DirectedEdge edge     = lane.getAssociatedEdge();
                 int          distance = edge.getLength() - cellPosition;
                 // Would cross node?
-                if (velocity >= distance)
+                if (velocity >= distance) {
                     if (driver.getRoute().isEmpty()) {
                         // brake for end of road
                         velocity = Math.min(velocity, distance - 1);
@@ -278,12 +278,13 @@ public abstract class BasicVehicle implements Vehicle {
                             // if next road has vehicles => brake for this
                             // else => brake for end of next road
                             int maxInsertionIndex = driver.peekRoute().getLane(0).getMaxInsertionIndex();
-                            velocity              = Math.min(velocity, distance + maxInsertionIndex);
+                            velocity = Math.min(velocity, distance + maxInsertionIndex);
                         } else {
                             // brake for end of road
                             velocity = Math.min(velocity, distance - 1);
                         }
                     }
+                }
             }
 
             // brake for edges max velocity

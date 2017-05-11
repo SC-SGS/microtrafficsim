@@ -64,7 +64,7 @@ public class GraphConsistencyTest {
      */
 
     /**
-     * If not null, this file is used instead of the default 'map.processing'.
+     * If not null, this file is used instead of the default 'map.osm'.
      */
     private static final File OPTIONAL_TEST_FILE = null;
 

@@ -1,5 +1,6 @@
 package microtrafficsim.core.logic.nodes;
 
+import microtrafficsim.core.logic.CrossingLogicException;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.vehicles.VehicleState;
@@ -8,13 +9,15 @@ import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.exceptions.core.logic.CrossingLogicException;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
+import microtrafficsim.utils.collections.Tuple;
+import microtrafficsim.utils.functional.Procedure2;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.*;
 
@@ -28,7 +31,7 @@ import java.util.*;
  */
 public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded {
 
-    public final long           id;
+    private final long          id;
     private Coordinate          coordinate;
     private CrossingLogicConfig config;
     private final Random        random;
@@ -76,6 +79,59 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         return "Node id = " + id + " at " + coordinate.toString();
     }
 
+    public String toStringVerbose() {
+        LevelStringBuilder builder = new LevelStringBuilder()
+                .setLevelSeparator(System.lineSeparator())
+                .setLevelSubString("    ");
+
+        builder.appendln("<Node>").incLevel(); {
+            /* id */
+            builder.appendln("<id>").incLevel(); {
+                builder.appendln(id);
+            } builder.decLevel().appendln("<\\id>").appendln();
+
+
+            /* coordinate */
+            builder.appendln("<coordinate>").incLevel(); {
+                builder.appendln(coordinate.toString());
+            } builder.decLevel().appendln("<\\coordinate>").appendln();
+
+
+            Procedure2<String, HashMap<DirectedEdge, Byte>> edgesToString = (type, map) -> {
+                builder.appendln("<" + type + " edges>").incLevel(); {
+                    Iterator<DirectedEdge> iter = map.keySet().iterator();
+                    while (iter.hasNext()) {
+                        DirectedEdge edge = iter.next();
+                        builder.appendln(edge);
+                        builder.appendln("with crossing index = " + map.get(edge));
+
+                        if (iter.hasNext())
+                            builder.appendln();
+                    }
+                } builder.decLevel().appendln("<\\" + type + " edges>").appendln();
+            };
+
+
+            edgesToString.invoke("incoming", incoming);
+            edgesToString.invoke("leaving", leaving);
+
+        } builder.decLevel().appendln("<\\Node>");
+
+        return builder.toString();
+    }
+
+
+    public long getId() {
+        return id;
+    }
+
+    public CrossingLogicConfig getCrossingLogicConfig() {
+        return config;
+    }
+
+    public HashMap<Lane, ArrayList<Lane>> getConnectors() {
+        return connectors;
+    }
 
     /*
     |================|
@@ -382,7 +438,9 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
     public void updateEdgeIndices() {
 
         /* init */
-        HashMap<Vec2d, ArrayList<DirectedEdge>> edges = new HashMap<>();
+        final boolean IS_LEAVING = true;
+        final boolean IS_INCOMING = false;
+        HashMap<Vec2d, ArrayList<Tuple<DirectedEdge, Boolean>>> edges = new HashMap<>();
         Vec2d zero = null;
 
 
@@ -397,8 +455,8 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
                 zero = v;
 
             // add edge to its vector
-            ArrayList<DirectedEdge> vectorsEdges = edges.computeIfAbsent(v, k -> new ArrayList<>(2));
-            vectorsEdges.add(edge);
+            ArrayList<Tuple<DirectedEdge, Boolean>> vectorsEdges = edges.computeIfAbsent(v, k -> new ArrayList<>(2));
+            vectorsEdges.add(new Tuple<>(edge, IS_LEAVING));
         }
 
 
@@ -411,8 +469,8 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
                 zero = v;
 
             // add edge to its vector
-            ArrayList<DirectedEdge> vectorsEdges = edges.computeIfAbsent(v, k -> new ArrayList<>(2));
-            vectorsEdges.add(edge);
+            ArrayList<Tuple<DirectedEdge, Boolean>> vectorsEdges = edges.computeIfAbsent(v, k -> new ArrayList<>(2));
+            vectorsEdges.add(new Tuple<>(edge, IS_INCOMING));
         }
 
 
@@ -423,16 +481,21 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         while (!sortedVectors.isEmpty()) {
             Vec2d v = sortedVectors.poll();
             // take the current vector's edges
-            ArrayList<DirectedEdge> nextEdges = edges.remove(v);
+            ArrayList<Tuple<DirectedEdge, Boolean>> nextEdges = edges.remove(v);
+
 
             // add its leaving edges before its incoming edges
-            for (DirectedEdge nextEdge : nextEdges)
-                if (leaving.containsKey(nextEdge))
-                    leaving.put(nextEdge, nextCrossingIndex++);
+            for (Tuple<DirectedEdge, Boolean> nextEdge : nextEdges) {
+                if (nextEdge.obj1 == IS_LEAVING) {
+                    leaving.put(nextEdge.obj0, nextCrossingIndex++);
+                }
+            }
 
-            for (DirectedEdge nextEdge : nextEdges)
-                if (incoming.containsKey(nextEdge))
-                    incoming.put(nextEdge, nextCrossingIndex++);
+            for (Tuple<DirectedEdge, Boolean> nextEdge : nextEdges) {
+                if (nextEdge.obj1 == IS_INCOMING) {
+                    incoming.put(nextEdge.obj0, nextCrossingIndex++);
+                }
+            }
         }
     }
 
@@ -471,8 +534,12 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         return result;
     }
 
+    public Set<DirectedEdge> getLeavingEdges() {
+        return Collections.unmodifiableSet(leaving.keySet());
+    }
+
     @Override
-    public Set<DirectedEdge> getIncoming() {
+    public Set<DirectedEdge> getIncomingEdges() {
         return Collections.unmodifiableSet(incoming.keySet());
     }
 

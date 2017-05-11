@@ -10,15 +10,18 @@ import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.Car;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
+import microtrafficsim.core.simulation.builder.RouteIsNotDefinedException;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.interesting.progressable.ProgressListener;
+import microtrafficsim.core.simulation.utils.RouteMatrix;
+import microtrafficsim.utils.progressable.ProgressListener;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.concurrency.delegation.StaticThreadDelegator;
 import microtrafficsim.utils.concurrency.delegation.ThreadDelegator;
+import microtrafficsim.utils.functional.Function2;
 import microtrafficsim.utils.id.ConcurrentLongIDGenerator;
 import microtrafficsim.utils.id.ConcurrentSeedGenerator;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -110,8 +113,42 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
     @Override
     public Scenario prepare(final Scenario scenario, final ProgressListener listener) throws InterruptedException {
         logger.info("PREPARING SCENARIO started");
-        long time_preparation = System.nanoTime();
+        long startTimestamp = System.nanoTime();
 
+
+        resetBeforePreparation(scenario);
+        try {
+            buildVehicles(scenario, Route::new, true, listener);
+        } catch (RouteIsNotDefinedException e) { // should not be thrown because route is always initialiized
+            e.printStackTrace();
+            scenario.reset();
+        } catch (InterruptedException e) {
+            scenario.reset();
+            throw e;
+        }
+        finishPreparation(scenario, startTimestamp);
+        return scenario;
+    }
+
+    @Override
+    public Scenario prepare(Scenario scenario, RouteMatrix routes, ProgressListener listener)
+            throws InterruptedException, RouteIsNotDefinedException {
+        logger.info("PREPARING SCENARIO started");
+        long startTimestamp = System.nanoTime();
+
+        resetBeforePreparation(scenario);
+        buildVehicles(scenario, (start, end) -> routes.get(start).get(end), false, listener);
+        finishPreparation(scenario, startTimestamp);
+        return scenario;
+    }
+
+
+    /*
+    |===============|
+    | prepare utils |
+    |===============|
+    */
+    private void resetBeforePreparation(Scenario scenario) throws InterruptedException {
         /* interrupt handling */
         if (Thread.interrupted())
             throw new InterruptedException();
@@ -127,20 +164,21 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
             scenario.reset();
             throw new InterruptedException();
         }
+    }
 
+    private void buildVehicles(Scenario scenario,
+                               Function2<Route<Node>, Node, Node> routeCreator,
+                               boolean recalcRoutes,
+                               ProgressListener listener)
+            throws RouteIsNotDefinedException, InterruptedException {
         /* create vehicle routes */
         logger.info("CREATING VEHICLES started");
         long time_routes = System.nanoTime();
 
-        try {
-            if (scenario.getConfig().multiThreading.nThreads > 1)
-                multiThreadedVehicleCreation(scenario, listener);
-            else
-                singleThreadedVehicleCreation(scenario, listener);
-        } catch (InterruptedException e) {
-            scenario.reset();
-            throw e;
-        }
+        if (scenario.getConfig().multiThreading.nThreads > 1)
+            multiThreadedVehicleRouteAssignment(scenario, routeCreator, recalcRoutes, listener);
+        else
+            singleThreadedVehicleRouteAssignment(scenario, routeCreator, recalcRoutes, listener);
 
         time_routes = System.nanoTime() - time_routes;
         logger.info(StringUtils.buildTimeString(
@@ -148,21 +186,13 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                 time_routes,
                 "ns"
         ).toString());
-
-        /* finish building scenario */
-        scenario.setPrepared(true);
-        time_preparation = System.nanoTime() - time_preparation;
-        logger.info(StringUtils.buildTimeString(
-                "PREPARING SCENARIOS finished after ",
-                time_preparation,
-                "ns"
-        ).toString());
-
-        return scenario;
     }
 
-    private void multiThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener)
-            throws InterruptedException {
+    private void multiThreadedVehicleRouteAssignment(Scenario scenario,
+                                                     Function2<Route<Node>, Node, Node> routeCreator,
+                                                     boolean recalcRoutes,
+                                                     ProgressListener listener)
+            throws InterruptedException, RouteIsNotDefinedException {
 
         // general attributes for this
         final SimulationConfig config = scenario.getConfig();
@@ -183,7 +213,9 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                 if (Thread.interrupted())
                     throw new InterruptedException();
 
-                Route<Node> route = new Route<>(start, end);
+                Route<Node> route = routeCreator.invoke(start, end);
+                if (route == null)
+                    throw new RouteIsNotDefinedException();
                 Vehicle vehicle = createVehicle(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
             }
@@ -193,9 +225,12 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
         ThreadDelegator delegator = new StaticThreadDelegator(config.multiThreading.nThreads);
         delegator.doTask(
                 vehicle -> {
-                    ShortestPathAlgorithm<Node, DirectedEdge> scout = scenario.getScoutFactory().get();
-                    Route<Node> route = vehicle.getDriver().getRoute();
-                    scout.findShortestPath(route.getStart(), route.getEnd(), route);
+                    if (recalcRoutes) {
+                        ShortestPathAlgorithm<Node, DirectedEdge> scout = scenario.getScoutFactory().get();
+                        Route<Node> route = vehicle.getDriver().getRoute();
+                        scout.findShortestPath(route.getStart(), route.getEnd(), route);
+                    }
+
                     vehicle.registerInGraph();
                     int bla = finishedVehiclesCount.incrementAndGet();
                     logProgress(bla, config.maxVehicleCount, listener);
@@ -204,8 +239,11 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                 config.multiThreading.vehiclesPerRunnable);
     }
 
-    private void singleThreadedVehicleCreation(final Scenario scenario, final ProgressListener listener)
-            throws InterruptedException {
+    private void singleThreadedVehicleRouteAssignment(Scenario scenario,
+                                                      Function2<Route<Node>, Node, Node> routeCreator,
+                                                      boolean recalcRoutes,
+                                                      ProgressListener listener)
+            throws InterruptedException, RouteIsNotDefinedException {
 
         lastPercentage = 0;
 
@@ -222,10 +260,13 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                 if (Thread.interrupted())
                     throw new InterruptedException();
 
-                Route<Node> route = new Route<>(start, end);
+                Route<Node> route = routeCreator.invoke(start, end);
+                if (recalcRoutes)
+                    scenario.getScoutFactory().get().findShortestPath(start, end, route);
+                if (route == null)
+                    throw new RouteIsNotDefinedException();
                 Vehicle vehicle = createVehicle(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
-                scenario.getScoutFactory().get().findShortestPath(start, end, route);
                 vehicle.registerInGraph();
                 logProgress(vehicleCount, scenario.getConfig().maxVehicleCount, listener);
             }
@@ -245,6 +286,15 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
         }
     }
 
+    private void finishPreparation(Scenario scenario, long startTimestamp) {
+        scenario.setPrepared(true);
+        long duration = System.nanoTime() - startTimestamp;
+        logger.info(StringUtils.buildTimeString(
+                "PREPARING SCENARIOS finished after ",
+                duration,
+                "ns"
+        ).toString());
+    }
 
     /*
     |================|

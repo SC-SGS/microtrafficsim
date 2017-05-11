@@ -1,6 +1,6 @@
 package logic.determinism;
 
-import microtrafficsim.core.convenience.DefaultParserConfig;
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;

@@ -2,9 +2,9 @@ package logic.validation;
 
 import com.jogamp.newt.event.KeyEvent;
 import logic.validation.scenarios.TCrossroadScenario;
-import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.convenience.MapViewer;
-import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
+import microtrafficsim.core.convenience.mapviewer.MapViewer;
+import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.parser.OSMParser;
