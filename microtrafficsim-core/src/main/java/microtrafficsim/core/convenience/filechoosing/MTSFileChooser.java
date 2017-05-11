@@ -224,7 +224,7 @@ public class MTSFileChooser extends JFileChooser {
 
             @Override
             public String getDescription() {
-                return "MTS Route File (*" + AREA_POSTFIX + ")";
+                return "MTS Route File (*" + ROUTE_POSTFIX + ")";
             }
         };
 

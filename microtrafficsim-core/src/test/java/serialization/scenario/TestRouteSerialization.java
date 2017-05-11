@@ -15,7 +15,6 @@ import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.simulation.utils.RouteMatrix;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
-import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.logging.LoggingLevel;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -35,7 +34,6 @@ import static org.junit.Assert.*;
  * @author Dominic Parga Cacheiro
  */
 public class TestRouteSerialization {
-    // todo
     public static final Logger logger = new EasyMarkableLogger(TestRouteSerialization.class);
 
 
@@ -49,7 +47,7 @@ public class TestRouteSerialization {
         config = new SimulationConfig();
         // general
         config.speedup = Integer.MAX_VALUE;
-        config.seed    = new Random().getSeed();
+        config.seed    = 42; // todo new Random().getSeed();
         // crossing logic
         config.crossingLogic.drivingOnTheRight            = true;
         config.crossingLogic.edgePriorityEnabled          = true;
@@ -57,7 +55,7 @@ public class TestRouteSerialization {
         config.crossingLogic.friendlyStandingInJamEnabled = true;
         config.crossingLogic.onlyOneVehicleEnabled        = false;
         // vehicles
-        config.maxVehicleCount = 4000;
+        config.maxVehicleCount = 10;
         // multithreading
         config.multiThreading.nThreads = 42;
         logger.info("config created with seed = " + config.seed);
@@ -87,9 +85,19 @@ public class TestRouteSerialization {
 
 
     @Test
-    public void testRouteIdentity() throws Exception {
-        AreaScenario scenario = new RandomRouteScenario(config.seed, config, streetgraph);
+    public void testAreaScenarioRoutes() throws IOException {
+        AreaScenario scenario = new AreaScenario(config.seed, config, streetgraph);
+        scenario.refillNodeLists();
+        testAreaScenario(scenario);
+    }
 
+    @Test
+    public void testRandomRouteScenarioRoutes() throws IOException {
+        testAreaScenario(new RandomRouteScenario(config.seed, config, streetgraph));
+    }
+
+
+    private void testAreaScenario(AreaScenario scenario) throws IOException {
         /* prepare scenario */
         VehicleScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(config.seed);
         try {
@@ -102,7 +110,7 @@ public class TestRouteSerialization {
 
         /* remember routes */
         RouteMatrix rm = new RouteMatrix(streetgraph.getGUID());
-        rm.addAll(scenario);
+        rm.addAll(simulation.getScenario());
         assertFalse("Original route matrix is already empty", rm.isEmpty());
 
 
@@ -115,11 +123,8 @@ public class TestRouteSerialization {
         /* assert basic attributes */
         assertEquals("GraphGUID is not identical", rm.getGraphGUID(), loaded.getGraphGUID());
         assertEquals("Different size", rm.size(), loaded.size());
-        assertTrue("KeySets does not contain same elements", rm.keySet().containsAll(loaded.keySet()));
-        assertTrue("Values does not contain same elements", rm.values().containsAll(loaded.values()));
 
 
-        int counter = 0;
         Iterator<Node> iterKeys = rm.keySet().iterator();
         Iterator<Node> iterLoadedKeys = loaded.keySet().iterator();
         assertTrue("Any route should be stored", iterKeys.hasNext() && iterLoadedKeys.hasNext());
@@ -157,9 +162,13 @@ public class TestRouteSerialization {
                 /* assert routes */
                 Route<Node> route = values.get(destination);
                 Route<Node> loadedRoute = loadedValues.get(loadedDestination);
-                assertEquals("stored route is not as expected", route, loadedRoute);
+                assertEquals("stored route is not as expected", route.hashCode(), loadedRoute.hashCode());
             }
+
+            assertTrue(!iterValues.hasNext() && !iterLoadedValues.hasNext());
         }
+
+        assertTrue(!iterKeys.hasNext() && !iterLoadedKeys.hasNext());
     }
 
 

@@ -48,6 +48,7 @@ public class Route<NodeType extends ShortestPathNode> extends Stack<ShortestPath
         if (isEmpty())
             strBuilder.appendln("Route is empty.");
         else {
+            strBuilder.appendln("hash  = " + hashCode());
             strBuilder.appendln("start = " + start.toString());
             strBuilder.appendln("end   = " + end.toString());
             strBuilder.appendln("size  = " + size());

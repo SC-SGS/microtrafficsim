@@ -71,7 +71,10 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
 
     @Override
     public int hashCode() {
-        return new FNVHashBuilder().add(id).add(coordinate).getHash();
+        return new FNVHashBuilder()
+                .add(id)
+                .add(coordinate)
+                .getHash();
     }
 
     @Override

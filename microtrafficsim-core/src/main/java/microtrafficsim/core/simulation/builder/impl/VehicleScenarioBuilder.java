@@ -28,6 +28,7 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.strings.StringUtils;
 import org.slf4j.Logger;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -137,7 +138,15 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
         long startTimestamp = System.nanoTime();
 
         resetBeforePreparation(scenario);
-        buildVehicles(scenario, (start, end) -> routes.get(start).get(end), false, listener);
+        buildVehicles(scenario, (start, end) -> {
+            Map<Node, Route<Node>> tmp = routes.get(start);
+            if (tmp != null) {
+                Route<Node> loaded = tmp.get(end);
+                if (loaded != null)
+                    return loaded;
+            }
+            return new Route<>(start, end);
+        }, false, listener);
         finishPreparation(scenario, startTimestamp);
         return scenario;
     }
@@ -213,15 +222,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                 if (Thread.interrupted())
                     throw new InterruptedException();
 
-                Route<Node> route;
-                try {
-                    route = routeCreator.invoke(start, end);
-                    System.err.println(route);
-                    if (route == null)
-                        throw new RouteIsNotDefinedException();
-                } catch (Exception e) {
-                    throw new RouteIsNotDefinedException();
-                }
+                Route<Node> route = routeCreator.invoke(start, end);
                 Vehicle vehicle = createVehicle(scenario, route);
                 scenario.getVehicleContainer().addVehicle(vehicle);
             }
@@ -266,14 +267,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                 if (Thread.interrupted())
                     throw new InterruptedException();
 
-                Route<Node> route;
-                try {
-                    route = routeCreator.invoke(start, end);
-                    if (route == null)
-                        throw new RouteIsNotDefinedException();
-                } catch (Exception e) {
-                    throw new RouteIsNotDefinedException();
-                }
+                Route<Node> route = routeCreator.invoke(start, end);
                 if (recalcRoutes)
                     scenario.getScoutFactory().get().findShortestPath(start, end, route);
                 Vehicle vehicle = createVehicle(scenario, route);
@@ -314,7 +308,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
     */
     @Override
     public void reset() {
-        logger.debug("reset");
+        logger.debug("reset " + VehicleScenarioBuilder.class.getSimpleName());
         idGenerator.reset();
         seedGenerator.reset();
     }

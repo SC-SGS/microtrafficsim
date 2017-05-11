@@ -102,7 +102,7 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                 // origin and destination needed because the id is used by forward and backward edge of the same street
                 .add(streetInfo.raw.origin.hashCode())
                 .add(streetInfo.raw.destination.hashCode())
-                .add(streetInfo.raw.orientation)
+                .add(streetInfo.raw.orientation == Orientation.FORWARD)
                 .getHash();
     }
 

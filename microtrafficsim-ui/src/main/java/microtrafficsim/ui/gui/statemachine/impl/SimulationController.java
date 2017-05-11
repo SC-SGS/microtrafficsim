@@ -19,6 +19,7 @@ import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.simulation.utils.RouteMatrix;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
+import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
 import microtrafficsim.ui.gui.menues.MTSMenuBar;
@@ -772,7 +773,8 @@ public class SimulationController implements GUIController {
     private void loadConfig(File file) {
         SimulationConfig newConfig = null;
         try {
-            newConfig = exfmtStorage.loadConfig(file, preferences.getCorrectSettings());
+            SimulationConfig prefConfigs = preferences.getCorrectSettings();
+            newConfig = exfmtStorage.loadConfig(file, prefConfigs);
         } catch (IncorrectSettingsException e) {
             e.printStackTrace();
         }
@@ -782,13 +784,7 @@ public class SimulationController implements GUIController {
             showPreferences();
             preferences.setSettings(newConfig);
         } else {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "The chosen file '" + file.getName() + "' has a wrong format.\n" +
-                            "Therefore it could not be loaded.\n" +
-                            "Please make sure this file exists and is a valid MTS config file.",
-                    "Error: wrong config-file format",
-                    JOptionPane.ERROR_MESSAGE);
+            UserInteractionUtils.showConfigHasWrongFormat(file, frame);
         }
     }
 
@@ -1017,7 +1013,8 @@ public class SimulationController implements GUIController {
     private void loadRoutesAndStart(File file) {
         Tuple<RouteMatrix, UnprojectedAreas> result = exfmtStorage.loadRoutes(file, streetgraph);
 
-        if (result != null) {
+        boolean errorOccured = result == null || result.obj0 == null || result.obj1 == null;
+        if (!errorOccured) {
             clearAndUpdateAreaOverlay(result.obj1);
             config.scenario.selectedClass = config.scenario.supportedClasses.get(AreaScenario.class);
             startNewScenario(result.obj0);
@@ -1036,7 +1033,8 @@ public class SimulationController implements GUIController {
         RouteMatrix routeMatrix = new RouteMatrix(streetgraph.getGUID());
         routeMatrix.addAll(simulation.getScenario());
 
-        UnprojectedAreas areas = scenarioAreaOverlay.getAreas().toUnprojectedAreas(mapviewer.getProjection());
+        AreaScenario scenario = (AreaScenario) simulation.getScenario();
+        UnprojectedAreas areas = scenario.getAreas();
         boolean success = exfmtStorage.saveRoutes(file, routeMatrix, areas);
 
         if (success)
@@ -1100,9 +1098,10 @@ public class SimulationController implements GUIController {
         if (config.scenario.selectedClass.getObj() == AreaScenario.class) {
             scenario = new AreaScenario(config.seed, config, streetgraph);
             /* get areas from overlay */
-            scenarioAreaOverlay.getAreas().stream()
-                    .map(area -> area.getUnprojectedArea(mapviewer.getProjection()))
-                    .forEach(scenario::addArea);
+            for (Area area :scenarioAreaOverlay.getAreas()) {
+                TypedPolygonArea unprojectedArea = area.getUnprojectedArea(mapviewer.getProjection());
+                scenario.addArea(unprojectedArea);
+            }
             scenario.refillNodeLists();
         } else if (config.scenario.selectedClass.getObj() == EndOfTheWorldScenario.class) {
             scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
@@ -1133,7 +1132,7 @@ public class SimulationController implements GUIController {
             scenarioAreaOverlay.setEnabled(true, true, true);
         } catch (RouteIsNotDefinedException e) {
             logger.warn("RouteMatrix contains routes being undefined for the given graph.");
-            UserInteractionUtils.showResultIsNotDefinedInfo(frame);
+            UserInteractionUtils.showRouteResultIsNotDefinedInfo(frame);
             scenarioAreaOverlay.setEnabled(true, true, true);
         }
 

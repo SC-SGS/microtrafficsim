@@ -27,8 +27,8 @@ public class AreaScenario extends BasicRandomScenario {
     private static Logger logger = new EasyMarkableLogger(AreaScenario.class);
 
     // matrix
-    private final HashMap<TypedPolygonArea, ArrayList<Node>> originNodes;
-    private final HashMap<TypedPolygonArea, ArrayList<Node>> destinationNodes;
+    private final Map<TypedPolygonArea, ArrayList<Node>> originNodes;
+    private final Map<TypedPolygonArea, ArrayList<Node>> destinationNodes;
     private final WheelOfFortune<Node> randomOriginSupplier;
     private final WheelOfFortune<Node> randomDestinationSupplier;
     private final Random nodeRandom;
@@ -149,18 +149,18 @@ public class AreaScenario extends BasicRandomScenario {
             destinationNodes.put(getTotalGraph(Area.Type.DESTINATION), new ArrayList<>());
 
         for (Node node : getGraph().getNodes()) {
-            originNodes.keySet().stream()
-                    .filter(area -> area.contains(node))
-                    .forEach(area -> {
-                        originNodes.get(area).add(node);
-                        randomOriginSupplier.incWeight(node);
-                    });
-            destinationNodes.keySet().stream()
-                    .filter(area -> area.contains(node))
-                    .forEach(area -> {
-                        destinationNodes.get(area).add(node);
-                        randomDestinationSupplier.incWeight(node);
-                    });
+            for (TypedPolygonArea area : originNodes.keySet()) {
+                if (area.contains((node))) {
+                    originNodes.get(area).add(node);
+                    randomOriginSupplier.incWeight(node);
+                }
+            }
+            for (TypedPolygonArea area : destinationNodes.keySet()) {
+                if (area.contains((node))) {
+                    destinationNodes.get(area).add(node);
+                    randomDestinationSupplier.incWeight(node);
+                }
+            }
         }
 
         fillMatrix();

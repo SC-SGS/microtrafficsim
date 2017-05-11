@@ -7,6 +7,7 @@ import microtrafficsim.utils.collections.SkipList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Basic implementation using a {@link HashMap}. For the random number generator used for {@link #nextObject()},
@@ -18,7 +19,7 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
 
     private Random random;
     private SkipList<T> elements;
-    private HashMap<T, Integer> fields;
+    private Map<T, Integer> fields;
     private int n;
 
     public BasicWheelOfFortune(long seed) {

@@ -1,10 +1,6 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
-import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.map.Bounds;
-import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
@@ -12,8 +8,6 @@ import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
-
-import java.util.ArrayList;
 
 /**
  * <p>
@@ -59,31 +53,6 @@ public class RandomRouteScenario extends AreaScenario {
         addArea(getTotalGraph(Area.Type.DESTINATION));
 
 
-        fillMatrix();
-    }
-
-    /**
-     * <p>
-     * Until enough vehicles (defined in {@link SimulationConfig}) are created, this method is doing this:<br>
-     * &bull get random origin <br>
-     * &bull get random destination <br>
-     * &bull increase the route count for the found origin-destination-pair
-     */
-    @Override
-    protected void fillMatrix() {
-        logger.info("BUILDING ODMatrix started");
-
-        Random random = new Random(getSeed());
-        ArrayList<Node> nodes = new ArrayList<>(getGraph().getNodes());
-        odMatrix.clear();
-
-        // TODO can the runtime be improved by mathematical magic?
-        for (int i = 0; i < getConfig().maxVehicleCount; i++) {
-            int rdmOrig = random.nextInt(nodes.size());
-            int rdmDest = random.nextInt(nodes.size());
-            odMatrix.inc(nodes.get(rdmOrig), nodes.get(rdmDest));
-        }
-
-        logger.info("BUILDING ODMatrix finished");
+        refillNodeLists();
     }
 }

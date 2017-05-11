@@ -62,13 +62,22 @@ public class UserInteractionUtils {
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    public static void showResultIsNotDefinedInfo(Component parent) {
+    public static void showRouteResultIsNotDefinedInfo(Component parent) {
         JOptionPane.showMessageDialog(
                 parent,
                 "There were undefined routes in the loaded route file.\n" +
                         "Thus nothing but the areas is loaded.",
                 "Scenario loading failed",
                 JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    public static void showConfigHasWrongFormat(File chosen, Component parent) {
+        JOptionPane.showMessageDialog(
+                parent,
+                "The chosen file '" + chosen.getName() + "' could not be loaded.\n" +
+                        "Please make sure this file exists and is a valid MTS config file.",
+                "Error: wrong config-file format",
+                JOptionPane.ERROR_MESSAGE);
     }
 
     public static void showSavingSuccess(Component parent) {

@@ -60,7 +60,7 @@ public class StreetGraphExchangeFormatTest {
         SimulationConfig config = new SimulationConfig();
 
         config.maxVehicleCount                            = 1000;
-        config.speedup                                    = 5;
+        config.speedup                                    = Integer.MAX_VALUE;
         config.seed                                       = 0;
         config.multiThreading.nThreads                    = 8;
         config.crossingLogic.drivingOnTheRight            = true;
@@ -92,8 +92,13 @@ public class StreetGraphExchangeFormatTest {
     }
 
 
+    /*
+    |=======|
+    | by id |
+    |=======|
+    */
     @Test
-    public void testFullSerializationAndDeserialization() {
+    public void testFullSerializationAndDeserializationByIds() {
         assertEquals(osm.getNodes().size(), xfm.getNodes().size());
         assertEquals(osm.getEdges().size(), xfm.getEdges().size());
 
@@ -190,5 +195,113 @@ public class StreetGraphExchangeFormatTest {
 
     private boolean connectorEqualsById(Map.Entry<Lane, ArrayList<Lane>> a, Map.Entry<Lane, ArrayList<Lane>> b) {
         return laneEqualsByIds(a.getKey(), b.getKey()) && lanesEqualsByIds(a.getValue(), b.getValue());
+    }
+
+
+    /*
+    |=============|
+    | by hashcode |
+    |=============|
+    */
+    @Test
+    public void testFullSerializationAndDeserializationByHashCodes() {
+        assertEquals(osm.getNodes().size(), xfm.getNodes().size());
+        assertEquals(osm.getEdges().size(), xfm.getEdges().size());
+
+        // check nodes
+        for (Node osmNode : osm.getNodes()) {
+            Node xfmNode = nodeByHashCode(xfm.getNodes(), osmNode);
+            assertNotNull(xfmNode);
+
+            // check incoming edges
+            assertEquals(osmNode.getIncomingEdges().size(), xfmNode.getIncomingEdges().size());
+            for (DirectedEdge osmEdge : osmNode.getIncomingEdges()) {
+                DirectedEdge xfmEdge = edgeByHashCodes(xfmNode.getIncomingEdges(), osmEdge);
+                assertNotNull(xfmEdge);
+            }
+
+            // check leaving edges
+            assertEquals(osmNode.getLeavingEdges().size(), xfmNode.getLeavingEdges().size());
+            for (DirectedEdge osmEdge : osmNode.getLeavingEdges()) {
+                DirectedEdge xfmEdge = edgeByHashCodes(xfmNode.getLeavingEdges(), osmEdge);
+                assertNotNull(xfmEdge);
+            }
+
+            // check connectors
+            assertEquals(osmNode.getConnectors().size(), xfmNode.getConnectors().size());
+            for (Map.Entry<Lane, ArrayList<Lane>> osmConnector : osmNode.getConnectors().entrySet()) {
+                Map.Entry<Lane, ArrayList<Lane>> xfmConnector = connectorByHashCodes(xfmNode.getConnectors().entrySet(),
+                        osmConnector);
+                assertNotNull(xfmConnector);
+            }
+        }
+
+        // check edges
+        for (DirectedEdge osmEdge : osm.getEdges()) {
+            DirectedEdge xfmEdge = edgeByHashCodes(xfm.getEdges(), osmEdge);
+            assertNotNull(xfmEdge);
+
+            // TODO: check other properties
+        }
+    }
+
+
+    private Node nodeByHashCode(Set<Node> nodes, Node query) {
+        for (Node node : nodes)
+            if (node.hashCode() == query.hashCode())
+                return node;
+
+        return null;
+    }
+
+    private DirectedEdge edgeByHashCodes(Set<DirectedEdge> edges, DirectedEdge query) {
+        for (DirectedEdge edge : edges)
+            if (edgeEqualsByHashCodes(edge, query))
+                return edge;
+
+        return null;
+    }
+
+    private Map.Entry<Lane, ArrayList<Lane>> connectorByHashCodes(Set<Map.Entry<Lane, ArrayList<Lane>>> connectors, Map
+            .Entry<Lane, ArrayList<Lane>> query) {
+        for (Map.Entry<Lane, ArrayList<Lane>> connector : connectors) {
+            if (connectorEqualsByHashCode(connector, query))
+                return connector;
+        }
+
+        return null;
+    }
+
+
+    private boolean edgeEqualsByHashCodes(DirectedEdge a, DirectedEdge b) {
+        return a.hashCode() == b.hashCode()
+                && a.getOrigin().hashCode() == b.getOrigin().hashCode()
+                && a.getDestination().hashCode() == b.getDestination().hashCode();
+    }
+
+    private boolean laneEqualsByHashCodes(Lane a, Lane b) {
+        return edgeEqualsByHashCodes(a.getAssociatedEdge(), b.getAssociatedEdge()) && a.getIndex() == b.getIndex();
+    }
+
+    private boolean lanesEqualsByHashCodes(Collection<Lane> a, Collection<Lane> b) {
+        for (Lane la : a) {
+            boolean found = false;
+
+            for (Lane lb : b) {
+                if (laneEqualsByHashCodes(la, lb)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+                return false;
+        }
+
+        return true;
+    }
+
+    private boolean connectorEqualsByHashCode(Map.Entry<Lane, ArrayList<Lane>> a, Map.Entry<Lane, ArrayList<Lane>> b) {
+        return laneEqualsByHashCodes(a.getKey(), b.getKey()) && lanesEqualsByHashCodes(a.getValue(), b.getValue());
     }
 }

@@ -8,6 +8,7 @@ import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.builder.RouteIsNotDefinedException;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.*;
 
@@ -25,6 +26,28 @@ public class RouteMatrix extends TreeMap<Node, Map<Node, Route<Node>>> {
     public RouteMatrix(GraphGUID graphGUID) {
         super(Comparator.comparingLong(Node::hashCode));
         this.graphGUID = graphGUID;
+    }
+
+
+    @Override
+    public String toString() {
+        LevelStringBuilder builder = new LevelStringBuilder()
+                .setDefaultLevelSeparator()
+                .setDefaultLevelSubString();
+
+        builder.appendln("<" + RouteMatrix.class.getSimpleName() + ">").incLevel(); {
+            builder.appendln(graphGUID).appendln();
+            for (Node origin : keySet()) {
+                for (Map.Entry<Node, Route<Node>> entry : get(origin).entrySet()) {
+                    builder.appendln("ORIGIN      = " + origin);
+                    builder.appendln("DESTINATION = " + entry.getKey());
+                    builder.appendln(entry.getValue());
+                    builder.appendln();
+                }
+            }
+        } builder.decLevel().append("<\\" + RouteMatrix.class.getSimpleName() + ">");
+
+        return builder.toString();
     }
 
     public GraphGUID getGraphGUID() {
@@ -115,7 +138,9 @@ public class RouteMatrix extends TreeMap<Node, Map<Node, Route<Node>>> {
                 for (int edgeHash : edgeHashes) {
                     ShortestPathEdge<Node> nextEdge = edgeLexicon.get(edgeHash);
                     if (nextEdge == null) {
-                        throw new RouteIsNotDefinedException("Route should have an edge that is not in the graph.");
+                        throw new RouteIsNotDefinedException("Route should have an edge that is not in the graph.\n" +
+                                "requested hash = " + edgeHash + "\n" +
+                                sparseMatrix.getGraphGUID());
                     }
                     route.push(nextEdge);
                 }
