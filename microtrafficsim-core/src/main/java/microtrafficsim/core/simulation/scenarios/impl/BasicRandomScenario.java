@@ -59,7 +59,7 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
         shortestPathAlg = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
     }
 
-    protected abstract void fillMatrix();
+    public abstract void redefineMetaRoutes();
 
     /*
     |==============|
@@ -79,18 +79,19 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
         random.reset();
     }
 
+
     /*
     |============|
     | (i) Seeded |
     |============|
     */
     @Override
-    public void setSeed(long seed) {
-        random.setSeed(seed);
+    public long getSeed() {
+        return random.getSeed();
     }
 
     @Override
-    public long getSeed() {
-        return random.getSeed();
+    public void setSeed(long seed) {
+        random.setSeed(seed);
     }
 }

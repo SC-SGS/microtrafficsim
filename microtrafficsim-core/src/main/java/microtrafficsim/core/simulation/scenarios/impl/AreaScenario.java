@@ -1,37 +1,36 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.routes.MetaRoute;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.map.Bounds;
-import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.UnprojectedAreas;
 import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
+import microtrafficsim.core.simulation.utils.RouteContainer;
+import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 import microtrafficsim.core.vis.scenario.areas.Area;
+import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.WheelOfFortune;
 import microtrafficsim.math.random.distributions.impl.BasicWheelOfFortune;
 import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Dominic Parga Cacheiro
  */
 public class AreaScenario extends BasicRandomScenario {
+    private static final Logger logger = new EasyMarkableLogger(AreaScenario.class);
 
-    private static Logger logger = new EasyMarkableLogger(AreaScenario.class);
-
-    // matrix
-    private final Map<TypedPolygonArea, ArrayList<Node>> originNodes;
-    private final Map<TypedPolygonArea, ArrayList<Node>> destinationNodes;
-    private final WheelOfFortune<Node> randomOriginSupplier;
-    private final WheelOfFortune<Node> randomDestinationSupplier;
-    private final Random nodeRandom;
+    private final AreaNodeContainer areaNodeContainer;
+    private final RouteContainer routes;
 
     public AreaScenario(long seed,
                         SimulationConfig config,
@@ -57,132 +56,204 @@ public class AreaScenario extends BasicRandomScenario {
                         Graph graph,
                         VehicleContainer vehicleContainer) {
         super(random, config, graph, vehicleContainer);
-        nodeRandom = new Random(random.getSeed());
-
-        /* prepare building matrix */
-        originNodes = new HashMap<>();
-        destinationNodes = new HashMap<>();
-        randomOriginSupplier = new BasicWheelOfFortune<>(random);
-        randomDestinationSupplier = new BasicWheelOfFortune<>(random);
-    }
-
-
-    protected void resetRandomNodeSupplier() {
-        nodeRandom.reset();
-        randomOriginSupplier.reset();
-        randomDestinationSupplier.reset();
-    }
-
-    protected Node getRandomOriginNode() {
-        return randomOriginSupplier.nextObject();
-    }
-
-    protected Node getRandomDestinationNode() {
-        return randomDestinationSupplier.nextObject();
-    }
-
-    protected Node getRandomNode(TypedPolygonArea area) {
-        ArrayList<Node> nodes = area.getType() == Area.Type.ORIGIN
-                ? originNodes.get(area)
-                : destinationNodes.get(area);
-        return nodes.get(nodeRandom.nextInt(nodes.size()));
-    }
-
-    public TypedPolygonArea getTotalGraph(Area.Type type) {
-        final Bounds bounds = getGraph().getBounds();
-
-        final Coordinate bottomLeft = new Coordinate( bounds.minlat, bounds.minlon);
-        final Coordinate bottomRight = new Coordinate(bounds.minlat, bounds.maxlon);
-        final Coordinate topRight = new Coordinate(   bounds.maxlat, bounds.maxlon);
-        final Coordinate topLeft = new Coordinate(    bounds.maxlat, bounds.minlon);
-
-
-        /* add areas */
-        return new TypedPolygonArea(new Coordinate[] {
-                bottomLeft,
-                bottomRight,
-                topRight,
-                topLeft
-        }, type);
-    }
-
-    public UnprojectedAreas getAreas() {
-        UnprojectedAreas areas = new UnprojectedAreas();
-        areas.addAll(originNodes.keySet());
-        areas.addAll(destinationNodes.keySet());
-        return areas;
-    }
-
-
-    /**
-     * Adds the given area WITHOUT refilling the respective node list. If you like to, call {@link #refillNodeLists()}
-     *
-     * @param area
-     */
-    public void addArea(TypedPolygonArea area) {
-        if (area.getType() == Area.Type.ORIGIN)
-            originNodes.computeIfAbsent(area, k -> new ArrayList<>());
-        else
-            destinationNodes.computeIfAbsent(area, k -> new ArrayList<>());
-    }
-
-    /**
-     * Removes the given area WITHOUT the need of calling {@link #refillNodeLists()}
-     *
-     * @param area
-     */
-    public void removeArea(TypedPolygonArea area) {
-        if (area.getType() == Area.Type.ORIGIN)
-            originNodes.remove(area).forEach(randomOriginSupplier::decWeight);
-        else
-            destinationNodes.remove(area).forEach(randomDestinationSupplier::decWeight);
-    }
-
-
-    public void refillNodeLists() {
-        originNodes.values().forEach(ArrayList::clear);
-        destinationNodes.values().forEach(ArrayList::clear);
-
-        if (originNodes.isEmpty())
-            originNodes.put(getTotalGraph(Area.Type.ORIGIN), new ArrayList<>());
-        if (destinationNodes.isEmpty())
-            destinationNodes.put(getTotalGraph(Area.Type.DESTINATION), new ArrayList<>());
-
-        for (Node node : getGraph().getNodes()) {
-            for (TypedPolygonArea area : originNodes.keySet()) {
-                if (area.contains((node))) {
-                    originNodes.get(area).add(node);
-                    randomOriginSupplier.incWeight(node);
-                }
-            }
-            for (TypedPolygonArea area : destinationNodes.keySet()) {
-                if (area.contains((node))) {
-                    destinationNodes.get(area).add(node);
-                    randomDestinationSupplier.incWeight(node);
-                }
-            }
-        }
-
-        fillMatrix();
+        areaNodeContainer = new AreaNodeContainer(random.getSeed());
+        routes = new SortedRouteContainer();
     }
 
 
     @Override
-    protected void fillMatrix() {
-        logger.info("BUILDING ODMatrix started");
+    public RouteContainer getRoutes() {
+        return routes;
+    }
 
-        randomOriginSupplier.reset();
-        randomDestinationSupplier.reset();
-        odMatrix.clear();
+    public AreaNodeContainer getAreaNodeContainer() {
+        return areaNodeContainer;
+    }
 
 
+    @Override
+    public final void redefineMetaRoutes() {
+        logger.info("DEFINING routes started");
+
+        reset();
+        areaNodeContainer.refillNodeLists(getGraph());
+
+        routes.clear();
+        defineRoutesAfterClearing();
+
+        logger.info("DEFINING routes finished");
+    }
+
+    /**
+     * Called in {@link #redefineMetaRoutes()} after all collections are cleared and all relevant attributes are
+     * reset calling {@link #reset()}.
+     */
+    protected void defineRoutesAfterClearing() {
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
             boolean weightedUniformly = getConfig().scenario.nodesAreWeightedUniformly;
-            Node origin = randomOriginSupplier.nextObject(weightedUniformly);
-            Node destination = randomDestinationSupplier.nextObject(weightedUniformly);
-            odMatrix.inc(origin, destination);
+
+            Node origin      = areaNodeContainer.getRdmOriginNode(weightedUniformly);
+            Node destination = areaNodeContainer.getRdmDestNode(weightedUniformly);
+
+            routes.add(new MetaRoute(origin, destination));
+        }
+    }
+
+
+    @Override
+    public void reset() {
+        super.reset();
+        areaNodeContainer.reset();
+    }
+
+    @Override
+    public void setSeed(long seed) {
+        super.setSeed(seed);
+        areaNodeContainer.setSeed(seed);
+    }
+
+
+    public static class AreaNodeContainer implements Seeded, Resettable {
+        private final UnprojectedAreas originAreas;
+        private final UnprojectedAreas destinationAreas;
+        private final WheelOfFortune<Node> rdmOriginSupplier;
+        private final WheelOfFortune<Node> rdmDestinationSupplier;
+        private final Map<TypedPolygonArea, ArrayList<Node>> areaToNode;
+        private final Random nodeRandom;
+
+        private boolean isDirty = false;
+
+        public AreaNodeContainer(long seed) {
+            nodeRandom = new Random(seed);
+
+            originAreas            = new UnprojectedAreas();
+            destinationAreas       = new UnprojectedAreas();
+            rdmOriginSupplier      = new BasicWheelOfFortune<>(seed);
+            rdmDestinationSupplier = new BasicWheelOfFortune<>(seed);
+
+            areaToNode = new HashMap<>();
         }
 
-        logger.info("BUILDING ODMatrix finished");
+
+        public boolean hasOriginAreas() {
+            return !originAreas.isEmpty();
+        }
+
+        public boolean hasDestinationAreas() {
+            return !destinationAreas.isEmpty();
+        }
+
+
+        public UnprojectedAreas getAreas() {
+            UnprojectedAreas areas = new UnprojectedAreas();
+            areas.addAll(originAreas);
+            areas.addAll(destinationAreas);
+            return areas;
+        }
+
+        /**
+         * Adds the given area WITHOUT refilling the respective node list. If you like to, call
+         * {@link #refillNodeLists(Graph)}
+         *
+         * @param area
+         */
+        public boolean addArea(TypedPolygonArea area) {
+            if (areaToNode.containsKey(area))
+                return false;
+
+            if (area.getType() == Area.Type.ORIGIN)
+                originAreas.add(area);
+            else
+                destinationAreas.add(area);
+            areaToNode.computeIfAbsent(area, k -> new ArrayList<>());
+            isDirty = true;
+            return true;
+        }
+
+        /**
+         * Removes the given area WITHOUT the need of calling {@link #refillNodeLists(Graph)}
+         *
+         * @param area
+         */
+        public void removeArea(TypedPolygonArea area) {
+            ArrayList<Node> nodes = areaToNode.remove(area);
+            if (nodes == null)
+                return;
+
+            if (area.getType() == Area.Type.ORIGIN)
+                originAreas.remove(area);
+            else
+                destinationAreas.remove(area);
+            isDirty = true;
+        }
+
+
+        public Node getRdmOriginNode(boolean weightedUniformly) {
+            return rdmOriginSupplier.nextObject(weightedUniformly);
+        }
+
+        public Node getRdmDestNode(boolean weightedUniformly) {
+            return rdmDestinationSupplier.nextObject(weightedUniformly);
+        }
+
+        public Node getRdmNode(TypedPolygonArea area) {
+            ArrayList<Node> nodes = areaToNode.get(area);
+            return nodes.get(nodeRandom.nextInt(nodes.size()));
+        }
+
+
+        public void refillNodeLists(Graph graph) {
+            reset();
+
+            if (isDirty) {
+                clearNodeLists();
+
+                if (!hasOriginAreas())
+                    addArea(graph.total(Area.Type.ORIGIN));
+                if (!hasDestinationAreas())
+                    addArea(graph.total(Area.Type.DESTINATION));
+
+                for (Node node : graph.getNodes()) {
+                    for (TypedPolygonArea area : originAreas) {
+                        if (area.contains((node))) {
+                            areaToNode.get(area).add(node);
+                            rdmOriginSupplier.incWeight(node);
+                        }
+                    }
+                    for (TypedPolygonArea area : destinationAreas) {
+                        if (area.contains((node))) {
+                            areaToNode.get(area).add(node);
+                            rdmDestinationSupplier.incWeight(node);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void clearNodeLists() {
+            rdmOriginSupplier.clear();
+            rdmDestinationSupplier.clear();
+            areaToNode.values().forEach(ArrayList::clear);
+        }
+
+
+        @Override
+        public void reset() {
+            nodeRandom.reset();
+            rdmOriginSupplier.reset();
+            rdmDestinationSupplier.reset();
+        }
+
+        @Override
+        public long getSeed() {
+            return nodeRandom.getSeed();
+        }
+
+        @Override
+        public void setSeed(long seed) {
+            nodeRandom.setSeed(seed);
+            rdmOriginSupplier.setSeed(seed);
+            rdmDestinationSupplier.setSeed(seed);
+        }
     }
 }

@@ -1,9 +1,7 @@
 package microtrafficsim.core.simulation.builder;
 
-import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.utils.RouteMatrix;
 import microtrafficsim.utils.progressable.ProgressListener;
 
 /**
@@ -43,16 +41,4 @@ public interface ScenarioBuilder {
      * @return The prepared scenario (same reference as the given one, just for practical purposes)
      */
     Scenario prepare(Scenario scenario, ProgressListener listener) throws InterruptedException;
-
-    /**
-     * Prepares the given scenario. If the scenario is already prepared, it gets prepared again. This method uses the
-     * given map to store all routes, so it does not compute the routes using a {@link ShortestPathAlgorithm}.
-     *
-     * @param scenario This scenario should be prepared
-     * @param routes This map returns a route for a certain vehicle id.
-     * @param listener This listener should get information about the preparation progress
-     * @return The prepared scenario (same reference as the given one, just for practical purposes)
-     */
-    Scenario prepare(Scenario scenario, RouteMatrix routes, ProgressListener listener)
-            throws InterruptedException, RouteIsNotDefinedException;
 }

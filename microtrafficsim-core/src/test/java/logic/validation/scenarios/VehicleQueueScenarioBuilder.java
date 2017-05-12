@@ -1,15 +1,14 @@
 package logic.validation.scenarios;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.Route;
+import microtrafficsim.core.logic.OldRoute;
 import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.impl.BlockingCar;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
+import microtrafficsim.core.simulation.scenarios.impl.OldQueueScenarioSmall;
 
 import java.util.function.Supplier;
 
@@ -33,9 +32,9 @@ public class VehicleQueueScenarioBuilder extends VehicleScenarioBuilder {
     }
 
     @Override
-    protected BlockingCar createLogicVehicle(Scenario scenario, Route<Node> route) {
+    protected BlockingCar createLogicVehicle(Scenario scenario, OldRoute<Node> route) {
 
-        QueueScenarioSmall queueScenario = (QueueScenarioSmall) scenario;
+        OldQueueScenarioSmall queueScenario = (OldQueueScenarioSmall) scenario;
 
         long id        = idGenerator.next();
         long seed      = seedGenerator.next();

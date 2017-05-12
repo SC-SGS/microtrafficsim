@@ -1,7 +1,7 @@
 package microtrafficsim.core.logic.vehicles.driver;
 
-import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.math.random.distributions.impl.Random;
@@ -21,7 +21,7 @@ public class BasicDriver implements Driver {
     private final Random        random;
 
     /* variable information */
-    private Route<Node> route;
+    private Route route;
 
     /* dynamic information */
     private int travellingTime;
@@ -147,12 +147,12 @@ public class BasicDriver implements Driver {
     }
 
     @Override
-    public Route<Node> getRoute() {
+    public Route getRoute() {
         return route;
     }
 
     @Override
-    public void setRoute(Route<Node> route) {
+    public void setRoute(Route route) {
         this.route = route;
     }
 

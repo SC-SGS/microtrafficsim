@@ -16,7 +16,8 @@ import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
-import microtrafficsim.core.simulation.utils.RouteMatrix;
+import microtrafficsim.core.simulation.utils.RouteContainer;
+import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.scenario.areas.Area;
@@ -1011,7 +1012,7 @@ public class SimulationController implements GUIController {
     }
 
     private void loadRoutesAndStart(File file) {
-        Tuple<RouteMatrix, UnprojectedAreas> result = exfmtStorage.loadRoutes(file, streetgraph);
+        Tuple<RouteContainer, UnprojectedAreas> result = exfmtStorage.loadRoutes(file, streetgraph);
 
         boolean errorOccured = result == null || result.obj0 == null || result.obj1 == null;
         if (!errorOccured) {
@@ -1030,12 +1031,12 @@ public class SimulationController implements GUIController {
     }
 
     private void saveRoutes(File file) {
-        RouteMatrix routeMatrix = new RouteMatrix(streetgraph.getGUID());
-        routeMatrix.addAll(simulation.getScenario());
+        RouteContainer routes = new SortedRouteContainer();
+        routes.addAll(simulation.getScenario());
 
         AreaScenario scenario = (AreaScenario) simulation.getScenario();
         UnprojectedAreas areas = scenario.getAreas();
-        boolean success = exfmtStorage.saveRoutes(file, routeMatrix, areas);
+        boolean success = exfmtStorage.saveRoutes(file, routes, areas);
 
         if (success)
             UserInteractionUtils.showSavingSuccess(frame);
@@ -1068,7 +1069,7 @@ public class SimulationController implements GUIController {
         startNewScenario(null);
     }
 
-    private void startNewScenario(RouteMatrix routes) {
+    private void startNewScenario(RouteContainer routes) {
         WrappedString cachedTitle = new WrappedString();
         rememberCurrentFrameTitleIn(cachedTitle);
 
@@ -1120,8 +1121,7 @@ public class SimulationController implements GUIController {
                 updateFrameTitle(tmpTitle);
             };
 
-            if (routes == null) scenarioBuilder.prepare(scenario, progressListener);
-            else                scenarioBuilder.prepare(scenario, routes, progressListener);
+            scenarioBuilder.prepare(scenario, progressListener);
 
 
             /* initialize the scenario */

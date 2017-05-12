@@ -1,13 +1,11 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.UnmodifiableGraph;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
-import microtrafficsim.core.simulation.utils.ODMatrix;
-import microtrafficsim.core.simulation.utils.SparseODMatrix;
-import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
 
 /**
  * This class should only implement the basic stuff for children classes.
@@ -15,12 +13,10 @@ import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
  * @author Dominic Parga Cacheiro
  */
 public abstract class BasicScenario implements Scenario {
-
     private final SimulationConfig config;
-    private final Graph graph;
+    private final Graph            graph;
     private final VehicleContainer vehicleContainer;
-    private       boolean          isPrepared;
-    protected     ODMatrix         odMatrix;
+    private boolean                isPrepared;
 
     /**
      * Default constructor
@@ -36,8 +32,6 @@ public abstract class BasicScenario implements Scenario {
         this.graph = graph;
         this.vehicleContainer = vehicleContainer;
         this.isPrepared = false;
-
-        this.odMatrix = new SparseODMatrix();
     }
 
     protected BasicScenario(SimulationConfig config, Graph graph) {
@@ -51,7 +45,7 @@ public abstract class BasicScenario implements Scenario {
 
     @Override
     public final Graph getGraph() {
-        return graph;
+        return new UnmodifiableGraph(graph);
     }
 
     @Override
@@ -67,10 +61,5 @@ public abstract class BasicScenario implements Scenario {
     @Override
     public final boolean isPrepared() {
         return isPrepared;
-    }
-
-    @Override
-    public final UnmodifiableODMatrix getODMatrix() {
-        return new UnmodifiableODMatrix(odMatrix);
     }
 }

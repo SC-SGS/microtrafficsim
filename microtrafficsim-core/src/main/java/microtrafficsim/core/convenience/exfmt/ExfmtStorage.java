@@ -7,7 +7,7 @@ import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
-import microtrafficsim.core.exfmt.extractor.simulation.RouteMatrixExtractor;
+import microtrafficsim.core.exfmt.extractor.simulation.RouteContainerExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.exfmt.injector.simulation.ProjectedAreasInjector;
@@ -23,7 +23,7 @@ import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.utils.RouteMatrix;
+import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -194,9 +194,9 @@ public class ExfmtStorage {
     | routes |
     |========|
     */
-    public Tuple<RouteMatrix, UnprojectedAreas> loadRoutes(File file, Graph graph) {
+    public Tuple<RouteContainer, UnprojectedAreas> loadRoutes(File file, Graph graph) {
         /* prepare exfmt config */
-        RouteMatrixExtractor.Config cfg = new RouteMatrixExtractor.Config();
+        RouteContainerExtractor.Config cfg = new RouteContainerExtractor.Config();
         cfg.graph = graph;
         exfmt.getConfig().set(cfg);
 
@@ -211,11 +211,11 @@ public class ExfmtStorage {
 
 
         /* load routes */
-        RouteMatrix routes = null;
+        RouteContainer routes = null;
         UnprojectedAreas areas = null;
         if (manipulator != null) {
             try {
-                routes = manipulator.extract(RouteMatrix.class);
+                routes = manipulator.extract(RouteContainer.class);
                 areas = manipulator.extract(UnprojectedAreas.class);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -227,10 +227,10 @@ public class ExfmtStorage {
         return null;
     }
 
-    public boolean saveRoutes(File file, RouteMatrix routeMatrix, UnprojectedAreas areas) {
+    public boolean saveRoutes(File file, RouteContainer routes, UnprojectedAreas areas) {
         try {
             serializer.write(file, exfmt.manipulator()
-                    .inject(routeMatrix)
+                    .inject(routes)
                     .inject(areas)
                     .getContainer());
             return true;

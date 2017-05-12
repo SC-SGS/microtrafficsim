@@ -3,7 +3,10 @@ package microtrafficsim.core.logic.streetgraph;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Bounds;
+import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.shortestpath.ShortestPathGraph;
+import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.utils.Resettable;
 
@@ -39,6 +42,24 @@ public interface Graph extends Seeded, Resettable, ShortestPathGraph {
      * @return the bounds of this graph.
      */
     Bounds getBounds();
+
+    default TypedPolygonArea total(Area.Type type) {
+        final Bounds bounds = getBounds();
+
+        final Coordinate bottomLeft = new Coordinate( bounds.minlat, bounds.minlon);
+        final Coordinate bottomRight = new Coordinate(bounds.minlat, bounds.maxlon);
+        final Coordinate topRight = new Coordinate(   bounds.maxlat, bounds.maxlon);
+        final Coordinate topLeft = new Coordinate(    bounds.maxlat, bounds.minlon);
+
+
+        /* add areas */
+        return new TypedPolygonArea(new Coordinate[] {
+                bottomLeft,
+                bottomRight,
+                topRight,
+                topLeft
+        }, type);
+    }
 
 
     Map<Integer, Node> getNodeMap();

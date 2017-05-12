@@ -2,9 +2,7 @@ package logic.validation.scenarios.pluscrossroad;
 
 import logic.validation.scenarios.VehicleQueueScenarioBuilder;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.Route;
-import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.vehicles.machines.impl.BlockingCar;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
@@ -24,12 +22,12 @@ class Builder extends VehicleQueueScenarioBuilder {
     }
 
     @Override
-    protected BlockingCar createLogicVehicle(Scenario scenario, Route<Node> route) {
+    protected BlockingCar createLogicVehicle(Scenario scenario, Route route) {
 
         AbstractPlusCrossroadScenario plusCrossroadScenario = (AbstractPlusCrossroadScenario) scenario;
 
         BlockingCar vehicle = super.createLogicVehicle(scenario, route);
-        if (route.getStart() == plusCrossroadScenario.mid)
+        if (route.getOrigin() == plusCrossroadScenario.mid)
             vehicle.toggleBlockMode();
 
         return vehicle;

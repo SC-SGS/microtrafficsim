@@ -10,8 +10,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Basic implementation using a {@link HashMap}. For the random number generator used for {@link #nextObject()},
- * {@link Random} is used.
+ * Basic implementation using a {@link PrioritySkipListSet} comparing by the objects' hashcodes. For the random number
+ * generator used for {@link #nextObject()}, {@link Random} is used.
  *
  * @author Dominic Parga Cacheiro
  */
@@ -137,6 +137,10 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
         }
     }
 
+    @Override
+    public Iterator<T> iterator() {
+        return elements.iterator();
+    }
 
     @Override
     public long getSeed() {

@@ -4,7 +4,7 @@ import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
+import microtrafficsim.core.simulation.scenarios.impl.OldQueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
 
@@ -14,10 +14,10 @@ import java.util.function.Supplier;
 /**
  * @author Dominic Parga Cacheiro
  */
-public class TCrossroadScenario extends QueueScenarioSmall {
+public class TCrossroadScenario extends OldQueueScenarioSmall {
 
     /**
-     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph)
+     * @see OldQueueScenarioSmall#OldQueueScenarioSmall(SimulationConfig, Graph)
      */
     public TCrossroadScenario(SimulationConfig config,
                               Graph graph,
@@ -33,7 +33,7 @@ public class TCrossroadScenario extends QueueScenarioSmall {
      */
     public static SimulationConfig setupConfig(SimulationConfig config) {
 
-        QueueScenarioSmall.setupConfig(config);
+        OldQueueScenarioSmall.setupConfig(config);
 
         config.maxVehicleCount                         = 3;
         config.crossingLogic.friendlyStandingInJamEnabled = false;

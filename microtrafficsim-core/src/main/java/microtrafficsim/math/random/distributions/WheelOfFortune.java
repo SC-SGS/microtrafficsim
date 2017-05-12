@@ -20,7 +20,7 @@ import java.util.Iterator;
  *
  * @author Dominic Parga Cacheiro
  */
-public interface WheelOfFortune<T> extends Resettable, Seeded {
+public interface WheelOfFortune<T> extends Resettable, Seeded, Iterable<T> {
 
     /**
      * Adds the given object with the given weight to this wheel. If the object is already added, nothing happens. To
@@ -90,4 +90,6 @@ public interface WheelOfFortune<T> extends Resettable, Seeded {
      * documentation.
      */
     T nextObject(boolean weightedUniformly);
+
+
 }

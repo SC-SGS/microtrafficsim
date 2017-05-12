@@ -1,14 +1,6 @@
 package microtrafficsim.core.exfmt.base;
 
 import microtrafficsim.core.exfmt.Container;
-import microtrafficsim.core.logic.Route;
-import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.logic.streetgraph.GraphGUID;
-import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
-import microtrafficsim.core.shortestpath.ShortestPathEdge;
-import microtrafficsim.core.simulation.utils.RouteMatrix;
-
-import java.util.*;
 
 
 /**
@@ -31,9 +23,9 @@ public class ScenarioRouteInfo extends Container.Entry {
      * @param route Takes the route's origin and destination and store the route for this pair
      * @return output of {@link HashMap#put(Object, Object) HashMap.put(...)}
      */
-    public ArrayList<Integer> put(Route<Node> route) {
-        Node origin = route.getStart();
-        Node destination = route.getEnd();
+    public ArrayList<Integer> put(Route route) {
+        Node origin = route.getOrigin();
+        Node destination = route.getDestination();
 
         Map<Integer, ArrayList<Integer>> tmp = routes.computeIfAbsent(origin.hashCode(), hashcode -> new HashMap<>());
         ArrayList<Integer> edges = new ArrayList<>(route.size());
@@ -43,11 +35,7 @@ public class ScenarioRouteInfo extends Container.Entry {
         return tmp.put(destination.hashCode(), edges);
     }
 
-    public void set(RouteMatrix routeMatrix) {
-        set(RouteMatrix.toSparse(routeMatrix));
-    }
-
-    public void set(RouteMatrix.Sparse sparseMatrix) {
+    public void set(RouteContainer routes) {
         this.graphGUID = sparseMatrix.getGraphGUID();
         routes = new HashMap<>(sparseMatrix);
     }

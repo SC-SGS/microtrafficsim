@@ -3,7 +3,7 @@ package serialization.scenario;
 import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
-import microtrafficsim.core.logic.Route;
+import microtrafficsim.core.logic.OldRoute;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
@@ -140,8 +140,8 @@ public class TestRouteSerialization {
 
 
             /* assert values <=> (destination -> route) */
-            Map<Node, Route<Node>> values = rm.get(origin);
-            Map<Node, Route<Node>> loadedValues = loaded.get(loadedOrigin);
+            Map<Node, OldRoute<Node>> values = rm.get(origin);
+            Map<Node, OldRoute<Node>> loadedValues = loaded.get(loadedOrigin);
 
 
             Iterator<Node> iterValues = values.keySet().iterator();
@@ -160,8 +160,8 @@ public class TestRouteSerialization {
 
 
                 /* assert routes */
-                Route<Node> route = values.get(destination);
-                Route<Node> loadedRoute = loadedValues.get(loadedDestination);
+                OldRoute<Node> route = values.get(destination);
+                OldRoute<Node> loadedRoute = loadedValues.get(loadedDestination);
                 assertEquals("stored route is not as expected", route.hashCode(), loadedRoute.hashCode());
             }
 

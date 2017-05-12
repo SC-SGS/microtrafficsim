@@ -1,17 +1,11 @@
 package logic.validation.scenarios;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.Route;
+import microtrafficsim.core.logic.OldRoute;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
-import microtrafficsim.core.logic.vehicles.driver.Driver;
-import microtrafficsim.core.logic.vehicles.machines.Vehicle;
-import microtrafficsim.core.logic.vehicles.machines.impl.Car;
-import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
+import microtrafficsim.core.simulation.scenarios.impl.OldQueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.ODMatrix;
 import microtrafficsim.core.simulation.utils.SparseODMatrix;
 
@@ -23,26 +17,21 @@ import java.util.function.Supplier;
  *
  * @author Dominic Parga Cacheiro
  */
-public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
+public class MotorwaySlipRoadScenario extends OldQueueScenarioSmall {
 
     private Node bottomMotorway, topMotorway, bottomRight;
-    private ODMatrix secondSpawnDelayMatrix;
 
     /**
      * Initializes the matrices (for routes and spawn delays). For this, it has to sort the few nodes to guarantee
      * determinism independent of complicated coordinate calculations.
      *
-     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph)
+     * @see OldQueueScenarioSmall#OldQueueScenarioSmall(SimulationConfig, Graph)
      */
     public MotorwaySlipRoadScenario(SimulationConfig config,
                                     Graph graph,
                                     Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph);
         init();
-
-        secondSpawnDelayMatrix = new SparseODMatrix();
-        secondSpawnDelayMatrix.add(5, bottomMotorway, topMotorway);
-        secondSpawnDelayMatrix.add(13, bottomRight, topMotorway);
 
         setScenarioBuilder(new Builder(config.seed, visVehicleFactory));
     }
@@ -53,7 +42,7 @@ public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
      */
     public static SimulationConfig setupConfig(SimulationConfig config) {
 
-        QueueScenarioSmall.setupConfig(config);
+        OldQueueScenarioSmall.setupConfig(config);
 
         config.maxVehicleCount                            = 3;
         config.crossingLogic.friendlyStandingInJamEnabled = false;
@@ -81,45 +70,5 @@ public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
         spawnDelayMatrix.add(0, bottomMotorway, topMotorway);
         spawnDelayMatrix.add(9, bottomRight, topMotorway);
         addSubScenario(odMatrix, spawnDelayMatrix);
-    }
-
-
-    private class Builder extends VehicleScenarioBuilder {
-
-        final boolean[] toggle;
-
-        public Builder(long seed, Supplier<VisualizationVehicleEntity> visVehicleFactory) {
-
-            super(seed, visVehicleFactory);
-
-            toggle = new boolean[]{false, false};
-
-        }
-
-        @Override
-        protected Vehicle createLogicVehicle(Scenario scenario, Route<Node> route) {
-
-            MotorwaySlipRoadScenario motorwaySlipRoadScenario = (MotorwaySlipRoadScenario) scenario;
-            long id   = idGenerator.next();
-            long seed = seedGenerator.next();
-
-            // toggle spawns for two scenarios in one run
-            int spawnDelay;
-            int idx = (route.getStart() == bottomMotorway) ? 0 : 1;
-
-            if (toggle[idx])
-                spawnDelay = motorwaySlipRoadScenario.getSpawnDelayMatrix().get(route.getStart(), route.getEnd());
-            else
-                spawnDelay = motorwaySlipRoadScenario.secondSpawnDelayMatrix.get(route.getStart(), route.getEnd());
-            toggle[idx] = !toggle[idx];
-
-            Vehicle car = new Car(id, 1, scenario.getConfig().visualization.style);
-            Driver driver = new BasicDriver(seed, 0, spawnDelay);
-            driver.setRoute(route);
-            driver.setVehicle(car);
-            car.setDriver(driver);
-            car.addStateListener(scenario.getVehicleContainer());
-            return car;
-        }
     }
 }

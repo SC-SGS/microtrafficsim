@@ -190,7 +190,7 @@ public abstract class BasicVehicle implements Vehicle {
     @Override
     public void registerInGraph() {
         if (!driver.getRoute().isEmpty())
-            driver.getRoute().getStart().registerVehicle(this);
+            driver.getRoute().getOrigin().registerVehicle(this);
     }
 
     /**
@@ -203,14 +203,14 @@ public abstract class BasicVehicle implements Vehicle {
         if (state == VehicleState.NOT_SPAWNED) {
             if (driver.getTravellingTime() >= 0) {
                 if (!driver.getRoute().isEmpty()) {
-                    if (!driver.getRoute().getStart().permissionToCross(this)) {
+                    if (!driver.getRoute().getOrigin().permissionToCross(this)) {
                         velocity = 0;
                     } else {    // allowed to spawn
                         if (driver.peekRoute().getLane(0).getMaxInsertionIndex() < 0) {
                             velocity = 0;
                         } else {
                             velocity = 1;
-                            driver.getRoute().getStart().unregisterVehicle(this);
+                            driver.getRoute().getOrigin().unregisterVehicle(this);
                             enterNextRoad();
                             setState(VehicleState.SPAWNED);
                         }
