@@ -4,9 +4,9 @@ import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.scenarios.impl.OldQueueScenarioSmall;
-import microtrafficsim.core.simulation.utils.ODMatrix;
-import microtrafficsim.core.simulation.utils.SparseODMatrix;
+import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
+import microtrafficsim.core.simulation.utils.RouteContainer;
+import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
@@ -14,31 +14,15 @@ import java.util.function.Supplier;
 /**
  * @author Dominic Parga Cacheiro
  */
-public class RoundaboutScenario extends OldQueueScenarioSmall {
-
+public class RoundaboutScenario extends QueueScenarioSmall {
     /**
-     * @see OldQueueScenarioSmall#OldQueueScenarioSmall(SimulationConfig, Graph)
+     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, Supplier)
      */
     public RoundaboutScenario(SimulationConfig config,
                               Graph graph,
                               Supplier<VisualizationVehicleEntity> visVehicleFactory) {
-        super(config, graph);
+        super(config, graph, visVehicleFactory);
         init();
-        setScenarioBuilder(new VehicleQueueScenarioBuilder(config.seed, visVehicleFactory));
-    }
-
-    /**
-     * @param config
-     * @return the given config updated; just for practical purpose
-     */
-    public static SimulationConfig setupConfig(SimulationConfig config) {
-
-        OldQueueScenarioSmall.setupConfig(config);
-
-        config.maxVehicleCount                         = 2;
-        config.crossingLogic.friendlyStandingInJamEnabled = true;
-
-        return config;
     }
 
     private void init() {
@@ -84,55 +68,49 @@ public class RoundaboutScenario extends OldQueueScenarioSmall {
 
 
         /* setup scenario matrices */
-        ODMatrix odMatrix, spawnDelayMatrix;
+        RouteContainer routeContainer;
 
 
         /* TOP_RIGHT */
-        odMatrix = new SparseODMatrix();
-        odMatrix.add(1, topRight, right);
-        odMatrix.add(1, topLeft, left);
-
-        spawnDelayMatrix = new SparseODMatrix();
-        spawnDelayMatrix.add(0, topRight, right);
-        spawnDelayMatrix.add(13, topLeft, left);
-
-        addSubScenario(odMatrix, spawnDelayMatrix);
+        routeContainer = new SortedRouteContainer();
+        routeContainer.add(topRight, right, 0);
+        routeContainer.add(topLeft, left, 13);
+        addSubScenario(routeContainer);
 
 
         /* TOP_LEFT */
-        odMatrix = new SparseODMatrix();
-        odMatrix.add(1, topLeft, topRight);
-        odMatrix.add(1, bottom, left);
-
-        spawnDelayMatrix = new SparseODMatrix();
-        spawnDelayMatrix.add(5, topLeft, topRight);
-        spawnDelayMatrix.add(0, bottom, left);
-
-        addSubScenario(odMatrix, spawnDelayMatrix);
+        routeContainer = new SortedRouteContainer();
+        routeContainer.add(topLeft, topRight, 5);
+        routeContainer.add(bottom, left, 0);
+        addSubScenario(routeContainer);
 
 
         /* BOTTOM */
-        odMatrix = new SparseODMatrix();
-        odMatrix.add(1, bottom, left);
-        odMatrix.add(1, right, topRight);
-
-        spawnDelayMatrix = new SparseODMatrix();
-        spawnDelayMatrix.add(0, bottom, left);
-        spawnDelayMatrix.add(5, right, topRight);
-
-        addSubScenario(odMatrix, spawnDelayMatrix);
+        routeContainer = new SortedRouteContainer();
+        routeContainer.add(bottom, left, 0);
+        routeContainer.add(right, topRight, 5);
+        addSubScenario(routeContainer);
 
 
         /* RIGHT */
         // maybe useless, because checked crossroad is same as in TOP_RIGHT
-        odMatrix = new SparseODMatrix();
-        odMatrix.add(1, right, bottom);
-        odMatrix.add(1, topLeft, left);
+        routeContainer = new SortedRouteContainer();
+        routeContainer.add(right, bottom, 0);
+        routeContainer.add(topLeft, left, 7);
+        addSubScenario(routeContainer);
+    }
 
-        spawnDelayMatrix = new SparseODMatrix();
-        spawnDelayMatrix.add(0, right, bottom);
-        spawnDelayMatrix.add(7, topLeft, left);
 
-        addSubScenario(odMatrix, spawnDelayMatrix);
+    /**
+     * @param config
+     * @return the given config updated; just for practical purpose
+     */
+    public static SimulationConfig setupConfig(SimulationConfig config) {
+        QueueScenarioSmall.setupConfig(config);
+
+        config.maxVehicleCount = 2;
+        config.crossingLogic.friendlyStandingInJamEnabled = true;
+
+        return config;
     }
 }

@@ -52,15 +52,16 @@ public class UserInteractionUtils {
         return status == JOptionPane.OK_OPTION;
     }
 
-
-    public static void showScenarioLoadingSuccess(Component parent) {
-        JOptionPane.showMessageDialog(
-                parent,
-                "The scenario has been prepared successfully.\n" +
-                        "You can start it with 'Space' or 'Arrow →'",
-                "Preparation finished successfully",
-                JOptionPane.INFORMATION_MESSAGE);
+    public static boolean askUserToRemoveScenario(Component parent) {
+        return askUserForDecision(
+                "To change the origin/destination areas, the currently running scenario has to be removed."
+                        + System.lineSeparator()
+                        + "Do you still like to change the areas?",
+                "Remove currently running scenario?",
+                parent
+        );
     }
+
 
     public static void showRouteResultIsNotDefinedInfo(Component parent) {
         JOptionPane.showMessageDialog(
@@ -71,12 +72,23 @@ public class UserInteractionUtils {
                 JOptionPane.INFORMATION_MESSAGE);
     }
 
-    public static void showConfigHasWrongFormat(File chosen, Component parent) {
+
+    public static void showScenarioLoadingSuccess(Component parent) {
+        JOptionPane.showMessageDialog(
+                parent,
+                "The scenario has been prepared successfully.\n" +
+                        "You can start it with 'Space' or 'Arrow →'",
+                "Preparation finished successfully",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+
+    public static void showLoadingFailure(File chosen, String shortFileDescription, Component parent) {
         JOptionPane.showMessageDialog(
                 parent,
                 "The chosen file '" + chosen.getName() + "' could not be loaded.\n" +
-                        "Please make sure this file exists and is a valid MTS config file.",
-                "Error: wrong config-file format",
+                        "Please make sure this file exists and is a valid " + shortFileDescription + ".",
+                "Error: file could not be loaded",
                 JOptionPane.ERROR_MESSAGE);
     }
 

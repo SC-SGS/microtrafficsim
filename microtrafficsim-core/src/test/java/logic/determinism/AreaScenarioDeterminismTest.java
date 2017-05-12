@@ -19,7 +19,6 @@ import org.slf4j.Logger;
  * @author Dominic Parga Cacheiro
  */
 public class AreaScenarioDeterminismTest extends AbstractDeterminismTest {
-
     private static final Logger logger = new EasyMarkableLogger(AreaScenarioDeterminismTest.class);
 
 
@@ -47,7 +46,7 @@ public class AreaScenarioDeterminismTest extends AbstractDeterminismTest {
     @Override
     protected Scenario createScenario(SimulationConfig config, Graph graph) {
         AreaScenario scenario = new AreaScenario(config.seed, config, graph);
-        scenario.refillNodeLists();
+        scenario.redefineMetaRoutes();
         return scenario;
     }
 }

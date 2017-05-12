@@ -51,7 +51,6 @@ import static org.junit.Assert.*;
  * @author Dominic Parga Cacheiro
  */
 public abstract class AbstractDeterminismTest {
-
     private static Logger logger = new EasyMarkableLogger(AbstractDeterminismTest.class);
 
     /* (part of) tested parameters */

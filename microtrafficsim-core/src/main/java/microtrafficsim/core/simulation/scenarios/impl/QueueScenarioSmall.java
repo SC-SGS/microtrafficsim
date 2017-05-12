@@ -1,5 +1,6 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
+import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
@@ -30,26 +31,36 @@ public class QueueScenarioSmall extends BasicScenario {
     private final ScenarioBuilder scenarioBuilder;
 
 
-    protected QueueScenarioSmall(SimulationConfig config, Graph graph, VehicleContainer vehicleContainer) {
+    protected QueueScenarioSmall(SimulationConfig config,
+                                 Graph graph,
+                                 VehicleContainer vehicleContainer,
+                                 Supplier<VisualizationVehicleEntity> visVehicleFactory)
+    {
         super(config, graph, vehicleContainer);
         scout = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
         routeContainers = new ArrayList<>();
         curIdx = -1;
         isLooping = false;
-        scenarioBuilder = new VehicleScenarioBuilder(config.seed);
+        scenarioBuilder = new VehicleScenarioBuilder(config.seed, visVehicleFactory);
+
+        setPrepared(true);
     }
 
-    protected QueueScenarioSmall(SimulationConfig config, Graph graph) {
+    protected QueueScenarioSmall(SimulationConfig config,
+                                 Graph graph,
+                                 Supplier<VisualizationVehicleEntity> visVehicleFactory)
+    {
         super(config, graph);
         scout = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
         routeContainers = new ArrayList<>();
         curIdx = -1;
         isLooping = false;
-        scenarioBuilder = new VehicleScenarioBuilder(config.seed);
+        scenarioBuilder = new VehicleScenarioBuilder(config.seed, visVehicleFactory);
+
+        setPrepared(true);
     }
 
 
-    // todo
     public static SimulationConfig setupConfig(SimulationConfig config) {
         config.metersPerCell           = 7.5f;
         config.seed                    = 1455374755807L;
@@ -101,6 +112,14 @@ public class QueueScenarioSmall extends BasicScenario {
         }
     }
 
+
+    public boolean isLooping() {
+        return isLooping;
+    }
+
+    public void setLooping(boolean isLooping) {
+        this.isLooping = isLooping;
+    }
 
     @Override
     public RouteContainer getRoutes() {

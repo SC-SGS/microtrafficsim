@@ -1,6 +1,7 @@
 package logic.validation.scenarios.pluscrossroad;
 
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
+import microtrafficsim.core.logic.routes.MetaRoute;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.BlockingCar;
@@ -51,17 +52,17 @@ public class PartialPlusCrossroadScenario extends AbstractPlusCrossroadScenario 
 
         /* all turn left */
         addSubScenario(
-                new Tuple<>(bottomLeft,  topLeft),
-                new Tuple<>(bottomRight, bottomLeft),
-                new Tuple<>(topRight,    bottomRight),
-                new Tuple<>(topLeft,     topRight)
+                new MetaRoute(bottomLeft,  topLeft),
+                new MetaRoute(bottomRight, bottomLeft),
+                new MetaRoute(topRight,    bottomRight),
+                new MetaRoute(topLeft,     topRight)
         );
 
         /* go without priority / friendly standing in jam */
         addSubScenario(
-                new Triple<>(mid,         bottomLeft, 0),
-                new Triple<>(topRight,    bottomLeft, null),
-                new Triple<>(bottomRight, topLeft,    null)
+                new MetaRoute(mid,         bottomLeft, 0),
+                new MetaRoute(topRight,    bottomLeft, -1),
+                new MetaRoute(bottomRight, topLeft,    -1)
         );
     }
 

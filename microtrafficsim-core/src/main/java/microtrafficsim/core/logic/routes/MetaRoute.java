@@ -12,10 +12,17 @@ import java.util.Iterator;
 public class MetaRoute implements Route {
     private final Node origin;
     private final Node destination;
+    private int spawnDelay;
+
 
     public MetaRoute(Node origin, Node destination) {
+        this(origin, destination, 0);
+    }
+
+    public MetaRoute(Node origin, Node destination, int spawndelay) {
         this.origin = origin;
         this.destination = destination;
+        this.spawnDelay = spawndelay;
     }
 
 
@@ -49,6 +56,16 @@ public class MetaRoute implements Route {
     @Override
     public int size() {
         return 0;
+    }
+
+    @Override
+    public int getSpawnDelay() {
+        return spawnDelay;
+    }
+
+    @Override
+    public void setSpawnDelay(int spawnDelay) {
+        this.spawnDelay = spawnDelay;
     }
 
     @Override

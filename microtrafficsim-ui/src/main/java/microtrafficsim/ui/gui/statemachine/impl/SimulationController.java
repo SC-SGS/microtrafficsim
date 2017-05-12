@@ -785,7 +785,7 @@ public class SimulationController implements GUIController {
             showPreferences();
             preferences.setSettings(newConfig);
         } else {
-            UserInteractionUtils.showConfigHasWrongFormat(file, frame);
+            UserInteractionUtils.showLoadingFailure(file, "MTS config file", frame);
         }
     }
 
@@ -824,7 +824,7 @@ public class SimulationController implements GUIController {
         /* update */
         if (areas != null) {
             if (simulation.hasScenario()) {
-                if (askUserToRemoveScenario()) {
+                if (UserInteractionUtils.askUserToRemoveScenario(frame)) {
                     removeCurrentScenario();
                 } else {
                     return;
@@ -834,17 +834,12 @@ public class SimulationController implements GUIController {
             clearAndUpdateAreaOverlay(areas);
             scenarioAreaOverlay.setEventsEnabled(true);
         } else {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "The chosen file '" + file.getName() + "' has a wrong format.\n" +
-                            "Therefore it could not be loaded.\n" +
-                            "Please make sure this file exists and is a valid MTS area file.",
-                    "Error: wrong area-file format",
-                    JOptionPane.ERROR_MESSAGE);
+            UserInteractionUtils.showLoadingFailure(file, "MTS area file", frame);
         }
     }
 
     private void saveAreas(File file) {
+        // todo are overlay-areas <=> project(unproject(overlay-areas))? If no, this step could make trouble
         UnprojectedAreas areas = scenarioAreaOverlay.getAreas().toUnprojectedAreas(mapviewer.getProjection());
         boolean success = exfmtStorage.saveAreas(file, areas);
 
@@ -1017,16 +1012,11 @@ public class SimulationController implements GUIController {
         boolean errorOccured = result == null || result.obj0 == null || result.obj1 == null;
         if (!errorOccured) {
             clearAndUpdateAreaOverlay(result.obj1);
+            // todo save scenario type?
             config.scenario.selectedClass = config.scenario.supportedClasses.get(AreaScenario.class);
             startNewScenario(result.obj0);
         } else {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "The chosen file '" + file.getName() + "' has a wrong format.\n" +
-                            "Therefore it could not be loaded.\n" +
-                            "Please make sure this file exists and is a valid MTS route file.",
-                    "Error: wrong route-file format",
-                    JOptionPane.ERROR_MESSAGE);
+            UserInteractionUtils.showLoadingFailure(file, "MTS route file", frame);
         }
     }
 
@@ -1035,7 +1025,7 @@ public class SimulationController implements GUIController {
         routes.addAll(simulation.getScenario());
 
         AreaScenario scenario = (AreaScenario) simulation.getScenario();
-        UnprojectedAreas areas = scenario.getAreas();
+        UnprojectedAreas areas = scenario.getAreaNodeContainer().getAreas();
         boolean success = exfmtStorage.saveRoutes(file, routes, areas);
 
         if (success)
@@ -1101,9 +1091,8 @@ public class SimulationController implements GUIController {
             /* get areas from overlay */
             for (Area area :scenarioAreaOverlay.getAreas()) {
                 TypedPolygonArea unprojectedArea = area.getUnprojectedArea(mapviewer.getProjection());
-                scenario.addArea(unprojectedArea);
+                scenario.getAreaNodeContainer().addArea(unprojectedArea);
             }
-            scenario.refillNodeLists();
         } else if (config.scenario.selectedClass.getObj() == EndOfTheWorldScenario.class) {
             scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
         } else {
@@ -1113,7 +1102,8 @@ public class SimulationController implements GUIController {
                                 RandomRouteScenario.class.getSimpleName() + " is used instead.");
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);
         }
-        clearAndUpdateAreaOverlay(scenario.getAreas());
+        scenario.redefineMetaRoutes(routes);
+        clearAndUpdateAreaOverlay(scenario.getAreaNodeContainer().getAreas());
 
         try {
             ProgressListener progressListener = currentInPercent -> {
@@ -1122,18 +1112,16 @@ public class SimulationController implements GUIController {
             };
 
             scenarioBuilder.prepare(scenario, progressListener);
-
-
-            /* initialize the scenario */
             simulation.setAndInitPreparedScenario(scenario);
+
             UserInteractionUtils.showScenarioLoadingSuccess(frame);
         } catch (InterruptedException ignored) {
             logger.info("Scenario building interrupted by user");
             scenarioAreaOverlay.setEnabled(true, true, true);
-        } catch (RouteIsNotDefinedException e) {
-            logger.warn("RouteMatrix contains routes being undefined for the given graph.");
-            UserInteractionUtils.showRouteResultIsNotDefinedInfo(frame);
-            scenarioAreaOverlay.setEnabled(true, true, true);
+//        } catch (RouteIsNotDefinedException e) {
+//            logger.warn("RouteMatrix contains routes being undefined for the given graph.");
+//            UserInteractionUtils.showRouteResultIsNotDefinedInfo(frame);
+//            scenarioAreaOverlay.setEnabled(true, true, true);
         }
 
 
@@ -1142,10 +1130,7 @@ public class SimulationController implements GUIController {
     }
 
     private void updateScenario() {
-        if(config.scenario.showAreasWhileSimulating)
-            scenarioAreaOverlay.setEnabled(true, false, false);
-        else
-            scenarioAreaOverlay.setEnabled(false, false, false);
+        scenarioAreaOverlay.setEnabled(config.scenario.showAreasWhileSimulating, false, false);
     }
 
     private void removeCurrentScenario() {
@@ -1158,16 +1143,6 @@ public class SimulationController implements GUIController {
         try {
             scenarioBuildThread.join();
         } catch (InterruptedException ignored) {}
-    }
-
-    private boolean askUserToRemoveScenario() {
-        return UserInteractionUtils.askUserForDecision(
-                "To change the origin/destination areas, the currently running scenario has to be removed."
-                        + System.lineSeparator()
-                        + "Do you still like to change the areas?",
-                "Remove currently running scenario?",
-                frame
-        );
     }
 
 
@@ -1186,7 +1161,7 @@ public class SimulationController implements GUIController {
         if (enableScenarioAreaOverlay) {
             /* check if there is a scenario => ask for removing it */
             if (simulation.hasScenario()) {
-                if (askUserToRemoveScenario())
+                if (UserInteractionUtils.askUserToRemoveScenario(frame))
                     removeCurrentScenario();
                 else
                     enableScenarioAreaOverlay = false;

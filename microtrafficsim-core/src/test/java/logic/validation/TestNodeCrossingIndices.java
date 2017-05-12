@@ -53,7 +53,6 @@ public class TestNodeCrossingIndices {
             AbstractPlusCrossroadScenario scenario = new FullPlusCrossroadScenario(config, graph, null);
 
             Simulation sim = new VehicleSimulation();
-            scenario.prepare();
             sim.setAndInitPreparedScenario(scenario);
             while (scenario.getVehicleContainer().getVehicleCount() > 0) {
                 sim.runOneStep();
@@ -74,9 +73,9 @@ public class TestNodeCrossingIndices {
 
                 /* get vehicles' position relative to each other */
                 Direction direction = Geometry.calcCurveDirection(
-                        vehicles[0].getDriver().getRoute().getEnd().getCoordinate(),
+                        vehicles[0].getDriver().getRoute().getDestination().getCoordinate(),
                         scenario.mid.getCoordinate(),
-                        vehicles[1].getDriver().getRoute().getEnd().getCoordinate());
+                        vehicles[1].getDriver().getRoute().getDestination().getCoordinate());
 
                 // swap vehicles if priority is left-before-right instead of right-before-left
                 if (!config.crossingLogic.drivingOnTheRight) {

@@ -11,6 +11,7 @@ import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
@@ -32,11 +33,9 @@ import java.util.function.Supplier;
  * @author Dominic Parga Cacheiro
  */
 public class UIValidation {
-
     private static Logger logger = new EasyMarkableLogger(UIValidation.class);
 
     public static void main(String[] args) {
-
         /* build setup: scenario */
         String osmFilename = new String[]{
                 "T_crossroad.osm",
@@ -137,7 +136,6 @@ public class UIValidation {
             QueueScenarioSmall scenario = scenarioConstructor.instantiate(config, graph, overlay.getVehicleFactory());
             Simulation sim = new VehicleSimulation();
             overlay.setSimulation(sim);
-            scenario.prepare();
             sim.setAndInitPreparedScenario(scenario);
             sim.runOneStep();
 

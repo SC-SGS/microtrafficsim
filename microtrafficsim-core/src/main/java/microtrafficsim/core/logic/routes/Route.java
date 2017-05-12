@@ -7,10 +7,9 @@ import microtrafficsim.core.shortestpath.ShortestPathEdge;
  * @author Dominic Parga Cacheiro
  */
 public interface Route extends Iterable<ShortestPathEdge<Node>> {
-    default int getSpawnDelay() {
-        return 0;
-    }
+    int getSpawnDelay();
 
+    void setSpawnDelay(int spawnDelay);
 
     Node getOrigin();
 

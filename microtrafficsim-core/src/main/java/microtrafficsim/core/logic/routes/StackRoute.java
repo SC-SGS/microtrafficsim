@@ -11,6 +11,18 @@ import java.util.Stack;
  * @author Dominic Parga Cacheiro
  */
 public class StackRoute extends Stack<ShortestPathEdge<Node>> implements Route {
+    private int spawnDelay;
+
+
+    public StackRoute() {
+        this(0);
+    }
+
+    public StackRoute(int spawnDelay) {
+        this.spawnDelay = spawnDelay;
+    }
+
+
     @Override
     public synchronized int hashCode() {
         FNVHashBuilder hashBuilder = new FNVHashBuilder();
@@ -50,6 +62,16 @@ public class StackRoute extends Stack<ShortestPathEdge<Node>> implements Route {
         StackRoute copy = new StackRoute();
         forEach(copy::push);
         return copy;
+    }
+
+    @Override
+    public int getSpawnDelay() {
+        return spawnDelay;
+    }
+
+    @Override
+    public void setSpawnDelay(int spawnDelay) {
+        this.spawnDelay = spawnDelay;
     }
 
     @Override

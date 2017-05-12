@@ -73,13 +73,24 @@ public class AreaScenario extends BasicRandomScenario {
 
     @Override
     public final void redefineMetaRoutes() {
+        redefineMetaRoutes(null);
+    }
+
+    /**
+     * @param newRoutes ignores {@link SimulationConfig#maxVehicleCount config.maxVehicleCount}
+     */
+    @Override
+    public final void redefineMetaRoutes(RouteContainer newRoutes) {
         logger.info("DEFINING routes started");
 
         reset();
         areaNodeContainer.refillNodeLists(getGraph());
 
         routes.clear();
-        defineRoutesAfterClearing();
+        if (newRoutes == null)
+            defineRoutesAfterClearing();
+        else
+            routes.addAll(newRoutes);
 
         logger.info("DEFINING routes finished");
     }
