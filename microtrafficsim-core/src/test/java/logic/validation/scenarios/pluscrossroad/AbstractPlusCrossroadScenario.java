@@ -86,19 +86,18 @@ public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
         Node turnEnd     = neighbor(turnStart, leftTurn);
 
         addSubScenario(
-                new MetaRoute(straightStart, straightEnd),
-                new MetaRoute(turnStart, turnEnd)
+                new MetaRoute(straightStart, straightEnd, -1),
+                new MetaRoute(turnStart, turnEnd, -1)
         );
     }
 
     protected final void addBothStraight(Node aStart, Node bStart) {
-
         Node aEnd = opposite(aStart);
         Node bEnd = opposite(bStart);
 
         addSubScenario(
-                new MetaRoute(aStart, aEnd),
-                new MetaRoute(bStart, bEnd)
+                new MetaRoute(aStart, aEnd, -1),
+                new MetaRoute(bStart, bEnd, -1)
         );
     }
 

@@ -1,10 +1,14 @@
 package logic.validation;
 
 import com.jogamp.newt.event.KeyEvent;
+import logic.validation.scenarios.MotorwaySlipRoadScenario;
+import logic.validation.scenarios.RoundaboutScenario;
 import logic.validation.scenarios.TCrossroadScenario;
-import microtrafficsim.core.convenience.parser.DefaultParserConfig;
+import logic.validation.scenarios.pluscrossroad.FullPlusCrossroadScenario;
+import logic.validation.scenarios.pluscrossroad.PartialPlusCrossroadScenario;
 import microtrafficsim.core.convenience.mapviewer.MapViewer;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.parser.OSMParser;
@@ -35,23 +39,68 @@ import java.util.function.Supplier;
 public class UIValidation {
     private static Logger logger = new EasyMarkableLogger(UIValidation.class);
 
+
+    // CHOOSE YOUR CLASS
+    private static final Class clazz = new Class[] {
+            FullPlusCrossroadScenario.class,
+            PartialPlusCrossroadScenario.class,
+            MotorwaySlipRoadScenario.class,
+            RoundaboutScenario.class,
+            TCrossroadScenario.class,
+    }[0];
+
+
     public static void main(String[] args) {
         /* build setup: scenario */
-        String osmFilename = new String[]{
-                "T_crossroad.osm",
-                "roundabout.osm",
-                "plus_crossroad.osm",
-                "motorway_slip-road.osm"}[0];
-        Consumer<SimulationConfig> setupConfig    = TCrossroadScenario::setupConfig;
-        ScenarioConstructor scenarioConstructor = (config, graph, visVehicleFactory) -> {
-            QueueScenarioSmall scenario = new TCrossroadScenario(config, graph, visVehicleFactory);
-            scenario.setLooping(true);
-            return scenario;
-        };
+        String osmFilename;
+        Consumer<SimulationConfig> setupConfig;
+        ScenarioConstructor scenarioConstructor;
+
+        if (clazz == FullPlusCrossroadScenario.class) {
+            osmFilename = "plus_crossroad.osm";
+            setupConfig = FullPlusCrossroadScenario::setupConfig;
+            scenarioConstructor = (config, graph, visVehicleFactory) -> {
+                QueueScenarioSmall scenario = new FullPlusCrossroadScenario(config, graph, visVehicleFactory);
+                scenario.setLooping(true);
+                return scenario;
+            };
+        } else if (clazz == PartialPlusCrossroadScenario.class) {
+                osmFilename = "plus_crossroad.osm";
+                setupConfig = PartialPlusCrossroadScenario::setupConfig;
+                scenarioConstructor = (config, graph, visVehicleFactory) -> {
+                    QueueScenarioSmall scenario = new PartialPlusCrossroadScenario(config, graph, visVehicleFactory);
+                    scenario.setLooping(true);
+                    return scenario;
+                };
+        } else if (clazz == MotorwaySlipRoadScenario.class) {
+            osmFilename = "motorway_slip-road.osm";
+            setupConfig = MotorwaySlipRoadScenario::setupConfig;
+            scenarioConstructor = (config, graph, visVehicleFactory) -> {
+                QueueScenarioSmall scenario = new MotorwaySlipRoadScenario(config, graph, visVehicleFactory);
+                scenario.setLooping(true);
+                return scenario;
+            };
+        } else if (clazz == RoundaboutScenario.class) {
+            osmFilename = "roundabout.osm";
+            setupConfig = RoundaboutScenario::setupConfig;
+            scenarioConstructor = (config, graph, visVehicleFactory) -> {
+                QueueScenarioSmall scenario = new RoundaboutScenario(config, graph, visVehicleFactory);
+                scenario.setLooping(true);
+                return scenario;
+            };
+        } else if (clazz == TCrossroadScenario.class) {
+            osmFilename = "T_crossroad.osm";
+            setupConfig = TCrossroadScenario::setupConfig;
+            scenarioConstructor = (config, graph, visVehicleFactory) -> {
+                QueueScenarioSmall scenario = new TCrossroadScenario(config, graph, visVehicleFactory);
+                scenario.setLooping(true);
+                return scenario;
+            };
+        } else {
+            throw new UnsupportedOperationException("Your chosen scenario class is not supported.");
+        }
 
         LoggingLevel.setEnabledGlobally(false, true, true, true, true);
-
-
 
 
         /* get map file */
