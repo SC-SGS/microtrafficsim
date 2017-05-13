@@ -3,6 +3,7 @@ package logic.determinism;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
@@ -46,6 +47,8 @@ public class RandomScenarioDeterminismTest extends AbstractDeterminismTest {
 
     @Override
     protected Scenario createScenario(SimulationConfig config, Graph graph) {
-        return new RandomRouteScenario(config.seed, config, graph);
+        AreaScenario scenario = new RandomRouteScenario(config.seed, config, graph);
+        scenario.redefineMetaRoutes();
+        return scenario;
     }
 }
