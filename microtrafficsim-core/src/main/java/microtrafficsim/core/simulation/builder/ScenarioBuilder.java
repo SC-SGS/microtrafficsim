@@ -1,6 +1,5 @@
 package microtrafficsim.core.simulation.builder;
 
-import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.utils.progressable.ProgressListener;
@@ -41,8 +40,4 @@ public interface ScenarioBuilder {
      * @return The prepared scenario (same reference as the given one, just for practical purposes)
      */
     Scenario prepare(Scenario scenario, ProgressListener listener) throws InterruptedException;
-
-    void addVehicleCreationListener(VehicleCreationListener listener);
-
-    void removeVehicleCreationListener(VehicleCreationListener listener);
 }

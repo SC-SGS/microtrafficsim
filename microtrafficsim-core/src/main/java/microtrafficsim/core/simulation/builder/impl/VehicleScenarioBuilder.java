@@ -7,13 +7,10 @@ import microtrafficsim.core.logic.routes.MetaRoute;
 import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.routes.StackRoute;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
-import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
-import microtrafficsim.core.logic.vehicles.machines.impl.Car;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
+import microtrafficsim.core.simulation.builder.LogicVehicleFactory;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.builder.VehicleCreationListener;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.math.random.Seeded;
@@ -27,10 +24,7 @@ import microtrafficsim.utils.progressable.ProgressListener;
 import microtrafficsim.utils.strings.StringUtils;
 import org.slf4j.Logger;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -43,50 +37,44 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
 
     protected final ConcurrentLongIDGenerator idGenerator;
     protected final ConcurrentSeedGenerator   seedGenerator;
-    private final List<VehicleCreationListener> vehicleCreationListeners;
+    private final LogicVehicleFactory logicVehicleFactory;
+    private final VisVehicleFactory visVehicleFactory;
 
-    private final Supplier<VisualizationVehicleEntity> visVehicleFactory;
 
-
-    /**
-     * Default constructor. The {@code visVehicleFactory} can be null, which means vehicles are not visualized.
-     *
-     * @param seed              Used for {@link ConcurrentSeedGenerator}
-     * @param visVehicleFactory Creates the visualization part of the vehicle entity; can be null, which means
-     *                          vehicles are not visualized
-     */
-    public VehicleScenarioBuilder(long seed, Supplier<VisualizationVehicleEntity> visVehicleFactory) {
+    public VehicleScenarioBuilder(long seed,
+                                  LogicVehicleFactory logicVehicleFactory,
+                                  VisVehicleFactory visVehicleFactory)
+    {
         idGenerator   = new ConcurrentLongIDGenerator();
         seedGenerator = new ConcurrentSeedGenerator(seed);
-        vehicleCreationListeners = new LinkedList<>();
-
+        this.logicVehicleFactory = logicVehicleFactory;
         this.visVehicleFactory = visVehicleFactory;
     }
 
-    /**
-     * Calls {@link #VehicleScenarioBuilder(long, Supplier) VehicleScenarioBuilder(seed, null)}
-     */
+    public VehicleScenarioBuilder(long seed, LogicVehicleFactory logicVehicleFactory) {
+        this(seed, logicVehicleFactory, () -> null);
+    }
+
+    public VehicleScenarioBuilder(long seed, VisVehicleFactory visVehicleFactory) {
+        this(seed, LogicVehicleFactory::defaultCreation, visVehicleFactory);
+    }
+
     public VehicleScenarioBuilder(long seed) {
-        this(seed, null);
+        this(seed, LogicVehicleFactory::defaultCreation, () -> null);
     }
 
-
-    @Override
-    public void addVehicleCreationListener(VehicleCreationListener listener) {
-        vehicleCreationListeners.add(listener);
-    }
-
-    @Override
-    public void removeVehicleCreationListener(VehicleCreationListener listener) {
-        vehicleCreationListeners.remove(listener);
-    }
 
     private Vehicle createVehicle(Scenario scenario, Route metaRoute) {
         // create vehicle components
-        Vehicle logicVehicle = createLogicVehicle(scenario, metaRoute);
+        Vehicle logicVehicle = logicVehicleFactory.create(
+                idGenerator.next(),
+                seedGenerator.next(),
+                scenario,
+                metaRoute
+        );
         VisualizationVehicleEntity visVehicle = null;
         if (visVehicleFactory != null)
-            visVehicle = visVehicleFactory.get();
+            visVehicle = visVehicleFactory.create();
 
         // create vehicle entity and link components
         VehicleEntity entity = new VehicleEntity(logicVehicle, visVehicle);
@@ -94,26 +82,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
         if (visVehicle != null)
             visVehicle.setEntity(entity);
 
-        for (VehicleCreationListener listener : vehicleCreationListeners)
-            listener.didCreateVehicle(logicVehicle);
-
         return logicVehicle;
-    }
-
-    private Vehicle createLogicVehicle(Scenario scenario, Route metaRoute) {
-        SimulationConfig config = scenario.getConfig();
-        long id               = idGenerator.next();
-        long seed             = seedGenerator.next();
-
-        Vehicle car = new Car(id, config.visualization.style);
-        Driver driver = new BasicDriver(seed, metaRoute.getSpawnDelay());
-        driver.setRoute(metaRoute.clone());
-        driver.setVehicle(car);
-        car.setDriver(driver);
-
-        car.addStateListener(scenario.getVehicleContainer());
-
-        return car;
     }
 
 

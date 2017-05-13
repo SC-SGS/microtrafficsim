@@ -1,27 +1,46 @@
 package logic.validation.scenarios;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
+import microtrafficsim.core.logic.vehicles.driver.Driver;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
+import microtrafficsim.core.logic.vehicles.machines.impl.Car;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
+import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
+import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 
 import java.util.ArrayList;
-import java.util.function.Supplier;
 
 /**
  * @author Dominic Parga Cacheiro
  */
 public class RoundaboutScenario extends QueueScenarioSmall {
     /**
-     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, Supplier)
+     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, ScenarioBuilder)
      */
     public RoundaboutScenario(SimulationConfig config,
                               Graph graph,
-                              Supplier<VisualizationVehicleEntity> visVehicleFactory) {
-        super(config, graph, visVehicleFactory);
+                              VisVehicleFactory visVehicleFactory) {
+        super(config, graph, new VehicleScenarioBuilder(
+                config.seed,
+                (id, seed, scenario, metaRoute) -> {
+                    Vehicle vehicle = new Car(id, 1, scenario.getConfig().visualization.style);
+                    Driver driver = new BasicDriver(seed, 0f, metaRoute.getSpawnDelay());
+                    driver.setRoute(metaRoute.clone());
+                    driver.setVehicle(vehicle);
+                    vehicle.setDriver(driver);
+
+                    vehicle.addStateListener(scenario.getVehicleContainer());
+
+                    return vehicle;
+                },
+                visVehicleFactory
+        ));
         init();
     }
 
@@ -45,7 +64,7 @@ public class RoundaboutScenario extends QueueScenarioSmall {
         });
 
         //    for (Node n : sortedNodes) {
-        //      System.out.println("Node(" + n.id + ").coord = " + n.getCoordinate());
+        //      System.out.println(n);
         //    }
 
         // node IDs in processing-file, sorted by lat ascending:
@@ -71,32 +90,11 @@ public class RoundaboutScenario extends QueueScenarioSmall {
         RouteContainer routeContainer;
 
 
-        /* TOP_RIGHT */
         routeContainer = new SortedRouteContainer();
-        routeContainer.add(topRight, right, 0);
-        routeContainer.add(topLeft, left, 13);
-        addSubScenario(routeContainer);
-
-
-        /* TOP_LEFT */
-        routeContainer = new SortedRouteContainer();
-        routeContainer.add(topLeft, topRight, 5);
-        routeContainer.add(bottom, left, 0);
-        addSubScenario(routeContainer);
-
-
-        /* BOTTOM */
-        routeContainer = new SortedRouteContainer();
-        routeContainer.add(bottom, left, 0);
-        routeContainer.add(right, topRight, 5);
-        addSubScenario(routeContainer);
-
-
-        /* RIGHT */
-        // maybe useless, because checked crossroad is same as in TOP_RIGHT
-        routeContainer = new SortedRouteContainer();
-        routeContainer.add(right, bottom, 0);
-        routeContainer.add(topLeft, left, 7);
+        routeContainer.add( topLeft,  topRight, 11);
+        routeContainer.add( bottom,   left,     2);
+        routeContainer.add( right,    left,     12);
+        routeContainer.add( topRight, left,     0);
         addSubScenario(routeContainer);
     }
 

@@ -1,10 +1,8 @@
 package microtrafficsim.core.vis.simulation;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
+import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.Overlay;
-
-import java.util.function.Supplier;
 
 
 /**
@@ -26,5 +24,5 @@ public interface VehicleOverlay extends Overlay {
      *
      * @return the visualization-vehicle factory.
      */
-    Supplier<VisualizationVehicleEntity> getVehicleFactory();
+    VisVehicleFactory getVehicleFactory();
 }

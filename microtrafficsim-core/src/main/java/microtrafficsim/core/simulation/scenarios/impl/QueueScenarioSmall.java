@@ -1,18 +1,14 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
-import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.utils.RouteContainer;
-import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
@@ -28,34 +24,19 @@ public class QueueScenarioSmall extends BasicScenario {
     private ArrayList<RouteContainer> routeContainers;
     private int curIdx;
     private boolean isLooping;
-    protected final ScenarioBuilder scenarioBuilder;
+    private final ScenarioBuilder scenarioBuilder;
 
 
     protected QueueScenarioSmall(SimulationConfig config,
                                  Graph graph,
-                                 VehicleContainer vehicleContainer,
-                                 Supplier<VisualizationVehicleEntity> visVehicleFactory)
-    {
-        super(config, graph, vehicleContainer);
-        scout = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
-        routeContainers = new ArrayList<>();
-        curIdx = -1;
-        isLooping = false;
-        scenarioBuilder = new VehicleScenarioBuilder(config.seed, visVehicleFactory);
-
-        setPrepared(true);
-    }
-
-    protected QueueScenarioSmall(SimulationConfig config,
-                                 Graph graph,
-                                 Supplier<VisualizationVehicleEntity> visVehicleFactory)
+                                 ScenarioBuilder scenarioBuilder)
     {
         super(config, graph);
         scout = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
         routeContainers = new ArrayList<>();
         curIdx = -1;
         isLooping = false;
-        scenarioBuilder = new VehicleScenarioBuilder(config.seed, visVehicleFactory);
+        this.scenarioBuilder = scenarioBuilder;
 
         setPrepared(true);
     }

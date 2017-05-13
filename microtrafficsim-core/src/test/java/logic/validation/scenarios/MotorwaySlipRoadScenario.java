@@ -1,16 +1,21 @@
 package logic.validation.scenarios;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.MetaRoute;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
+import microtrafficsim.core.logic.vehicles.driver.Driver;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
+import microtrafficsim.core.logic.vehicles.machines.impl.Car;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
+import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
+import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 
 import java.util.ArrayList;
-import java.util.function.Supplier;
 
 /**
  * Validates the crossing logic in a scenario where a street crosses a motorway.
@@ -24,13 +29,27 @@ public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
      * Initializes the matrices (for routes and spawn delays). For this, it has to sort the few nodes to guarantee
      * determinism independent of complicated coordinate calculations.
      *
-     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, Supplier)
+     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, ScenarioBuilder)
      */
     public MotorwaySlipRoadScenario(SimulationConfig config,
                                     Graph graph,
-                                    Supplier<VisualizationVehicleEntity> visVehicleFactory)
+                                    VisVehicleFactory visVehicleFactory)
     {
-        super(config, graph, visVehicleFactory);
+        super(config, graph, new VehicleScenarioBuilder(
+                config.seed,
+                (id, seed, scenario, metaRoute) -> {
+                    Vehicle vehicle = new Car(id, 1, scenario.getConfig().visualization.style);
+                    Driver driver = new BasicDriver(seed, 0, metaRoute.getSpawnDelay());
+                    driver.setRoute(metaRoute.clone());
+                    driver.setVehicle(vehicle);
+                    vehicle.setDriver(driver);
+
+                    vehicle.addStateListener(scenario.getVehicleContainer());
+
+                    return vehicle;
+                },
+                visVehicleFactory
+        ));
 
 
         /* get nodes sorted by lon */

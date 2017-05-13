@@ -1,20 +1,17 @@
 package logic.validation.scenarios.pluscrossroad;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
+import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.MetaRoute;
 import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.core.simulation.utils.SortedRouteContainer;
-import microtrafficsim.utils.collections.Tuple;
-import microtrafficsim.utils.collections.Triple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.function.Supplier;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -26,8 +23,8 @@ public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
 
     public AbstractPlusCrossroadScenario(SimulationConfig config,
                                          Graph graph,
-                                         Supplier<VisualizationVehicleEntity> visVehicleFactory) {
-        super(config, graph, visVehicleFactory);
+                                         ScenarioBuilder scenarioBuilder) {
+        super(config, graph, scenarioBuilder);
 
 
         /* get nodes sorted by lon */
@@ -36,7 +33,7 @@ public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
 
         bottomLeft  = sortedNodes.get(0); // length to mid: 8
         topLeft     = sortedNodes.get(1); // length to mid: 7
-        mid              = sortedNodes.get(2); // length to mid: 0
+        mid         = sortedNodes.get(2); // length to mid: 0
         topRight    = sortedNodes.get(3); // length to mid: 9
         bottomRight = sortedNodes.get(4); // length to mid: 12
 
@@ -47,9 +44,6 @@ public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
         lengthToMid.put(mid,          0);
         lengthToMid.put(topRight,     9);
         lengthToMid.put(bottomRight, 12);
-
-
-        scenarioBuilder.addVehicleCreationListener(vehicle -> vehicle.getDriver().setDawdleFactor(0));
 
         init();
     }

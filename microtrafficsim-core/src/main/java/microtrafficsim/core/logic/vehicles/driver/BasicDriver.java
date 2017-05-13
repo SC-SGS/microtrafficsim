@@ -1,6 +1,5 @@
 package microtrafficsim.core.logic.vehicles.driver;
 
-import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;

@@ -1,10 +1,11 @@
 package logic.validation.scenarios.pluscrossroad;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
+import microtrafficsim.core.simulation.builder.LogicVehicleFactory;
+import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
+import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-
-import java.util.function.Supplier;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -13,8 +14,16 @@ public class FullPlusCrossroadScenario extends AbstractPlusCrossroadScenario {
 
     public FullPlusCrossroadScenario(SimulationConfig config,
                                      Graph graph,
-                                     Supplier<VisualizationVehicleEntity> visVehicleFactory) {
-        super(config, graph, visVehicleFactory);
+                                     VisVehicleFactory visVehicleFactory) {
+        super(config, graph, new VehicleScenarioBuilder(
+                config.seed,
+                (id, seed, scenario, metaRoute) -> {
+                    Vehicle vehicle = LogicVehicleFactory.defaultCreation(id, seed, scenario, metaRoute);
+                    vehicle.getDriver().setDawdleFactor(0);
+                    return vehicle;
+                },
+                visVehicleFactory
+        ));
     }
 
     /**

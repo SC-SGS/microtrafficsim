@@ -130,10 +130,11 @@ public final class SimulationConfig {
     public static class DefaultStreetPriorityFunction implements StreetPriorityFunction {
         @Override
         public byte getPriority(StreetType type) {
-            byte priority = (byte) 0x00;
+            byte priority = 0;
 
-            if (type.isRoundabout())
-                return (byte) 0xFF;
+            if (type.isRoundabout()) {
+                return Byte.MAX_VALUE;
+            }
 
             switch (type.getType()) {
                 case StreetType.MOTORWAY:       priority++;
@@ -152,7 +153,7 @@ public final class SimulationConfig {
             priority *= 2;
 
             if (type.isLink())
-                priority += 1;
+                priority--;
 
             return priority;
         }

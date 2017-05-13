@@ -1,30 +1,38 @@
 package logic.validation.scenarios;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
+import microtrafficsim.core.simulation.builder.LogicVehicleFactory;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
+import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
+import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 
 import java.util.ArrayList;
-import java.util.function.Supplier;
 
 /**
  * @author Dominic Parga Cacheiro
  */
 public class TCrossroadScenario extends QueueScenarioSmall {
     /**
-     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, Supplier)
+     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, ScenarioBuilder)
      */
     public TCrossroadScenario(SimulationConfig config,
                               Graph graph,
-                              Supplier<VisualizationVehicleEntity> visVehicleFactory) {
-        super(config, graph, visVehicleFactory);
-        scenarioBuilder.addVehicleCreationListener(vehicle -> vehicle.getDriver().setDawdleFactor(0));
+                              VisVehicleFactory visVehicleFactory) {
+        super(config, graph, new VehicleScenarioBuilder(
+                config.seed,
+                (id, seed, scenario, metaRoute) -> {
+                    Vehicle vehicle = LogicVehicleFactory.defaultCreation(id, seed, scenario, metaRoute);
+                    vehicle.getDriver().setDawdleFactor(0);
+                    return vehicle;
+                },
+                visVehicleFactory
+        ));
         init();
     }
 

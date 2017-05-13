@@ -9,12 +9,13 @@ import logic.validation.scenarios.pluscrossroad.PartialPlusCrossroadScenario;
 import microtrafficsim.core.convenience.mapviewer.MapViewer;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
@@ -31,7 +32,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -41,13 +41,12 @@ public class UIValidation {
 
 
     // CHOOSE YOUR CLASS
-    private static final Class clazz = new Class[] {
-            FullPlusCrossroadScenario.class,
-            PartialPlusCrossroadScenario.class,
-            MotorwaySlipRoadScenario.class,
-            RoundaboutScenario.class,
-            TCrossroadScenario.class,
-    }[0];
+    private static final Class<? extends Scenario> clazz =
+//            FullPlusCrossroadScenario.class;
+            PartialPlusCrossroadScenario.class;
+//            MotorwaySlipRoadScenario.class;
+//            RoundaboutScenario.class;
+//            TCrossroadScenario.class;
 
 
     public static void main(String[] args) {
@@ -213,6 +212,6 @@ public class UIValidation {
     private interface ScenarioConstructor {
         QueueScenarioSmall instantiate(SimulationConfig config,
                                        Graph graph,
-                                       Supplier<VisualizationVehicleEntity> visVehicleFactory);
+                                       VisVehicleFactory visVehicleFactory);
     }
 }

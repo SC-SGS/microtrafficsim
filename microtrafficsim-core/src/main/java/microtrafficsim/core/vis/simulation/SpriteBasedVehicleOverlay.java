@@ -8,6 +8,7 @@ import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
+import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
@@ -58,7 +59,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
                     "/shaders/overlay/vehicle/spritebased/vehicle_overlay.fs"))
     );
 
-    private final Supplier<VisualizationVehicleEntity> vehicleFactory;
+    private final VisVehicleFactory vehicleFactory;
 
     private Simulation       simulation;
     private Projection       projection;
@@ -333,7 +334,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         this.simulation = simulation;
     }
 
-    public Supplier<VisualizationVehicleEntity> getVehicleFactory() {
+    public VisVehicleFactory getVehicleFactory() {
         return vehicleFactory;
     }
 }
