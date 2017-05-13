@@ -33,7 +33,6 @@ public class FullPlusCrossroadScenario extends AbstractPlusCrossroadScenario {
 
     @Override
     protected void init() {
-
         /* priority to the right/left */
         addPriorityToTheRight(topLeft);
         addPriorityToTheRight(bottomLeft);

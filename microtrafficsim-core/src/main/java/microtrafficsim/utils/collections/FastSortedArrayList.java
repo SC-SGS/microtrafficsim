@@ -406,9 +406,9 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     public void sort() {
         if (isDirty) {
             if (comparator == null)
-                Collections.sort(this, Comparator.comparingLong(Object::hashCode));
+                super.sort(Comparator.comparingLong(Object::hashCode));
             else
-                Collections.sort(this, comparator);
+                super.sort(comparator);
 
             isDirty = false;
         }

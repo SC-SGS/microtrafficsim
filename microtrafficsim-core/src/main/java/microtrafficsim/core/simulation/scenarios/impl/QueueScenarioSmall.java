@@ -28,7 +28,7 @@ public class QueueScenarioSmall extends BasicScenario {
     private ArrayList<RouteContainer> routeContainers;
     private int curIdx;
     private boolean isLooping;
-    private final ScenarioBuilder scenarioBuilder;
+    protected final ScenarioBuilder scenarioBuilder;
 
 
     protected QueueScenarioSmall(SimulationConfig config,

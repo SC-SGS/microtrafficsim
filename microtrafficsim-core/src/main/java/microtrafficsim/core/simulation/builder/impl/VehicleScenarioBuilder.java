@@ -13,6 +13,7 @@ import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.Car;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
+import microtrafficsim.core.simulation.builder.VehicleCreationListener;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.math.random.Seeded;
@@ -26,6 +27,8 @@ import microtrafficsim.utils.progressable.ProgressListener;
 import microtrafficsim.utils.strings.StringUtils;
 import org.slf4j.Logger;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -40,6 +43,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
 
     protected final ConcurrentLongIDGenerator idGenerator;
     protected final ConcurrentSeedGenerator   seedGenerator;
+    private final List<VehicleCreationListener> vehicleCreationListeners;
 
     private final Supplier<VisualizationVehicleEntity> visVehicleFactory;
 
@@ -52,9 +56,9 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
      *                          vehicles are not visualized
      */
     public VehicleScenarioBuilder(long seed, Supplier<VisualizationVehicleEntity> visVehicleFactory) {
-
         idGenerator   = new ConcurrentLongIDGenerator();
         seedGenerator = new ConcurrentSeedGenerator(seed);
+        vehicleCreationListeners = new LinkedList<>();
 
         this.visVehicleFactory = visVehicleFactory;
     }
@@ -67,7 +71,17 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
     }
 
 
-    protected Vehicle createVehicle(Scenario scenario, Route metaRoute) {
+    @Override
+    public void addVehicleCreationListener(VehicleCreationListener listener) {
+        vehicleCreationListeners.add(listener);
+    }
+
+    @Override
+    public void removeVehicleCreationListener(VehicleCreationListener listener) {
+        vehicleCreationListeners.remove(listener);
+    }
+
+    private Vehicle createVehicle(Scenario scenario, Route metaRoute) {
         // create vehicle components
         Vehicle logicVehicle = createLogicVehicle(scenario, metaRoute);
         VisualizationVehicleEntity visVehicle = null;
@@ -80,10 +94,13 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
         if (visVehicle != null)
             visVehicle.setEntity(entity);
 
+        for (VehicleCreationListener listener : vehicleCreationListeners)
+            listener.didCreateVehicle(logicVehicle);
+
         return logicVehicle;
     }
 
-    protected Vehicle createLogicVehicle(Scenario scenario, Route metaRoute) {
+    private Vehicle createLogicVehicle(Scenario scenario, Route metaRoute) {
         SimulationConfig config = scenario.getConfig();
         long id               = idGenerator.next();
         long seed             = seedGenerator.next();
@@ -188,7 +205,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                 vehicle -> {
                     Route metaRoute = vehicle.getDriver().getRoute();
                     if (metaRoute instanceof MetaRoute) {
-                        StackRoute route = new StackRoute();
+                        StackRoute route = new StackRoute(metaRoute.getSpawnDelay());
 
                         ShortestPathAlgorithm<Node, DirectedEdge> scout = scenario.getScoutFactory().get();
                         scout.findShortestPath(metaRoute.getOrigin(), metaRoute.getDestination(), route);
@@ -215,7 +232,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                 throw new InterruptedException();
 
             if (metaRoute instanceof MetaRoute) {
-                StackRoute route = new StackRoute();
+                StackRoute route = new StackRoute(metaRoute.getSpawnDelay());
 
                 ShortestPathAlgorithm<Node, DirectedEdge> scout = scenario.getScoutFactory().get();
                 scout.findShortestPath(metaRoute.getOrigin(), metaRoute.getDestination(), route);

@@ -25,7 +25,6 @@ import microtrafficsim.utils.emotions.Hulk;
  * @author Dominic Parga Cacheiro
  */
 public interface Driver extends Hulk, Resettable {
-
     /*
     |==========|
     | (i) Hulk |
@@ -99,6 +98,10 @@ public interface Driver extends Hulk, Resettable {
     | variable information |
     |======================|
     */
+    float getDawdleFactor();
+
+    void setDawdleFactor(float dawdleFactor);
+
     void setVehicle(Vehicle vehicle);
 
     Route getRoute();

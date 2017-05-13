@@ -49,6 +49,8 @@ public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
         lengthToMid.put(bottomRight, 12);
 
 
+        scenarioBuilder.addVehicleCreationListener(vehicle -> vehicle.getDriver().setDawdleFactor(0));
+
         init();
     }
 

@@ -59,7 +59,7 @@ public class StackRoute extends Stack<ShortestPathEdge<Node>> implements Route {
 
     @Override
     public synchronized StackRoute clone() {
-        StackRoute copy = new StackRoute();
+        StackRoute copy = new StackRoute(spawnDelay);
         forEach(copy::push);
         return copy;
     }

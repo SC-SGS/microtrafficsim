@@ -19,7 +19,6 @@ import java.util.function.Function;
  * @author Dominic Parga Cacheiro
  */
 public abstract class BasicVehicle implements Vehicle {
-
     /* general */
     private final LinkedList<VehicleStateListener> stateListeners;
 

@@ -216,6 +216,7 @@ public class AreaScenario extends BasicRandomScenario {
         public void refillNodeLists(Graph graph) {
             reset();
 
+            isDirty |= !hasOriginAreas() || !hasDestinationAreas();
             if (isDirty) {
                 clearNodeLists();
 

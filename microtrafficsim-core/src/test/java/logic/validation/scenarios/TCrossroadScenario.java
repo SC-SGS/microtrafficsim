@@ -3,7 +3,9 @@ package logic.validation.scenarios;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.core.simulation.utils.SortedRouteContainer;
@@ -22,6 +24,7 @@ public class TCrossroadScenario extends QueueScenarioSmall {
                               Graph graph,
                               Supplier<VisualizationVehicleEntity> visVehicleFactory) {
         super(config, graph, visVehicleFactory);
+        scenarioBuilder.addVehicleCreationListener(vehicle -> vehicle.getDriver().setDawdleFactor(0));
         init();
     }
 

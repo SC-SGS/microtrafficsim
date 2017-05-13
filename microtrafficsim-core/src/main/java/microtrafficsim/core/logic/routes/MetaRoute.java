@@ -45,7 +45,7 @@ public class MetaRoute implements Route {
 
     @Override
     public MetaRoute clone() {
-        return new MetaRoute(origin, destination);
+        return new MetaRoute(origin, destination, spawnDelay);
     }
 
     @Override

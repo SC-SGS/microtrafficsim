@@ -122,7 +122,6 @@ public abstract class AbstractDeterminismTest {
     protected abstract Scenario createScenario(SimulationConfig config, Graph graph);
 
     protected Scenario prepareScenario(SimulationConfig config, Scenario scenario) {
-
         VehicleScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(config.seed);
 
         try {
