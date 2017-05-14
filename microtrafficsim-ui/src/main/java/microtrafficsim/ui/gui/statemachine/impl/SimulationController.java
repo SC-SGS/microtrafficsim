@@ -6,6 +6,7 @@ import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
 import microtrafficsim.core.convenience.filechoosing.impl.*;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.map.UnprojectedAreas;
 import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
@@ -29,6 +30,7 @@ import microtrafficsim.ui.gui.utils.FrameTitle;
 import microtrafficsim.ui.gui.utils.UserInteractionUtils;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.view.PreferencesFrame;
+import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.concurrency.SingleExecutionThreadSupplier;
 import microtrafficsim.utils.functional.Procedure;
@@ -989,13 +991,21 @@ public class SimulationController implements GUIController {
     }
 
     private void loadRoutesAndStart(File file) {
-        Tuple<RouteContainer, UnprojectedAreas> result = exfmtStorage.loadRoutes(file, streetgraph);
+        Triple<GraphGUID, RouteContainer, UnprojectedAreas> result = exfmtStorage.loadRoutes(file, streetgraph);
 
-        boolean errorOccured = result == null || result.obj0 == null || result.obj1 == null;
+        boolean errorOccured = result == null || result.obj0 == null || result.obj1 == null || result.obj2 == null;
         if (!errorOccured) {
-            clearAndUpdateAreaOverlay(result.obj1);
-            config.scenario.selectedClass = config.scenario.supportedClasses.get(AreaScenario.class);
-            startNewScenario(result.obj0);
+            boolean yes = streetgraph.getGUID().equals(result.obj0);
+            if (!yes)
+                yes = UserInteractionUtils.askUserToContinueRouteLoading(frame);
+
+            if (yes) {
+                clearAndUpdateAreaOverlay(result.obj2);
+                config.scenario.selectedClass = config.scenario.supportedClasses.get(AreaScenario.class);
+                config.maxVehicleCount = result.obj1.size();
+                preferences.setSettings(true, config);
+                startNewScenario(result.obj1);
+            }
         } else {
             UserInteractionUtils.showLoadingFailure(file, "MTS route file", frame);
         }
@@ -1007,7 +1017,7 @@ public class SimulationController implements GUIController {
 
         AreaScenario scenario = (AreaScenario) simulation.getScenario();
         UnprojectedAreas areas = scenario.getAreaNodeContainer().getAreas();
-        boolean success = exfmtStorage.saveRoutes(file, routes, areas);
+        boolean success = exfmtStorage.saveRoutes(file, streetgraph.getGUID(), routes, areas);
 
         if (success)
             UserInteractionUtils.showSavingSuccess(frame);

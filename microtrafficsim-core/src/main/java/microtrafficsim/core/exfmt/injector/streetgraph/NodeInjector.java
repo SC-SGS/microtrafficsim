@@ -2,7 +2,7 @@ package microtrafficsim.core.exfmt.injector.streetgraph;
 
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.base.EntitySet;
+import microtrafficsim.core.exfmt.base.GeometryEntitySet;
 import microtrafficsim.core.exfmt.ecs.components.GraphNodeComponent;
 import microtrafficsim.core.exfmt.ecs.entities.PointEntity;
 import microtrafficsim.core.logic.nodes.Node;
@@ -18,7 +18,7 @@ public class NodeInjector implements ExchangeFormat.Injector<Node> {
 
     @Override
     public void inject(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container dst, Node src) throws Exception {
-        EntitySet ecs = dst.get(EntitySet.class, EntitySet::new);
+        GeometryEntitySet ecs = dst.get(GeometryEntitySet.class, GeometryEntitySet::new);
         PointEntity entity = ecs.getPoints().computeIfAbsent(src.getId(),
                 k -> new PointEntity(src.getId(), src.getCoordinate()));
 

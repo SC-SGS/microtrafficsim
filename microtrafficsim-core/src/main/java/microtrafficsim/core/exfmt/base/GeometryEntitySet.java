@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * @author Maximilian Luz
  */
-public class EntitySet extends Container.Entry {
+public class GeometryEntitySet extends Container.Entry {
     private Bounds bounds;
 
     private Map<Long, PointEntity> points = new HashMap<>();
@@ -23,11 +23,11 @@ public class EntitySet extends Container.Entry {
     private Map<Long, PolygonEntity> polygons = new HashMap<>();
 
 
-    public EntitySet() {
+    public GeometryEntitySet() {
         this(null);
     }
 
-    public EntitySet(Bounds bounds) {
+    public GeometryEntitySet(Bounds bounds) {
         this.bounds = bounds;
     }
 

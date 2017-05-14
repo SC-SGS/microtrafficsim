@@ -3,9 +3,10 @@ package serialization.scenario;
 import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
-import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.GraphGUID;
+import microtrafficsim.core.map.UnprojectedAreas;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -16,6 +17,7 @@ import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
+import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.logging.LoggingLevel;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -27,7 +29,6 @@ import testhelper.ResourceClassLinks;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -94,7 +95,9 @@ public class TestRouteSerialization {
 
     @Test
     public void testRandomRouteScenarioRoutes() throws IOException {
-        testAreaScenario(new RandomRouteScenario(config.seed, config, streetgraph));
+        AreaScenario scenario = new RandomRouteScenario(config.seed, config, streetgraph);
+        scenario.redefineMetaRoutes();
+        testAreaScenario(scenario);
     }
 
 
@@ -110,67 +113,39 @@ public class TestRouteSerialization {
 
 
         /* remember routes */
-        RouteContainer rm = new SortedRouteContainer();
-        rm.addAll(simulation.getScenario());
-        assertFalse("Original route matrix is already empty", rm.isEmpty());
+        RouteContainer routeContainer = new SortedRouteContainer();
+        routeContainer.addAll(simulation.getScenario());
+        assertFalse("Original route container is already empty", routeContainer.isEmpty());
 
 
         /* save and reload routes */
         File tmp = File.createTempFile("routes", MTSFileChooser.Filters.ROUTE_POSTFIX);
-        exfmtStorage.saveRoutes(tmp, rm, scenario.getAreaNodeContainer().getAreas());
-        RouteContainer loaded = exfmtStorage.loadRoutes(tmp, streetgraph).obj0;
+        exfmtStorage.saveRoutes(tmp, streetgraph.getGUID(), routeContainer, scenario.getAreaNodeContainer().getAreas());
+        Triple<GraphGUID, RouteContainer, UnprojectedAreas> result = exfmtStorage.loadRoutes(tmp, streetgraph);
+        RouteContainer loaded = result.obj1;
 
 
-        /* assert basic attributes */ // todo
-//        assertEquals("GraphGUID is not identical", rm.getGraphGUID(), loaded.getGraphGUID());
-        assertEquals("Different size", rm.size(), loaded.size());
+        /* assert basic attributes */
+        assertEquals("GraphGUID is not identical", streetgraph.getGUID(), result.obj0);
+        assertEquals("Different size", routeContainer.size(), loaded.size());
 
         // todo
-        assertTrue(false);
-//        Iterator<Node> iterKeys = rm.keySet().iterator();
-//        Iterator<Node> iterLoadedKeys = loaded.keySet().iterator();
-//        assertTrue("Any route should be stored", iterKeys.hasNext() && iterLoadedKeys.hasNext());
-//        while (iterKeys.hasNext()) {
-//            /* assert keysets <=> origins */
-//            Node origin = iterKeys.next();
-//            Node loadedOrigin = iterLoadedKeys.next();
-//            assertEquals(
-//                    "Key-value-pairs are not equally ordered\n" +
-//                            "expected origin node: " + origin + "\n" +
-//                            "actual origin node:   " + loadedOrigin,
-//                    origin.hashCode(), loadedOrigin.hashCode());
-//
-//
-//            /* assert values <=> (destination -> route) */
-//            Map<Node, Route> values = rm.get(origin);
-//            Map<Node, Route> loadedValues = loaded.get(loadedOrigin);
-//
-//
-//            Iterator<Node> iterValues = values.keySet().iterator();
-//            Iterator<Node> iterLoadedValues = loadedValues.keySet().iterator();
-//            assertTrue("Any origin should map to a destination-route-pair",
-//                    iterValues.hasNext() && iterLoadedValues.hasNext());
-//            while (iterValues.hasNext()) {
-//                /* assert keysets of values <=> destinations */
-//                Node destination = iterValues.next();
-//                Node loadedDestination = iterLoadedValues.next();
-//                assertEquals(
-//                        "Key-value-pairs are not equally ordered\n" +
-//                                "expected destination node: " + destination + "\n" +
-//                                "actual destination node:   " + loadedDestination,
-//                        destination.hashCode(), loadedDestination.hashCode());
-//
-//
-//                /* assert routes */
-//                Route route = values.get(destination);
-//                Route loadedRoute = loadedValues.get(loadedDestination);
-//                assertEquals("stored route is not as expected", route.hashCode(), loadedRoute.hashCode());
-//            }
-//
-//            assertTrue(!iterValues.hasNext() && !iterLoadedValues.hasNext());
-//        }
-//
-//        assertTrue(!iterKeys.hasNext() && !iterLoadedKeys.hasNext());
+        Iterator<Route> iterRoutes = routeContainer.iterator();
+        Iterator<Route> iterLoaded = loaded.iterator();
+        assertTrue("Any route should be stored", iterRoutes.hasNext() && iterLoaded.hasNext());
+        while (iterRoutes.hasNext()) {
+            assertTrue(
+                    "Loaded-routes-iterator is empty before original one does.",
+                    iterRoutes.hasNext() && iterLoaded.hasNext());
+
+            Route route = iterRoutes.next();
+            Route loadedRoute = iterLoaded.next();
+            assertEquals("Routes are not equal.", route.hashCode(), loadedRoute.hashCode());
+        }
+
+        assertTrue(
+                "Loaded-routes-iterator has remaining elements, but original one doesn't.",
+                !iterRoutes.hasNext() && !iterLoaded.hasNext());
     }
 
 

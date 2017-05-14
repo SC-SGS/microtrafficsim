@@ -3,7 +3,7 @@ package microtrafficsim.core.exfmt.extractor.streetgraph;
 import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.base.EntitySet;
+import microtrafficsim.core.exfmt.base.GeometryEntitySet;
 import microtrafficsim.core.exfmt.context.StreetFeatureMap;
 import microtrafficsim.core.exfmt.ecs.FeatureManager;
 import microtrafficsim.core.exfmt.ecs.components.GraphEdgeComponent;
@@ -33,7 +33,7 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
 
     @Override
     public StreetGraph extract(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src) throws Exception {
-        EntitySet ecs = src.get(EntitySet.class);
+        GeometryEntitySet ecs = src.get(GeometryEntitySet.class);
         if (ecs == null) throw new NotAvailableException();
 
         Config cfg = fmt.getConfig().get(Config.class);
@@ -57,7 +57,7 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
         return graph;
     }
 
-    private HashMap<Long, Node> extractNodes(EntitySet ecs, Config cfg) {
+    private HashMap<Long, Node> extractNodes(GeometryEntitySet ecs, Config cfg) {
         HashMap<Long, Node> nodes = new HashMap<>();
         for (PointEntity entity : ecs.getPoints().values()) {
             GraphNodeComponent gnc = entity.get(GraphNodeComponent.class);
@@ -72,7 +72,7 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
     }
 
     private HashMap<Long, StreetEntity> extractEdges(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src,
-                                                     EntitySet ecs, Config cfg, HashMap<Long, Node> nodes,
+                                                     GeometryEntitySet ecs, Config cfg, HashMap<Long, Node> nodes,
                                                      StreetGraph graph)
     {
         HashMap<Long, StreetEntity> edges = new HashMap<>();
@@ -165,7 +165,7 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
         return edges;
     }
 
-    private void setUpConnectors(EntitySet ecs, HashMap<Long, Node> nodes, HashMap<Long, StreetEntity> edges) {
+    private void setUpConnectors(GeometryEntitySet ecs, HashMap<Long, Node> nodes, HashMap<Long, StreetEntity> edges) {
         for (Node node : nodes.values()) {
             PointEntity entity = ecs.getPoints().get(node.getId());
             if (entity == null) continue;

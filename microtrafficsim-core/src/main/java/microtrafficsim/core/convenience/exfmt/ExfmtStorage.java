@@ -11,8 +11,10 @@ import microtrafficsim.core.exfmt.extractor.simulation.RouteContainerExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.exfmt.injector.simulation.ProjectedAreasInjector;
+import microtrafficsim.core.exfmt.injector.simulation.RouteContainerInjector;
 import microtrafficsim.core.exfmt.injector.simulation.SimulationConfigInjector;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.map.MapSegment;
@@ -25,6 +27,7 @@ import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.core.vis.map.projections.Projection;
+import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
@@ -193,10 +196,9 @@ public class ExfmtStorage {
     | routes |
     |========|
     */
-    public Tuple<RouteContainer, UnprojectedAreas> loadRoutes(File file, Graph graph) {
-        /* prepare exfmt config */
+    public Triple<GraphGUID, RouteContainer, UnprojectedAreas> loadRoutes(File file, Graph graph) {
         RouteContainerExtractor.Config cfg = new RouteContainerExtractor.Config();
-        cfg.graph = graph;
+        cfg.setGraph(graph);
         exfmt.getConfig().set(cfg);
 
 
@@ -220,13 +222,18 @@ public class ExfmtStorage {
                 e.printStackTrace();
             }
 
-            return new Tuple<>(routes, areas);
+            return new Triple<>(cfg.getLoadedGraphGUID(), routes, areas);
         }
 
         return null;
     }
 
-    public boolean saveRoutes(File file, RouteContainer routes, UnprojectedAreas areas) {
+    public boolean saveRoutes(File file, GraphGUID graphGUID, RouteContainer routes, UnprojectedAreas areas) {
+        RouteContainerInjector.Config cfg = new RouteContainerInjector.Config();
+        cfg.graphGUID = graphGUID;
+        exfmt.getConfig().set(cfg);
+
+
         try {
             serializer.write(file, exfmt.manipulator()
                     .inject(routes)

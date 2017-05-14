@@ -3,7 +3,7 @@ package microtrafficsim.core.exfmt.ecs;
 import microtrafficsim.core.exfmt.Config;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.base.EntitySet;
+import microtrafficsim.core.exfmt.base.GeometryEntitySet;
 import microtrafficsim.core.map.FeaturePrimitive;
 
 import java.util.HashMap;
@@ -35,6 +35,6 @@ public class FeatureManager extends Config.Entry {
 
 
     public interface Extractor<T extends FeaturePrimitive> {
-        T extract(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src, EntitySet ecs, Entity entity);
+        T extract(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src, GeometryEntitySet ecs, Entity entity);
     }
 }

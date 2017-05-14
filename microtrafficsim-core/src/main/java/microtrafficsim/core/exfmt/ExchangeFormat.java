@@ -42,6 +42,7 @@ import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.TileFeatureGrid;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.utils.RouteContainer;
+import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 import microtrafficsim.utils.collections.Composite;
 
 import java.util.HashMap;
@@ -106,7 +107,7 @@ public class ExchangeFormat {
             format.injector(SimulationConfig.class, new SimulationConfigInjector());
             format.extractor(SimulationConfig.class, new SimulationConfigExtractor());
 
-            format.injector(RouteContainer.class, new RouteContainerInjector());
+            format.injector(SortedRouteContainer.class, new RouteContainerInjector());
             format.extractor(RouteContainer.class, new RouteContainerExtractor());
 
             format.injector(ProjectedAreas.class, new ProjectedAreasInjector());

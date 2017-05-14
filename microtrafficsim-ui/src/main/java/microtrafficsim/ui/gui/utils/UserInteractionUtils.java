@@ -1,9 +1,11 @@
 package microtrafficsim.ui.gui.utils;
 
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
+import microtrafficsim.core.vis.glui.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.Component;
 import java.io.File;
 
 /**
@@ -58,6 +60,16 @@ public class UserInteractionUtils {
                         + System.lineSeparator()
                         + "Do you still like to change the areas?",
                 "Remove currently running scenario?",
+                parent
+        );
+    }
+
+    public static boolean askUserToContinueRouteLoading(Component parent) {
+        return UserInteractionUtils.askUserForDecision(
+                "The loaded routes have been created on another graph.\n" +
+                        "Maybe not all routes could be found correctly.\n" +
+                        "Do you still want to load the routes?",
+                "Different graph used for route serialization",
                 parent
         );
     }

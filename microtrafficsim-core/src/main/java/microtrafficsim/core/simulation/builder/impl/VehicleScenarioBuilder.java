@@ -154,7 +154,6 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
 
     private void multiThreadedVehicleRouteAssignment(Scenario scenario, ProgressListener listener)
             throws InterruptedException {
-
         lastPercentage = 0;
 
         // create vehicles with empty routes and add them to the scenario (sequentially for determinism)
@@ -192,7 +191,6 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
 
     private void singleThreadedVehicleRouteAssignment(Scenario scenario, ProgressListener listener)
             throws InterruptedException {
-
         lastPercentage = 0;
 
         int vehicleCount = 0;

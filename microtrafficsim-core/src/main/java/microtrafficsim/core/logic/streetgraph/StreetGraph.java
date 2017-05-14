@@ -18,7 +18,6 @@ import java.util.*;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro, Maximilian Luz
  */
 public class StreetGraph implements Graph {
-
     private GraphGUID                      guid;
     private Bounds                         bounds;
     private HashMap<Integer, Node>         nodes;
