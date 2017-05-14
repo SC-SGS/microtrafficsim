@@ -151,8 +151,10 @@ public class VehicleSimulation implements Simulation {
 
     @Override
     public void willRunOneStep() {
-        if (logger.isTraceEnabled()) {
+        for (StepListener stepListener : stepListeners)
+            stepListener.willDoOneStep(this);
 
+        if (logger.isTraceEnabled()) {
             logger.trace("########## ###d####### ########## ########## ##");
 
             if (scenario.isPrepared()) {

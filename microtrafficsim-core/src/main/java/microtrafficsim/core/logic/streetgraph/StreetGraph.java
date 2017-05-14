@@ -7,9 +7,7 @@ import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.id.BasicSeedGenerator;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -20,12 +18,11 @@ import java.util.Set;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro, Maximilian Luz
  */
 public class StreetGraph implements Graph {
-
-    private GraphGUID             guid;
-    private Bounds                bounds;
-    private HashSet<Node>         nodes;
-    private HashSet<DirectedEdge> edges;
-    private long                  seed;
+    private GraphGUID                      guid;
+    private Bounds                         bounds;
+    private HashMap<Integer, Node>         nodes;
+    private HashMap<Integer, DirectedEdge> edges;
+    private long                           seed;
 
     /**
      * Just a standard constructor.
@@ -34,8 +31,8 @@ public class StreetGraph implements Graph {
      */
     public StreetGraph(Bounds bounds) {
         this.bounds = bounds;
-        this.nodes  = new HashSet<>();
-        this.edges  = new HashSet<>();
+        this.nodes  = new HashMap<>();
+        this.edges  = new HashMap<>();
         this.seed   = Random.createSeed();
     }
 
@@ -49,11 +46,11 @@ public class StreetGraph implements Graph {
                 .appendln(": {").incLevel();
 
         output.appendln("Nodes: {").incLevel();
-        nodes.forEach(output::appendln);
+        nodes.values().forEach(output::appendln);
         output.decLevel().appendln("}");
 
         output.appendln("Edges: {").incLevel();
-        edges.forEach(output::appendln);
+        edges.values().forEach(output::appendln);
         output.decLevel().appendln("}");
 
         return output.decLevel().append("}").toString();
@@ -78,30 +75,40 @@ public class StreetGraph implements Graph {
 
 
     @Override
+    public Map<Integer, Node> getNodeMap() {
+        return Collections.unmodifiableMap(nodes);
+    }
+
+    @Override
+    public Map<Integer, DirectedEdge> getEdgeMap() {
+        return Collections.unmodifiableMap(edges);
+    }
+
+    @Override
     public Set<Node> getNodes() {
-        return Collections.unmodifiableSet(nodes);
+        return new HashSet<>(nodes.values());
     }
 
     @Override
     public Set<DirectedEdge> getEdges() {
-        return Collections.unmodifiableSet(edges);
+        return new HashSet<>(edges.values());
     }
 
     @Override
     public void addNode(Node node) {
-        nodes.add(node);
+        nodes.put(node.hashCode(), node);
     }
 
     @Override
     public void addEdge(DirectedEdge edge) {
-        edges.add(edge);
+        edges.put(edge.hashCode(), edge);
     }
 
 
     @Override
     public void setSeed(long seed) {
         BasicSeedGenerator gen = new BasicSeedGenerator(seed);
-        for (Node node : nodes) {
+        for (Node node : nodes.values()) {
             node.setSeed(gen.next());
         }
 

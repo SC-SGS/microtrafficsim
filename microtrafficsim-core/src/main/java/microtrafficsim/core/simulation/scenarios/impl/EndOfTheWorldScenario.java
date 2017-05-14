@@ -1,6 +1,7 @@
 package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.routes.MetaRoute;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
@@ -11,8 +12,6 @@ import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehic
 import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.math.random.distributions.impl.Random;
-import microtrafficsim.utils.logging.EasyMarkableLogger;
-import org.slf4j.Logger;
 
 /**
  * <p>
@@ -24,8 +23,6 @@ import org.slf4j.Logger;
  * @author Dominic Parga Cacheiro
  */
 public class EndOfTheWorldScenario extends AreaScenario {
-
-    private static Logger logger = new EasyMarkableLogger(EndOfTheWorldScenario.class);
 
     // matrix
     private final TypedPolygonArea[] destinationAreas;
@@ -87,8 +84,6 @@ public class EndOfTheWorldScenario extends AreaScenario {
 
 
         /* define areas for filling node lists */
-        addArea(getTotalGraph(Area.Type.ORIGIN));
-
         setDestinationArea(
                 Orientation.BOTTOM,
                 Orientation.LEFT,
@@ -170,11 +165,7 @@ public class EndOfTheWorldScenario extends AreaScenario {
                 }, Area.Type.DESTINATION));
 
         for (TypedPolygonArea area : destinationAreas)
-            addArea(area);
-
-
-        refillNodeLists();
-        fillMatrix();
+            getAreaNodeContainer().addArea(area);
     }
 
     /**
@@ -186,17 +177,11 @@ public class EndOfTheWorldScenario extends AreaScenario {
      * &bull increase the route count for the found origin-destination-pair
      */
     @Override
-    protected void fillMatrix() {
+    protected void defineRoutesAfterClearing() {
         // note: the directions used in this method's comments are referring to Europe (so the northern hemisphere)
-        logger.info("BUILDING ODMatrix started");
 
-        /* prepare matrix filling */
-        resetRandomNodeSupplier();
-        odMatrix.clear();
-
-        // fill matrix
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
-            Node origin = getRandomOriginNode();
+            Node origin = getAreaNodeContainer().getRdmOriginNode(getConfig().scenario.nodesAreWeightedUniformly);
 
             // get end node depending on start node's position
             Graph graph = getGraph();
@@ -234,13 +219,11 @@ public class EndOfTheWorldScenario extends AreaScenario {
             double lonDistance = HaversineDistanceCalculator.getDistance(originCoord, lonProjection);
             Node destination;
             if (latDistance > lonDistance)
-                destination = getRandomNode(getDestinationArea(lonOrientation, latOrientation));
+                destination = getAreaNodeContainer().getRdmNode(getDestinationArea(lonOrientation, latOrientation));
             else
-                destination = getRandomNode(getDestinationArea(latOrientation, lonOrientation));
-            odMatrix.inc(origin, destination);
+                destination = getAreaNodeContainer().getRdmNode(getDestinationArea(latOrientation, lonOrientation));
+            getRoutes().add(new MetaRoute(origin, destination));
         }
-
-        logger.info("BUILDING ODMatrix finished");
     }
 
 

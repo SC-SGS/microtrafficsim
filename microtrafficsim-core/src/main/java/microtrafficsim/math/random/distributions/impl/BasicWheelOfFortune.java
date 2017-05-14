@@ -1,16 +1,17 @@
 package microtrafficsim.math.random.distributions.impl;
 
 import microtrafficsim.math.random.distributions.WheelOfFortune;
-import microtrafficsim.utils.collections.skiplist.PrioritySkipListSet;
-import microtrafficsim.utils.collections.skiplist.SkipList;
+import microtrafficsim.utils.collections.PrioritySkipListSet;
+import microtrafficsim.utils.collections.SkipList;
 
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
- * Basic implementation using a {@link HashMap}. For the random number generator used for {@link #nextObject()},
- * {@link Random} is used.
+ * Basic implementation using a {@link PrioritySkipListSet} comparing by the objects' hashcodes. For the random number
+ * generator used for {@link #nextObject()}, {@link Random} is used.
  *
  * @author Dominic Parga Cacheiro
  */
@@ -18,13 +19,17 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
 
     private Random random;
     private SkipList<T> elements;
-    private HashMap<T, Integer> fields;
+    private Map<T, Integer> fields;
     private int n;
 
     public BasicWheelOfFortune(long seed) {
         this(new Random(seed));
     }
 
+    /**
+     * Important if random reference is important
+     * @param random
+     */
     public BasicWheelOfFortune(Random random) {
         this.random = random;
         elements    = new PrioritySkipListSet<>(Comparator.comparingLong(Object::hashCode));
@@ -136,6 +141,10 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
         }
     }
 
+    @Override
+    public Iterator<T> iterator() {
+        return elements.iterator();
+    }
 
     @Override
     public long getSeed() {

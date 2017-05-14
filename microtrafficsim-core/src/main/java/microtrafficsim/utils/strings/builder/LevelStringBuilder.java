@@ -5,10 +5,14 @@ package microtrafficsim.utils.strings.builder;
  */
 public class LevelStringBuilder implements StringBuilder {
 
+    public static final String DEFAULT_LEVEL_SEPARATOR = System.lineSeparator();
+    public static final String DEFAULT_LEVEL_SUBSTRING = "    ";
+
+
     private java.lang.StringBuilder stringBuilder;
     private int                     level          = 0;
-    private String                  levelSubString = "    ";
-    private String                  levelSeparator = System.lineSeparator();
+    private String                  levelSeparator = DEFAULT_LEVEL_SEPARATOR;
+    private String                  levelSubString = DEFAULT_LEVEL_SUBSTRING;
 
 
     public LevelStringBuilder() {
@@ -68,6 +72,11 @@ public class LevelStringBuilder implements StringBuilder {
         return this;
     }
 
+    public LevelStringBuilder setDefaultLevelSubString() {
+        levelSubString = DEFAULT_LEVEL_SUBSTRING;
+        return this;
+    }
+
     public String getLevelSeparator() {
         return levelSeparator;
     }
@@ -77,9 +86,16 @@ public class LevelStringBuilder implements StringBuilder {
         return this;
     }
 
+    public LevelStringBuilder setDefaultLevelSeparator() {
+        levelSeparator = DEFAULT_LEVEL_SEPARATOR;
+        return this;
+    }
+
 
     @Override
     public LevelStringBuilder append(Object obj) {
+        if (obj == null)
+            return append("null");
         return append(obj.toString());
     }
 

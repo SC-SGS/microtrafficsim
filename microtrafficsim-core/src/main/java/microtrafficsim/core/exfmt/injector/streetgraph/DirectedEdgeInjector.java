@@ -2,7 +2,7 @@ package microtrafficsim.core.exfmt.injector.streetgraph;
 
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.base.EntitySet;
+import microtrafficsim.core.exfmt.base.GeometryEntitySet;
 import microtrafficsim.core.exfmt.ecs.components.GraphEdgeComponent;
 import microtrafficsim.core.exfmt.ecs.components.StreetComponent;
 import microtrafficsim.core.exfmt.ecs.entities.LineEntity;
@@ -13,7 +13,7 @@ public class DirectedEdgeInjector implements ExchangeFormat.Injector<DirectedEdg
 
     @Override
     public void inject(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container dst, DirectedEdge src) throws Exception {
-        EntitySet ecs = dst.get(EntitySet.class, EntitySet::new);
+        GeometryEntitySet ecs = dst.get(GeometryEntitySet.class, GeometryEntitySet::new);
         LineEntity entity = ecs.getLines().computeIfAbsent(src.getId(), k -> new LineEntity(src.getId(), null));
 
         GraphEdgeComponent gec = entity.get(GraphEdgeComponent.class, () -> new GraphEdgeComponent(entity));

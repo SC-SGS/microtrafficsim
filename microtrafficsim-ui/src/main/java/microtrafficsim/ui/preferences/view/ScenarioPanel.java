@@ -2,6 +2,7 @@ package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig.Element;
+import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.ScenarioModel;
 import microtrafficsim.utils.Descriptor;
@@ -126,7 +127,7 @@ public class ScenarioPanel extends PreferencesPanel {
 
             /* update model */
             model.clearAllScenarios();
-            config.scenario.supportedClasses.forEach(model::addScenario);
+            config.scenario.supportedClasses.values().forEach(model::addScenario);
             /* update checkbox for scenario choice */
             cbScenarioChoice.removeAllItems();
             model.getScenarios().stream()
@@ -142,13 +143,11 @@ public class ScenarioPanel extends PreferencesPanel {
             if (model.getEnableLexicon().isEnabled(Element.scenarioSelection)) {
                 /* update model */
                 model.clearAllScenarios();
-                config.scenario.supportedClasses.forEach(model::addScenario);
+                config.scenario.supportedClasses.values().forEach(model::addScenario);
                 /* update checkbox for scenario choice */
                 cbScenarioChoice.removeAllItems();
-                model.getScenarios().stream()
-                        .map(Descriptor::getDescription)
-                        .forEach(cbScenarioChoice::addItem);
-                cbScenarioChoice.setSelectedItem(config.scenario.selectedClass);
+                model.getScenarios().forEach(descriptor -> cbScenarioChoice.addItem(descriptor.getDescription()));
+                cbScenarioChoice.setSelectedItem(config.scenario.selectedClass.getDescription());
             }
         }
     }
@@ -160,7 +159,9 @@ public class ScenarioPanel extends PreferencesPanel {
         config.scenario.showAreasWhileSimulating = cbShowAreasWhileSimulating.isSelected();
         config.scenario.nodesAreWeightedUniformly = cbNodesAreWeightedUniformly.isSelected();
 
-        model.getScenarios().forEach(config.scenario.supportedClasses::add);
+        for (Descriptor<Class<? extends Scenario>> descriptor : model.getScenarios()) {
+            config.scenario.supportedClasses.put(descriptor.getObj(), descriptor);
+        }
         config.scenario.selectedClass = model.get(cbScenarioChoice.getSelectedIndex());
 
         return config;

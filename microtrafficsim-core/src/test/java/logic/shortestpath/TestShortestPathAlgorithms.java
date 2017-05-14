@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.StreetType;
@@ -348,13 +349,12 @@ public class TestShortestPathAlgorithms {
         DirectedEdge forward = new DirectedEdge(
                 idGenerator.next(),
                 lengthInCells * config.metersPerCell,
+                rubbishVec2d, rubbishVec2d,
+                Orientation.FORWARD,
+                origin, destination,
                 new StreetType(StreetType.UNCLASSIFIED),
                 nLanes,
                 maxVelocity,
-                origin,
-                destination,
-                rubbishVec2d,
-                rubbishVec2d,
                 config.metersPerCell,
                 type -> (byte) 0
         );
@@ -362,13 +362,12 @@ public class TestShortestPathAlgorithms {
         DirectedEdge backward = new DirectedEdge(
                 idGenerator.next(),
                 lengthInCells * config.metersPerCell,
+                rubbishVec2d, rubbishVec2d,
+                Orientation.BACKWARD,
+                destination, origin,
                 new StreetType(StreetType.UNCLASSIFIED),
                 nLanes,
                 maxVelocity,
-                destination,
-                origin,
-                rubbishVec2d,
-                rubbishVec2d,
                 config.metersPerCell,
                 type -> (byte) 0
         );
@@ -395,13 +394,12 @@ public class TestShortestPathAlgorithms {
         DirectedEdge forward = new DirectedEdge(
                 idGenerator.next(),
                 lengthInCells * config.metersPerCell,
+                rubbishVec2d, rubbishVec2d,
+                Orientation.FORWARD,
+                origin, destination,
                 new StreetType(StreetType.UNCLASSIFIED),
                 nLanes,
                 maxVelocity,
-                origin,
-                destination,
-                rubbishVec2d,
-                rubbishVec2d,
                 config.metersPerCell,
                 type -> (byte) 0
         );
@@ -425,13 +423,12 @@ public class TestShortestPathAlgorithms {
         DirectedEdge backward = new DirectedEdge(
                 idGenerator.next(),
                 lengthInCells * config.metersPerCell,
+                rubbishVec2d, rubbishVec2d,
+                Orientation.BACKWARD,
+                destination, origin,
                 new StreetType(StreetType.UNCLASSIFIED),
                 nLanes,
                 maxVelocity,
-                destination,
-                origin,
-                rubbishVec2d,
-                rubbishVec2d,
                 config.metersPerCell,
                 type -> (byte) 0
         );

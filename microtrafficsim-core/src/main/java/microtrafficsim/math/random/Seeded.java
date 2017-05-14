@@ -6,12 +6,12 @@ package microtrafficsim.math.random;
 public interface Seeded {
 
     /**
-     * Sets the seed to the given one and {@code resets} this class.
-     */
-    void setSeed(long seed);
-
-    /**
      * @return Currently used seed
      */
     long getSeed();
+
+    /**
+     * Sets the seed to the given one and {@code resets} this class.
+     */
+    void setSeed(long seed);
 }

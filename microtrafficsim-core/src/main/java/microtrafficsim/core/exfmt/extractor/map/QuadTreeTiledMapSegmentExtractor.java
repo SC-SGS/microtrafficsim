@@ -2,7 +2,7 @@ package microtrafficsim.core.exfmt.extractor.map;
 
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.base.EntitySet;
+import microtrafficsim.core.exfmt.base.GeometryEntitySet;
 import microtrafficsim.core.exfmt.base.FeatureInfo;
 import microtrafficsim.core.exfmt.base.TileGridInfo;
 import microtrafficsim.core.exfmt.ecs.Entity;
@@ -38,7 +38,7 @@ public class QuadTreeTiledMapSegmentExtractor implements ExchangeFormat.Extracto
     public QuadTreeTiledMapSegment extract(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src)
             throws Exception
     {
-        EntitySet entities = src.get(EntitySet.class);
+        GeometryEntitySet entities = src.get(GeometryEntitySet.class);
         FeatureInfo features = src.get(FeatureInfo.class);
         TileGridInfo tiles = src.get(TileGridInfo.class);
         if (entities == null | features == null | tiles == null)
@@ -90,7 +90,7 @@ public class QuadTreeTiledMapSegmentExtractor implements ExchangeFormat.Extracto
     }
 
     @SuppressWarnings("unchecked")
-    private void process(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src, EntitySet ecs,
+    private void process(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container src, GeometryEntitySet ecs,
                          FeatureManager extractors, TileGridInfo.Grid grid, HashMap<String, FeatureGrid<?>> dst,
                          Entity entity) {
         FeatureComponent fc = entity.get(FeatureComponent.class);
@@ -143,7 +143,7 @@ public class QuadTreeTiledMapSegmentExtractor implements ExchangeFormat.Extracto
         public GridMatcher matcher;
 
         public static Config getDefault() {
-            return getDefault(new QuadTreeTilingScheme(new MercatorProjection(), 0, 19), 12);
+            return getDefault(new QuadTreeTilingScheme(new MercatorProjection()), 12);
         }
 
         public static Config getDefault(TilingScheme scheme, int level) {

@@ -1,31 +1,38 @@
 package microtrafficsim.core.convenience.exfmt;
 
+import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
-import microtrafficsim.core.convenience.utils.FileFilters;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
-import microtrafficsim.core.exfmt.base.ScenarioRouteSet;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.exfmt.extractor.simulation.RouteContainerExtractor;
 import microtrafficsim.core.exfmt.extractor.simulation.SimulationConfigExtractor;
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
+import microtrafficsim.core.exfmt.injector.simulation.ProjectedAreasInjector;
+import microtrafficsim.core.exfmt.injector.simulation.RouteContainerInjector;
 import microtrafficsim.core.exfmt.injector.simulation.SimulationConfigInjector;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.map.MapSegment;
+import microtrafficsim.core.map.ProjectedAreas;
+import microtrafficsim.core.map.UnprojectedAreas;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
+import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.utils.RouteMatrix;
+import microtrafficsim.core.simulation.utils.RouteContainer;
+import microtrafficsim.core.vis.map.projections.Projection;
+import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Should simplify loading/saving simulation files
@@ -33,7 +40,6 @@ import java.io.IOException;
  * @author Dominic Parga Cacheiro
  */
 public class ExfmtStorage {
-
     private static final Logger logger = new EasyMarkableLogger(ExfmtStorage.class);
 
 
@@ -42,6 +48,10 @@ public class ExfmtStorage {
     private ExchangeFormatSerializer serializer;
 
 
+    /**
+     * @param config This reference has to be stable.
+     * @param mapviewer
+     */
     public ExfmtStorage(SimulationConfig config, TileBasedMapViewer mapviewer) {
         parser = DefaultParserConfig.get(config).build();
 
@@ -56,6 +66,19 @@ public class ExfmtStorage {
         exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
     }
 
+    public ExfmtStorage(SimulationConfig config, TilingScheme tilingScheme, int tileGridLevel) {
+        parser = DefaultParserConfig.get(config).build();
+
+
+        /* create exchange format and serializer */
+        serializer = ExchangeFormatSerializer.create();
+        exfmt = ExchangeFormat.getDefault();
+
+        exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(tilingScheme, tileGridLevel));
+
+        exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
+    }
+
 
     /*
     |=====|
@@ -66,12 +89,11 @@ public class ExfmtStorage {
      * Loads the given file depending on its map type (OSM or MTSM)
      */
     public Tuple<Graph, MapProvider> loadMap(File file) throws InterruptedException {
-
         try {
-            if (FileFilters.MAP_OSM_XML.accept(file)) {
+            if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
                 OSMParser.Result result = parser.parse(file);
                 return new Tuple<>(result.streetgraph, result.segment);
-            } else if (FileFilters.MAP_EXFMT.accept(file)) {
+            } else if (MTSFileChooser.Filters.MAP_EXFMT.accept(file)) {
                 ExchangeFormat.Manipulator manipulator = exfmt.manipulator(serializer.read(file));
 
                 MapProvider provider;
@@ -174,14 +196,105 @@ public class ExfmtStorage {
     | routes |
     |========|
     */
-    public RouteMatrix loadRoutes(File file) {
+    public Triple<GraphGUID, RouteContainer, UnprojectedAreas> loadRoutes(File file, Graph graph) {
+        RouteContainerExtractor.Config cfg = new RouteContainerExtractor.Config();
+        cfg.setGraph(graph);
+        exfmt.getConfig().set(cfg);
+
+
+        /* prepare extractor */
+        ExchangeFormat.Manipulator manipulator = null;
+        try {
+            manipulator = exfmt.manipulator(serializer.read(file));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        /* load routes */
+        RouteContainer routes = null;
+        UnprojectedAreas areas = null;
+        if (manipulator != null) {
+            try {
+                routes = manipulator.extract(RouteContainer.class);
+                areas = manipulator.extract(UnprojectedAreas.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return new Triple<>(cfg.getLoadedGraphGUID(), routes, areas);
+        }
+
         return null;
     }
 
-    public boolean saveRoutes(File file, RouteMatrix routeMatrix) {
+    public boolean saveRoutes(File file, GraphGUID graphGUID, RouteContainer routes, UnprojectedAreas areas) {
+        RouteContainerInjector.Config cfg = new RouteContainerInjector.Config();
+        cfg.graphGUID = graphGUID;
+        exfmt.getConfig().set(cfg);
+
+
         try {
             serializer.write(file, exfmt.manipulator()
-                    .inject(routeMatrix)
+                    .inject(routes)
+                    .inject(areas)
+                    .getContainer());
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
+    /*
+    |=======|
+    | areas |
+    |=======|
+    */
+    public UnprojectedAreas loadAreas(File file) {
+        /* prepare extractor */
+        ExchangeFormat.Manipulator manipulator = null;
+        try {
+            manipulator = exfmt.manipulator(serializer.read(file));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        /* load areas */
+        UnprojectedAreas areas = null;
+        if (manipulator != null) {
+            try {
+                areas = manipulator.extract(UnprojectedAreas.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return areas;
+    }
+
+    public boolean saveAreas(File file, ProjectedAreas areas, Projection projection) {
+        ProjectedAreasInjector.Config cfg = new ProjectedAreasInjector.Config();
+        cfg.projection = projection;
+        exfmt.getConfig().set(cfg);
+
+        try {
+            serializer.write(file, exfmt.manipulator()
+                    .inject(areas)
+                    .getContainer());
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean saveAreas(File file, UnprojectedAreas areas) {
+        try {
+            serializer.write(file, exfmt.manipulator()
+                    .inject(areas)
                     .getContainer());
             return true;
         } catch (Exception e) {

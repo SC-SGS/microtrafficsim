@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.parser.processing.Connector;
 import microtrafficsim.core.parser.processing.GraphWayComponent;
@@ -22,7 +23,6 @@ import microtrafficsim.osm.parser.features.FeatureDefinition;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.osm.parser.features.streets.StreetComponent;
 import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
-import microtrafficsim.osm.parser.features.streets.info.StreetType;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
@@ -132,19 +132,23 @@ public class StreetGraphGenerator implements FeatureGenerator {
         DirectedEdge backward = null;
 
         double length = getLength(dataset, way);
-        microtrafficsim.core.map.StreetType type= streetinfo.roundabout ? StreetType.ROUNDABOUT.toCoreStreetType() :
-                streetinfo.streettype.toCoreStreetType();
 
         if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.FORWARD
             || streetinfo.oneway == OnewayInfo.REVERSIBLE) {
-            Vec2d originDirection = new Vec2d(node1.lon - node0.lon, node1.lat - node0.lat);
+            Vec2d originDirection = new Vec2d(node1.lon - node0.lon,
+                                              node1.lat - node0.lat);
 
             Vec2d destinationDirection = new Vec2d(lastNode.lon - secondLastNode.lon,
                                                    lastNode.lat - secondLastNode.lat);
 
-            forward = new DirectedEdge(way.id, length, streetinfo.streettype.toCoreStreetType(),
-                    streetinfo.lanes.forward, streetinfo.maxspeed.forward,
-                    start, end, originDirection, destinationDirection,
+            forward = new DirectedEdge(way.id,
+                    length,
+                    originDirection, destinationDirection,
+                    Orientation.FORWARD,
+                    start, end,
+                    streetinfo.streettype.toCoreStreetType(),
+                    streetinfo.lanes.forward,
+                    streetinfo.maxspeed.forward,
                     config.metersPerCell, config.streetPriorityLevel);
         }
 
@@ -152,11 +156,18 @@ public class StreetGraphGenerator implements FeatureGenerator {
             Vec2d originDirection = new Vec2d(secondLastNode.lon - lastNode.lon,
                                               secondLastNode.lat - lastNode.lat);
 
-            Vec2d destinationDirection = new Vec2d(node0.lon - node1.lon, node0.lat - node1.lat);
+            Vec2d destinationDirection = new Vec2d(node0.lon - node1.lon,
+                                                   node0.lat - node1.lat);
 
-            backward = new DirectedEdge(way.id, length, streetinfo.streettype.toCoreStreetType(),
-                    streetinfo.lanes.backward, streetinfo.maxspeed.backward,
-                    end, start, originDirection, destinationDirection,
+            backward = new DirectedEdge(
+                    way.id,
+                    length,
+                    originDirection, destinationDirection,
+                    Orientation.BACKWARD,
+                    end, start,
+                    streetinfo.streettype.toCoreStreetType(),
+                    streetinfo.lanes.backward,
+                    streetinfo.maxspeed.backward,
                     config.metersPerCell, config.streetPriorityLevel);
         }
 

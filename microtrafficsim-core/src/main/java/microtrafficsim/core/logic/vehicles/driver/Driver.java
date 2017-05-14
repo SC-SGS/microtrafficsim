@@ -1,7 +1,6 @@
 package microtrafficsim.core.logic.vehicles.driver;
 
-import microtrafficsim.core.logic.Route;
-import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.utils.Resettable;
@@ -26,7 +25,6 @@ import microtrafficsim.utils.emotions.Hulk;
  * @author Dominic Parga Cacheiro
  */
 public interface Driver extends Hulk, Resettable {
-
     /*
     |==========|
     | (i) Hulk |
@@ -100,11 +98,15 @@ public interface Driver extends Hulk, Resettable {
     | variable information |
     |======================|
     */
+    float getDawdleFactor();
+
+    void setDawdleFactor(float dawdleFactor);
+
     void setVehicle(Vehicle vehicle);
 
-    Route<Node> getRoute();
+    Route getRoute();
 
-    void setRoute(Route<Node> route);
+    void setRoute(Route route);
 
     default DirectedEdge peekRoute() {
         return (DirectedEdge) getRoute().peek();

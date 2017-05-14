@@ -50,6 +50,22 @@ public class Bounds implements Cloneable {
     }
 
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+
+        if (!(obj instanceof Bounds))
+            return false;
+
+        Bounds bounds = (Bounds) obj;
+
+        return minlat == bounds.minlat
+                && minlon == bounds.minlon
+                && maxlat == bounds.maxlat
+                && maxlon == bounds.maxlon;
+    }
+
     /**
      * Sets this bounds.
      *

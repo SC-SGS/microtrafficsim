@@ -8,6 +8,7 @@ import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
+import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 
@@ -59,7 +60,9 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
         shortestPathAlg = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
     }
 
-    protected abstract void fillMatrix();
+    public abstract void redefineMetaRoutes();
+
+    public abstract void redefineMetaRoutes(RouteContainer newRoutes);
 
     /*
     |==============|
@@ -79,18 +82,19 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
         random.reset();
     }
 
+
     /*
     |============|
     | (i) Seeded |
     |============|
     */
     @Override
-    public void setSeed(long seed) {
-        random.setSeed(seed);
+    public long getSeed() {
+        return random.getSeed();
     }
 
     @Override
-    public long getSeed() {
-        return random.getSeed();
+    public void setSeed(long seed) {
+        random.setSeed(seed);
     }
 }

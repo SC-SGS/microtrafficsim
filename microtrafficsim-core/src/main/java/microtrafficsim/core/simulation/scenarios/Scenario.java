@@ -9,7 +9,7 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.StepListener;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
-import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
+import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.utils.Resettable;
 
 import java.util.function.Supplier;
@@ -29,12 +29,6 @@ import java.util.function.Supplier;
  * @author Dominic Parga Cacheiro
  */
 public interface Scenario extends StepListener, Resettable {
-
-    /*
-    |=========|
-    | general |
-    |=========|
-    */
     /**
      * @return config file of this scenario including all important information about it
      */
@@ -59,44 +53,37 @@ public interface Scenario extends StepListener, Resettable {
      * @return whether this scenario has already been prepared by a {@link ScenarioBuilder}
      */
     boolean isPrepared();
-    
-    /*
-    |===========================|
-    | origin-destination-matrix |
-    |===========================|
-    */
+
+
     /**
      * @return the matrix used in this scenario determining the routes of this scenario
      */
-    UnmodifiableODMatrix getODMatrix();
+    RouteContainer getRoutes();
 
-    /*
-    |================|
-    | route creation |
-    |================|
-    */
+
     /**
      * @return A scout factory serving a ready shortest path algorithm for vehicle route calculation
      */
     Supplier<ShortestPathAlgorithm<Node, DirectedEdge>> getScoutFactory();
 
 
-    /*
-    |==================|
-    | (i) StepListener |
-    |==================|
-    */
+    @Override
+    default void willDoOneStep(Simulation simulation) {
+
+    }
+
     @Override
     default void didOneStep(Simulation simulation) {
 
     }
 
+    /**
+     * Per default, calls {@link #reset()}
+     */
+    default void executeBeforeBuilding() {
+        reset();
+    }
 
-    /*
-    |================|
-    | (i) Resettable |
-    |================|
-    */
     /**
      * Resets this scenario by<br>
      * &bull setting prepared to false <br>

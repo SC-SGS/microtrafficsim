@@ -4,6 +4,7 @@ import microtrafficsim.core.entities.street.LogicStreetEntity;
 import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.information.FullStreetInfo;
+import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.logic.streets.information.RawStreetInfo;
 import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
@@ -40,20 +41,18 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
      */
     public DirectedEdge(long id,
                         double lengthInMeters,
+                        Vec2d originDirection, Vec2d destinationDirection,
+                        Orientation orientation,
+                        Node origin, Node destination,
                         StreetType type,
                         int nLanes,
                         float maxVelocity,
-                        Node origin,
-                        Node destination,
-                        Vec2d originDirection,
-                        Vec2d destinationDirection,
-                        float metersPerCell,
-                        SimulationConfig.StreetPriorityFunction priorityFn)
-    {
+                        float metersPerCell, SimulationConfig.StreetPriorityFunction priorityFn) {
         this(new RawStreetInfo(
                 id,
                 lengthInMeters,
                 originDirection, destinationDirection,
+                orientation,
                 origin, destination,
                 type,
                 nLanes,
@@ -68,7 +67,8 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
      * leaving edges.
      *
      * For detailed parameter information
-     * see {@link RawStreetInfo#RawStreetInfo(long, double, Vec2d, Vec2d, Node, Node, StreetType, int, float, float, SimulationConfig.StreetPriorityFunction)}
+     * see
+     * {@link RawStreetInfo#RawStreetInfo(long, double, Vec2d, Vec2d, Orientation, Node, Node, StreetType, int, float, float, SimulationConfig.StreetPriorityFunction)}
      *
      * @param rawStreetInfo contains all relevant, "persistent" information about this edge
      */
@@ -100,8 +100,9 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
         return new FNVHashBuilder()
                 .add(streetInfo.raw.id)
                 // origin and destination needed because the id is used by forward and backward edge of the same street
-                .add(streetInfo.raw.origin)
-                .add(streetInfo.raw.destination)
+                .add(streetInfo.raw.origin.hashCode())
+                .add(streetInfo.raw.destination.hashCode())
+                .add(streetInfo.raw.orientation == Orientation.FORWARD)
                 .getHash();
     }
 
@@ -139,19 +140,20 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
 
     @Override
     public String toString() {
-        LevelStringBuilder stringBuilder = new LevelStringBuilder();
-        stringBuilder.appendln("<DirectedEdge>");
-        stringBuilder.incLevel();
+        LevelStringBuilder stringBuilder = new LevelStringBuilder()
+                .setDefaultLevelSeparator()
+                .setDefaultLevelSubString();
 
-        stringBuilder.appendln("id = " + streetInfo.raw.id);
-        stringBuilder.appendln("hash = " + hashCode());
-        stringBuilder.appendln("info = ("
-                + streetInfo.raw.origin.getId()
-                + " -" + streetInfo.numberOfCells + "-> "
-                + streetInfo.raw.destination.getId() + ")");
+        stringBuilder.appendln("<DirectedEdge>").incLevel(); {
+            stringBuilder.appendln("id = " + streetInfo.raw.id);
+            stringBuilder.appendln("hash = " + hashCode());
+            stringBuilder.appendln("info = ("
+                    + streetInfo.raw.origin.getId()
+                    + " -" + streetInfo.numberOfCells + "-> "
+                    + streetInfo.raw.destination.getId() + ")");
 
-        stringBuilder.decLevel();
-        stringBuilder.append("<\\DirectedEdge>");
+        } stringBuilder.decLevel().append("<\\DirectedEdge>");
+
         return stringBuilder.toString();
     }
 

@@ -22,7 +22,6 @@ public class SimulationConfigInjector implements ExchangeFormat.Injector<Simulat
      */
     @Override
     public void inject(ExchangeFormat fmt, ExchangeFormat.Context ctx, Container dst, SimulationConfig src) throws Exception {
-
         SimulationConfigInfo sconfig = new SimulationConfigInfo();
         sconfig.set(new SimulationConfig(src));
         dst.set(sconfig);

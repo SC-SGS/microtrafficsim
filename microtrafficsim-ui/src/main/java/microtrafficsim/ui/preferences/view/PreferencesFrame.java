@@ -7,15 +7,12 @@ import microtrafficsim.ui.gui.utils.ScrollablePanel;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.PreferencesFrameModel;
 import microtrafficsim.ui.preferences.model.PreferencesModel;
-import microtrafficsim.utils.functional.Procedure;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -25,9 +22,6 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
     public static final Font HEADER_FONT = new Font("Arial", Font.BOLD, 14);
     public static final Font TEXT_FONT   = new Font("Arial", Font.PLAIN, 14);
 
-
-    private final ReentrantLock lockUserInput;
-    private final AtomicBoolean isBusy;
 
     private final PreferencesFrameModel model;
     private final GeneralPanel generalPanel;
@@ -45,8 +39,6 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
      */
     public PreferencesFrame(GUIController guiController) {
         super();
-        lockUserInput = new ReentrantLock();
-        isBusy        = new AtomicBoolean(false);
 
         model = new PreferencesFrameModel("Simulation parameter settings", guiController);
         setTitle(model.getTitle());
@@ -260,36 +252,5 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
         }
 
         return enabled;
-    }
-
-    /*
-    |=============|
-    | concurrency |
-    |=============|
-    */
-    /**
-     * Creates a thread executing the given procedure. The thread is NOT started yet. If the preferences frame is busy,
-     * nothing is done. If the procedure has finished, it should call {@link #hasFinishedProcedureExecution()}.
-     *
-     * @return The thread able to execute the procedure; null if busy
-     */
-    public Thread requestAnExecutionThread(Procedure procedure) {
-        if (!lockUserInput.tryLock())
-            return null;
-
-        Thread thread = null;
-        if (isBusy.compareAndSet(false, true)) {
-            thread = new Thread(procedure::invoke);
-        }
-
-        lockUserInput.unlock();
-        return thread;
-    }
-
-    /**
-     * This method just sets this {@code preferences frame} to not busy.
-     */
-    public void hasFinishedProcedureExecution() {
-        isBusy.set(false);
     }
 }

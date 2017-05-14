@@ -71,7 +71,10 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
 
     @Override
     public int hashCode() {
-        return new FNVHashBuilder().add(id).add(coordinate).getHash();
+        return new FNVHashBuilder()
+                .add(id)
+                .add(coordinate)
+                .getHash();
     }
 
     @Override
@@ -330,7 +333,6 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
      * @return true, if the given vehicle is getting registered; false otherwise (e.g. if it is already registered)
      */
     public synchronized boolean registerVehicle(Vehicle newVehicle) {
-
         if (isRegistered(newVehicle))
             return false;
 

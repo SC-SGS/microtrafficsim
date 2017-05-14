@@ -10,7 +10,6 @@ import microtrafficsim.core.logic.vehicles.machines.Vehicle;
  * @author Maximilian Luz, Dominic Parga Cacheiro, Jan-Oliver Schmidt
  */
 public interface VehicleStateListener {
-
     /**
      * Is called if a vehicle changes its {@link VehicleState}. The vehicle
      * should have a getter for its state.

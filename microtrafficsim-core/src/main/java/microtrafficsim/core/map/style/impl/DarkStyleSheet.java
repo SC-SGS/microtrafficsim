@@ -24,7 +24,6 @@ public class DarkStyleSheet extends BasicStyleSheet {
 
     @Override
     protected boolean isStreetInlineActive(String streetType, int zoom) {
-
         switch (streetType) {
             case "motorway":
             case "trunk":
@@ -45,7 +44,6 @@ public class DarkStyleSheet extends BasicStyleSheet {
 
     @Override
     protected Color getStreetOutlineColor(String streetType) {
-
         switch (streetType) {
             case "motorway":
                 return Color.inverseFromRGB(0xFF6F69);
