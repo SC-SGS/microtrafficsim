@@ -1,5 +1,6 @@
 package microtrafficsim.osm.parser.features.streets.info;
 
+import microtrafficsim.osm.parser.ecs.components.traits.Reversible;
 import microtrafficsim.osm.parser.features.streets.ReverseEquals;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -13,7 +14,7 @@ import java.util.Map;
  *
  * @author Maximilian Luz
  */
-public class LaneInfo implements ReverseEquals {
+public class LaneInfo implements ReverseEquals, Reversible {
     private static Logger logger = new EasyMarkableLogger(LaneInfo.class);
 
     public static final int UNGIVEN = -1;
@@ -21,6 +22,7 @@ public class LaneInfo implements ReverseEquals {
     public int sum;
     public int forward;
     public int backward;
+
 
     public LaneInfo(int sum, int forward, int backward) {
         this.sum      = sum;
@@ -64,6 +66,13 @@ public class LaneInfo implements ReverseEquals {
                 && this.backward == other.forward;
     }
 
+    @Override
+    public void reverse() {
+        int tmp  = forward;
+        forward  = backward;
+        backward = tmp;
+    }
+
 
     /**
      * Create a {@code LaneInfo} object for a street out of the given
@@ -73,9 +82,33 @@ public class LaneInfo implements ReverseEquals {
      * @return the parsed {@code LaneInfo}
      */
     public static LaneInfo parse(Map<String, String> tags) {
-        int lanes    = parseTagValue(tags.get("lanes"));
-        int forward  = parseTagValue(tags.get("lanes:forward"));
-        int backward = parseTagValue(tags.get("lanes:backward"));
+        int lanes    = UNGIVEN;
+        int forward  = UNGIVEN;
+        int backward = UNGIVEN;
+
+        // parse 'lanes' tag
+        String laneTag = tags.get("lanes");
+        if (laneTag != null) {
+            String[] splits = laneTag.split("[;:|,]");
+
+            int[] parsed = new int[splits.length];
+            for (int i = 0; i < splits.length; i++)
+                parsed[i] = parseSimpleTagValue(splits[i].trim());
+
+            if (parsed.length >= 2 && parsed[0] != UNGIVEN && parsed[1] != UNGIVEN) {
+                forward = parsed[0];
+                backward = parsed[1];
+                lanes = forward + backward;
+            } else {
+                lanes = parsed[0];
+            }
+        }
+
+        if (forward == UNGIVEN)
+            forward  = parseSimpleTagValue(tags.get("lanes:forward"));
+
+        if (backward == UNGIVEN)
+            backward = parseSimpleTagValue(tags.get("lanes:backward"));
 
         return new LaneInfo(lanes, forward, backward);
     }
@@ -86,7 +119,7 @@ public class LaneInfo implements ReverseEquals {
      * @param value the lane-value-string to be parsed.
      * @return the number of lanes, or {@link LaneInfo#UNGIVEN} if the string is {@code null}.
      */
-    private static int parseTagValue(String value) {
+    private static int parseSimpleTagValue(String value) {
         int lanes = LaneInfo.UNGIVEN;
 
         if (value != null) {
