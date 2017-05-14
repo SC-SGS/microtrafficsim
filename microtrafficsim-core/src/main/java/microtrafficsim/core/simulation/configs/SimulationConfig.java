@@ -22,7 +22,6 @@ import java.util.HashMap;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public final class SimulationConfig {
-
     /* general */
     public float metersPerCell;
     public int   globalMaxVelocity;

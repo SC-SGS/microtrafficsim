@@ -815,7 +815,7 @@ public class SimulationController implements GUIController {
             }
 
             clearAndUpdateAreaOverlay(areas);
-            scenarioAreaOverlay.setEventsEnabled(true);
+            scenarioAreaOverlay.setEnabled(true, true, false);
         } else {
             UserInteractionUtils.showLoadingFailure(file, "MTS area file", frame);
         }
@@ -1100,7 +1100,7 @@ public class SimulationController implements GUIController {
             UserInteractionUtils.showScenarioLoadingSuccess(frame);
         } catch (InterruptedException ignored) {
             logger.info("Scenario building interrupted by user");
-            scenarioAreaOverlay.setEnabled(true, true, true);
+            scenarioAreaOverlay.setEnabled(true, true, false);
 //        } catch (RouteIsNotDefinedException e) {
 //            logger.warn("RouteMatrix contains routes being undefined for the given graph.");
 //            UserInteractionUtils.showRouteResultIsNotDefinedInfo(frame);
@@ -1150,7 +1150,7 @@ public class SimulationController implements GUIController {
                     enableScenarioAreaOverlay = false;
             }
 
-            scenarioAreaOverlay.setEventsEnabled(enableScenarioAreaOverlay);
+            scenarioAreaOverlay.setEnabled(true, enableScenarioAreaOverlay, enableScenarioAreaOverlay);
         }
     }
 
