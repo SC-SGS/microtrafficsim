@@ -139,8 +139,8 @@ public class AreaScenario extends BasicRandomScenario {
 
             originAreas            = new UnprojectedAreas();
             destinationAreas       = new UnprojectedAreas();
-            rdmOriginSupplier      = new BasicWheelOfFortune<>(seed);
-            rdmDestinationSupplier = new BasicWheelOfFortune<>(seed);
+            rdmOriginSupplier      = new BasicWheelOfFortune<>(nodeRandom);
+            rdmDestinationSupplier = new BasicWheelOfFortune<>(nodeRandom);
 
             areaToNode = new HashMap<>();
         }

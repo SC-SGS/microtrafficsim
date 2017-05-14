@@ -1,6 +1,7 @@
 package logic.determinism;
 
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
+import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.parser.OSMParser;
@@ -195,6 +196,15 @@ public abstract class AbstractDeterminismTest {
         assertFalse("Scenario has no vehicles.", simulation.getScenario().getVehicleContainer().isEmpty());
     }
 
+    private void assertRoutesAreNotEmpty() {
+        boolean allRoutesAreEmpty = true;
+        for (Vehicle vehicle : simulation.getScenario().getVehicleContainer()) {
+            Route route = vehicle.getDriver().getRoute();
+            allRoutesAreEmpty &= route.isEmpty();
+        }
+        assertFalse("All routes are empty", allRoutesAreEmpty);
+    }
+
 
     /*
     |================|
@@ -236,6 +246,7 @@ public abstract class AbstractDeterminismTest {
         expectedAge = 0;
         assertAge();
         assertVehiclesExist();
+        assertRoutesAreNotEmpty();
     }
 
     private void executeSimulationRun() {

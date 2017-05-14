@@ -118,7 +118,6 @@ public class SimulationController implements GUIController {
     }
 
     public SimulationController(BuildSetup buildSetup) {
-
         /* multithreading */
         userInputExecutor     = new SingleExecutionThreadSupplier();
         parsingExecutor       = new SingleExecutionThreadSupplier();
@@ -382,19 +381,11 @@ public class SimulationController implements GUIController {
     private void transitionLoadMap(File file) {
         // try to interrupt parsing if already running
         if (parsingExecutor.tryStartingInterruptionThread(() -> {
-            // ask user to cancel parsing
-            Object[] options = { "Yes", "No" };
-            int choice = JOptionPane.showOptionDialog(
-                    null,
+            boolean yes = UserInteractionUtils.askUserForDecision(
                     "Are you sure to cancel the parsing?",
                     "Cancel parsing?",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE,
-                    null,
-                    options,
-                    options[1]);
-            // if yes: cancel
-            if (choice == JOptionPane.YES_OPTION)
+                    frame);
+            if (yes)
                 cancelParsing();
         }) != null)
             return;
@@ -466,19 +457,11 @@ public class SimulationController implements GUIController {
     private void transitionNewScenario() {
         // try to interrupt scenario building if already running
         if (scenarioBuildExecutor.tryStartingInterruptionThread(() -> {
-            // ask user to cancel scenario building
-            Object[] options = { "Yes", "No" };
-            int choice = JOptionPane.showOptionDialog(
-                    null,
+            boolean yes = UserInteractionUtils.askUserForDecision(
                     "Are you sure to cancel the scenario building?",
                     "Cancel scenario building?",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE,
-                    null,
-                    options,
-                    options[1]);
-            // if yes: cancel
-            if (choice == JOptionPane.YES_OPTION)
+                    frame);
+            if (yes)
                 cancelScenarioBuilding();
         }) != null)
             return;
@@ -1089,7 +1072,7 @@ public class SimulationController implements GUIController {
         if (config.scenario.selectedClass.getObj() == AreaScenario.class) {
             scenario = new AreaScenario(config.seed, config, streetgraph);
             /* get areas from overlay */
-            for (Area area :scenarioAreaOverlay.getAreas()) {
+            for (Area area : scenarioAreaOverlay.getAreas()) {
                 TypedPolygonArea unprojectedArea = area.getUnprojectedArea(mapviewer.getProjection());
                 scenario.getAreaNodeContainer().addArea(unprojectedArea);
             }

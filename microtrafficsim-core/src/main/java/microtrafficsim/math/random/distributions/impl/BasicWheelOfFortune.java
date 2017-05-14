@@ -26,6 +26,10 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
         this(new Random(seed));
     }
 
+    /**
+     * Important if random reference is important
+     * @param random
+     */
     public BasicWheelOfFortune(Random random) {
         this.random = random;
         elements    = new PrioritySkipListSet<>(Comparator.comparingLong(Object::hashCode));

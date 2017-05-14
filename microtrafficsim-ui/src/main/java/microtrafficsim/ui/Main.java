@@ -16,8 +16,8 @@ import java.io.File;
  */
 public class Main {
 
-//    private static final File OPTIONAL_MAP_FILE = new File("/Users/Dominic/Documents/Studium/Bachelor_of_Disaster/microtrafficsim/simulation_files/maps/Backnang.osm");
-    private static final File OPTIONAL_MAP_FILE = null;
+//    public static final File OPTIONAL_MAP_FILE = new File("/Users/Dominic/Documents/Studium/Bachelor_of_Disaster/microtrafficsim/simulation_files/maps/Backnang.osm");
+    public static final File OPTIONAL_MAP_FILE = null;
 
 
     public static void main(String[] args) throws Exception {

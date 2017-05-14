@@ -37,7 +37,6 @@ public class BuildSetup {
     public ScenarioBuilder scenarioBuilder;
 
     public BuildSetup() {
-
         /* general */
         config = new SimulationConfig();
 
