@@ -37,7 +37,6 @@ import java.io.File;
  * @author Dominic Parga Cacheiro
  */
 public class ExfmtStorage {
-
     private static final Logger logger = new EasyMarkableLogger(ExfmtStorage.class);
 
 

@@ -9,7 +9,6 @@ import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.map.UnprojectedAreas;
 import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
-import microtrafficsim.core.simulation.builder.RouteIsNotDefinedException;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
@@ -493,7 +492,7 @@ public class SimulationController implements GUIController {
 
     private void transitionChangeAreaSelection() {
         userInputExecutor.tryStartingExecutionThread(() -> {
-            enableScenarioOverlayEvents();
+            enableScenarioOverlay();
             userInputExecutor.finishedProcedureExecution();
         });
     }
@@ -815,7 +814,7 @@ public class SimulationController implements GUIController {
             }
 
             clearAndUpdateAreaOverlay(areas);
-            scenarioAreaOverlay.setEnabled(true, true, false);
+            enableScenarioOverlay();
         } else {
             UserInteractionUtils.showLoadingFailure(file, "MTS area file", frame);
         }
@@ -995,7 +994,6 @@ public class SimulationController implements GUIController {
         boolean errorOccured = result == null || result.obj0 == null || result.obj1 == null;
         if (!errorOccured) {
             clearAndUpdateAreaOverlay(result.obj1);
-            // todo save scenario type?
             config.scenario.selectedClass = config.scenario.supportedClasses.get(AreaScenario.class);
             startNewScenario(result.obj0);
         } else {
@@ -1104,7 +1102,7 @@ public class SimulationController implements GUIController {
 //        } catch (RouteIsNotDefinedException e) {
 //            logger.warn("RouteMatrix contains routes being undefined for the given graph.");
 //            UserInteractionUtils.showRouteResultIsNotDefinedInfo(frame);
-//            scenarioAreaOverlay.setEnabled(true, true, true);
+//            scenarioAreaOverlay.setEnabled(true, true, false);
         }
 
 
@@ -1134,7 +1132,7 @@ public class SimulationController implements GUIController {
     | areas |
     |=======|
     */
-    private void enableScenarioOverlayEvents() {
+    private void enableScenarioOverlay() {
         boolean enableScenarioAreaOverlay =
                 /* check if overlay is already enabled */
                 !scenarioAreaOverlay.hasEventsEnabled()
