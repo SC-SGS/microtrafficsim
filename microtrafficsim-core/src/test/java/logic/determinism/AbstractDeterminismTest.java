@@ -8,7 +8,7 @@ import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.core.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.random.distributions.impl.Random;

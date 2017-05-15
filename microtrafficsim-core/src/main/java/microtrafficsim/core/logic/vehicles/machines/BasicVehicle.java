@@ -1,7 +1,6 @@
 package microtrafficsim.core.logic.vehicles.machines;
 
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
-import microtrafficsim.core.logic.NagelSchreckenbergException;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.vehicles.VehicleState;
@@ -153,10 +152,10 @@ public abstract class BasicVehicle implements Vehicle {
 
     private void leaveCurrentRoad() {
         lane.getAssociatedEdge().getDestination().unregisterVehicle(this);
-        lane.lock.lock();
+        lane.lock.lock(); {
             lane.removeVehicle(this);
             removeVehicleInBack();
-        lane.lock.unlock();
+        } lane.lock.unlock();
 
         // -1 * distance to end of road
         cellPosition = cellPosition - lane.getAssociatedEdge().getLength();
@@ -258,7 +257,12 @@ public abstract class BasicVehicle implements Vehicle {
     }
 
     @Override
-    public void brake() throws NagelSchreckenbergException {
+    public void changeLane() {
+        // todo
+    }
+
+    @Override
+    public void brake() {
         if (state == VehicleState.SPAWNED) {
             if (vehicleInFront != null) {
                 // brake for front vehicle
@@ -290,24 +294,17 @@ public abstract class BasicVehicle implements Vehicle {
 //            velocity = Math.min(velocity, lane.getAssociatedEdge().getMaxVelocity());
         }
 
-        if (velocity < 0)
-            throw NagelSchreckenbergException.velocityLessThanZero(NagelSchreckenbergException.Step.brake, velocity);
+        assert velocity >= 0 : "Velocity < 0 in braking. Actual = " + velocity;
     }
 
     @Override
     public void dawdle() {
         if (velocity > 0 && state == VehicleState.SPAWNED) {
             int newVelocity = driver.dawdle(velocity);
-            if (newVelocity > velocity) {
-                try {
-                    throw new NagelSchreckenbergException(
-                            NagelSchreckenbergException.Step.dawdle,
-                            "v_after_dawdling=" + newVelocity + " > " + velocity + "=v_before_dawdling, which is not " +
-                            "allowed.");
-                } catch (NagelSchreckenbergException e) {
-                    e.printStackTrace();
-                }
-            }
+
+            assert newVelocity <= velocity
+                    : "v_after_dawdling=" + newVelocity + " > " + velocity + "=v_before_dawdling";
+
             velocity = newVelocity;
             velocity = MathUtils.clamp(velocity, 0, getMaxVelocity());
         }

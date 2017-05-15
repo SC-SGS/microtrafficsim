@@ -1,11 +1,9 @@
-package microtrafficsim.core.simulation.core.impl;
+package microtrafficsim.core.simulation.core;
 
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
-import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.core.simulation.core.StepListener;
 import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
-import microtrafficsim.core.simulation.core.stepexecutors.impl.MultiThreadedVehicleStepExecutor;
-import microtrafficsim.core.simulation.core.stepexecutors.impl.SingleThreadedVehicleStepExecutor;
+import microtrafficsim.core.simulation.core.stepexecutors.MultiThreadedVehicleStepExecutor;
+import microtrafficsim.core.simulation.core.stepexecutors.SingleThreadedVehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.utils.strings.StringUtils;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
@@ -179,7 +177,15 @@ public class VehicleSimulation implements Simulation {
         if (scenario.isPrepared()) {
             if (logger.isDebugEnabled()) {
                 time = System.nanoTime();
-                vehicleStepExecutor.willMoveAll(scenario);
+                vehicleStepExecutor.accelerateAll(scenario);
+                logger.trace(
+                        StringUtils.buildTimeString(
+                                "time accelerate() and changeLane() = ",
+                                System.nanoTime() - time, "ns").toString()
+                );
+
+                time = System.nanoTime();
+                vehicleStepExecutor.brakeAll(scenario);
                 logger.trace(
                         StringUtils.buildTimeString("time brake() etc. = ", System.nanoTime() - time, "ns").toString()
                 );
@@ -208,7 +214,8 @@ public class VehicleSimulation implements Simulation {
                         StringUtils.buildTimeString("time updateNodes() = ", System.nanoTime() - time, "ns").toString()
                 );
             } else {
-                vehicleStepExecutor.willMoveAll(scenario);
+                vehicleStepExecutor.accelerateAll(scenario);
+                vehicleStepExecutor.brakeAll(scenario);
                 vehicleStepExecutor.moveAll(scenario);
                 vehicleStepExecutor.didMoveAll(scenario);
                 vehicleStepExecutor.spawnAll(scenario);

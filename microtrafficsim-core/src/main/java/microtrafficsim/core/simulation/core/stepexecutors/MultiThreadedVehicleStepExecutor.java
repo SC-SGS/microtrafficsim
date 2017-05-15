@@ -1,10 +1,8 @@
-package microtrafficsim.core.simulation.core.stepexecutors.impl;
+package microtrafficsim.core.simulation.core.stepexecutors;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
-import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.logic.NagelSchreckenbergException;
 import microtrafficsim.utils.concurrency.delegation.StaticThreadDelegator;
 import microtrafficsim.utils.concurrency.delegation.ThreadDelegator;
 
@@ -17,8 +15,6 @@ import java.util.concurrent.ExecutorService;
  * @author Dominic Parga Cacheiro
  */
 public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
-
-    // multithreading
     private final ThreadDelegator delegator;
 
     public MultiThreadedVehicleStepExecutor(int nThreads) {
@@ -30,17 +26,28 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
     }
 
     @Override
-    public void willMoveAll(final Scenario scenario) {
+    public void accelerateAll(Scenario scenario) {
         try {
             delegator.doTask(
-                    (Vehicle v) -> {
-                        v.accelerate();
-                        try {
-                            v.brake();
-                        } catch (NagelSchreckenbergException e) {
-                            e.printStackTrace();
-                        }
-                        v.dawdle();
+                    (vehicle) -> {
+                        vehicle.accelerate();
+                        vehicle.changeLane();
+                    },
+                    scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
+                    scenario.getConfig().multiThreading.vehiclesPerRunnable
+            );
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void brakeAll(final Scenario scenario) {
+        try {
+            delegator.doTask(
+                    (vehicle) -> {
+                        vehicle.brake();
+                        vehicle.dawdle();
                     },
                     scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
                     scenario.getConfig().multiThreading.vehiclesPerRunnable

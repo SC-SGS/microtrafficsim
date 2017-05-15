@@ -4,7 +4,6 @@ import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
-import microtrafficsim.core.logic.NagelSchreckenbergException;
 
 /**
  * @see Driver
@@ -12,7 +11,6 @@ import microtrafficsim.core.logic.NagelSchreckenbergException;
  * @author Dominic Parga Cacheiro
  */
 public interface Vehicle extends LogicVehicleEntity {
-
     /*
     |============|
     | attributes |
@@ -54,7 +52,9 @@ public interface Vehicle extends LogicVehicleEntity {
     */
     void accelerate();
 
-    void brake() throws NagelSchreckenbergException;
+    void changeLane();
+
+    void brake();
 
     void dawdle();
 

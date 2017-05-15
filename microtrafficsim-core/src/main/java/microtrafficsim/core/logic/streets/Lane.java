@@ -3,6 +3,7 @@ package microtrafficsim.core.logic.streets;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.utils.strings.builder.BasicStringBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.HashMap;
@@ -15,11 +16,11 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public class Lane implements Resettable {
-
     public final ReentrantLock lock;
     private DirectedEdge associatedEdge;
-    private int          index;    // index in the list of lanes from the associated edge
+    private int index;    // index in the list of lanes from the associated edge
     private HashMap<Integer, Vehicle> cells;
+//    private Vehicle lastVehicle;
     private Vehicle lastVehicle;
 
     Lane(DirectedEdge container, int index) {
@@ -59,14 +60,11 @@ public class Lane implements Resettable {
     @Override
     public String toString() {
         LevelStringBuilder stringBuilder = new LevelStringBuilder();
-        stringBuilder.appendln("<Lane>");
-        stringBuilder.incLevel();
+        stringBuilder.appendln("<Lane>").incLevel(); {
+            stringBuilder.appendln("edge hash  = " + associatedEdge.hashCode());
+            stringBuilder.appendln("lane index = " + index);
+        } stringBuilder.decLevel().appendln("<\\Lane>");
 
-        stringBuilder.append(associatedEdge);
-        stringBuilder.appendln("lane index = " + index);
-
-        stringBuilder.decLevel();
-        stringBuilder.appendln("<\\Lane>");
         return stringBuilder.toString();
     }
 
@@ -83,29 +81,67 @@ public class Lane implements Resettable {
     }
 
     public synchronized void moveVehicle(Vehicle vehicle, int delta) {
-        if (delta > 0) cells.remove(vehicle.getCellPosition());
-        cells.put(vehicle.getCellPosition() + delta, vehicle);
+        if (delta != 0) {
+            checkedRemovingVehicle(vehicle);
+            putNewVehicle(vehicle, vehicle.getCellPosition() + delta);
+        }
     }
 
     public synchronized void insertVehicle(Vehicle vehicle, int pos) {
-        Vehicle removedVehicle = cells.put(pos, vehicle);
-        if (removedVehicle != null) try {
-                throw new Exception("Inserting (\n" + vehicle + "\n) to the lane removed vehicle (\n" + removedVehicle
-                                    + "\n)");
-            } catch (Exception e) { e.printStackTrace(); }
-        lastVehicle = vehicle;
+        if (putNewVehicle(vehicle, pos)) {
+            /* update last vehicle */
+            Vehicle newLastVehicle = vehicle;
+            if (lastVehicle != null)
+                if (lastVehicle.getCellPosition() < pos)
+                    newLastVehicle = lastVehicle;
+            lastVehicle = newLastVehicle;
+        }
     }
 
     public synchronized void removeVehicle(Vehicle vehicle) {
-        Vehicle removedVehicle = cells.remove(vehicle.getCellPosition());
-        if (removedVehicle != vehicle) try {
-                throw new Exception("Removed vehicle (" + removedVehicle + ") in lane is not the expected one ("
-                                    + vehicle + "). ");
-            } catch (Exception e) { e.printStackTrace(); }
+        checkedRemovingVehicle(vehicle);
         if (cells.size() == 0) lastVehicle = null;
     }
 
     public synchronized Vehicle getLastVehicle() {
         return lastVehicle;
+    }
+
+
+    /*
+    |=======|
+    | utils |
+    |=======|
+    */
+    /**
+     * @return true if success (<=> no vehicle has been on the given position)
+     */
+    private boolean checkedRemovingVehicle(Vehicle vehicle) {
+        Vehicle removedVehicle = cells.remove(vehicle.getCellPosition());
+        boolean success = removedVehicle == vehicle;
+
+        BasicStringBuilder builder = new BasicStringBuilder();
+        builder.appendln("Removing a vehicle from the lane removed an unexpected, different vehicle.")
+                .appendln("EXPECTED = " + vehicle)
+                .appendln("ACTUALLY REMOVED  = " + removedVehicle);
+        assert success : builder.toString();
+
+        return success;
+    }
+
+    /**
+     * @return true if success (<=> no vehicle has been on the given position)
+     */
+    private boolean putNewVehicle(Vehicle vehicle, int pos) {
+        Vehicle removedVehicle = cells.put(pos, vehicle);
+        boolean success = removedVehicle == null;
+
+        BasicStringBuilder builder = new BasicStringBuilder();
+        builder.appendln("Inserting a vehicle to the lane removed a vehicle.")
+                .appendln("INSERTED = " + vehicle)
+                .appendln("REMOVED = " + removedVehicle);
+        assert success : builder.toString();
+
+        return success;
     }
 }

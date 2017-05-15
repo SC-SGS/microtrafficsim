@@ -1,10 +1,8 @@
-package microtrafficsim.core.simulation.core.stepexecutors.impl;
+package microtrafficsim.core.simulation.core.stepexecutors;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
-import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.logic.NagelSchreckenbergException;
 
 
 /**
@@ -13,16 +11,18 @@ import microtrafficsim.core.logic.NagelSchreckenbergException;
  * @author Dominic Parga Cacheiro
  */
 public class SingleThreadedVehicleStepExecutor implements VehicleStepExecutor {
-
     @Override
-    public void willMoveAll(final Scenario scenario) {
+    public void accelerateAll(Scenario scenario) {
         for (Vehicle vehicle : scenario.getVehicleContainer().getSpawnedVehicles()) {
             vehicle.accelerate();
-            try {
-                vehicle.brake();
-            } catch (NagelSchreckenbergException e) {
-                e.printStackTrace();
-            }
+            vehicle.changeLane();
+        }
+    }
+
+    @Override
+    public void brakeAll(final Scenario scenario) {
+        for (Vehicle vehicle : scenario.getVehicleContainer().getSpawnedVehicles()) {
+            vehicle.brake();
             vehicle.dawdle();
         }
     }

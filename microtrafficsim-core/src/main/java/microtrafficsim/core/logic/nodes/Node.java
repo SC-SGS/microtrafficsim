@@ -1,6 +1,5 @@
 package microtrafficsim.core.logic.nodes;
 
-import microtrafficsim.core.logic.CrossingLogicException;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.vehicles.VehicleState;
@@ -159,7 +158,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
      * @return an int > 0 if v1 has priority over v2; an int < 0 if v2 has priority over v1; an int = 0 if v1 and v2
      * have equal priorities
      */
-    private int compare(Vehicle v1, Vehicle v2) throws CrossingLogicException {
+    private int compare(Vehicle v1, Vehicle v2) {
         // main rules:
         // (1) two not-spawned vehicles are compared by their IDs. The greater id wins.
         // (2) spawned vehicles before not spawned vehicles
@@ -204,7 +203,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
                             return 1;
                         if (leftmostMatchingIdx == origin2)
                             return -1;
-                        throw new CrossingLogicException();
+                        assert false : "Crossing logic returns 0 where it should not be 0.";
                     } else {
                         // random out of {-1, 1}
                         return random.nextInt(2) * 2 - 1;
@@ -230,14 +229,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
             // calculate priority counter
             newVehicle.getDriver().resetPriorityCounter();
             for (Vehicle assessedVehicle : assessedVehicles.keySet()) {
-                int cmp;
-
-                try {
-                    cmp = compare(newVehicle, assessedVehicle);
-                } catch (CrossingLogicException e) {
-                    e.printStackTrace();
-                    continue;
-                }
+                int cmp = compare(newVehicle, assessedVehicle);
 
                 if (cmp > 0) {
                     newVehicle.getDriver().incPriorityCounter();
