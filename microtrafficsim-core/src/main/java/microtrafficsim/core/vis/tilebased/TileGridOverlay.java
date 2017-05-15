@@ -41,7 +41,8 @@ public class TileGridOverlay implements Overlay {
             new ShaderSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(TileGridOverlay.class, "/shaders/basic.fs"))
     );
 
-    private static final Color COLOR              = Color.fromRGB(0xFF0000);
+    private static final Color COLOR = Color.fromRGB(0xFF0000);
+
 
     private OrthographicView view;
 

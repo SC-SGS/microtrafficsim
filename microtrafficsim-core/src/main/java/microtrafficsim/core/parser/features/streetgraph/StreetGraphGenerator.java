@@ -280,8 +280,6 @@ public class StreetGraphGenerator implements FeatureGenerator {
         for (int i = 0; i < n; i++) {
             via.addConnector(from.getLane(i), to.getLane(i));
         }
-
-        via.addConnector(from.getLane(0), to.getLane(0));
     }
 
     /**

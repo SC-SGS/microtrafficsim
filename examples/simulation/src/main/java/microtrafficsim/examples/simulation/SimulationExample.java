@@ -30,6 +30,7 @@ import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
+import microtrafficsim.debug.overlay.ConnectorOverlay;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.concurrency.interruptsafe.InterruptSafeFutureTask;
 import microtrafficsim.utils.logging.LoggingLevel;
@@ -62,6 +63,7 @@ public class SimulationExample {
     private SimulationConfig config;
     private TileBasedMapViewer viewer;
     private VehicleOverlay overlay;
+    private ConnectorOverlay debugOverlay;
 
     private String file = null;
     private SegmentFeatureProvider segment = null;
@@ -89,6 +91,9 @@ public class SimulationExample {
         /* Create and add vehicle-overlay */
         overlay = new SpriteBasedVehicleOverlay(viewer.getProjection(), config.visualization.style);
         viewer.addOverlay(0, overlay);
+
+        debugOverlay = new ConnectorOverlay(viewer.getProjection(), config);
+        viewer.addOverlay(1, debugOverlay);
 
         /* Create the window and display the visualization */
         frame = setUpFrame(viewer);
@@ -441,6 +446,8 @@ public class SimulationExample {
             this.graph = graph;
             this.file = file.getPath();
             viewer.setMap(segment);
+
+            debugOverlay.update(graph);
 
             /* create simulation */
             SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle() + " - [Initializing Simulation]"));

@@ -91,8 +91,8 @@ public class Vec2d {
      *
      * @return the length of this vector.
      */
-    public float len() {
-        return (float) Math.hypot(x, y);
+    public double len() {
+        return Math.hypot(x, y);
     }
 
 
