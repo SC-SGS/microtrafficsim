@@ -7,12 +7,13 @@ with OpenStreetMap data.
 Testing the simulation execution for determinism has finished. According
  to our test cases the simulation execution is deterministic.
 
-Our next task is developing multilane logic. This will be used in a
-bachelor thesis for traffic jam cause research.
+The serialization of our graph and routes has finished as well. This
+happens deterministically according to our test cases and is helpful
+for the bachelor thesis. Maybe, the serialized file type changes a
+little due to style improvements.
 
-The serialization of our graph and routes has finished. This happens
-deterministically according to our test cases. This is
-helpful for the bachelor thesis.
+Our next task is developing multilane logic and its visualization. This
+will be used in a bachelor thesis for traffic jam cause research.
 
 
 ## Demonstration and Examples
