@@ -1,4 +1,4 @@
-package logic.validation.scenarios.pluscrossroad;
+package logic.crossinglogic.scenarios.pluscrossroad;
 
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;

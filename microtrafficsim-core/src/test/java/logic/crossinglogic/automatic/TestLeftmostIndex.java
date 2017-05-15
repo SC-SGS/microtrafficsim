@@ -1,4 +1,4 @@
-package logic.crossinglogic;
+package logic.crossinglogic.automatic;
 
 import microtrafficsim.core.logic.nodes.IndicesCalculator;
 import org.junit.Before;

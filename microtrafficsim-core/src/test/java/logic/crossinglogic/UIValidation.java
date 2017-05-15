@@ -1,11 +1,11 @@
-package logic.validation;
+package logic.crossinglogic;
 
 import com.jogamp.newt.event.KeyEvent;
-import logic.validation.scenarios.MotorwaySlipRoadScenario;
-import logic.validation.scenarios.RoundaboutScenario;
-import logic.validation.scenarios.TCrossroadScenario;
-import logic.validation.scenarios.pluscrossroad.FullPlusCrossroadScenario;
-import logic.validation.scenarios.pluscrossroad.PartialPlusCrossroadScenario;
+import logic.crossinglogic.scenarios.MotorwaySlipRoadScenario;
+import logic.crossinglogic.scenarios.RoundaboutScenario;
+import logic.crossinglogic.scenarios.TCrossroadScenario;
+import logic.crossinglogic.scenarios.pluscrossroad.FullPlusCrossroadScenario;
+import logic.crossinglogic.scenarios.pluscrossroad.PartialPlusCrossroadScenario;
 import microtrafficsim.core.convenience.mapviewer.MapViewer;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;

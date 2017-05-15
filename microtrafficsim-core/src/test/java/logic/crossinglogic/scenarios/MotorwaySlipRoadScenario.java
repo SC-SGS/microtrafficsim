@@ -1,4 +1,4 @@
-package logic.validation.scenarios;
+package logic.crossinglogic.scenarios;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.MetaRoute;
