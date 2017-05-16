@@ -3,7 +3,6 @@ package microtrafficsim.core.vis.simulation;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.map.Coordinate;
@@ -33,7 +32,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Supplier;
 
 
 /**
