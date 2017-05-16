@@ -30,6 +30,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 
+// TODO: unnecessarily crossing connectors
+
 /**
  * The {@code FeatureGenerator} for the StreetGraph used in the simulation.
  *

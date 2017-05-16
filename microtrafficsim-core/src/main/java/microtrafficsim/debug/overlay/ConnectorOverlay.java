@@ -211,9 +211,7 @@ public class ConnectorOverlay implements Overlay {
     private void addStandardConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart, int laneOffsetSign,
                                       DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge, int toLane)
     {
-        // TODO: cyclic snafu?
-        // TODO: missing connectors?
-        // TODO: unnecessarily crossing connectors
+        // TODO: cyclic SNAFU?
 
         Vec2d pos;
         Vec2d dirFrom;
