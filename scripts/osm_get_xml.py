@@ -2,7 +2,7 @@
 """
 OpenStreetMap XML file downloader.
 
-Requires python 3, urllib and docopt
+Requires Python 3 and the urllib3 and docopt packages.
 
 Note: The download-size is limited, for larger areas refer to
 'http://download.geofabrik.de/'
