@@ -536,7 +536,7 @@ public class SimulationExample {
      * @return the default frame title.
      */
     private String getDefaultFrameTitle() {
-        StringBuilder title = new StringBuilder("MicroTrafficSim - Map Viewer Example");
+        StringBuilder title = new StringBuilder("MicroTrafficSim - Simulation Example");
 
         if (file != null) {
             title.append(" - [").append(file).append("]");
