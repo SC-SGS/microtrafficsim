@@ -2,7 +2,6 @@ package microtrafficsim.debug.overlay;
 
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.entities.street.StreetEntity;
-import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
@@ -27,7 +26,6 @@ import microtrafficsim.utils.resources.PackagedResource;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Map;
 
 
@@ -202,9 +200,20 @@ public class ConnectorOverlay implements Overlay {
     }
 
     private void addConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart, int laneOffsetSign,
-                              DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge, int toLane)
+                              DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge, int toLane) {
+        if (fromEdge.getEntity() == toEdge.getEntity()) {
+            addUTurnConnector(vertices, indices, restart, laneOffsetSign, fromEdge, fromLane, toEdge, toLane);
+        } else {
+            addStandardConnector(vertices, indices, restart, laneOffsetSign, fromEdge, fromLane, toEdge, toLane);
+        }
+    }
+
+    private void addStandardConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart, int laneOffsetSign,
+                                      DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge, int toLane)
     {
         // TODO: cyclic snafu?
+        // TODO: missing connectors?
+        // TODO: unnecessarily crossing connectors
 
         Vec2d pos;
         Vec2d dirFrom;
@@ -271,7 +280,57 @@ public class ConnectorOverlay implements Overlay {
         indices.add(restart);
     }
 
-    private double getLaneOffset(DirectedEdge edge, int lane) {
+    private void addUTurnConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart, int laneOffsetSign,
+                                   DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge, int toLane)
+    {
+        Vec2d pos;
+        Vec2d dir;
+
+        if (fromEdge.getEntity().getForwardEdge() == fromEdge) {
+            Coordinate[] coordinates = fromEdge.getEntity().getGeometry().coordinates;
+            pos = projection.project(coordinates[coordinates.length - 1]);
+            dir = projection.project(coordinates[coordinates.length - 2]).sub(pos).normalize();
+        } else {
+            Coordinate[] coordinates = fromEdge.getEntity().getGeometry().coordinates;
+            pos = projection.project(coordinates[0]);
+            dir = projection.project(coordinates[1]).sub(pos).normalize();
+        }
+
+        Vec2d dir90 = new Vec2d(-dir.y, dir.x);
+
+        double laneOffsetFrom = getLaneOffset(fromEdge, fromLane) * laneOffsetSign;
+        double laneOffsetTo   = getLaneOffset(toEdge,   toLane)   * laneOffsetSign * -1.0;
+
+        Vec2d posFromX = Vec2d.mul(dir90, laneOffsetFrom).add(pos);
+        Vec2d posToX   = Vec2d.mul(dir90, laneOffsetTo).add(pos);
+
+        Vec2d posFrom = Vec2d.mul(dir, LANE_OFFSET_SCALE * ARROW_LEN).add(posFromX);
+        Vec2d posTo   = Vec2d.mul(dir, LANE_OFFSET_SCALE * ARROW_LEN).add(posToX);
+
+        Vec2d posArrowHead = Vec2d.mul(dir, LANE_OFFSET_SCALE * -0.75).add(posTo);
+        Vec2d posArrowHeadLeft  = Vec2d.mul(dir90, LANE_OFFSET_SCALE * -0.33).add(posArrowHead);
+        Vec2d posArrowHeadRight = Vec2d.mul(dir90, LANE_OFFSET_SCALE * +0.33).add(posArrowHead);
+
+        int idx = vertices.size();
+        vertices.add(posFrom);
+        vertices.add(posFromX);
+        vertices.add(posToX);
+        vertices.add(posTo);
+        vertices.add(posArrowHeadLeft);
+        vertices.add(posArrowHeadRight);
+
+        indices.add(idx);           // from
+        indices.add(idx + 1);       // from-x
+        indices.add(idx + 2);       // to-x
+        indices.add(idx + 3);       // to
+        indices.add(idx + 4);       // arrow-head left
+        indices.add(idx + 5);       // arrow-head right
+        indices.add(idx + 3);       // to
+        indices.add(restart);
+    }
+
+
+    private static double getLaneOffset(DirectedEdge edge, int lane) {
         StreetEntity street = edge.getEntity();
 
         double offset = 0.0;
@@ -283,7 +342,6 @@ public class ConnectorOverlay implements Overlay {
 
         return offset * LANE_OFFSET_SCALE;
     }
-
 
     private static Vec2d intersect(Vec2d aa, Vec2d ab, Vec2d ba, Vec2d bb) {
         double adx = aa.x - ab.x;

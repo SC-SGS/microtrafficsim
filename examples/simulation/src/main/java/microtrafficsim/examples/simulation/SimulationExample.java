@@ -145,7 +145,7 @@ public class SimulationExample {
      */
     private JFrame setUpFrame(MapViewer viewer) {
         /* create and initialize the JFrame */
-        JFrame frame = new JFrame("MicroTrafficSim - Map Viewer Example");
+        JFrame frame = new JFrame("MicroTrafficSim - Simulation Example");
         frame.setSize(viewer.getInitialWindowWidth(), viewer.getInitialWindowHeight());
         frame.add(viewer.getVisualizationPanel());
 
