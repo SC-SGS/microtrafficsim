@@ -178,6 +178,8 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         }
 
         // (3) both SPAWNED => there is always a current edge and a next edge per vehicle
+        assert v1.getDirectedEdge() != null : "Vehicle 1 in node-comparator has no directed edge!";
+        assert v2.getDirectedEdge() != null : "Vehicle 2 in node-comparator has no directed edge!";
         byte origin1        = incoming.get(v1.getDirectedEdge());
         byte destination1   = leaving.get(v1.getDriver().peekRoute());
         byte origin2        = incoming.get(v2.getDirectedEdge());

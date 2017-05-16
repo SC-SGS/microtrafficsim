@@ -9,12 +9,11 @@ import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.VehicleSimulation;
-import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
-import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
+import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
+import microtrafficsim.debug.overlay.ConnectorOverlay;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.logging.LoggingLevel;
 import org.slf4j.Logger;
@@ -33,7 +32,7 @@ public class MultilaneLogicValidation {
 
     public static void main(String[] args) {
         /* build setup: scenario */
-        LoggingLevel.setEnabledGlobally(false, true, true, true, true);
+        LoggingLevel.setEnabledGlobally(false, false, false, false, false);
 
 
         /* simulation config */
@@ -53,6 +52,9 @@ public class MultilaneLogicValidation {
                 e.printStackTrace();
             }
             mapviewer.addOverlay(0, overlay);
+
+            ConnectorOverlay connectorOverlay = new ConnectorOverlay(mapviewer.getProjection(), config);
+            mapviewer.addOverlay(1, connectorOverlay);
 
 
             /* setup JFrame */
@@ -87,6 +89,7 @@ public class MultilaneLogicValidation {
             Graph graph = result.graph;
             try {
                 mapviewer.setMap(result.segment);
+                connectorOverlay.update(graph);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Runtime.getRuntime().halt(1);
@@ -97,13 +100,13 @@ public class MultilaneLogicValidation {
 
 
             /* initialize the simulation */
-//            QueueScenarioSmall scenario = new MultilaneScenario(config, graph, overlay.getVehicleFactory());
-//            scenario.setLooping(true);
-            AreaScenario scenario = new RandomRouteScenario(config.seed, config, graph);
+            QueueScenarioSmall scenario = new MultilaneScenario(config, graph, overlay.getVehicleFactory());
+            scenario.setLooping(true);
+//            AreaScenario scenario = new RandomRouteScenario(config.seed, config, graph);
+//            scenario.redefineMetaRoutes();
             Simulation sim = new VehicleSimulation();
             overlay.setSimulation(sim);
 
-            scenario.redefineMetaRoutes();
             try {
                 new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory()).prepare(scenario);
             } catch (InterruptedException e) {

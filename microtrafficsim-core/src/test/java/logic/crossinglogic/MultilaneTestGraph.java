@@ -292,23 +292,23 @@ public class MultilaneTestGraph {
     }
 
     private static void addConnectorsNToNrev1(StreetEntity aRev, StreetEntity b, int n) {
-        DirectedEdge aFwd = (DirectedEdge) aRev.getBackwardEdge();
-        DirectedEdge aBwd = (DirectedEdge) aRev.getForwardEdge();
+        DirectedEdge aBwd = (DirectedEdge) aRev.getBackwardEdge();
+        DirectedEdge aFwd = (DirectedEdge) aRev.getForwardEdge();
 
         DirectedEdge bFwd = (DirectedEdge) b.getForwardEdge();
         DirectedEdge bBwd = (DirectedEdge) b.getBackwardEdge();
 
-        addConnectorsNToN(aFwd, aBwd, bFwd, bBwd, n);
+        addConnectorsNToN(aBwd, aFwd, bFwd, bBwd, n);
     }
 
     private static void addConnectorsNToNrev2(StreetEntity a, StreetEntity bRev, int n) {
         DirectedEdge aFwd = (DirectedEdge) a.getForwardEdge();
         DirectedEdge aBwd = (DirectedEdge) a.getBackwardEdge();
 
-        DirectedEdge bFwd = (DirectedEdge) bRev.getBackwardEdge();
-        DirectedEdge bBwd = (DirectedEdge) bRev.getForwardEdge();
+        DirectedEdge bBwd = (DirectedEdge) bRev.getBackwardEdge();
+        DirectedEdge bFwd = (DirectedEdge) bRev.getForwardEdge();
 
-        addConnectorsNToN(aFwd, aBwd, bFwd, bBwd, n);
+        addConnectorsNToN(aFwd, aBwd, bBwd, bFwd, n);
     }
 
     private static void addConnectorsNToN(DirectedEdge aFwd, DirectedEdge aBwd, DirectedEdge bFwd, DirectedEdge bBwd, int n) {
