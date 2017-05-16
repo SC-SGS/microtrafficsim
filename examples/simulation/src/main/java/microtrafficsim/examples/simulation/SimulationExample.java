@@ -26,6 +26,7 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
@@ -219,7 +220,9 @@ public class SimulationExample {
     {
         Random seedgen = new Random(config.seed);
 
-        Scenario scenario = new RandomRouteScenario(seedgen.nextLong(), config, graph);
+        AreaScenario scenario = new RandomRouteScenario(seedgen.nextLong(), config, graph);
+        scenario.redefineMetaRoutes();
+
         Simulation simulation = new VehicleSimulation();
         ScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(seedgen.nextLong(), overlay.getVehicleFactory());
 
