@@ -18,7 +18,8 @@ public class PartialPlusCrossroadScenario extends AbstractPlusCrossroadScenario 
     public PartialPlusCrossroadScenario(SimulationConfig config,
                                         Graph graph,
                                         VisVehicleFactory visVehicleFactory) {
-        super(config, graph, new VehicleScenarioBuilder(
+        super(config, graph);
+        setScenarioBuilder(new VehicleScenarioBuilder(
                 config.seed,
                 (id, seed, scenario, metaRoute) -> {
                     BlockingCar vehicle = new BlockingCar(id, scenario.getConfig().visualization.style);

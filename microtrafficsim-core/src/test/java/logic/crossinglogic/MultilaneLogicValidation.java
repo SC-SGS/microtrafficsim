@@ -107,11 +107,11 @@ public class MultilaneLogicValidation {
             Simulation sim = new VehicleSimulation();
             overlay.setSimulation(sim);
 
-            try {
-                new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory()).prepare(scenario);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory()).prepare(scenario);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
             sim.setAndInitPreparedScenario(scenario);
 
             sim.runOneStep();

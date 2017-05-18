@@ -1,11 +1,15 @@
 package logic.crossinglogic.scenarios;
 
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.routes.MetaRoute;
+import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.vehicles.VehicleStateListener;
+import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
+import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
+import microtrafficsim.core.logic.vehicles.machines.impl.Car;
 import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.simulation.builder.LogicVehicleFactory;
-import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -19,26 +23,45 @@ import java.util.ArrayList;
  * @author Dominic Parga Cacheiro
  */
 public class MultilaneScenario extends QueueScenarioSmall {
+    private Route slowRoute;
+
+
     /**
-     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, ScenarioBuilder)
+     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph)
      */
     public MultilaneScenario(SimulationConfig config,
                              Graph graph,
                              VisVehicleFactory visVehicleFactory) {
-        super(config, graph, new VehicleScenarioBuilder(
+        super(config, graph);
+        VehicleScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(
                 config.seed,
                 (id, seed, scenario, metaRoute) -> {
-                    Vehicle vehicle = LogicVehicleFactory.defaultCreation(id, seed, scenario, metaRoute);
-                    vehicle.getDriver().setDawdleFactor(0);
+                    Vehicle vehicle;
+                    if (metaRoute == slowRoute)
+                        vehicle = new Car(id, 1, scenario.getConfig().visualization.style);
+                    else
+                        vehicle = new Car(id, scenario.getConfig().visualization.style);
+                    Driver driver = new BasicDriver(seed, 0, metaRoute.getSpawnDelay());
+                    driver.setRoute(metaRoute.clone());
+                    driver.setVehicle(vehicle);
+                    vehicle.setDriver(driver);
+
+                    vehicle.addStateListener(scenario.getVehicleContainer());
+                    vehicle.addStateListener(v -> {
+                        System.err.println("id = " + v.getId());
+                        System.err.println("state = " + v.getState());
+                        System.err.println("v = " + v.getVelocity());
+                        System.err.println(v.getDirectedEdge().getLane(0).getLastVehicle().getId());
+                        System.err.println(v.getDirectedEdge());
+                    });
                     return vehicle;
                 },
                 visVehicleFactory
-        ));
-        init();
-    }
+        );
+        setScenarioBuilder(scenarioBuilder);
 
 
-    private void init() {
+
         /* get nodes sorted by lon */
         ArrayList<Node> sortedNodes = new ArrayList<>(getGraph().getNodes());
         sortedNodes.sort((n1, n2) -> {
@@ -63,19 +86,20 @@ public class MultilaneScenario extends QueueScenarioSmall {
         Node id = 5 at microtrafficsim.core.map.Coordinate { 35.631, 139.7435}
         */
 
-        Node x = sortedNodes.get(0); // 2 <-> 2 lanes
-        Node xtr = sortedNodes.get(1); // 2 <-> 3 lanes
-        Node xtl = sortedNodes.get(2); // 2 <-> 3 lanes
+        Node bl = sortedNodes.get(0); // 3 <-> 3 lanes
+        Node cb = sortedNodes.get(1); // 3 <-> 3 lanes
+        Node xbl = sortedNodes.get(2); // 2 <-> 3 lanes
         Node xbr = sortedNodes.get(3); // 2 <-> 3 lanes
-        Node xbl = sortedNodes.get(4); // 2 <-> 3 lanes
-        Node tr = sortedNodes.get(5); // 3 <-> 3 lanes
-        Node bl = sortedNodes.get(6); // 3 <-> 3 lanes
+        Node x = sortedNodes.get(4); // 2 <-> 2 lanes
+        Node xtl = sortedNodes.get(5); // 2 <-> 3 lanes
+        Node xtr = sortedNodes.get(6); // 2 <-> 3 lanes
         Node ct = sortedNodes.get(7); // 3 <-> 3 lanes
-        Node cb = sortedNodes.get(8); // 3 <-> 3 lanes
-
+        Node tr = sortedNodes.get(8); // 3 <-> 3 lanes
 
         RouteContainer routeContainer = new SortedRouteContainer();
-        // todo
+        slowRoute = new MetaRoute(tr, bl);
+        routeContainer.add(slowRoute);
+        routeContainer.add(tr, bl, 4);
         addSubScenario(routeContainer);
     }
 

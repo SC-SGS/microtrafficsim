@@ -12,10 +12,9 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
  */
 public class FullPlusCrossroadScenario extends AbstractPlusCrossroadScenario {
 
-    public FullPlusCrossroadScenario(SimulationConfig config,
-                                     Graph graph,
-                                     VisVehicleFactory visVehicleFactory) {
-        super(config, graph, new VehicleScenarioBuilder(
+    public FullPlusCrossroadScenario(SimulationConfig config, Graph graph, VisVehicleFactory visVehicleFactory) {
+        super(config, graph);
+        setScenarioBuilder(new VehicleScenarioBuilder(
                 config.seed,
                 (id, seed, scenario, metaRoute) -> {
                     Vehicle vehicle = LogicVehicleFactory.defaultCreation(id, seed, scenario, metaRoute);
@@ -27,7 +26,6 @@ public class FullPlusCrossroadScenario extends AbstractPlusCrossroadScenario {
     }
 
     /**
-     * @param config
      * @return the given config updated; just for practical purpose
      */
     public static SimulationConfig setupConfig(SimulationConfig config) {
