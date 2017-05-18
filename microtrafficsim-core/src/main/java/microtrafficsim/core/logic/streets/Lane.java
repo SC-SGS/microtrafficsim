@@ -74,10 +74,11 @@ public class Lane implements Resettable {
     |=======================|
     */
     public synchronized int getMaxInsertionIndex() {
-        if (lastVehicle == null)
+        if (lastVehicle == null) {
             return associatedEdge.getLength() - 1;
-        else
+        } else {
             return lastVehicle.getCellPosition() - 1;
+        }
     }
 
     public synchronized void moveVehicle(Vehicle vehicle, int delta) {

@@ -238,7 +238,7 @@ public class MultilaneTestGraph {
 
     private static StreetEntity genEntity(Street from, Node orig, Node dest, int lanes, SimulationConfig config) {
         float mpc = config.metersPerCell;
-        float mv = config.globalMaxVelocity * config.metersPerCell;
+        float mv = config.globalMaxVelocity * 3.6f * config.metersPerCell;
         SimulationConfig.StreetPriorityFunction priority = new SimulationConfig.DefaultStreetPriorityFunction();
 
         Vec2d origDir = new Vec2d(

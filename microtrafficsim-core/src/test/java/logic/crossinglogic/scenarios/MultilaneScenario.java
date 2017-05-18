@@ -4,7 +4,6 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.MetaRoute;
 import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
@@ -47,13 +46,6 @@ public class MultilaneScenario extends QueueScenarioSmall {
                     vehicle.setDriver(driver);
 
                     vehicle.addStateListener(scenario.getVehicleContainer());
-                    vehicle.addStateListener(v -> {
-                        System.err.println("id = " + v.getId());
-                        System.err.println("state = " + v.getState());
-                        System.err.println("v = " + v.getVelocity());
-                        System.err.println(v.getDirectedEdge().getLane(0).getLastVehicle().getId());
-                        System.err.println(v.getDirectedEdge());
-                    });
                     return vehicle;
                 },
                 visVehicleFactory
