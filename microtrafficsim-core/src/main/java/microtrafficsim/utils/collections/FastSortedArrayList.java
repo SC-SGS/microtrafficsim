@@ -401,6 +401,10 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     }
 
     /**
+     * <p>
+     * Uses Java's {@link ArrayList#sort(Comparator) list sort algorithm}.
+     *
+     * <p>
      * Does {@code sort} if needed
      */
     public void sort() {
