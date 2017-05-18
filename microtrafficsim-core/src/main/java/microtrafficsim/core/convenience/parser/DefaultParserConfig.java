@@ -58,6 +58,7 @@ public class DefaultParserConfig {
                     case "motorway_link": return true;
                     case "trunk_link":    return true;
                     case "primary_link":  return true;
+                    case "secondary_link":  return true;
                     case "tertiary_link": return true;
 
                     case "living_street": return true;

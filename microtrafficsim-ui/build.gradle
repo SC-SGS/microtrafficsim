@@ -1,8 +1,10 @@
+import org.gradle.internal.hash.HashUtil;
+
 plugins {
     id 'application'
-    id "edu.sc.seis.macAppBundle" version "2.1.6"
+    id 'edu.sc.seis.macAppBundle' version '2.1.6'
+    id 'nebula.ospackage' version '4.4.0'
 }
-
 
 dependencies {
     compile project(':microtrafficsim-core')
@@ -19,13 +21,20 @@ run {
 }
 
 
-mainClassName = "microtrafficsim.ui.Main"
+def distName = 'microtrafficsim'
+def distVersion = '1.0.0'
+def distRelease = '1'
+
+def main = 'microtrafficsim.ui.Main'
+
+
+mainClassName = "${main}"
 macAppBundle {
-    mainClassName = "microtrafficsim.ui.Main"
+    mainClassName = "${main}"
 }
 jar {
      manifest {
-         attributes "Main-Class": "$mainClassName"
+         attributes "Main-Class": "${main}"
      }
 
      from {
@@ -34,6 +43,118 @@ jar {
  }
 
 
+ospackage {
+    packageName = "${distName}"
+    version = "${distVersion}"
+    release = "${distRelease}"
+    os = LINUX
+    type = BINARY
+
+    maintainer = 'github.com/sgs-us'
+    uploaders = 'github.com/sgs-us'
+
+    into "/usr/share/${distName}"
+
+    from(jar.outputs.files) {
+        into 'lib'
+    }
+    from(configurations.runtime) {
+        into 'lib'
+    }
+    from(startScripts.outputDir) {
+        into 'bin'
+        exclude '*.bat'
+        fileMode 0550
+    }
+
+    link("/usr/bin/${distName}", "/usr/share/${distName}/bin/${distName}")
+}
+
+task distRpm(type: Rpm) {
+    dependsOn startScripts
+}
+
+task distDeb(type: Deb) {
+    dependsOn startScripts
+}
+
+task distApp(type: Zip) {
+    dependsOn createApp
+
+    from fileTree("${->project.buildDir}/${->project.macAppBundle.appOutputDir}/${->project.macAppBundle.appName}.app") {
+        into 'microtrafficsim.app'
+    }
+
+    destinationDir = file("${->project.buildDir}/distributions")
+    archiveName = "${distName}_${distVersion}-${distRelease}_all.app.zip"
+}
+
+distZip {
+    archiveName = "$distName"
+
+    doLast {
+        def name = "${distName}_${distVersion}-${distRelease}_all.zip"
+        archivePath.renameTo(file("${->project.buildDir}/distributions/${name}"))
+    }
+}
+
+task writeArchPkgbuild() {
+    dependsOn distZip
+
+    doLast {
+        def distZipName = "${distName}_${distVersion}-${distRelease}_all.zip"
+        def distZipNameVar = "\${pkgname}_\${pkgver}-\${pkgrel}_all.zip"
+        def distTag = "v\${pkgver}"
+        def distZipUrl = "https://github.com/sgs-us/microtrafficsim/releases/download/${distTag}/${distZipNameVar}"
+        def distZipSha256 = HashUtil.sha256(file("${->project.buildDir}/distributions/${distZipName}")).asHexString()
+        def tmpdir = "${->project.buildDir}/tmp/archpkg"
+        file(tmpdir).mkdirs()
+
+        def pkgbuild = ""
+        pkgbuild <<= "pkgname=${distName}\n"
+        pkgbuild <<= "pkgver=${distVersion}\n"
+        pkgbuild <<= "pkgrel=${distRelease}\n"
+        pkgbuild <<= "pkgdesc='Microscopic Traffic Simulation using OpenStreetMap'\n"
+        pkgbuild <<= "arch=('any')\n"
+        pkgbuild <<= "url='https://github.com/sgs-us/microtrafficsim/'\n"
+        pkgbuild <<= "license=('GPL-3.0')\n"
+        pkgbuild <<= "\n"
+        pkgbuild <<= "depends=('java-environment')\n"
+        pkgbuild <<= "source=(\"${distZipUrl}\")\n"
+        pkgbuild <<= "sha256sums=('${distZipSha256}')\n"
+        pkgbuild <<= "\n"
+        pkgbuild <<= "package() {\n"
+        pkgbuild <<= "    mkdir -p \"\${pkgdir}/usr/\"{bin,share}\n"
+        pkgbuild <<= "    cp -r \"\${pkgname}\" \"\${pkgdir}/usr/share/\"\n"
+        pkgbuild <<= "    rm \"\${pkgdir}/usr/share/\${pkgname}/bin/\${pkgname}.bat\"\n"
+        pkgbuild <<= "    chmod 755 \"\${pkgdir}/usr/share/\${pkgname}/bin/\${pkgname}\"\n"
+        pkgbuild <<= "    ln -s \"/usr/share/\${pkgname}/bin/\${pkgname}\" \"\${pkgdir}/usr/bin/\${pkgname}\"\n"
+        pkgbuild <<= "}\n"
+
+        file("$tmpdir/PKGBUILD").write(pkgbuild.toString())
+    }
+}
+
+task distArchPkg(type: Zip) {
+    dependsOn writeArchPkgbuild
+
+    from fileTree("${->project.buildDir}/tmp/archpkg") {
+        into 'microtrafficsim'
+    }
+
+    destinationDir = file("${->project.buildDir}/distributions")
+    archiveName = "${distName}_${distVersion}-${distRelease}_all.archlinux.zip"
+}
+
+
+task distAll {
+    dependsOn distZip
+    dependsOn distRpm
+    dependsOn distDeb
+    dependsOn distArchPkg
+    dependsOn distApp
+}
+
 
 // set jar, distribution and application name
 jar.baseName = 'microtrafficsim-ui'
@@ -41,4 +162,3 @@ distributions.main.baseName = 'microtrafficsim-ui'
 startScripts.applicationName = 'microtrafficsim'
 
 applicationDefaultJvmArgs = ['-Xmx3g']
-
