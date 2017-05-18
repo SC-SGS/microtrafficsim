@@ -7,7 +7,6 @@ import microtrafficsim.core.vis.opengl.utils.Color;
  * @author Dominic Parga Cacheiro
  */
 public interface StyleSheet extends MapStyleSheet, VehicleStyleSheet {
-
     /*
     |===================|
     | (i) MapStyleSheet |

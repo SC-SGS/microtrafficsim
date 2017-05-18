@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 
 
 /**
- * A light style-sheet for the MapViewer, includes Polygons.
+ * A dark style-sheet for the MapViewer, includes Polygons.
  *
  * @author Maximilian Luz
  */
