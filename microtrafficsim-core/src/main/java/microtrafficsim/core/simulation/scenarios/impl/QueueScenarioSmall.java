@@ -27,21 +27,15 @@ public class QueueScenarioSmall extends BasicScenario {
     private ScenarioBuilder scenarioBuilder;
 
 
-    /**
-     * Calling this needs calling {@link #setScenarioBuilder(ScenarioBuilder)}
-     */
-    protected QueueScenarioSmall(SimulationConfig config, Graph graph) {
+    protected QueueScenarioSmall(SimulationConfig config, Graph graph, ScenarioBuilder scenarioBuilder) {
         super(config, graph);
         scout = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
         routeContainers = new ArrayList<>();
         curIdx = -1;
         isLooping = false;
+        this.scenarioBuilder = scenarioBuilder;
 
         setPrepared(true);
-    }
-
-    public void setScenarioBuilder(ScenarioBuilder scenarioBuilder) {
-        this.scenarioBuilder = scenarioBuilder;
     }
 
     public static SimulationConfig setupConfig(SimulationConfig config) {

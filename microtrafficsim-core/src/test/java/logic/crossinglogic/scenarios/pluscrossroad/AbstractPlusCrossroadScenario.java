@@ -21,8 +21,8 @@ public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
     public final Node bottomLeft, topLeft, mid, topRight, bottomRight;
     private final HashMap<Node, Integer> lengthToMid;
 
-    public AbstractPlusCrossroadScenario(SimulationConfig config, Graph graph) {
-        super(config, graph);
+    public AbstractPlusCrossroadScenario(SimulationConfig config, Graph graph, ScenarioBuilder scenarioBuilder) {
+        super(config, graph, scenarioBuilder);
 
 
         /* get nodes sorted by lon */

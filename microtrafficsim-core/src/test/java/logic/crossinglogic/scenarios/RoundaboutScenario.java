@@ -6,6 +6,7 @@ import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.Car;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -20,11 +21,10 @@ import java.util.ArrayList;
  */
 public class RoundaboutScenario extends QueueScenarioSmall {
     /**
-     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph)
+     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, ScenarioBuilder)
      */
     public RoundaboutScenario(SimulationConfig config, Graph graph, VisVehicleFactory visVehicleFactory) {
-        super(config, graph);
-        setScenarioBuilder(new VehicleScenarioBuilder(
+        super(config, graph, new VehicleScenarioBuilder(
                 config.seed,
                 (id, seed, scenario, metaRoute) -> {
                     Vehicle vehicle = new Car(id, 1, scenario.getConfig().visualization.style);

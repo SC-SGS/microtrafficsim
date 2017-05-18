@@ -2,13 +2,13 @@ package logic.crossinglogic.scenarios;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.MetaRoute;
-import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.Car;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -22,21 +22,15 @@ import java.util.ArrayList;
  * @author Dominic Parga Cacheiro
  */
 public class MultilaneScenario extends QueueScenarioSmall {
-    private Route slowRoute;
-
-
     /**
-     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph)
+     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, ScenarioBuilder)
      */
-    public MultilaneScenario(SimulationConfig config,
-                             Graph graph,
-                             VisVehicleFactory visVehicleFactory) {
-        super(config, graph);
-        VehicleScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(
+    public MultilaneScenario(SimulationConfig config, Graph graph, VisVehicleFactory visVehicleFactory) {
+        super(config, graph, new VehicleScenarioBuilder(
                 config.seed,
                 (id, seed, scenario, metaRoute) -> {
                     Vehicle vehicle;
-                    if (metaRoute == slowRoute)
+                    if (metaRoute instanceof SlowRoute)
                         vehicle = new Car(id, 1, scenario.getConfig().visualization.style);
                     else
                         vehicle = new Car(id, scenario.getConfig().visualization.style);
@@ -49,8 +43,7 @@ public class MultilaneScenario extends QueueScenarioSmall {
                     return vehicle;
                 },
                 visVehicleFactory
-        );
-        setScenarioBuilder(scenarioBuilder);
+        ));
 
 
 
@@ -89,8 +82,7 @@ public class MultilaneScenario extends QueueScenarioSmall {
         Node tr = sortedNodes.get(8); // 3 <-> 3 lanes
 
         RouteContainer routeContainer = new SortedRouteContainer();
-        slowRoute = new MetaRoute(tr, bl);
-        routeContainer.add(slowRoute);
+        routeContainer.add(new SlowRoute(tr, bl));
         routeContainer.add(tr, bl, 4);
         addSubScenario(routeContainer);
     }
@@ -111,5 +103,16 @@ public class MultilaneScenario extends QueueScenarioSmall {
         config.crossingLogic.onlyOneVehicleEnabled        = false;
 
         return config;
+    }
+
+
+    private static class SlowRoute extends MetaRoute {
+        public SlowRoute(Node origin, Node destination) {
+            super(origin, destination);
+        }
+
+        public SlowRoute(Node origin, Node destination, int spawndelay) {
+            super(origin, destination, spawndelay);
+        }
     }
 }

@@ -13,8 +13,7 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 public class FullPlusCrossroadScenario extends AbstractPlusCrossroadScenario {
 
     public FullPlusCrossroadScenario(SimulationConfig config, Graph graph, VisVehicleFactory visVehicleFactory) {
-        super(config, graph);
-        setScenarioBuilder(new VehicleScenarioBuilder(
+        super(config, graph, new VehicleScenarioBuilder(
                 config.seed,
                 (id, seed, scenario, metaRoute) -> {
                     Vehicle vehicle = LogicVehicleFactory.defaultCreation(id, seed, scenario, metaRoute);
