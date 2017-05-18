@@ -10,6 +10,7 @@ import microtrafficsim.core.convenience.mapviewer.MapViewer;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -105,7 +106,7 @@ public class UIValidation {
         /* get map file */
         File file;
         try {
-            file = new PackagedResource(UIValidation.class, osmFilename).asTemporaryFile();
+            file = new PackagedResource(UIValidation.class, "/logic/validation/" + osmFilename).asTemporaryFile();
         } catch (IOException e) {
             e.printStackTrace();
             return;
@@ -113,6 +114,7 @@ public class UIValidation {
 
         /* simulation config */
         SimulationConfig config = new SimulationConfig();
+        config.visualization.style = new DarkStyleSheet();
         setupConfig.accept(config);
 
 

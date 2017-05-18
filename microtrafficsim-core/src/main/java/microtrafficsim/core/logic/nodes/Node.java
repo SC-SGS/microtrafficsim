@@ -160,14 +160,14 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
      */
     private int compare(Vehicle v1, Vehicle v2) {
         // main rules:
-        // (1) two not-spawned vehicles are compared by their IDs. The greater id wins.
+        // (1) two not-spawned vehicles are compared by their IDs. The smaller id wins.
         // (2) spawned vehicles before not spawned vehicles
         // (3) two spawned vehicles => comparator
 
         if (v1.getState() != VehicleState.SPAWNED) {
             if (v2.getState() != VehicleState.SPAWNED) {
                 // (1) v1 is NOT SPAWNED, v2 is NOT SPAWNED
-                return Long.compare(v1.getId(), v2.getId());
+                return -1 * Long.compare(v1.getId(), v2.getId());
             } else {
                 // (2) v1 is NOT SPAWNED, v2 is SPAWNED
                 return -1;

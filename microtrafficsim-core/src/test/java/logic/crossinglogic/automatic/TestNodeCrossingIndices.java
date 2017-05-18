@@ -27,7 +27,6 @@ import static org.junit.Assert.assertEquals;
  * @author Dominic Parga Cacheiro
  */
 public class TestNodeCrossingIndices {
-
     private static Logger logger = new EasyMarkableLogger(TestNodeCrossingIndices.class);
 
     @Test
@@ -41,7 +40,8 @@ public class TestNodeCrossingIndices {
             config.crossingLogic.drivingOnTheRight = priorityRun == 0; // first right-before-left
 
             /* setup graph */
-            File file = new PackagedResource(UIValidation.class, "plus_crossroad.osm").asTemporaryFile();
+            File file = new PackagedResource(UIValidation.class, "/logic/validation/plus_crossroad.osm")
+                    .asTemporaryFile();
             OSMParser parser = DefaultParserConfig.get(config).build();
             Graph     graph  = parser.parse(file).streetgraph;
 
