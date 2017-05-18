@@ -41,7 +41,7 @@ public class ConnectorOverlay implements Overlay {
 
     private static final double SCALE_NORM         = 1.0 / (1 << 18);
     private static final double LANE_OFFSET_SCALE  = 12.0 * SCALE_NORM;
-    private static final double ARROW_LEN = 1.5;
+    private static final double ARROW_LEN = 2.5;
 
     private Projection projection;
     private SimulationConfig config;

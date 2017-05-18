@@ -8,6 +8,7 @@ import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.parser.processing.Connector;
+import microtrafficsim.core.parser.processing.GraphNodeComponent;
 import microtrafficsim.core.parser.processing.GraphWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
@@ -26,11 +27,8 @@ import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
-
-// TODO: unnecessarily crossing connectors
 
 /**
  * The {@code FeatureGenerator} for the StreetGraph used in the simulation.
@@ -40,7 +38,7 @@ import java.util.Set;
 public class StreetGraphGenerator implements FeatureGenerator {
     private static Logger logger = new EasyMarkableLogger(StreetGraphGenerator.class);
 
-    private SimulationConfig config;
+    private SimulationConfig   config;
     private Graph              graph;
     private DistanceCalculator distcalc;
 
@@ -214,8 +212,14 @@ public class StreetGraphGenerator implements FeatureGenerator {
         if (sgwcFrom == null) return;
         if (sgwcFrom.forward == null && sgwcFrom.backward == null) return;
 
-        Node sgNodeStart = dataset.nodes.get(wayFrom.nodes[0]).get(StreetGraphNodeComponent.class).node;
-        Node sgNodeEnd = dataset.nodes.get(wayFrom.nodes[wayFrom.nodes.length - 1]).get(StreetGraphNodeComponent.class).node;
+        NodeEntity start = dataset.nodes.get(wayFrom.nodes[0]);
+        NodeEntity end = dataset.nodes.get(wayFrom.nodes[wayFrom.nodes.length - 1]);
+
+        GraphNodeComponent gncStart = start.get(GraphNodeComponent.class);
+        GraphNodeComponent gncEnd = end.get(GraphNodeComponent.class);
+
+        Node sgNodeStart = start.get(StreetGraphNodeComponent.class).node;
+        Node sgNodeEnd = end.get(StreetGraphNodeComponent.class).node;
 
         GraphWayComponent gwcFrom = wayFrom.get(GraphWayComponent.class);
 
@@ -229,26 +233,30 @@ public class StreetGraphGenerator implements FeatureGenerator {
                 addUTurnConnectors(sgNodeEnd, sgwcFrom.forward, sgwcFrom.backward);
         }
 
-        // leaving connectors (no 'else if' because of cyclic connectors)
+        // set up turn-lane preferences for leaving connectors
+        HashMap<Connector, TurnLanePreference> prefStart = getTurnLanePreferences(dataset, start, gncStart, wayFrom);
+        HashMap<Connector, TurnLanePreference> prefEnd = getTurnLanePreferences(dataset, end, gncEnd, wayFrom);
+
+        // add leaving connectors (no 'else if' because of cyclic connectors)
         for (Connector c : gwcFrom.from) {
             StreetGraphWayComponent sgwcTo = c.to.get(StreetGraphWayComponent.class);
             if (sgwcTo == null) continue;
 
             // <---o--->
             if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[0])
-                addDirectConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.forward);
+                addDirectConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.forward, prefStart.get(c));
 
             // <---o<---
             if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[c.to.nodes.length - 1])
-                addDirectConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.backward);
+                addDirectConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.backward, prefStart.get(c));
 
             // --->o--->
             if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[0])
-                addDirectConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.forward);
+                addDirectConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.forward, prefEnd.get(c));
 
             // --->o<---
             if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[c.to.nodes.length - 1])
-                addDirectConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.backward);
+                addDirectConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.backward, prefEnd.get(c));
         }
     }
 
@@ -272,17 +280,110 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * @param to   the {@code DirectedEdge} to which the generated connectors
      *             should lead.
      */
-    private void addDirectConnectors(Node via, DirectedEdge from, DirectedEdge to) {
+    private void addDirectConnectors(Node via, DirectedEdge from, DirectedEdge to, TurnLanePreference pref) {
         if (from == null || to == null) return;
 
         int nLanesFrom = from.getLanes().size();
         int nLanesTo = to.getLanes().size();
         int n = Math.min(nLanesFrom, nLanesTo);
 
-        for (int i = 0; i < n; i++) {
-            via.addConnector(from.getLane(i), to.getLane(i));
+        if (pref == null || pref == TurnLanePreference.OUTER) {
+            for (int i = 0; i < n; i++) {
+                via.addConnector(from.getLane(i), to.getLane(i));
+            }
+        } else {
+            for (int i = 1; i <= n; i++) {
+                via.addConnector(from.getLane(nLanesFrom - i), to.getLane(nLanesTo - i));
+            }
         }
     }
+
+
+    private HashMap<Connector, TurnLanePreference> getTurnLanePreferences(DataSet dataset, NodeEntity node,
+                                                                          GraphNodeComponent gnc, WayEntity from)
+    {
+        boolean drivingOnTheRight = config.crossingLogic.drivingOnTheRight;
+        Vec2d reference = getDirectionVector(dataset, node, from);
+
+        // get all leaving ways
+        ArrayList<SortedWay> leaving = new ArrayList<>();
+        for (WayEntity to : gnc.ways)
+            if (to != from)
+                leaving.add(new SortedWay(to, getDirectionAngle(dataset, node, to, reference)));
+
+        // sort leaving ways from right to left (ccw)
+        leaving.sort(Comparator.comparingDouble(a -> a.angle));
+
+        /*
+         * Create preferences using the following heuristic:
+         * 1. Split leaving ways in two sets (left and right), based on their relative exit-direction.
+         * 2. Assign preference preference based on sets (left to preferred-left etc.), normalized by config.
+         */
+        HashMap<Connector, TurnLanePreference> prefs = new HashMap<>();
+        int len = leaving.size();
+        for (int i = 0; i < len; i++) {
+            TurnLanePreference pref;
+
+            if (len == 1) {                                 // special case: only one successor, prefer outer
+                pref = TurnLanePreference.OUTER;
+            } else {
+                boolean right;
+                if ((len & 1) == 1 && i == len / 2) {       // special case: center lane of odd number of lanes
+                    right = leaving.get(i).angle <= Math.PI;
+                } else {                                    // normal case
+                    right = i < len / 2;
+                }
+
+                if (right) {
+                    pref = drivingOnTheRight ? TurnLanePreference.OUTER : TurnLanePreference.INNER;
+                } else {
+                    pref = drivingOnTheRight ? TurnLanePreference.INNER : TurnLanePreference.OUTER;
+                }
+            }
+
+            prefs.put(new Connector(node, from, leaving.get(i).way), pref);
+        }
+
+        return prefs;
+    }
+
+    private TurnLanePreference normalize(boolean drivingOnTheRight, TurnLanePreference pref) {
+        if (drivingOnTheRight)
+            return pref;
+        else if (pref == TurnLanePreference.OUTER)
+            return TurnLanePreference.INNER;
+        else
+            return TurnLanePreference.OUTER;
+    }
+
+    private Vec2d getDirectionVector(DataSet dataset, NodeEntity from, WayEntity way) {
+        NodeEntity to;
+
+        if (from.id == way.nodes[0])
+            to = dataset.nodes.get(way.nodes[1]);
+        else
+            to = dataset.nodes.get(way.nodes[way.nodes.length - 2]);
+
+        return new Vec2d(to.lon - from.lon, to.lat - from.lat);
+    }
+
+    private double getDirectionAngle(DataSet dataset, NodeEntity from, WayEntity way, Vec2d reference) {
+        return getVectorAngle(reference, getDirectionVector(dataset, from, way));
+    }
+
+    private double getVectorAngle(Vec2d a, Vec2d b) {
+        Vec2d na = Vec2d.normalize(a);
+        Vec2d nb = Vec2d.normalize(b);
+
+        double cross = na.cross(nb);
+        if (cross > 0.0)               // b left of a
+            return Math.acos(na.dot(nb));
+        else if (cross < 0.0)          // b left of a
+            return 2 * Math.PI - Math.acos(na.dot(nb));
+        else
+            return Math.PI;
+    }
+
 
     /**
      * Calculates the length of the given {@code WayEntity} using this {@code
@@ -330,11 +431,25 @@ public class StreetGraphGenerator implements FeatureGenerator {
         return graphinfo.node;
     }
 
+
     @Override
     public Set<Class<? extends Component>> getRequiredWayComponents() {
         HashSet<Class<? extends Component>> required = new HashSet<>();
         required.add(StreetComponent.class);
         required.add(SanitizerWayComponent.class);
         return required;
+    }
+
+
+    private enum TurnLanePreference { OUTER, INNER, }
+
+    private static class SortedWay {
+        WayEntity way;
+        double angle;
+
+        SortedWay(WayEntity way, double angle) {
+            this.way = way;
+            this.angle = angle;
+        }
     }
 }
