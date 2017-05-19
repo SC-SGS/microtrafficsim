@@ -2,10 +2,8 @@ package microtrafficsim.core.logic.nodes;
 
 
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.math.MathUtils;
 
 public class IndicesCalculator {
-
     public static final byte NO_MATCH = -42;
 
     /**
@@ -42,7 +40,6 @@ public class IndicesCalculator {
      */
     public static byte leftmostIndexInMatching(byte origin1, byte destination1, byte origin2, byte destination2,
                                                byte indicesPerNode) {
-
         byte[] s1 = getIndices(origin1, destination1, indicesPerNode);
         byte[] s2 = getIndices(origin2, destination2, indicesPerNode);
         int len1  = s1.length;
@@ -85,9 +82,9 @@ public class IndicesCalculator {
         return indices;
     }
 
-    public static boolean areIndicesCrossing(byte origin1, byte destination1, byte origin2, byte destination2) {
+    public static boolean areIndicesCrossing(byte origin1, byte destination1, byte origin2, byte destination2,
+                                             byte indicesPerNode) {
         int i = origin1;
-        byte n = (byte) (1 + MathUtils.max(origin1, destination1, origin2, destination2));
 
         // DFA: A out of {start1,end1}; B out of {start2,end2}
         // edge 0: A -A-> false
@@ -98,8 +95,8 @@ public class IndicesCalculator {
         // if common destination: true should be returned => order of the if-statements is relevant
         boolean stateA            = true;
         int     irrelevantCounter = 0;
-        while (irrelevantCounter++ < 2 * n) {
-            i = (i + 1) % n;
+        while (irrelevantCounter++ < 2 * indicesPerNode) {
+            i = (i + 1) % indicesPerNode;
             if (stateA) {                                                 // state A
                 if (i == origin2 || i == destination2)                    // -B->
                     stateA = false;                                       // state AB

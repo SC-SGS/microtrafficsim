@@ -9,6 +9,7 @@ import microtrafficsim.core.shortestpath.ShortestPathNode;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Geometry;
+import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
@@ -184,11 +185,11 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         byte destination1   = leaving.get(v1.getDriver().peekRoute());
         byte origin2        = incoming.get(v2.getDirectedEdge());
         byte destination2   = leaving.get(v2.getDriver().peekRoute());
-        byte indicesPerNode = (byte) (incoming.size() + leaving.size());
+        byte indicesPerNode = (byte) (1 + MathUtils.max(origin1, destination1, origin2, destination2));
 
 
         // if vehicles are crossing each other's way
-        if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2)) {
+        if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2, indicesPerNode)) {
             // compare priorities of origins
             byte cmp = (byte) (v1.getDirectedEdge().getPriorityLevel() - v2.getDirectedEdge().getPriorityLevel());
             boolean edgePriorityEnabled = config.edgePriorityEnabled;
