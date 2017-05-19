@@ -2,8 +2,10 @@
 """
 Test generator for the HaversineDistanceCalculator
 
-Generates random tests for the HaversineDistanceCalculator, testing its results
-against pythons haversine module.
+Generates randomized tests for the HaversineDistanceCalculator, testing results
+against pythons haversine module and writing them to stdout.
+
+Requires Python 3 and the haversine package.
 """
 __author__ = "Maximilian Luz"
 
@@ -32,10 +34,10 @@ def zero():
         a.append(c)
         b.append(c)
 
-    print "\n\t@Test"
-    print "\tpublic void zeroDistanceTest() {"
+    print("\n\t@Test")
+    print("\tpublic void zeroDistanceTest() {")
     fmtprt("testExact", a, b)
-    print "\t}"
+    print("\t}")
 
 
 def special_values():
@@ -55,10 +57,10 @@ def special_values():
         (112.6830,  62.8048)
     ]
 
-    print "\n\t@Test"
-    print "\tpublic void specialValuesTest() {"
+    print("\n\t@Test")
+    print("\tpublic void specialValuesTest() {")
     fmtprt("testMedium", a, b)
-    print "\t}"
+    print("\t}")
 
 
 def large():
@@ -73,10 +75,10 @@ def large():
             a.append(c1)
             b.append(c2)
 
-    print "\n\t@Test"
-    print "\tpublic void largeDistanceTest() {"
+    print("\n\t@Test")
+    print("\tpublic void largeDistanceTest() {")
     fmtprt("testLarge", a, b)
-    print "\t}"
+    print("\t}")
 
 
 def medium():
@@ -91,10 +93,10 @@ def medium():
             a.append(c1)
             b.append(c2)
 
-    print "\n\t@Test"
-    print "\tpublic void mediumDistanceTest() {"
+    print("\n\t@Test")
+    print("\tpublic void mediumDistanceTest() {")
     fmtprt("testMedium", a, b)
-    print "\t}"
+    print("\t}")
 
 
 def small():
@@ -110,11 +112,11 @@ def small():
             a.append(c1)
             b.append(c2)
 
-    print ""
-    print "\t@Test"
-    print "\tpublic void smallDistanceTest() {"
+    print("")
+    print("\t@Test")
+    print("\tpublic void smallDistanceTest() {")
     fmtprt("testSmall", a, b)
-    print "\t}"
+    print("\t}")
 
 
 def tiny():
@@ -130,10 +132,10 @@ def tiny():
             a.append(c1)
             b.append(c2)
 
-    print "\n\t@Test"
-    print "\tpublic void tinyDistanceTest() {"
+    print("\n\t@Test")
+    print("\tpublic void tinyDistanceTest() {")
     fmtprt("testTiny", a, b)
-    print "\t}"
+    print("\t}")
 
 
 if __name__ == '__main__':

@@ -3,9 +3,9 @@ package microtrafficsim.examples.simulation;
 import com.jogamp.newt.event.KeyEvent;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
 import microtrafficsim.core.convenience.filechoosing.impl.MapFilterSet;
-import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.convenience.mapviewer.MapViewer;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
@@ -25,7 +25,7 @@ import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
-import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
@@ -219,7 +219,9 @@ public class SimulationExample {
     {
         Random seedgen = new Random(config.seed);
 
-        Scenario scenario = new RandomRouteScenario(seedgen.nextLong(), config, graph);
+        AreaScenario scenario = new RandomRouteScenario(seedgen.nextLong(), config, graph);
+        scenario.redefineMetaRoutes();
+
         Simulation simulation = new VehicleSimulation();
         ScenarioBuilder scenarioBuilder = new VehicleScenarioBuilder(seedgen.nextLong(), overlay.getVehicleFactory());
 
@@ -529,7 +531,7 @@ public class SimulationExample {
      * @return the default frame title.
      */
     private String getDefaultFrameTitle() {
-        StringBuilder title = new StringBuilder("MicroTrafficSim - Map Viewer Example");
+        StringBuilder title = new StringBuilder("MicroTrafficSim - Simulation Example");
 
         if (file != null) {
             title.append(" - [").append(file).append("]");
