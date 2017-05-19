@@ -1,74 +1,314 @@
 package microtrafficsim.utils.collections;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-
+import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
- * Array list that keeps elements sorted.
+ * Is an {@code ArrayList} keeping all elements sorted and implements {@code Queue}.
  *
- * @author Maximilian Luz
+ * @author Dominic Parga Cacheiro
  */
-public class SortedArrayList<T> extends ArrayList<T> {
-
-    private final Comparator<? super T> comparator;
-
+public class SortedArrayList<E> extends ArrayList<E> implements Queue<E> {
+    private final Comparator<? super E> comparator;
 
     public SortedArrayList() {
         super();
         comparator = null;
     }
 
-    public SortedArrayList(Comparator<? super T> comparator) {
+    public SortedArrayList(Comparator<? super E> comparator) {
         super();
         this.comparator = comparator;
     }
 
-    public SortedArrayList(Collection<? extends T> collection) {
-        super(collection);
-        this.comparator = null;
-        this.sort(null);
+    public SortedArrayList(Collection<? extends E> c) {
+        this(c, null);
     }
 
-    public SortedArrayList(Collection<? extends T> collection, Comparator<? super T> comparator) {
-        super(collection);
+    public SortedArrayList(Collection<? extends E> collection, Comparator<? super E> comparator) {
+        super();
         this.comparator = comparator;
-        this.sort(comparator);
+        addAll(collection);
     }
 
     public SortedArrayList(int initialCapacity) {
-        super(initialCapacity);
-        this.comparator = null;
+        this(initialCapacity, null);
     }
 
-    public SortedArrayList(int initialCapacity, Comparator<? super T> comparator) {
+    public SortedArrayList(int initialCapacity, Comparator<? super E> comparator) {
         super(initialCapacity);
         this.comparator = comparator;
     }
 
 
-    public Comparator<? super T> comparator() {
-        return comparator;
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
+
+    /**
+     * @return true if the specified object can be found. This does not mean the found element is
+     * {@link #equals(Object) equal} to the searched object, but the same attributes concerning the specified
+     * comparator.
+     */
+    @Override
+    public boolean contains(Object o) {
+        return binarySearch(o) >= 0;
+    }
+
+    /**
+     * todo worst case is still O(n) if all elements are equal
+     *
+     * @param o
+     * @return
+     */
+    @Override
+    public int indexOf(Object o) {
+        int index = binarySearch(o);
+        if (index >= 0) {
+            while (index > 0) {
+                int cmp = compare(get(index), get(index - 1));
+
+                if (cmp == 0) index--;
+                else break;
+            }
+            return index;
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * todo worst case is still O(n) if all elements are equal
+     *
+     * @param o
+     * @return
+     */
+    @Override
+    public int lastIndexOf(Object o) {
+        int index = binarySearch(o);
+        if (index >= 0) {
+            while (index < size() - 1) {
+                int cmp = compare(get(index), get(index + 1));
+
+                if (cmp == 0) index++;
+                else break;
+            }
+            return index;
+        } else {
+            return -1;
+        }
     }
 
     @Override
-    public boolean add(T t) {
-        int index = Collections.binarySearch(this, t, comparator);
-        this.add(index < 0 ? -(index + 1) : index, t);
+    public boolean add(E e) {
+        int index = searchInsertionPoint(e);
+        super.add(index, e);
         return true;
     }
 
     @Override
-    public boolean addAll(Collection<? extends T> collection) {
-        for (T elem : collection)
-            add(elem);
-
-        return !collection.isEmpty();
+    public boolean remove(Object o) {
+        int index = indexOf(o);
+        if (index < 0)
+            return false;
+        return super.remove(get(index));
     }
 
-    public void sort() {
-        this.sort(comparator);
+    @Override
+    public boolean addAll(Collection<? extends E> c) {
+        boolean changed = false;
+        for (E e : c)
+            changed |= add(e);
+        return changed;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+        for (Object obj : c)
+            if (!contains(obj))
+                return false;
+        return true;
+    }
+
+    public E get(Object obj) {
+        int index = indexOf(obj);
+        if (index < 0)
+            return null;
+        return get(index);
+    }
+
+    /*
+    |=======|
+    | Queue |
+    |=======|
+    */
+    @Override
+    public boolean offer(E e) {
+        return add(e);
+    }
+
+    @Override
+    public E remove() {
+        if (isEmpty())
+            throw new NoSuchElementException(isEmptyMsg());
+        return remove(0);
+    }
+
+    @Override
+    public E poll() {
+        if (isEmpty())
+            return null;
+        return remove(0);
+    }
+
+    @Override
+    public E element() {
+        if (isEmpty())
+            throw new NoSuchElementException(isEmptyMsg());
+        return get(0);
+    }
+
+    @Override
+    public E peek() {
+        if (isEmpty())
+            return null;
+        return get(0);
+    }
+
+
+    /*
+    |==========|
+    | iterator |
+    |==========|
+    */
+    @Override
+    public Iterator<E> iterator() {
+        return new AscendingIterator();
+    }
+
+    public Iterator<E> iteratorAsc() {
+        return new AscendingIterator();
+    }
+
+    public Iterator<E> iteratorDesc() {
+        return new DescendingIterator();
+    }
+
+    private class AscendingIterator implements Iterator<E> {
+        private int idx = 0;
+
+        @Override
+        public boolean hasNext() {
+            return idx < size();
+        }
+
+        @Override
+        public E next() {
+            int tmp = idx;
+            E e = get(idx);
+            idx = tmp + 1;
+            return e;
+        }
+    }
+
+    private class DescendingIterator implements Iterator<E> {
+        private int idx = size() - 1;
+
+        @Override
+        public boolean hasNext() {
+            return idx >= 0;
+        }
+
+        @Override
+        public E next() {
+            int tmp = idx;
+            E e = get(idx);
+            idx = tmp - 1;
+            return e;
+        }
+    }
+
+
+    /*
+    |=======|
+    | utils |
+    |=======|
+    */
+    protected UnsupportedOperationException unsupportedOperationException() {
+        return new UnsupportedOperationException("Not supported due to total order of this collection.");
+    }
+
+    protected String isEmptyMsg() {
+        return "This " + getClass().getSimpleName() + " is empty.";
+    }
+
+    /**
+     * @see Collections#binarySearch(List, Object, Comparator)
+     */
+    protected int binarySearch(Object o) {
+        if (comparator == null)
+            return Collections.binarySearch(this, o, Comparator.comparingLong(Object::hashCode));
+        else
+            return Collections.binarySearch(this, (E) o, comparator);
+    }
+
+    protected int searchInsertionPoint(Object o) {
+        int index = binarySearch(o);
+        return index < 0 ? -(index + 1) : index;
+    }
+
+    protected int compare(Object o1, Object o2) {
+        if (comparator == null)
+            return Long.compare(o1.hashCode(), o2.hashCode());
+        else
+            return comparator.compare((E) o1, (E) o2);
+    }
+
+
+    /*
+    |=============|
+    | unsupported |
+    |=============|
+    */
+    /**
+     * @throws UnsupportedOperationException due to total order of this collection.
+     */
+    @Override
+    public E set(int index, E element) {
+        throw unsupportedOperationException();
+    }
+
+    /**
+     * @throws UnsupportedOperationException due to total order of this collection.
+     */
+    @Override
+    public void add(int index, E element) {
+        throw unsupportedOperationException();
+    }
+
+    /**
+     * @throws UnsupportedOperationException due to total order of this collection.
+     */
+    @Override
+    public boolean addAll(int index, Collection<? extends E> c) {
+        throw unsupportedOperationException();
+    }
+
+    /**
+     * @throws UnsupportedOperationException due to total order of this collection
+     */
+    @Override
+    public void replaceAll(UnaryOperator<E> operator) {
+        throw unsupportedOperationException();
+    }
+
+    /**
+     * @throws UnsupportedOperationException due to total order of this collection
+     */
+    @Override
+    public void sort(Comparator<? super E> c) {
+        throw unsupportedOperationException();
     }
 }

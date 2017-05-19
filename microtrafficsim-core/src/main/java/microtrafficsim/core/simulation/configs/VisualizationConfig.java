@@ -3,6 +3,7 @@ package microtrafficsim.core.simulation.configs;
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 
+
 /**
  * This class isolates the visualization configs from the other config
  * parameters to guarantee better overview.

@@ -1,13 +1,11 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
-import microtrafficsim.core.convenience.MapViewer;
-import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
-import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
@@ -31,41 +29,34 @@ public class BuildSetup {
     public SimulationConfig config;
 
     /* visualization and parsing */
-    public MapViewer mapviewer;
+    public TileBasedMapViewer mapviewer;
     public VehicleOverlay overlay;
 
     /* simulation */
     public Simulation simulation;
     public ScenarioBuilder scenarioBuilder;
 
-    /* gui */
-    public String frameTitle;
-
     public BuildSetup() {
-
         /* general */
         config = new SimulationConfig();
 
-        config.scenario.supportedClasses.add(new Descriptor<>(
+        config.scenario.supportedClasses.put(AreaScenario.class, new Descriptor<>(
                 AreaScenario.class,
                 "own defined areas"));
-        config.scenario.supportedClasses.add(new Descriptor<>(
+        config.scenario.supportedClasses.put(EndOfTheWorldScenario.class, new Descriptor<>(
                 EndOfTheWorldScenario.class,
                 "everywhere -> border"));
-        config.scenario.supportedClasses.add(new Descriptor<>(
+        config.scenario.supportedClasses.put(RandomRouteScenario.class, new Descriptor<>(
                 RandomRouteScenario.class,
                 "everywhere -> everywhere"));
-        config.scenario.selectedClass = config.scenario.supportedClasses.get(0);
+        config.scenario.selectedClass = config.scenario.supportedClasses.get(AreaScenario.class);
 
         /* visualization and parsing */
         mapviewer = new TileBasedMapViewer(config.visualization.style);
         overlay   = new SpriteBasedVehicleOverlay(mapviewer.getProjection(), config.visualization.style);
 
         /* simulation */
-        simulation          = new VehicleSimulation();
-        scenarioBuilder     = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
-
-        /* gui */
-        this.frameTitle = "MicroTrafficSim";
+        simulation      = new VehicleSimulation();
+        scenarioBuilder = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
     }
 }

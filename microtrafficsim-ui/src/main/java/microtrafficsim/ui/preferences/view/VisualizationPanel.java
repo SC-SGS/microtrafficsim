@@ -1,8 +1,8 @@
 package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig.Element;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
-import microtrafficsim.ui.preferences.model.PrefElement;
 import microtrafficsim.ui.preferences.model.VisualizationModel;
 
 import javax.swing.*;
@@ -63,8 +63,9 @@ public class VisualizationPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
-        cbStyle.setSelectedItem(config.visualization.style.getClass().getSimpleName());
+    public void setSettings(boolean indeed, SimulationConfig config) {
+        if (indeed || model.getEnableLexicon().isEnabled(Element.style))
+            cbStyle.setSelectedItem(config.visualization.style.getClass().getSimpleName());
     }
 
     @Override
@@ -76,11 +77,13 @@ public class VisualizationPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setEnabled(PrefElement id, boolean enabled) {
-        enabled = id.isEnabled() && enabled;
+    public boolean setEnabledIfEditable(Element element, boolean enabled) {
+        enabled = super.setEnabledIfEditable(element, enabled);
 
-        switch (id) {
+        switch (element) {
             case style: cbStyle.setEnabled(enabled); break;
         }
+
+        return enabled;
     }
 }

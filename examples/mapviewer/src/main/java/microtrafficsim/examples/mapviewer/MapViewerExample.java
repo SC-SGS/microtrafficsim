@@ -1,16 +1,22 @@
 package microtrafficsim.examples.mapviewer;
 
 import com.jogamp.newt.event.KeyEvent;
-import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.convenience.MapViewer;
-import microtrafficsim.core.convenience.TileBasedMapViewer;
+import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
+import microtrafficsim.core.convenience.filechoosing.impl.MapFilterSet;
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
+import microtrafficsim.core.convenience.mapviewer.MapViewer;
+import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.exfmt.Container;
+import microtrafficsim.core.exfmt.ExchangeFormat;
+import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
+import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.MapStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
-import microtrafficsim.core.serialization.Container;
-import microtrafficsim.core.serialization.Serializer;
+import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.utils.concurrency.interruptsafe.InterruptSafeFutureTask;
@@ -43,12 +49,13 @@ public class MapViewerExample {
     /**
      * The used style sheet, defining style and content of the visualization.
      */
-    private static final MapStyleSheet STYLE = new MonochromeStyleSheet();
+    private static final MapStyleSheet STYLE = new DarkMonochromeStyleSheet();
 
 
-    private JFileChooser filechooser;
-    private Serializer serializer;
+    private MTSFileChooser filechooser;
     private OSMParser parser;
+    private ExchangeFormat exfmt;
+    private ExchangeFormatSerializer serializer;
 
     private JFrame frame;
     private TileBasedMapViewer viewer;
@@ -76,12 +83,17 @@ public class MapViewerExample {
      * @throws UnsupportedFeatureException if not all required OpenGL features are available
      */
     private void run(File file) throws UnsupportedFeatureException {
-        filechooser = new JFileChooser();
-        serializer = Serializer.create();
+        filechooser = new MTSFileChooser();
+        filechooser.addFilterSet(MapFilterSet.class, new MapFilterSet());
+        filechooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+
         parser = DefaultParserConfig.get(STYLE).build();
 
         viewer = setUpMapViewer(STYLE);
         frame = setUpFrame(viewer);
+
+        setUpSerializer(viewer);
+
         show();
 
         /* Parse the OSM file asynchronously and update the sources */
@@ -130,6 +142,13 @@ public class MapViewerExample {
         return frame;
     }
 
+    private void setUpSerializer(TileBasedMapViewer viewer) {
+        serializer = ExchangeFormatSerializer.create();
+        exfmt = ExchangeFormat.getDefault();
+        exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(
+                viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel()));
+    }
+
     /**
      * Show frame and start visualization.
      */
@@ -145,6 +164,7 @@ public class MapViewerExample {
     private void shutdown() {
         if (loading != null) {
             loading.cancel(true);
+            loading = null;
         }
 
         if (loader != null) {
@@ -246,7 +266,12 @@ public class MapViewerExample {
                     OSMParser.Result result = parser.parse(file);
                     segment = tiler.generate(result.segment, scheme, viewer.getPreferredTileGridLevel());
                 } else {
-                    segment = serializer.read(file).getMapSegment();
+                    ExchangeFormat.Manipulator xmp = exfmt.manipulator(serializer.read(file));
+                    try {
+                        segment = xmp.extract(QuadTreeTiledMapSegment.class);
+                    } catch (NotAvailableException e) {     // thrown when no TileGrid available
+                        segment = xmp.extract(MapSegment.class);
+                    }
                 }
             } catch (InterruptedException e) {
                 throw new CancellationException();
@@ -320,9 +345,11 @@ public class MapViewerExample {
             SwingUtilities.invokeAndWait(() ->
                 frame.setTitle(getDefaultFrameTitle() + " - [Saving: " + file.getPath() + "]"));
 
-            new Container()
-                    .setMapSegment(segment)
-                    .write(serializer, file);
+            Container container = exfmt.manipulator()
+                    .inject(segment)
+                    .getContainer();
+
+            serializer.write(file, container);
 
         } catch (Throwable t) {
             t.printStackTrace();

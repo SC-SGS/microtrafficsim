@@ -23,11 +23,6 @@ public class NodeConnectionComponent extends Component {
     }
 
     @Override
-    public Class<? extends Component> getType() {
-        return NodeConnectionComponent.class;
-    }
-
-    @Override
     public Component clone(Entity e) {
         // not required
         return null;

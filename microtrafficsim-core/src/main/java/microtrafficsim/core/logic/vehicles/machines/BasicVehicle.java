@@ -1,13 +1,13 @@
 package microtrafficsim.core.logic.vehicles.machines;
 
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
+import microtrafficsim.core.logic.NagelSchreckenbergException;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
-import microtrafficsim.exceptions.core.logic.NagelSchreckenbergException;
 import microtrafficsim.math.MathUtils;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
@@ -19,7 +19,6 @@ import java.util.function.Function;
  * @author Dominic Parga Cacheiro
  */
 public abstract class BasicVehicle implements Vehicle {
-
     /* general */
     private final LinkedList<VehicleStateListener> stateListeners;
 
@@ -93,7 +92,7 @@ public abstract class BasicVehicle implements Vehicle {
             strBuilder.appendln("");
             strBuilder.appendln("-- infos from next node --");
             strBuilder.appendln("permission = " + lane.getAssociatedEdge().getDestination().permissionToCross(this));
-            strBuilder.appendln("node.id = " + lane.getAssociatedEdge().getDestination().id);
+            strBuilder.appendln("node.id = " + lane.getAssociatedEdge().getDestination().getId());
         }
         strBuilder.decLevel();
         strBuilder.appendln("<\\vehicle>");
@@ -190,7 +189,7 @@ public abstract class BasicVehicle implements Vehicle {
     @Override
     public void registerInGraph() {
         if (!driver.getRoute().isEmpty())
-            driver.getRoute().getStart().registerVehicle(this);
+            driver.getRoute().getOrigin().registerVehicle(this);
     }
 
     /**
@@ -203,14 +202,14 @@ public abstract class BasicVehicle implements Vehicle {
         if (state == VehicleState.NOT_SPAWNED) {
             if (driver.getTravellingTime() >= 0) {
                 if (!driver.getRoute().isEmpty()) {
-                    if (!driver.getRoute().getStart().permissionToCross(this)) {
+                    if (!driver.getRoute().getOrigin().permissionToCross(this)) {
                         velocity = 0;
                     } else {    // allowed to spawn
                         if (driver.peekRoute().getLane(0).getMaxInsertionIndex() < 0) {
                             velocity = 0;
                         } else {
                             velocity = 1;
-                            driver.getRoute().getStart().unregisterVehicle(this);
+                            driver.getRoute().getOrigin().unregisterVehicle(this);
                             enterNextRoad();
                             setState(VehicleState.SPAWNED);
                         }
@@ -269,7 +268,7 @@ public abstract class BasicVehicle implements Vehicle {
                 DirectedEdge edge     = lane.getAssociatedEdge();
                 int          distance = edge.getLength() - cellPosition;
                 // Would cross node?
-                if (velocity >= distance)
+                if (velocity >= distance) {
                     if (driver.getRoute().isEmpty()) {
                         // brake for end of road
                         velocity = Math.min(velocity, distance - 1);
@@ -278,12 +277,13 @@ public abstract class BasicVehicle implements Vehicle {
                             // if next road has vehicles => brake for this
                             // else => brake for end of next road
                             int maxInsertionIndex = driver.peekRoute().getLane(0).getMaxInsertionIndex();
-                            velocity              = Math.min(velocity, distance + maxInsertionIndex);
+                            velocity = Math.min(velocity, distance + maxInsertionIndex);
                         } else {
                             // brake for end of road
                             velocity = Math.min(velocity, distance - 1);
                         }
                     }
+                }
             }
 
             // brake for edges max velocity
@@ -366,6 +366,11 @@ public abstract class BasicVehicle implements Vehicle {
     }
 
     @Override
+    public int getVelocity() {
+        return velocity;
+    }
+
+    @Override
     public Driver getDriver() {
         return driver;
     }
@@ -399,5 +404,10 @@ public abstract class BasicVehicle implements Vehicle {
     public DirectedEdge getDirectedEdge() {
         if (lane == null) return null;
         return lane.getAssociatedEdge();
+    }
+
+    @Override
+    public Lane getLane() {
+        return lane;
     }
 }

@@ -23,6 +23,11 @@ public interface TileLayerProvider {
     interface LayerChangeListener {
 
         /**
+         * Notified when the tiling-scheme changes.
+         */
+        void tilingSchemeChanged();
+
+        /**
          * Notified when all layers on all tiles change.
          */
         void layersChanged();
@@ -86,10 +91,15 @@ public interface TileLayerProvider {
     TilingScheme getTilingScheme();
 
     /**
+     * Sets the tiling-scheme to be used in this provider.
+     */
+    void setTilingScheme(TilingScheme scheme);
+
+    /**
      * Return the layer associated with the given string.
      *
      * @param name the name of the layer.
-     * @return the layer associated with the givne string.
+     * @return the layer associated with the given string.
      */
     Layer getLayer(String name);
 

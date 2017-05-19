@@ -2,14 +2,13 @@ package microtrafficsim.core.map.style.predicates;
 
 import microtrafficsim.osm.primitives.Way;
 
-import java.util.function.Predicate;
-
 /**
  * A predicate usable to select major streets (i.e. streets and their associated link-type).
+ *
+ * @author Maximilian Luz
  */
-public class MajorStreetBasePredicate implements Predicate<Way> {
+public class MajorStreetBasePredicate extends BasicStreetBasePredicate {
 
-    private final String type;
     private final String link;
 
     /**
@@ -17,8 +16,12 @@ public class MajorStreetBasePredicate implements Predicate<Way> {
      * @param type the name of the street-type to select.
      */
     public MajorStreetBasePredicate(String type) {
-        this.type = type;
+        super(type);
         this.link = type + "_link";
+    }
+
+    public String getLinkType() {
+        return link;
     }
 
     @Override

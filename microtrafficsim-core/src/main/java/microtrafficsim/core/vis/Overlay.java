@@ -56,7 +56,7 @@ public interface Overlay {
     /**
      * Enable this overlay. Disabled overlays should not be displayed and receive user events.
      *
-     * @param enabled set to {@code true} to enable this layer.
+     * @param enabled set to {@code true} to enable this overlay.
      */
     void setEnabled(boolean enabled);
 

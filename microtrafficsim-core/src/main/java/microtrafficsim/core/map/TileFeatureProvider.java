@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * @author Maximilian Luz
  */
-public interface TileFeatureProvider {
+public interface TileFeatureProvider extends MapProvider {
 
     /**
      * Returns the tiling-scheme this provider uses.

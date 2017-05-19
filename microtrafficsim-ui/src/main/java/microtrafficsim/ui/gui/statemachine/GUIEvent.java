@@ -7,14 +7,25 @@ package microtrafficsim.ui.gui.statemachine;
  * @author Dominic Parga Cacheiro
  */
 public enum GUIEvent {
+    EXIT,
+    /* map */
     LOAD_MAP,
-    CHANGE_AREA_SELECTION,
-    NEW_SCENARIO,
-    ACCEPT_PREFS,
-    CANCEL_PREFS,
-    EDIT_SCENARIO,
+    SAVE_MAP,
+    /* simulation */
     RUN_SIM,
     RUN_SIM_ONE_STEP,
     PAUSE_SIM,
-    EXIT
+    NEW_SCENARIO,
+    EDIT_SCENARIO,
+    CHANGE_AREA_SELECTION,
+    /* load/save scenario */
+    LOAD_CONFIG,
+    SAVE_CONFIG,
+    LOAD_ROUTES,
+    SAVE_ROUTES,
+    LOAD_AREAS,
+    SAVE_AREAS,
+    /* preferences */
+    ACCEPT_PREFS,
+    CANCEL_PREFS,
 }

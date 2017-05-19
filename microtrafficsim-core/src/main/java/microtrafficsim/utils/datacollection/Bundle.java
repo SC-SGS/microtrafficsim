@@ -13,6 +13,7 @@ public class Bundle extends Data implements Iterable<Data> {
 
     private ArrayList<Data> list;
 
+    @SuppressWarnings("unchecked")
     Bundle() {
         super(new ArrayList<Data>());
         list = (ArrayList<Data>) get();

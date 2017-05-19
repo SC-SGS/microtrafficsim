@@ -51,9 +51,9 @@ public class WayEntity extends Entity {
         Set<FeatureDefinition> features = new HashSet<>(this.features);
         WayEntity              ce       = new WayEntity(this.id, nodes, features);
 
-        for (Component component : this.components.values()) {
+        for (Component component : this.getAll().values()) {
             Component cc = component.clone(ce);
-            ce.components.put(cc.getType(), cc);
+            ce.getAll().put(cc.getType(), cc);
         }
 
         return ce;

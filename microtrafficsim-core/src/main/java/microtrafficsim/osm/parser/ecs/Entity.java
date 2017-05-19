@@ -1,8 +1,10 @@
 package microtrafficsim.osm.parser.ecs;
 
+import microtrafficsim.utils.collections.Composite;
+
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 
 /**
@@ -10,21 +12,20 @@ import java.util.HashSet;
  *
  * @author Maximilian Luz
  */
-public class Entity implements Cloneable {
-
-    protected HashMap<Class<? extends Component>, Component> components;
+public class Entity extends Composite<Component> implements Cloneable {
 
     /**
      * Constructs a new Entity without any {@code Component}s.
      */
     public Entity() {
-        this.components = new HashMap<>();
+        super();
     }
 
 
     /**
      * Set the {@code Component} associated with the specified key to the
-     * specified {@code Component}.
+     * specified {@code Component}. Note that the following expression should
+     * always be satisfied: {@code entity.get(x).getType() == x}.
      *
      * @param <T>       the type of the {@code Component}.
      * @param key       the key as the type (Class) of the {@code Component} to set.
@@ -32,9 +33,9 @@ public class Entity implements Cloneable {
      * @return the {@code Component} previously associated with the given key
      * or {@code null} if no such {@code Component} exists.
      */
-    @SuppressWarnings("unchecked")
+    @Override
     public <T extends Component> T set(Class<T> key, T component) {
-        return (T) components.put(key, component);
+        return super.set(key, component);
     }
 
     /**
@@ -44,9 +45,9 @@ public class Entity implements Cloneable {
      * @param key the key as the type (Class) of the {@code Component} to get.
      * @return the {@code Component} associated with the given key.
      */
-    @SuppressWarnings("unchecked")
+    @Override
     public <T extends Component> T get(Class<T> key) {
-        return (T) components.get(key);
+        return super.get(key);
     }
 
     /**
@@ -56,21 +57,23 @@ public class Entity implements Cloneable {
      * @param key the key as the type (Class) of the {@code Component} to remove.
      * @return the {@code Component} associated with the given key.
      */
-    @SuppressWarnings("unchecked")
+    @Override
     public <T extends Component> T remove(Class<T> key) {
-        return (T) components.remove(key);
+        return super.remove(key);
     }
 
     /**
-     * Return the {@code HashMap} internally used to store the {@code
-     * Components}. Any changes on this map will be reflected in this {@code
-     * Entity}.
+     * Return the {@code Map} internally used to store the {@code
+     * Components}. Any changes to this map will be reflected in this {@code
+     * Entity}. Note that the following expression should * always be satisfied:
+     * {@code entity.get(x).getType() == x}.
      *
-     * @return the {@code HashMap} containing all {@code Components} of
+     * @return the {@code Map} containing all {@code Components} of
      * this {@code Entity}.
      */
-    public HashMap<Class<? extends Component>, Component> getAll() {
-        return components;
+    @Override
+    public Map<Class<? extends Component>, Component> getAll() {
+        return super.getAll();
     }
 
 
@@ -84,7 +87,7 @@ public class Entity implements Cloneable {
     public Collection<Long> getRequiredNodes() {
         Collection<Long> nodes = new HashSet<>();
 
-        for (Component c : components.values()) {
+        for (Component c : getAll().values()) {
             nodes.addAll(c.getRequiredNodes());
         }
 
@@ -101,7 +104,7 @@ public class Entity implements Cloneable {
     public Collection<Long> getRequiredWays() {
         Collection<Long> ways = new HashSet<>();
 
-        for (Component c : components.values())
+        for (Component c : getAll().values())
             ways.addAll(c.getRequiredWays());
 
         return ways;
@@ -115,9 +118,9 @@ public class Entity implements Cloneable {
     @Override
     public Entity clone() {
         Entity ce = new Entity();
-        for (Component component : components.values()) {
+        for (Component component : getAll().values()) {
             Component cc = component.clone(this);
-            ce.components.put(cc.getType(), cc);
+            ce.getAll().put(cc.getType(), cc);
         }
         return ce;
     }

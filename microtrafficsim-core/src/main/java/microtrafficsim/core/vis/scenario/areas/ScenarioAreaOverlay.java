@@ -4,6 +4,7 @@ import com.jogamp.newt.event.KeyAdapter;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseListener;
+import microtrafficsim.core.map.ProjectedAreas;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.glui.Component;
@@ -92,8 +93,8 @@ public class ScenarioAreaOverlay implements Overlay {
         removeObjects.forEach(ui::removeComponent);
     }
 
-    public ArrayList<Area> getAreas() {
-        ArrayList<Area> areas = new ArrayList<>();
+    public ProjectedAreas getAreas() {
+        ProjectedAreas areas = new ProjectedAreas();
 
         for (Component c : ui.getComponents()) {
             if (c instanceof AreaComponent) {

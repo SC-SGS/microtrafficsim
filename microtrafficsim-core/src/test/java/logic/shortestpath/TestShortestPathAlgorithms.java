@@ -1,11 +1,14 @@
 package logic.shortestpath;
 
+import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.astar.AStars;
@@ -20,6 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 
+import java.util.HashMap;
 import java.util.Stack;
 
 import static org.junit.Assert.assertEquals;
@@ -43,6 +47,10 @@ public class TestShortestPathAlgorithms {
     private static Vec2d                                     rubbishVec2d;
     private static LongGenerator                             idGenerator;
 
+    /* data structures for easier graph build */
+    private final HashMap<String, Node> nodes = new HashMap<>();
+    private final HashMap<String, StreetEntity> edges = new HashMap<>();
+
     private final int               maxVelocity = 1;
     private Stack<ShortestPathEdge> shortestPath;
     private Stack<DirectedEdge>     correctShortestPath;
@@ -63,6 +71,8 @@ public class TestShortestPathAlgorithms {
         graph = new StreetGraph(new Bounds(0, 0, 0, 0));
         correctShortestPath = new Stack<>();
         shortestPath = new Stack<>();
+        nodes.clear();
+        edges.clear();
     }
 
     /*
@@ -147,21 +157,6 @@ public class TestShortestPathAlgorithms {
     | test case impl |
     |================|
     */
-    private DirectedEdge createEdge(int lengthInCells, Node origin, Node destination, int noOfLines) {
-        return new DirectedEdge(
-                idGenerator.next(),
-                lengthInCells * config.metersPerCell,
-                rubbishVec2d,
-                rubbishVec2d,
-                origin,
-                destination,
-                config.metersPerCell,
-                noOfLines,
-                maxVelocity,
-                (byte)0
-        );
-    }
-
     /**
      * <p>
      * This method creates a graph using {@link DirectedEdge} and {@link Node} and checks the shortest path algorithm
@@ -176,76 +171,40 @@ public class TestShortestPathAlgorithms {
      */
     private void isDangerous() {
         // create nodes
-        Node a = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node b = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node c = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node d = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node e = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        nodes.put("a", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("b", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("c", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("d", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("e", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
 
         // create edges and add them to the nodes
-        DirectedEdge ab = createEdge(1, a, b, 1);
-        a.addEdge(ab);
-        b.addEdge(ab);
+        edges.put("ab", createAndAddForwardEdge(1, "a", "b", 1));
+        edges.put("bc", createAndAddForwardEdge(2, "b", "c", 1));
+        edges.put("bd", createAndAddForwardEdge(5, "b", "d", 1));
+        edges.put("cd", createAndAddForwardEdge(1, "c", "d", 1));
+        edges.put("de", createAndAddForwardEdge(1, "d", "e", 1));
+        edges.put("ec", createAndAddForwardEdge(1, "e", "c", 1));
 
-        DirectedEdge bc = createEdge(2, b, c, 1);
-        b.addEdge(bc);
-        c.addEdge(bc);
 
-        DirectedEdge bd = createEdge(5, b, d, 1);
-        b.addEdge(bd);
-        d.addEdge(bd);
+        finishBuildingGraph();
 
-        DirectedEdge cd = createEdge(1, c, d, 1);
-        c.addEdge(cd);
-        d.addEdge(cd);
 
-        DirectedEdge de = createEdge(1, d, e, 1);
-        d.addEdge(de);
-        e.addEdge(de);
-
-        DirectedEdge ec = createEdge(1, e, c, 1);
-        e.addEdge(ec);
-        c.addEdge(ec);
-
-        // add nodes to the graph
-        graph.addNode(a);
-        graph.addNode(b);
-        graph.addNode(c);
-        graph.addNode(d);
-        graph.addNode(e);
-
-        // add edges to the graph
-        graph.addEdge(ab);
-        graph.addEdge(bc);
-        graph.addEdge(bd);
-        graph.addEdge(cd);
-        graph.addEdge(de);
-        graph.addEdge(ec);
-
-        // create turning lanes
-        b.addConnector(ab.getLane(0), bc.getLane(0));
-        b.addConnector(ab.getLane(0), bd.getLane(0));
-        c.addConnector(bc.getLane(0), cd.getLane(0));
-        c.addConnector(ec.getLane(0), cd.getLane(0));
-        d.addConnector(bd.getLane(0), de.getLane(0));
-        d.addConnector(cd.getLane(0), de.getLane(0));
-        e.addConnector(de.getLane(0), ec.getLane(0));
-
+        graph.updateGraphGUID();
         String graphBefore = graph.toString();
 
         // shortest path
-        start = a;
-        end   = e;
+        start = nodes.get("a");
+        end   = nodes.get("e");
 
         shortestPath.clear();
         shortestPathAlgorithm.findShortestPath(start, end, shortestPath);
 
         // correct path
         correctShortestPath.clear();
-        correctShortestPath.push(de);
-        correctShortestPath.push(cd);
-        correctShortestPath.push(bc);
-        correctShortestPath.push(ab);
+        correctShortestPath.push((DirectedEdge) edges.get("de").getForwardEdge());
+        correctShortestPath.push((DirectedEdge) edges.get("cd").getForwardEdge());
+        correctShortestPath.push((DirectedEdge) edges.get("bc").getForwardEdge());
+        correctShortestPath.push((DirectedEdge) edges.get("ab").getForwardEdge());
 
         String graphAfter = graph.toString();
 
@@ -270,115 +229,48 @@ public class TestShortestPathAlgorithms {
      */
     private void isShortestPathCorrect() {
         // create nodes
-        Node a = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node b = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node c = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node d = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node e = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node f = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node g = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node h = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        nodes.put("a", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("b", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("c", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("d", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("e", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("f", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("g", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("h", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
 
         // create edges and add them to the nodes
-        DirectedEdge ab = createEdge(1, a, b, 1);
-        a.addEdge(ab);
-        b.addEdge(ab);
+        edges.put("ab", createAndAddEdge(1, "a", "b", 1));
+        edges.put("ac", createAndAddForwardEdge(1, "a", "c", 3));
+        edges.put("bc", createAndAddForwardEdge(2, "b", "c", 3));
+        edges.put("de", createAndAddForwardEdge(1, "d", "e", 3));
+        edges.put("df", createAndAddForwardEdge(1, "d", "f", 3));
+        edges.put("ea", createAndAddForwardEdge(1, "e", "a", 1));
+        edges.put("fh", createAndAddForwardEdge(1, "f", "h", 2));
+        edges.put("gd", createAndAddForwardEdge(1, "g", "d", 3));
+        edges.put("gf", createAndAddForwardEdge(1, "g", "f", 2));
+        edges.put("he", createAndAddForwardEdge(1, "h", "e", 4));
+        edges.put("hg", createAndAddForwardEdge(1, "h", "g", 4));
 
-        DirectedEdge ac = createEdge(1, a, c, 3);
-        a.addEdge(ac);
-        c.addEdge(ac);
 
-        DirectedEdge ba = createEdge(1, b, a, 1);
-        a.addEdge(ba);
-        b.addEdge(ba);
+        finishBuildingGraph();
 
-        DirectedEdge bc = createEdge(2, b, c, 3);
-        b.addEdge(bc);
-        c.addEdge(bc);
 
-        DirectedEdge de = createEdge(1, d, e, 1);
-        d.addEdge(de);
-        e.addEdge(de);
-
-        DirectedEdge df = createEdge(1, d, f, 3);
-        d.addEdge(df);
-        f.addEdge(df);
-
-        DirectedEdge ea = createEdge(1, e, a, 1);
-        e.addEdge(ea);
-        a.addEdge(ea);
-
-        DirectedEdge fh = createEdge(1, f, h, 2);
-        f.addEdge(fh);
-        h.addEdge(fh);
-
-        DirectedEdge gd = createEdge(1, g, d, 3);
-        g.addEdge(gd);
-        d.addEdge(gd);
-
-        DirectedEdge gf = createEdge(1, g, f, 2);
-        g.addEdge(gf);
-        f.addEdge(gf);
-
-        DirectedEdge he = createEdge(1, h, e, 4);
-        h.addEdge(he);
-        e.addEdge(he);
-
-        DirectedEdge hg = createEdge(1, h, g, 4);
-        h.addEdge(hg);
-        g.addEdge(hg);
-
-        // add nodes to the graph
-        graph.addNode(a);
-        graph.addNode(b);
-        graph.addNode(c);
-        graph.addNode(d);
-        graph.addNode(e);
-        graph.addNode(f);
-        graph.addNode(g);
-        graph.addNode(h);
-
-        // add edges to the graph
-        graph.addEdge(ab);
-        graph.addEdge(ac);
-        graph.addEdge(ba);
-        graph.addEdge(bc);
-        graph.addEdge(de);
-        graph.addEdge(df);
-        graph.addEdge(ea);
-        graph.addEdge(fh);
-        graph.addEdge(gd);
-        graph.addEdge(gf);
-        graph.addEdge(he);
-        graph.addEdge(hg);
-
-        // create turning lanes
-        a.addConnector(ea.getLane(0), ab.getLane(0));
-        a.addConnector(ea.getLane(0), ac.getLane(0));
-        b.addConnector(ab.getLane(0), bc.getLane(0));
-        d.addConnector(gd.getLane(0), de.getLane(0));
-        e.addConnector(de.getLane(0), ea.getLane(0));
-        e.addConnector(he.getLane(0), ea.getLane(0));
-        f.addConnector(df.getLane(0), fh.getLane(0));
-        f.addConnector(gf.getLane(0), fh.getLane(0));
-        g.addConnector(hg.getLane(0), gd.getLane(0));
-        g.addConnector(hg.getLane(0), gf.getLane(0));
-        h.addConnector(fh.getLane(0), he.getLane(0));
-        h.addConnector(fh.getLane(0), hg.getLane(0));
+        // finish
+        graph.updateGraphGUID();
 
         // shortest path
-        start = g;
-        end   = c;
+        start = nodes.get("g");
+        end   = nodes.get("c");
 
         shortestPath.clear();
         shortestPathAlgorithm.findShortestPath(start, end, shortestPath);
 
         // correct path
         correctShortestPath.clear();
-        correctShortestPath.push(ac);
-        correctShortestPath.push(ea);
-        correctShortestPath.push(de);
-        correctShortestPath.push(gd);
+        correctShortestPath.push((DirectedEdge) edges.get("ac").getForwardEdge());
+        correctShortestPath.push((DirectedEdge) edges.get("ea").getForwardEdge());
+        correctShortestPath.push((DirectedEdge) edges.get("de").getForwardEdge());
+        correctShortestPath.push((DirectedEdge) edges.get("gd").getForwardEdge());
 
         logger.info("Test: Is shortest path correct?");
         assertEquals(correctShortestPath, shortestPath);
@@ -390,132 +282,191 @@ public class TestShortestPathAlgorithms {
      * for correctness, if there is more than one shortest path.
      */
     private void multipleCorrectPathsPossible() {
-        // create nodes
-        Node a = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node b = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node c = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node d = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node e = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node f = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node g = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
-        Node h = new Node(idGenerator.next(), uselessPosition, config.crossingLogic);
+        /* create nodes */
+        nodes.put("a", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("b", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("c", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("d", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("e", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("f", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("g", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
+        nodes.put("h", new Node(idGenerator.next(), uselessPosition, config.crossingLogic));
 
-        // create edges and add them to the nodes
-        DirectedEdge ab = createEdge(1, a, b, 1);
-        a.addEdge(ab);
-        b.addEdge(ab);
+        /* create edges and add them to the nodes */
+        edges.put("ab", createAndAddEdge(1, "a", "b", 1));
+        edges.put("ac", createAndAddForwardEdge(1, "a", "c", 3));
+        edges.put("bc", createAndAddForwardEdge(1, "b", "c", 2));
+        edges.put("de", createAndAddForwardEdge(1, "d", "e", 1));
+        edges.put("df", createAndAddForwardEdge(1, "d", "f", 3));
+        edges.put("ea", createAndAddForwardEdge(1, "e", "a", 1));
+        edges.put("eb", createAndAddForwardEdge(1, "e", "b", 1));
+        edges.put("fh", createAndAddForwardEdge(1, "f", "h", 2));
+        edges.put("gd", createAndAddForwardEdge(1, "g", "d", 3));
+        edges.put("gf", createAndAddForwardEdge(1, "g", "f", 2));
+        edges.put("he", createAndAddForwardEdge(1, "h", "e", 4));
+        edges.put("hg", createAndAddForwardEdge(1, "h", "g", 4));
 
-        DirectedEdge ac = createEdge(1, a, c, 3);
-        a.addEdge(ac);
-        c.addEdge(ac);
 
-        DirectedEdge ba = createEdge(1, b, a, 1);
-        a.addEdge(ba);
-        b.addEdge(ba);
+        finishBuildingGraph();
 
-        DirectedEdge bc = createEdge(1, b, c, 2);
-        b.addEdge(bc);
-        c.addEdge(bc);
 
-        DirectedEdge de = createEdge(1, d, e, 1);
-        d.addEdge(de);
-        e.addEdge(de);
-
-        DirectedEdge df = createEdge(1, d, f, 3);
-        d.addEdge(df);
-        f.addEdge(df);
-
-        DirectedEdge ea = createEdge(1, e, a, 1);
-        e.addEdge(ea);
-        a.addEdge(ea);
-
-        DirectedEdge eb = createEdge(1, e, b, 1);
-        e.addEdge(eb);
-        b.addEdge(eb);
-
-        DirectedEdge fh = createEdge(1, f, h, 2);
-        f.addEdge(fh);
-        h.addEdge(fh);
-
-        DirectedEdge gd = createEdge(1, g, d, 3);
-        g.addEdge(gd);
-        d.addEdge(gd);
-
-        DirectedEdge gf = createEdge(1, g, f, 2);
-        g.addEdge(gf);
-        f.addEdge(gf);
-
-        DirectedEdge he = createEdge(1, h, e, 4);
-        h.addEdge(he);
-        e.addEdge(he);
-
-        DirectedEdge hg = createEdge(1, h, g, 4);
-        h.addEdge(hg);
-        g.addEdge(hg);
-
-        // add nodes to the graph
-        graph.addNode(a);
-        graph.addNode(b);
-        graph.addNode(c);
-        graph.addNode(d);
-        graph.addNode(e);
-        graph.addNode(f);
-        graph.addNode(g);
-        graph.addNode(h);
-
-        // add edges to the graph
-        graph.addEdge(ab);
-        graph.addEdge(ac);
-        graph.addEdge(ba);
-        graph.addEdge(bc);
-        graph.addEdge(de);
-        graph.addEdge(df);
-        graph.addEdge(ea);
-        graph.addEdge(eb);
-        graph.addEdge(fh);
-        graph.addEdge(gd);
-        graph.addEdge(gf);
-        graph.addEdge(he);
-        graph.addEdge(hg);
-
-        // create turning lanes
-        a.addConnector(ea.getLane(0), ab.getLane(0));
-        a.addConnector(ea.getLane(0), ac.getLane(0));
-        b.addConnector(ab.getLane(0), bc.getLane(0));
-        d.addConnector(gd.getLane(0), de.getLane(0));
-        e.addConnector(de.getLane(0), ea.getLane(0));
-        e.addConnector(he.getLane(0), ea.getLane(0));
-        f.addConnector(df.getLane(0), fh.getLane(0));
-        f.addConnector(gf.getLane(0), fh.getLane(0));
-        g.addConnector(hg.getLane(0), gd.getLane(0));
-        g.addConnector(hg.getLane(0), gf.getLane(0));
-        h.addConnector(fh.getLane(0), he.getLane(0));
-        h.addConnector(fh.getLane(0), hg.getLane(0));
-
-        // shortest path
-        start = g;
-        end   = c;
+        start = nodes.get("g");
+        end   = nodes.get("c");
 
         shortestPath.clear();
         shortestPathAlgorithm.findShortestPath(start, end, shortestPath);
 
-        // correct paths
+        /* correct paths */
         correctShortestPath.clear();
-        // g-d-e-b-c
-        correctShortestPath.push(bc);
-        correctShortestPath.push(eb);
-        correctShortestPath.push(de);
-        correctShortestPath.push(gd);
+        /* g-d-e-b-c */
+        correctShortestPath.push((DirectedEdge) edges.get("bc").getForwardEdge());
+        correctShortestPath.push((DirectedEdge) edges.get("eb").getForwardEdge());
+        correctShortestPath.push((DirectedEdge) edges.get("de").getForwardEdge());
+        correctShortestPath.push((DirectedEdge) edges.get("gd").getForwardEdge());
         logger.info("Test: Correct if there are two shortest paths?");
         boolean isCorrect = shortestPath.equals(correctShortestPath);
         if (!isCorrect) {
-            // g-d-e-a-c
+            /* g-d-e-a-c */
             correctShortestPath.clear();
-            correctShortestPath.push(ac);
-            correctShortestPath.push(ea);
-            correctShortestPath.push(de);
-            correctShortestPath.push(gd);
+            correctShortestPath.push((DirectedEdge) edges.get("ac").getForwardEdge());
+            correctShortestPath.push((DirectedEdge) edges.get("ea").getForwardEdge());
+            correctShortestPath.push((DirectedEdge) edges.get("de").getForwardEdge());
+            correctShortestPath.push((DirectedEdge) edges.get("gd").getForwardEdge());
             assertTrue(shortestPath.equals(correctShortestPath));
+        }
+    }
+
+
+    /*
+    |=======|
+    | utils |
+    |=======|
+    */
+    private StreetEntity createAndAddEdge(int lengthInCells, String originStr, String destinationStr, int nLanes) {
+        Node origin = nodes.get(originStr);
+        Node destination = nodes.get(destinationStr);
+
+        DirectedEdge forward = new DirectedEdge(
+                idGenerator.next(),
+                lengthInCells * config.metersPerCell,
+                rubbishVec2d, rubbishVec2d,
+                Orientation.FORWARD,
+                origin, destination,
+                new StreetType(StreetType.UNCLASSIFIED),
+                nLanes,
+                maxVelocity,
+                config.metersPerCell,
+                type -> (byte) 0
+        );
+
+        DirectedEdge backward = new DirectedEdge(
+                idGenerator.next(),
+                lengthInCells * config.metersPerCell,
+                rubbishVec2d, rubbishVec2d,
+                Orientation.BACKWARD,
+                destination, origin,
+                new StreetType(StreetType.UNCLASSIFIED),
+                nLanes,
+                maxVelocity,
+                config.metersPerCell,
+                type -> (byte) 0
+        );
+
+        StreetEntity entity = new StreetEntity(forward, backward, null);
+        forward.setEntity(entity);
+        backward.setEntity(entity);
+
+        origin.addEdge(forward);
+        origin.addEdge(backward);
+        destination.addEdge(forward);
+        destination.addEdge(backward);
+
+        return entity;
+    }
+
+    private StreetEntity createAndAddForwardEdge(int lengthInCells,
+                                                 String originStr,
+                                                 String destinationStr,
+                                                 int nLanes) {
+        Node origin = nodes.get(originStr);
+        Node destination = nodes.get(destinationStr);
+
+        DirectedEdge forward = new DirectedEdge(
+                idGenerator.next(),
+                lengthInCells * config.metersPerCell,
+                rubbishVec2d, rubbishVec2d,
+                Orientation.FORWARD,
+                origin, destination,
+                new StreetType(StreetType.UNCLASSIFIED),
+                nLanes,
+                maxVelocity,
+                config.metersPerCell,
+                type -> (byte) 0
+        );
+
+        StreetEntity entity = new StreetEntity(forward, null, null);
+        forward.setEntity(entity);
+
+        origin.addEdge(forward);
+        destination.addEdge(forward);
+
+        return entity;
+    }
+
+    private StreetEntity createAndAddBackwardEdge(int lengthInCells,
+                                                  String originStr,
+                                                  String destinationStr,
+                                                  int nLanes) {
+        Node origin = nodes.get(originStr);
+        Node destination = nodes.get(destinationStr);
+
+        DirectedEdge backward = new DirectedEdge(
+                idGenerator.next(),
+                lengthInCells * config.metersPerCell,
+                rubbishVec2d, rubbishVec2d,
+                Orientation.BACKWARD,
+                destination, origin,
+                new StreetType(StreetType.UNCLASSIFIED),
+                nLanes,
+                maxVelocity,
+                config.metersPerCell,
+                type -> (byte) 0
+        );
+
+        StreetEntity entity = new StreetEntity(backward, null, null);
+        backward.setEntity(entity);
+
+        origin.addEdge(backward);
+        destination.addEdge(backward);
+
+        return entity;
+    }
+
+    private void finishBuildingGraph() {
+        /* add nodes to the graph */
+        nodes.values().forEach(graph::addNode);
+
+
+        /* add edges to the graph */
+        for (StreetEntity entity : edges.values()) {
+            DirectedEdge forward  = (DirectedEdge) entity.getForwardEdge();
+            DirectedEdge backward = (DirectedEdge) entity.getBackwardEdge();
+
+            if (forward != null)
+                graph.addEdge(forward);
+            if (backward != null)
+                graph.addEdge(backward);
+        }
+
+
+        /* create turning lanes */
+        for (Node node : nodes.values()) {
+            for (DirectedEdge incoming : node.getIncomingEdges()) {
+                for (DirectedEdge leaving : node.getLeavingEdges()) {
+                    node.addConnector(incoming.getLane(0), leaving.getLane(0));
+                }
+            }
+            node.getLeavingEdges(null);
         }
     }
 }

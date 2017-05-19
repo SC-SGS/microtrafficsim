@@ -1,22 +1,21 @@
 package logic.validation.scenarios;
 
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
-import microtrafficsim.core.logic.Route;
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.routes.MetaRoute;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.Car;
+import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
+import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
-import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
-import microtrafficsim.core.simulation.utils.ODMatrix;
-import microtrafficsim.core.simulation.utils.SparseODMatrix;
+import microtrafficsim.core.simulation.utils.RouteContainer;
+import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 
 import java.util.ArrayList;
-import java.util.function.Supplier;
 
 /**
  * Validates the crossing logic in a scenario where a street crosses a motorway.
@@ -24,44 +23,35 @@ import java.util.function.Supplier;
  * @author Dominic Parga Cacheiro
  */
 public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
-
     private Node bottomMotorway, topMotorway, bottomRight;
-    private ODMatrix secondSpawnDelayMatrix;
 
     /**
      * Initializes the matrices (for routes and spawn delays). For this, it has to sort the few nodes to guarantee
      * determinism independent of complicated coordinate calculations.
      *
-     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph)
+     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, ScenarioBuilder)
      */
     public MotorwaySlipRoadScenario(SimulationConfig config,
                                     Graph graph,
-                                    Supplier<VisualizationVehicleEntity> visVehicleFactory) {
-        super(config, graph);
-        init();
+                                    VisVehicleFactory visVehicleFactory)
+    {
+        super(config, graph, new VehicleScenarioBuilder(
+                config.seed,
+                (id, seed, scenario, metaRoute) -> {
+                    Vehicle vehicle = new Car(id, 1, scenario.getConfig().visualization.style);
+                    Driver driver = new BasicDriver(seed, 0, metaRoute.getSpawnDelay());
+                    driver.setRoute(metaRoute.clone());
+                    driver.setVehicle(vehicle);
+                    vehicle.setDriver(driver);
 
-        secondSpawnDelayMatrix = new SparseODMatrix();
-        secondSpawnDelayMatrix.add(5, bottomMotorway, topMotorway);
-        secondSpawnDelayMatrix.add(13, bottomRight, topMotorway);
+                    vehicle.addStateListener(scenario.getVehicleContainer());
 
-        setScenarioBuilder(new Builder(config.seed, visVehicleFactory));
-    }
+                    return vehicle;
+                },
+                visVehicleFactory
+        ));
 
-    /**
-     * @param config
-     * @return the given config updated; just for practical purpose
-     */
-    public static SimulationConfig setupConfig(SimulationConfig config) {
 
-        QueueScenarioSmall.setupConfig(config);
-
-        config.maxVehicleCount                            = 3;
-        config.crossingLogic.friendlyStandingInJamEnabled = false;
-
-        return config;
-    }
-
-    private void init() {
         /* get nodes sorted by lon */
         ArrayList<Node> sortedNodes = new ArrayList<>(getGraph().getNodes());
         sortedNodes.sort((n1, n2) -> n1.getCoordinate().lon > n2.getCoordinate().lon ? 1 : -1);
@@ -73,53 +63,25 @@ public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
 
 
         /* setup scenario matrices */
-        ODMatrix odMatrix = new SparseODMatrix();
-        odMatrix.add(2, bottomMotorway, topMotorway);
-        odMatrix.add(2, bottomRight, topMotorway);
-
-        ODMatrix spawnDelayMatrix = new SparseODMatrix();
-        spawnDelayMatrix.add(0, bottomMotorway, topMotorway);
-        spawnDelayMatrix.add(9, bottomRight, topMotorway);
-        addSubScenario(odMatrix, spawnDelayMatrix);
+        RouteContainer routes = new SortedRouteContainer();
+        routes.add(new MetaRoute(bottomMotorway, topMotorway, 0));
+        routes.add(new MetaRoute(bottomMotorway, topMotorway, 0));
+        routes.add(new MetaRoute(bottomRight,    topMotorway, 9));
+        routes.add(new MetaRoute(bottomRight,    topMotorway, 9));
+        addSubScenario(routes);
     }
 
 
-    private class Builder extends VehicleScenarioBuilder {
+    /**
+     * @param config
+     * @return the given config updated; just for practical purpose
+     */
+    public static SimulationConfig setupConfig(SimulationConfig config) {
+        QueueScenarioSmall.setupConfig(config);
 
-        final boolean[] toggle;
+        config.maxVehicleCount                            = 3;
+        config.crossingLogic.friendlyStandingInJamEnabled = false;
 
-        public Builder(long seed, Supplier<VisualizationVehicleEntity> visVehicleFactory) {
-
-            super(seed, visVehicleFactory);
-
-            toggle = new boolean[]{false, false};
-
-        }
-
-        @Override
-        protected Vehicle createLogicVehicle(Scenario scenario, Route<Node> route) {
-
-            MotorwaySlipRoadScenario motorwaySlipRoadScenario = (MotorwaySlipRoadScenario) scenario;
-            long id   = idGenerator.next();
-            long seed = seedGenerator.next();
-
-            // toggle spawns for two scenarios in one run
-            int spawnDelay;
-            int idx = (route.getStart() == bottomMotorway) ? 0 : 1;
-
-            if (toggle[idx])
-                spawnDelay = motorwaySlipRoadScenario.getSpawnDelayMatrix().get(route.getStart(), route.getEnd());
-            else
-                spawnDelay = motorwaySlipRoadScenario.secondSpawnDelayMatrix.get(route.getStart(), route.getEnd());
-            toggle[idx] = !toggle[idx];
-
-            Vehicle car = new Car(id, 1, scenario.getConfig().visualization.style);
-            Driver driver = new BasicDriver(seed, 0, spawnDelay);
-            driver.setRoute(route);
-            driver.setVehicle(car);
-            car.setDriver(driver);
-            car.addStateListener(scenario.getVehicleContainer());
-            return car;
-        }
+        return config;
     }
 }

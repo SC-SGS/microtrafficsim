@@ -3,9 +3,10 @@ package microtrafficsim.core.map.style;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.layers.LayerDefinition;
-import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
+import microtrafficsim.core.map.style.impl.DarkMonochromeStyleSheet;
 import microtrafficsim.core.map.style.predicates.MajorStreetBasePredicate;
-import microtrafficsim.core.map.style.predicates.MinorStreetBasePredicate;
+import microtrafficsim.core.map.style.predicates.BasicStreetBasePredicate;
+import microtrafficsim.core.map.style.predicates.StreetBasePredicate;
 import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.parser.features.MapFeatureGenerator;
 import microtrafficsim.core.parser.features.streets.StreetFeatureGenerator;
@@ -23,185 +24,30 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Predicate;
 
+
 /**
- * <p>
  * A basic style-sheet for the MapViewer. It implements basic functionality, so the sub-classes does only have to
  * care for definitions like colors.
  *
- * @author Dominic Parga Cacheiro
+ * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public abstract class BasicStyleSheet implements StyleSheet {
-
     private final EasyMarkableLogger logger = new EasyMarkableLogger(BasicStyleSheet.class);
 
-    private static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
+    public static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
 
-    private ArrayList<MapFeatureDefinition<?>> features;
-    private ArrayList<LayerDefinition>         layers;
+    protected ArrayList<MapFeatureDefinition<?>> features = new ArrayList<>();
+    protected ArrayList<LayerDefinition>         layers = new ArrayList<>();
+
 
     /**
-     * This constructor calls {@link #initStyleCreation(String[])} before it constructs this style sheet. This method
-     * can be used e.g. to define colors in sub-classes.
+     * Creates a new BasicStyleSheet by calling {@link #initialize()}.
      */
     protected BasicStyleSheet() {
-
-        /* base feature names */
-        String[] simpleNames = new String[]{
-                "motorway",
-                "trunk",
-                "primary",
-                "secondary",
-                "tertiary",
-                "unclassified",
-                "residential",
-                "road",
-                "living_street"
-        };
-
-        /* change names for feature definition */
-        String[] fullNames = new String[simpleNames.length];
-        for (int i = 0; i < simpleNames.length; i++)
-            fullNames[i] = "streets:" + simpleNames[i];
-
-        /*
-         * This method call is needed here to make the style-sheet-definition as easy as possible for sub-classes.
-         * The other option would be a method like "create()", which has to be called in the sub-classes'
-         * constructors AFTER all colors are defined.
-         */
-        initStyleCreation(simpleNames);
-
-        /* feature predicates */
-        @SuppressWarnings("unchecked")
-        Predicate<Way>[] predicates = new Predicate[simpleNames.length];
-        for (int i = 0; i < predicates.length; i++) {
-            if (i <= 4)
-                predicates[i] = new MajorStreetBasePredicate(simpleNames[i]);
-            else
-                predicates[i] = new MinorStreetBasePredicate(simpleNames[i]);
-        }
-
-        /* define and add the features */
-        MapFeatureGenerator<Street> generator = new StreetFeatureGenerator();
-
-        features = new ArrayList<>(fullNames.length);
-        for (int i = 0; i < fullNames.length; i++)
-            features.add(genStreetFeatureDef(fullNames[i], generator, predicates[i]));
-
-        /* styles and layers */
-        ShaderProgramSource streets = getStreetShader();
-
-        int index = 0;
-        layers = new ArrayList<>();
-
-        for (int zoom = 19; zoom >= 0; zoom--) {
-            for (int i = 0; i < simpleNames.length; i++) {
-                String simpleName = simpleNames[i];
-                String fullName = fullNames[i];
-
-                if (isOutlineActive(simpleName, zoom)) {
-                    Style style = genStyle(
-                            streets,
-                            getColorOutline(simpleName),
-                            getLineWidthOutline(simpleName, zoom),
-                            SCALE_MAXLEVEL);
-                    layers.add(genLayer(fullName + ":outline:" + zoom,
-                            index++, zoom, zoom, fullName, style));
-                }
-            }
-
-            for (int i = 0; i < simpleNames.length; i++) {
-                String simpleName = simpleNames[i];
-                String fullName = fullNames[i];
-
-                if (isInlineActive(simpleName, zoom)) {
-                    Style style = genStyle(
-                            streets,
-                            getColorInline(simpleName),
-                            getLineWidthInline(simpleName, zoom),
-                            SCALE_MAXLEVEL);
-                    layers.add(genLayer(fullName + ":inline:" + zoom,
-                            index++, zoom, zoom, fullName, style));
-                }
-            }
-        }
+        initialize();
     }
 
-    /*
-    |============================|
-    | definition for sub-classes |
-    |============================|
-    */
-    /**
-     * This method is called in {@link BasicStyleSheet#BasicStyleSheet()}. It's empty per default.
-     *
-     * @param streetFeatureNames the street features name, so sub-classes can define colors depending on the street
-     *                           feature.
-     */
-    protected void initStyleCreation(String[] streetFeatureNames) {
 
-    }
-
-    protected boolean isOutlineActive(String streetFeatureName, int zoom) {
-
-        switch (streetFeatureName) {
-            case "motorway":
-                return true;
-            case "trunk":
-                return zoom >= 5;
-            case "primary":
-                return zoom >= 7;
-            case "secondary":
-            case "tertiary":
-                return zoom >= 9;
-            case "unclassified":
-            case "residential":
-            case "road":
-                return zoom >= 12;
-            case "living_street":
-                return zoom >= 13;
-            default:
-                logger.info("It is not defined whether " + streetFeatureName + " has an active outline.");
-                return false;
-        }
-    }
-
-    protected boolean isInlineActive(String streetFeatureName, int zoom) {
-
-        switch (streetFeatureName) {
-            case "motorway":
-                return true;
-            case "trunk":
-                return zoom >= 5;
-            case "primary":
-                return zoom >= 7;
-            case "secondary":
-            case "tertiary":
-                return zoom >= 9;
-            case "unclassified":
-            case "residential":
-            case "road":
-                return zoom >= 12;
-            case "living_street":
-                return zoom >= 13;
-            default:
-                logger.info("It is not defined whether " + streetFeatureName + " has an active inline.");
-                return false;
-        }
-    }
-
-    protected abstract Color getColorOutline(String streetFeatureName);
-
-    protected abstract Color getColorInline(String streetFeatureName);
-
-    protected abstract float getLineWidthOutline(String streetFeatureName, int zoom);
-
-    protected abstract float getLineWidthInline(String streetFeatureName, int zoom);
-
-    /*
-    |================|
-    | (i) StyleSheet |
-    |================|
-    */
     @Override
     public Collection<MapFeatureDefinition<?>> getFeatureDefinitions() {
         return features;
@@ -212,11 +58,172 @@ public abstract class BasicStyleSheet implements StyleSheet {
         return layers;
     }
 
-    /*
-    |============|
-    | generation |
-    |============|
-    */
+
+    /**
+     * Initializes this style-sheet.
+     */
+    protected void initialize() {
+        /* get the streets to be displayed */
+        StreetBasePredicate[] streets = getStreetPredicates();
+
+        /* define and add the features */
+        MapFeatureGenerator<Street> generator = new StreetFeatureGenerator();
+
+        for (StreetBasePredicate street : streets)
+            features.add(genStreetFeatureDef("streets:" + street.getType(), generator, street));
+
+        /* styles and layers */
+        ShaderProgramSource shader = getStreetShader();
+
+        for (int zoom = 19; zoom >= 0; zoom--) {
+            for (StreetBasePredicate street : streets) {
+                String streetType = street.getType();
+                String featureName = "streets:" + streetType;
+
+                if (isStreetOutlineActive(streetType, zoom)) {
+                    Style style = genStreetStyle(
+                            shader,
+                            getStreetOutlineColor(streetType),
+                            getStreetLineWidthOutline(streetType, zoom),
+                            SCALE_MAXLEVEL);
+                    layers.add(genLayer(featureName + ":outline:" + zoom, layers.size(), zoom, zoom, featureName, style));
+                }
+            }
+
+            for (StreetBasePredicate street : streets) {
+                String streetType = street.getType();
+                String featureName = "streets:" + streetType;
+
+                if (isStreetInlineActive(streetType, zoom)) {
+                    Style style = genStreetStyle(
+                            shader,
+                            getStreetInlineColor(streetType),
+                            getStreetLineWidthInline(streetType, zoom),
+                            SCALE_MAXLEVEL);
+                    layers.add(genLayer(featureName + ":inline:" + zoom, layers.size(), zoom, zoom, featureName, style));
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the predicates selecting the Streets displayed with this style-sheet.
+     *
+     * @return the predicates selecting the Streets displayed with this style-sheet. The feature-layers are generated
+     * in the same order as returned in this function, meaning streets with a higher index in this array will be
+     * displayed above streets with a lower index.
+     */
+    protected StreetBasePredicate[] getStreetPredicates() {
+        return new StreetBasePredicate[] {
+                new BasicStreetBasePredicate("living_street"),
+                new BasicStreetBasePredicate("road"),
+                new BasicStreetBasePredicate("residential"),
+                new BasicStreetBasePredicate("unclassified"),
+                new MajorStreetBasePredicate("tertiary"),
+                new MajorStreetBasePredicate("secondary"),
+                new MajorStreetBasePredicate("primary"),
+                new MajorStreetBasePredicate("trunk"),
+                new MajorStreetBasePredicate("motorway"),
+        };
+    }
+
+    /**
+     * Returns if the specified street-type should be displayed with an outline at the specified zoom-level.
+     *
+     * @param streetType the type of the street as specified in the StreetBasePredicate.
+     * @param zoom the zoom-level for which this property should be queried.
+     * @return {@code true} if an outline should be rendered for the given street-type at the given zoom-level.
+     */
+    protected boolean isStreetOutlineActive(String streetType, int zoom) {
+        switch (streetType) {
+            case "motorway":
+                return true;
+            case "trunk":
+                return zoom >= 5;
+            case "primary":
+                return zoom >= 7;
+            case "secondary":
+            case "tertiary":
+                return zoom >= 9;
+            case "unclassified":
+            case "residential":
+            case "road":
+                return zoom >= 12;
+            case "living_street":
+                return zoom >= 13;
+            default:
+                logger.info("It is not defined whether " + streetType + " has an active outline.");
+                return false;
+        }
+    }
+
+    /**
+     * Returns if the specified street-type should be displayed with an inline at the specified zoom-level.
+     *
+     * @param streetType the type of the street as specified in the StreetBasePredicate.
+     * @param zoom the zoom-level for which this property should be queried.
+     * @return {@code true} if an inline should be rendered for the given street-type at the given zoom-level.
+     */
+    protected boolean isStreetInlineActive(String streetType, int zoom) {
+        switch (streetType) {
+            case "motorway":
+                return true;
+            case "trunk":
+                return zoom >= 5;
+            case "primary":
+                return zoom >= 7;
+            case "secondary":
+            case "tertiary":
+                return zoom >= 9;
+            case "unclassified":
+            case "residential":
+            case "road":
+                return zoom >= 12;
+            case "living_street":
+                return zoom >= 13;
+            default:
+                logger.info("It is not defined whether " + streetType + " has an active inline.");
+                return false;
+        }
+    }
+
+
+    /**
+     * Return the outline-color for the specified street-type.
+     *
+     * @param streetType the type of the street as specified in the StreetBasePredicate.
+     * @return the {@code Color} of the outline of the specified street-type.
+     */
+    protected abstract Color getStreetOutlineColor(String streetType);
+
+    /**
+     * Return the inline-color for the specified street-type.
+     *
+     * @param streetType the type of the street as specified in the StreetBasePredicate.
+     * @return the {@code Color} of the inline of the specified street-type.
+     */
+    protected abstract Color getStreetInlineColor(String streetType);
+
+    /**
+     * Return the width of the outline for the specified street-type and zoom-level.
+     *
+     * @param streetType the type of the street as specified in the StreetBasePredicate.
+     * @param zoom the zoom-level for which this property should be queried.
+     * @return the width of the outline for the specified arguments. This size is expressed as complete width of the
+     * line as rendered, including inline and outline.
+     */
+    protected abstract float getStreetLineWidthOutline(String streetType, int zoom);
+
+    /**
+     * Return the width of the outline for the specified street-type and zoom-level.
+     *
+     * @param streetType the type of the street as specified in the StreetBasePredicate.
+     * @param zoom the zoom-level for which this property should be queried.
+     * @return the width of the outline for the specified arguments.
+     */
+    protected abstract float getStreetLineWidthInline(String streetType, int zoom);
+
+
     /**
      * Generates a basic street-feature definition.
      *
@@ -225,7 +232,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
      * @param predicate the predicate to select the Ways contained in this feature.
      * @return the created MapFeatureDefinition.
      */
-    private MapFeatureDefinition<Street> genStreetFeatureDef(String name, MapFeatureGenerator<Street> generator,
+    protected MapFeatureDefinition<Street> genStreetFeatureDef(String name, MapFeatureGenerator<Street> generator,
                                                              Predicate<Way> predicate) {
         FeatureDependency dependency = new FeatureDependency();
         dependency.addRequires(DEPENDS_ON_WAY_CLIPPING);
@@ -240,10 +247,10 @@ public abstract class BasicStyleSheet implements StyleSheet {
      *
      * @return the created shader-sources.
      */
-    private ShaderProgramSource getStreetShader() {
-        Resource vert = new PackagedResource(MonochromeStyleSheet.class, "/shaders/features/streets/streets.vs");
-        Resource frag = new PackagedResource(MonochromeStyleSheet.class, "/shaders/features/streets/streets.fs");
-        Resource geom = new PackagedResource(MonochromeStyleSheet.class, "/shaders/features/streets/streets_round.gs");
+    protected ShaderProgramSource getStreetShader() {
+        Resource vert = new PackagedResource(DarkMonochromeStyleSheet.class, "/shaders/features/streets/streets.vs");
+        Resource frag = new PackagedResource(DarkMonochromeStyleSheet.class, "/shaders/features/streets/streets.fs");
+        Resource geom = new PackagedResource(DarkMonochromeStyleSheet.class, "/shaders/features/streets/streets_round.gs");
 
         ShaderProgramSource prog = new ShaderProgramSource("streets");
         prog.addSource(GL3.GL_VERTEX_SHADER, vert);
@@ -262,7 +269,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
      * @param scalenorm the scale-normal of the generated style.
      * @return the generated style.
      */
-    private Style genStyle(ShaderProgramSource shader, Color color, float linewidth, float scalenorm) {
+    protected Style genStreetStyle(ShaderProgramSource shader, Color color, float linewidth, float scalenorm) {
         Style style = new Style(shader);
         style.setUniformSupplier("u_color", color::toVec4f);
         style.setUniformSupplier("u_linewidth", () -> linewidth);
@@ -283,7 +290,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
      * @param style   the style to be used for rendering.
      * @return the generated LayerDefinition.
      */
-    private LayerDefinition genLayer(String name, int index, int min, int max, String feature, Style style) {
+    protected LayerDefinition genLayer(String name, int index, int min, int max, String feature, Style style) {
         return new LayerDefinition(name, index, min, max, new FeatureTileLayerSource(feature, style));
     }
 }

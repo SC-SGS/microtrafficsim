@@ -3,10 +3,14 @@ package microtrafficsim.core.logic.streetgraph;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Bounds;
+import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.shortestpath.ShortestPathGraph;
+import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.utils.Resettable;
 
+import java.util.Map;
 import java.util.Set;
 
 
@@ -18,12 +22,49 @@ import java.util.Set;
 public interface Graph extends Seeded, Resettable, ShortestPathGraph {
 
     /**
+     * The graph's GUID has to be updated depending on its bounds, nodes and edges using {@link #updateGraphGUID()}.
+     *
+     * @return The Globally Unique IDentifier of this graph
+     */
+    GraphGUID getGUID();
+
+    /**
+     * Recalculates the graph's GUID depending on its bounds, nodes and edges.
+     *
+     * @return updated {@code GraphGUID}
+     */
+    GraphGUID updateGraphGUID();
+
+
+    /**
      * Returns the bounding rectangle enclosing this graph.
      *
      * @return the bounds of this graph.
      */
     Bounds getBounds();
 
+    default TypedPolygonArea total(Area.Type type) {
+        final Bounds bounds = getBounds();
+
+        final Coordinate bottomLeft = new Coordinate( bounds.minlat, bounds.minlon);
+        final Coordinate bottomRight = new Coordinate(bounds.minlat, bounds.maxlon);
+        final Coordinate topRight = new Coordinate(   bounds.maxlat, bounds.maxlon);
+        final Coordinate topLeft = new Coordinate(    bounds.maxlat, bounds.minlon);
+
+
+        /* add areas */
+        return new TypedPolygonArea(new Coordinate[] {
+                bottomLeft,
+                bottomRight,
+                topRight,
+                topLeft
+        }, type);
+    }
+
+
+    Map<Integer, Node> getNodeMap();
+
+    Map<Integer, DirectedEdge> getEdgeMap();
 
     /**
      * Returns the nodes of this graph.

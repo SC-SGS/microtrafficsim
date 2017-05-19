@@ -1,10 +1,11 @@
 package microtrafficsim.core.simulation.configs;
 
-
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.utils.Descriptor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+
 
 /**
  * This class isolates the scenario attributes from the other config
@@ -15,21 +16,21 @@ import java.util.ArrayList;
 public final class ScenarioConfig {
     public boolean showAreasWhileSimulating;
     public boolean nodesAreWeightedUniformly;
-    public final ArrayList<Descriptor<Class<? extends Scenario>>> supportedClasses;
+    public final HashMap<Class<? extends Scenario>, Descriptor<Class<? extends Scenario>>> supportedClasses;
     public Descriptor<Class<? extends Scenario>> selectedClass;
 
     /**
      * Just calls {@link #setup()}.
      */
     public ScenarioConfig() {
-        supportedClasses = new ArrayList<>();
+        supportedClasses = new HashMap<>();
         setup();
     }
 
     /**
      * Setup the parameters of this config file.
      */
-    public void setup() {
+    private void setup() {
         showAreasWhileSimulating = false;
         nodesAreWeightedUniformly = true;
     }
@@ -44,7 +45,7 @@ public final class ScenarioConfig {
         nodesAreWeightedUniformly = config.nodesAreWeightedUniformly;
 
         supportedClasses.clear();
-        supportedClasses.addAll(config.supportedClasses);
+        supportedClasses.putAll(config.supportedClasses);
 
         selectedClass = config.selectedClass;
     }

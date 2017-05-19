@@ -5,8 +5,10 @@ import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
+import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
@@ -43,7 +45,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
     private static final float VEHICLE_SIZE               = 10.f;
     private static final float VEHICLE_SCALE_NORM         = 1.f / (1 << 18);
-    private static final float VEHICLE_LANE_OFFSET        = 6.f;
+    private static final float VEHICLE_LANE_OFFSET_SCALE  = 12.f;
     private static final int   VIEWPORT_CULLING_EXPANSION = 20;
 
     private static final int TEX_UNIT_SPRITE    = 0;
@@ -57,9 +59,9 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
                     "/shaders/overlay/vehicle/spritebased/vehicle_overlay.fs"))
     );
 
-    private final Supplier<VisualizationVehicleEntity> vehicleFactory;
+    private final VisVehicleFactory vehicleFactory;
 
-    private Simulation simulation;
+    private Simulation       simulation;
     private Projection       projection;
     private OrthographicView view;
 
@@ -258,13 +260,23 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
             Coordinate ctarget = v.getTarget();
             Vec2d      dir     = projection.project(ctarget).sub(pos).normalize();
 
-            DirectedEdge edge = logic.getDirectedEdge();
-            if (edge == null) continue;
+            // adjust position to lane
+            Lane lane = logic.getLane();
+            if (lane == null) continue;
+
+            DirectedEdge edge = lane.getAssociatedEdge();
             StreetEntity street = edge.getEntity();
-            if (street.getBackwardEdge() != null && street.getForwardEdge() != null) {
-                pos.x += dir.y * laneOffsetSign * VEHICLE_LANE_OFFSET * VEHICLE_SCALE_NORM;
-                pos.y -= dir.x * laneOffsetSign * VEHICLE_LANE_OFFSET * VEHICLE_SCALE_NORM;
+
+            double laneOffset;
+            if (street.getForwardEdge() != null && street.getBackwardEdge() != null) {
+                laneOffset = edge.getLanes().size() - lane.getIndex() - 0.5;
+            } else {
+                laneOffset = (edge.getLanes().size() - 1.0) / 2.0 - lane.getIndex();
             }
+            laneOffset *= laneOffsetSign * VEHICLE_LANE_OFFSET_SCALE * VEHICLE_SCALE_NORM;
+
+            pos.x += dir.y * laneOffset;
+            pos.y -= dir.x * laneOffset;
 
             // continue if out of bounds
             if (pos.x < left || pos.x > right || pos.y < bottom || pos.y > top) continue;
@@ -326,7 +338,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         this.simulation = simulation;
     }
 
-    public Supplier<VisualizationVehicleEntity> getVehicleFactory() {
+    public VisVehicleFactory getVehicleFactory() {
         return vehicleFactory;
     }
 }

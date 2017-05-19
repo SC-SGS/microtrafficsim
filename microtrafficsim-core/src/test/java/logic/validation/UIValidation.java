@@ -1,16 +1,21 @@
 package logic.validation;
 
 import com.jogamp.newt.event.KeyEvent;
+import logic.validation.scenarios.MotorwaySlipRoadScenario;
+import logic.validation.scenarios.RoundaboutScenario;
 import logic.validation.scenarios.TCrossroadScenario;
-import microtrafficsim.core.convenience.DefaultParserConfig;
-import microtrafficsim.core.convenience.MapViewer;
-import microtrafficsim.core.convenience.TileBasedMapViewer;
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
+import logic.validation.scenarios.pluscrossroad.FullPlusCrossroadScenario;
+import logic.validation.scenarios.pluscrossroad.PartialPlusCrossroadScenario;
+import microtrafficsim.core.convenience.mapviewer.MapViewer;
+import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.parser.OSMParser;
+import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.core.simulation.scenarios.impl.QueueScenarioSmall;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
@@ -27,33 +32,74 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * @author Dominic Parga Cacheiro
  */
 public class UIValidation {
-
     private static Logger logger = new EasyMarkableLogger(UIValidation.class);
 
-    public static void main(String[] args) {
 
+    // CHOOSE YOUR CLASS
+    private static final Class<? extends Scenario> clazz =
+//            FullPlusCrossroadScenario.class;
+            PartialPlusCrossroadScenario.class;
+//            MotorwaySlipRoadScenario.class;
+//            RoundaboutScenario.class;
+//            TCrossroadScenario.class;
+
+
+    public static void main(String[] args) {
         /* build setup: scenario */
-        String osmFilename = new String[]{
-                "T_crossroad.osm",
-                "roundabout.osm",
-                "plus_crossroad.osm",
-                "motorway_slip-road.osm"}[0];
-        Consumer<SimulationConfig> setupConfig    = TCrossroadScenario::setupConfig;
-        ScenarioConstructor scenarioConstructor = (config, graph, visVehicleFactory) -> {
-            QueueScenarioSmall scenario = new TCrossroadScenario(config, graph, visVehicleFactory);
-            scenario.setLooping(true);
-            return scenario;
-        };
+        String osmFilename;
+        Consumer<SimulationConfig> setupConfig;
+        ScenarioConstructor scenarioConstructor;
+
+        if (clazz == FullPlusCrossroadScenario.class) {
+            osmFilename = "plus_crossroad.osm";
+            setupConfig = FullPlusCrossroadScenario::setupConfig;
+            scenarioConstructor = (config, graph, visVehicleFactory) -> {
+                QueueScenarioSmall scenario = new FullPlusCrossroadScenario(config, graph, visVehicleFactory);
+                scenario.setLooping(true);
+                return scenario;
+            };
+        } else if (clazz == PartialPlusCrossroadScenario.class) {
+                osmFilename = "plus_crossroad.osm";
+                setupConfig = PartialPlusCrossroadScenario::setupConfig;
+                scenarioConstructor = (config, graph, visVehicleFactory) -> {
+                    QueueScenarioSmall scenario = new PartialPlusCrossroadScenario(config, graph, visVehicleFactory);
+                    scenario.setLooping(true);
+                    return scenario;
+                };
+        } else if (clazz == MotorwaySlipRoadScenario.class) {
+            osmFilename = "motorway_slip-road.osm";
+            setupConfig = MotorwaySlipRoadScenario::setupConfig;
+            scenarioConstructor = (config, graph, visVehicleFactory) -> {
+                QueueScenarioSmall scenario = new MotorwaySlipRoadScenario(config, graph, visVehicleFactory);
+                scenario.setLooping(true);
+                return scenario;
+            };
+        } else if (clazz == RoundaboutScenario.class) {
+            osmFilename = "roundabout.osm";
+            setupConfig = RoundaboutScenario::setupConfig;
+            scenarioConstructor = (config, graph, visVehicleFactory) -> {
+                QueueScenarioSmall scenario = new RoundaboutScenario(config, graph, visVehicleFactory);
+                scenario.setLooping(true);
+                return scenario;
+            };
+        } else if (clazz == TCrossroadScenario.class) {
+            osmFilename = "T_crossroad.osm";
+            setupConfig = TCrossroadScenario::setupConfig;
+            scenarioConstructor = (config, graph, visVehicleFactory) -> {
+                QueueScenarioSmall scenario = new TCrossroadScenario(config, graph, visVehicleFactory);
+                scenario.setLooping(true);
+                return scenario;
+            };
+        } else {
+            throw new UnsupportedOperationException("Your chosen scenario class is not supported.");
+        }
 
         LoggingLevel.setEnabledGlobally(false, true, true, true, true);
-
-
 
 
         /* get map file */
@@ -138,7 +184,6 @@ public class UIValidation {
             QueueScenarioSmall scenario = scenarioConstructor.instantiate(config, graph, overlay.getVehicleFactory());
             Simulation sim = new VehicleSimulation();
             overlay.setSimulation(sim);
-            scenario.prepare();
             sim.setAndInitPreparedScenario(scenario);
             sim.runOneStep();
 
@@ -167,6 +212,6 @@ public class UIValidation {
     private interface ScenarioConstructor {
         QueueScenarioSmall instantiate(SimulationConfig config,
                                        Graph graph,
-                                       Supplier<VisualizationVehicleEntity> visVehicleFactory);
+                                       VisVehicleFactory visVehicleFactory);
     }
 }

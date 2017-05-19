@@ -1,7 +1,6 @@
 package microtrafficsim.core.logic.vehicles.driver;
 
-import microtrafficsim.core.logic.Route;
-import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.math.random.distributions.impl.Random;
@@ -15,13 +14,12 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Dominic Parga Cacheiro
  */
 public class BasicDriver implements Driver {
-
     /* general */
     private final ReentrantLock lock_priorityCounter;
     private final Random        random;
 
     /* variable information */
-    private Route<Node> route;
+    private Route route;
 
     /* dynamic information */
     private int travellingTime;
@@ -32,8 +30,8 @@ public class BasicDriver implements Driver {
     private       int totalAnger;
 
     /* fix information */
-    private       Vehicle vehicle;
-    private final float   dawdleFactor;
+    private Vehicle vehicle;
+    private float dawdleFactor;
 
     /**
      * Calls {@link #BasicDriver(long, int) BasicDriver(seed, 0)}
@@ -43,10 +41,10 @@ public class BasicDriver implements Driver {
     }
 
     /**
-     * Calls {@link #BasicDriver(long, float, int) BasicDriver(seed, 0.2f, spawndelay)}
+     * Calls {@link #BasicDriver(long, float, int) BasicDriver(seed, 0.2f, spawnDelay)}
      */
-    public BasicDriver(long seed, int spawndelay) {
-        this(seed, 0.2f, spawndelay);
+    public BasicDriver(long seed, int spawnDelay) {
+        this(seed, 0.2f, spawnDelay);
     }
 
     /**
@@ -59,10 +57,9 @@ public class BasicDriver implements Driver {
     /**
      * @param seed         seed for {@link Random}, e.g. used for dawdling
      * @param dawdleFactor probability to dawdle (after Nagel-Schreckenberg-model)
-     * @param spawndelay   after this number of simulation steps, this driver starts travelling
+     * @param spawnDelay   after this number of simulation steps, this driver starts travelling
      */
-    public BasicDriver(long seed, float dawdleFactor, int spawndelay) {
-
+    public BasicDriver(long seed, float dawdleFactor, int spawnDelay) {
         /* general */
         lock_priorityCounter = new ReentrantLock(true);
         random               = new Random(seed);
@@ -71,7 +68,7 @@ public class BasicDriver implements Driver {
         route = null;
 
         /* dynamic information */
-        this.travellingTime = -spawndelay;
+        this.travellingTime = -spawnDelay;
         resetPriorityCounter();
         maxAnger   = Integer.MAX_VALUE;
         anger      = 0;
@@ -147,13 +144,23 @@ public class BasicDriver implements Driver {
     }
 
     @Override
-    public Route<Node> getRoute() {
+    public Route getRoute() {
         return route;
     }
 
     @Override
-    public void setRoute(Route<Node> route) {
+    public void setRoute(Route route) {
         this.route = route;
+    }
+
+    @Override
+    public float getDawdleFactor() {
+        return dawdleFactor;
+    }
+
+    @Override
+    public void setDawdleFactor(float dawdleFactor) {
+        this.dawdleFactor = dawdleFactor;
     }
 
     @Override

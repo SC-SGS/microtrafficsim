@@ -1,9 +1,6 @@
 package microtrafficsim.utils.collections;
 
-import microtrafficsim.utils.collections.skiplist.SkipList;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
-
-import java.util.Collection;
 
 /**
  * Java has no triple...

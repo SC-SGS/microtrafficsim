@@ -2,8 +2,9 @@ package microtrafficsim.ui.preferences.model;
 
 import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
+import microtrafficsim.core.map.style.impl.LightMonochromeStyleSheet;
 import microtrafficsim.core.map.style.impl.LightStyleSheet;
-import microtrafficsim.core.map.style.impl.MonochromeStyleSheet;
+import microtrafficsim.core.map.style.impl.DarkMonochromeStyleSheet;
 
 import java.util.ArrayList;
 
@@ -20,7 +21,8 @@ public class VisualizationModel extends PreferencesModel {
         styleSheets = new ArrayList<>();
         styleSheets.add(DarkStyleSheet.class);
         styleSheets.add(LightStyleSheet.class);
-        styleSheets.add(MonochromeStyleSheet.class);
+        styleSheets.add(DarkMonochromeStyleSheet.class);
+        styleSheets.add(LightMonochromeStyleSheet.class);
     }
 
 

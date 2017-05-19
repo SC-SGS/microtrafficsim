@@ -19,7 +19,6 @@ import java.util.function.Function;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public class Car extends BasicVehicle {
-
     private static final EasyMarkableLogger logger = new EasyMarkableLogger(Car.class);
 
     /**

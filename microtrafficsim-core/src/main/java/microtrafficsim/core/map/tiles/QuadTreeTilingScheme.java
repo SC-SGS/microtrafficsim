@@ -20,6 +20,13 @@ public class QuadTreeTilingScheme implements TilingScheme {
     private int        maxlevel;
 
     /**
+     * Calls {@link #QuadTreeTilingScheme(Projection, int, int) this(projection, 0, 19)}
+     */
+    public QuadTreeTilingScheme(Projection projection) {
+        this(projection, 0, 19);
+    }
+
+    /**
      * Constructs a new {@code QuadTreeTilingScheme} using the given projection.
      *
      * @param projection the projection to be used for/with this tiling-scheme.

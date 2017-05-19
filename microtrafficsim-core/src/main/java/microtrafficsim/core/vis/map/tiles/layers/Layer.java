@@ -1,6 +1,6 @@
 package microtrafficsim.core.vis.map.tiles.layers;
 
-import microtrafficsim.core.map.layers.LayerSource;
+import microtrafficsim.core.map.layers.TileLayerSource;
 import microtrafficsim.core.map.tiles.TileId;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class Layer {
     private int                                 index;
     private int                                 minzoom;
     private int                                 maxzoom;
-    private LayerSource source;
+    private TileLayerSource source;
     private boolean                             enabled;
     private ArrayList<LayerStateChangeListener> listeners;
 
@@ -30,7 +30,7 @@ public class Layer {
      * @param maxzoom the maximum zoom level at which the layer will be visible
      * @param source  the source of the layer.
      */
-    public Layer(String name, int index, int minzoom, int maxzoom, LayerSource source) {
+    public Layer(String name, int index, int minzoom, int maxzoom, TileLayerSource source) {
         this.name      = name;
         this.index     = index;
         this.minzoom   = minzoom;
@@ -72,7 +72,7 @@ public class Layer {
      *
      * @return the source of this layer.
      */
-    public LayerSource getSource() {
+    public TileLayerSource getSource() {
         return source;
     }
 

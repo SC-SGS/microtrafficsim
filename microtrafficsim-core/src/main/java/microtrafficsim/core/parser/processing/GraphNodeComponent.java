@@ -27,11 +27,6 @@ public class GraphNodeComponent extends Component {
     }
 
     @Override
-    public Class<? extends Component> getType() {
-        return GraphNodeComponent.class;
-    }
-
-    @Override
     public GraphNodeComponent clone(Entity e) {
         GraphNodeComponent uc = new GraphNodeComponent(e);
         uc.ways               = new HashMultiSet<>(this.ways);

@@ -1,9 +1,9 @@
 package microtrafficsim.ui.preferences.view;
 
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.simulation.configs.SimulationConfig.Element;
 import microtrafficsim.ui.preferences.IncorrectSettingsException;
 import microtrafficsim.ui.preferences.model.CrossingLogicModel;
-import microtrafficsim.ui.preferences.model.PrefElement;
 
 import javax.swing.*;
 import java.awt.*;
@@ -110,11 +110,22 @@ public class CrossingLogicPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setSettings(SimulationConfig config) {
-        cbEdgePriority.setSelected(config.crossingLogic.edgePriorityEnabled);
-        cbPriorityToThe.setSelectedItem(model.getSelectedItem(config));
-        cbOnlyOneVehicle.setSelected(config.crossingLogic.onlyOneVehicleEnabled);
-        cbFriendlyStandingInJam.setSelected(config.crossingLogic.friendlyStandingInJamEnabled);
+    public void setSettings(boolean indeed, SimulationConfig config) {
+        if (indeed) {
+            cbEdgePriority.setSelected(config.crossingLogic.edgePriorityEnabled);
+            cbPriorityToThe.setSelectedItem(model.getSelectedItem(config));
+            cbOnlyOneVehicle.setSelected(config.crossingLogic.onlyOneVehicleEnabled);
+            cbFriendlyStandingInJam.setSelected(config.crossingLogic.friendlyStandingInJamEnabled);
+        } else {
+            if (model.getEnableLexicon().isEnabled(Element.edgePriority))
+                cbEdgePriority.setSelected(config.crossingLogic.edgePriorityEnabled);
+            if (model.getEnableLexicon().isEnabled(Element.priorityToThe))
+                cbPriorityToThe.setSelectedItem(model.getSelectedItem(config));
+            if (model.getEnableLexicon().isEnabled(Element.onlyOneVehicle))
+                cbOnlyOneVehicle.setSelected(config.crossingLogic.onlyOneVehicleEnabled);
+            if (model.getEnableLexicon().isEnabled(Element.friendlyStandingInJam))
+                cbFriendlyStandingInJam.setSelected(config.crossingLogic.friendlyStandingInJamEnabled);
+        }
     }
 
     @Override
@@ -131,14 +142,16 @@ public class CrossingLogicPanel extends PreferencesPanel {
     }
 
     @Override
-    public void setEnabled(PrefElement id, boolean enabled) {
-        enabled = id.isEnabled() && enabled;
+    public boolean setEnabledIfEditable(Element element, boolean enabled) {
+        enabled = super.setEnabledIfEditable(element, enabled);
 
-        switch (id) {
+        switch (element) {
             case edgePriority:          cbEdgePriority.setEnabled(enabled);          break;
             case priorityToThe:         cbPriorityToThe.setEnabled(enabled);         break;
             case onlyOneVehicle:        cbOnlyOneVehicle.setEnabled(enabled);        break;
             case friendlyStandingInJam: cbFriendlyStandingInJam.setEnabled(enabled); break;
         }
+
+        return enabled;
     }
 }

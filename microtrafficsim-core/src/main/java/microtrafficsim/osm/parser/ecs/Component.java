@@ -39,11 +39,17 @@ public abstract class Component implements Cloneable {
     }
 
     /**
-     * Return the actual type of this {@code Component} as {@code Class}.
+     * Return the actual type of this {@code Component} as {@code Class}. This function
+     * may be used to implement polymorphism for Components, i.e. to store a component of
+     * different class (e.g. child-class) in the same slot of the entity. By default this
+     * returns the class of this component using {@link Object#getClass()}. Note that the
+     * following expression should always be satisfied: {@code entity.get(x).getType() == x}.
      *
      * @return the type of this {@code Component}.
      */
-    public abstract Class<? extends Component> getType();
+    public Class<? extends Component> getType() {
+        return this.getClass();
+    };
 
     /**
      * Clones this component and all contained objects.

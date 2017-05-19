@@ -1,10 +1,14 @@
 package microtrafficsim.core.vis.simulation;
 
 import com.jogamp.opengl.GL3;
+import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
+import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
+import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
@@ -44,6 +48,7 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
 
     private static final Vec2f VEHICLE_SIZE               = new Vec2f(7.5f, 7.5f);
     private static final float VEHICLE_SCALE_NORM         = 1.f / (1 << 18);
+    private static final float VEHICLE_LANE_OFFSET_SCALE  = 12.f;
     private static final int   VIEWPORT_CULLING_EXPANSION = 20;
 
     private static final ShaderProgramSource SHADER_PROG_SRC = new ShaderProgramSource(
@@ -56,9 +61,9 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
                     "/shaders/overlay/vehicle/shaderbased/vehicle_overlay.fs"))
     );
 
-    private final Supplier<VisualizationVehicleEntity> vehicleFactory;
+    private final VisVehicleFactory vehicleFactory;
 
-    private Simulation simulation;
+    private Simulation       simulation;
     private Projection       projection;
     private OrthographicView view;
 
@@ -175,6 +180,9 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
         if (simulation.getScenario() == null) return;
         GL3 gl = context.getDrawable().getGL().getGL3();
 
+        // get direction of lane offset
+        int laneOffsetSign = simulation.getScenario().getConfig().crossingLogic.drivingOnTheRight ? 1 : -1;
+
         // NOTE: assumes z-axis top-down orthographic projection
         uVehicleScale.set((float) Math.pow(2, VEHICLE_SCALE_NORM * view.getScale()));
 
@@ -215,11 +223,29 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
             Coordinate cpos = v.getPosition();
             Vec2d      pos  = projection.project(cpos);
 
-            // continue if out of bounds
-            if (pos.x < left || pos.x > right || pos.y < bottom || pos.y > top) continue;
-
             Coordinate ctarget = v.getTarget();
             Vec2d      dir     = projection.project(ctarget).sub(pos).normalize();
+
+            // adjust position to lane
+            Lane lane = logic.getLane();
+            if (lane == null) continue;
+
+            DirectedEdge edge = lane.getAssociatedEdge();
+            StreetEntity street = edge.getEntity();
+
+            double laneOffset;
+            if (street.getForwardEdge() != null && street.getBackwardEdge() != null) {
+                laneOffset = edge.getLanes().size() - lane.getIndex() - 0.5;
+            } else {
+                laneOffset = (edge.getLanes().size() - 1.0) / 2.0 - lane.getIndex();
+            }
+            laneOffset *= laneOffsetSign * VEHICLE_LANE_OFFSET_SCALE * VEHICLE_SCALE_NORM;
+
+            pos.x += dir.y * laneOffset;
+            pos.y -= dir.x * laneOffset;
+
+            // continue if out of bounds
+            if (pos.x < left || pos.x > right || pos.y < bottom || pos.y > top) continue;
 
             buffer.putFloat((float) pos.x);
             buffer.putFloat((float) pos.y);
@@ -267,7 +293,7 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
     }
 
     @Override
-    public Supplier<VisualizationVehicleEntity> getVehicleFactory() {
+    public VisVehicleFactory getVehicleFactory() {
         return vehicleFactory;
     }
 }

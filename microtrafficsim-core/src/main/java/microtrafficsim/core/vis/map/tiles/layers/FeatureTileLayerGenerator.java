@@ -144,7 +144,7 @@ public class FeatureTileLayerGenerator implements TileLayerGenerator {
 
         double sx = sxMeshToBounds * sxBoundsToTile;
         double sy = syMeshToBounds * syBoundsToTile;
-        float  sz = 0.1f;    // handle layer valuse from -10 to 10
+        float  sz = 0.1f;    // handle layer values from -10 to 10
 
         double tx = meshbounds.xmin - tilebounds.xmin;
         double ty = meshbounds.ymin - tilebounds.ymin;

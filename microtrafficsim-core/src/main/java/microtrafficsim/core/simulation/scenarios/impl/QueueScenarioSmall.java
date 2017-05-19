@@ -8,12 +8,7 @@ import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
-import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
-import microtrafficsim.core.simulation.utils.ODMatrix;
-import microtrafficsim.core.simulation.utils.SparseODMatrix;
-import microtrafficsim.core.simulation.utils.UnmodifiableODMatrix;
+import microtrafficsim.core.simulation.utils.RouteContainer;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
@@ -24,64 +19,30 @@ import java.util.function.Supplier;
  *
  * @author Dominic Parga Cacheiro
  */
-public abstract class QueueScenarioSmall implements Scenario {
-
-    /* general */
-    private final SimulationConfig config;
-    private final Graph graph;
-    private final VehicleContainer vehicleContainer;
-    private ShortestPathAlgorithm<Node, DirectedEdge> scout;
-    private boolean isPrepared;
-
-    /* scenario definition */
-    private ArrayList<ODMatrix> odMatrices;
-    private ArrayList<ODMatrix> spawnDelayMatrices;
+public class QueueScenarioSmall extends BasicScenario {
+    private final ShortestPathAlgorithm<Node, DirectedEdge> scout;
+    private ArrayList<RouteContainer> routeContainers;
     private int curIdx;
     private boolean isLooping;
+    private final ScenarioBuilder scenarioBuilder;
 
-    /* scenario building */
-    private ScenarioBuilder scenarioBuilder;
 
-    /**
-     * Default constructor. After calling super(...) you should call {@link #setScenarioBuilder(ScenarioBuilder)}
-     *
-     * @param config this config is used for internal settings and should be set already
-     * @param graph used for route definitions etc.
-     * @param vehicleContainer stores and manages vehicles running in this scenario
-     */
     protected QueueScenarioSmall(SimulationConfig config,
                                  Graph graph,
-                                 VehicleContainer vehicleContainer) {
-
-        /* general */
-        this.config           = config;
-        this.graph            = graph;
-        this.vehicleContainer = vehicleContainer;
-        scout                 = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
-
-        /* scenario definition */
-        odMatrices         = new ArrayList<>();
-        spawnDelayMatrices = new ArrayList<>();
-        curIdx             = -1;
-        isLooping          = false;
-    }
-
-    /**
-     * Just calls {@code QueueScenario(config, graph, new ConcurrentVehicleContainer())}.
-     *
-     * @see ConcurrentVehicleContainer
-     * @see QueueScenarioSmall#QueueScenarioSmall(SimulationConfig, Graph, VehicleContainer)
-     */
-    protected QueueScenarioSmall(SimulationConfig config, Graph graph) {
-        this(config, graph, new ConcurrentVehicleContainer());
-    }
-
-    protected void setScenarioBuilder(ScenarioBuilder scenarioBuilder) {
+                                 ScenarioBuilder scenarioBuilder)
+    {
+        super(config, graph);
+        scout = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
+        routeContainers = new ArrayList<>();
+        curIdx = -1;
+        isLooping = false;
         this.scenarioBuilder = scenarioBuilder;
+
+        setPrepared(true);
     }
+
 
     public static SimulationConfig setupConfig(SimulationConfig config) {
-
         config.metersPerCell           = 7.5f;
         config.seed                    = 1455374755807L;
         config.multiThreading.nThreads = 1;
@@ -95,124 +56,59 @@ public abstract class QueueScenarioSmall implements Scenario {
         return config;
     }
 
-    public void setLooping(boolean isLooping) {
-        this.isLooping = isLooping;
+
+    public final void addSubScenario(RouteContainer routes) {
+        routeContainers.add(routes);
     }
+
+    @Override
+    public void executeBeforeBuilding() {
+        super.executeBeforeBuilding();
+
+        curIdx = curIdx + 1;
+        if (!isLooping && curIdx == routeContainers.size()) {
+            curIdx = -1;
+            return;
+        }
+        curIdx %= routeContainers.size();
+    }
+
+
+    @Override
+    public void willDoOneStep(Simulation simulation) {
+        if (getVehicleContainer().getVehicleCount() == 0) {
+            boolean isPaused = simulation.isPaused();
+            simulation.cancel();
+            setPrepared(false);
+            try {
+                scenarioBuilder.prepare(this);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return;
+            }
+            simulation.setAndInitPreparedScenario(this);
+
+            if (!isPaused)
+                simulation.run();
+        }
+    }
+
 
     public boolean isLooping() {
         return isLooping;
     }
 
-    /*
-    |==============|
-    | matrix setup |
-    |==============|
-    */
-    /**
-     * Calls {@code addSubScenario(odMatrix, new SparseODMatrix())}
-     *
-     * @see #addSubScenario(ODMatrix, ODMatrix)
-     */
-    public final void addSubScenario(ODMatrix odMatrix) {
-        addSubScenario(odMatrix, new SparseODMatrix());
-    }
-
-    /**
-     * Adds the given origin-destination-matrix connected with the given spawn-delay-matrix to this scenario's
-     * sub-scenario-queue.
-     *
-     * @param odMatrix origin-destination-matrix
-     * @param spawnDelayMatrix spawn-delay-matrix
-     */
-    public final void addSubScenario(ODMatrix odMatrix, ODMatrix spawnDelayMatrix) {
-        odMatrices.add(odMatrix);
-        spawnDelayMatrices.add(spawnDelayMatrix);
-    }
-
-    public final void prepare() {
-
-        curIdx = curIdx + 1;
-        if (!isLooping && curIdx == odMatrices.size()) {
-            curIdx = -1;
-            return;
-        }
-        curIdx %= odMatrices.size();
-
-        try {
-            scenarioBuilder.prepare(this);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * @return Peeks the first spawn-delay-matrix of the queue.
-     */
-    public final UnmodifiableODMatrix getSpawnDelayMatrix() {
-        return new UnmodifiableODMatrix(spawnDelayMatrices.get(curIdx));
-    }
-
-    /*
-    |==================|
-    | (i) StepListener |
-    |==================|
-    */
-    @Override
-    public void didOneStep(Simulation simulation) {
-        if (getVehicleContainer().getVehicleCount() == 0) {
-            boolean isPaused = simulation.isPaused();
-            simulation.cancel();
-            setPrepared(false);
-            prepare();
-            if (isPrepared()) {
-                simulation.setAndInitPreparedScenario(this);
-
-                if (!isPaused)
-                    simulation.run();
-            }
-        }
-    }
-
-    /*
-    |==============|
-    | (i) Scenario |
-    |==============|
-    */
-    @Override
-    public final SimulationConfig getConfig() {
-        return config;
+    public void setLooping(boolean isLooping) {
+        this.isLooping = isLooping;
     }
 
     @Override
-    public final Graph getGraph() {
-        return graph;
+    public RouteContainer getRoutes() {
+        return routeContainers.get(curIdx);
     }
 
     @Override
-    public final VehicleContainer getVehicleContainer() {
-        return vehicleContainer;
-    }
-
-    @Override
-    public final void setPrepared(boolean isPrepared) {
-        this.isPrepared = isPrepared;
-    }
-
-    @Override
-    public final boolean isPrepared() {
-        return isPrepared;
-    }
-
-    /**
-     * @return Peeks the first origin-destination-matrix of the queue.
-     */
-    @Override
-    public final UnmodifiableODMatrix getODMatrix() {
-        return new UnmodifiableODMatrix(odMatrices.get(curIdx));
-    }
-
-    @Override
-    public final Supplier<ShortestPathAlgorithm<Node, DirectedEdge>> getScoutFactory() {
+    public Supplier<ShortestPathAlgorithm<Node, DirectedEdge>> getScoutFactory() {
         return () -> scout;
     }
 }
