@@ -188,7 +188,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
 
 
         // if vehicles are crossing each other's way
-        if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2, indicesPerNode)) {
+        if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2)) {
             // compare priorities of origins
             byte cmp = (byte) (v1.getDirectedEdge().getPriorityLevel() - v2.getDirectedEdge().getPriorityLevel());
             boolean edgePriorityEnabled = config.edgePriorityEnabled;

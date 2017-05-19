@@ -35,6 +35,13 @@ public class MathUtils {
         return val < min ? min : val > max ? max : val;
     }
 
+    public static int max(int... ints) {
+        int i = 1;
+        while (i < ints.length)
+            ints[0] = Math.max(ints[0], ints[i++]);
+        return ints[0];
+    }
+
     /**
      * Implementation detail: The runtime complexity is in O(log2(n)). <br>
      * Negative numbers has the same number of digits as the corresponding positive ones.
