@@ -5,8 +5,6 @@ import logic.crossinglogic.scenarios.MultilaneScenario;
 import microtrafficsim.core.convenience.mapviewer.MapViewer;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.logic.streetgraph.Graph;
-import microtrafficsim.core.map.style.impl.DarkStyleSheet;
-import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.VehicleSimulation;
@@ -39,7 +37,6 @@ public class MultilaneLogicValidation {
         /* simulation config */
         SimulationConfig config = new SimulationConfig();
         MultilaneScenario.setupConfig(config);
-        config.visualization.style = new DarkStyleSheet();
 
 
         SwingUtilities.invokeLater(() -> {
