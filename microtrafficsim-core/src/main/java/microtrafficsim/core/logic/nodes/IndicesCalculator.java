@@ -39,9 +39,9 @@ public class IndicesCalculator {
      * StringMatcher.NO_MATCH, if there is no matching.
      */
     public static byte leftmostIndexInMatching(byte origin1, byte destination1, byte origin2, byte destination2,
-                                               byte indicesPerNode) {
-        byte[] s1 = getIndices(origin1, destination1, indicesPerNode);
-        byte[] s2 = getIndices(origin2, destination2, indicesPerNode);
+                                               byte supremum) {
+        byte[] s1 = getIndices(origin1, destination1, supremum);
+        byte[] s2 = getIndices(origin2, destination2, supremum);
         int len1  = s1.length;
         int len2  = s2.length;
         int n     = len1 + len2;
@@ -66,16 +66,16 @@ public class IndicesCalculator {
         return NO_MATCH;
     }
 
-    private static byte[] getIndices(byte origin, byte destination, byte indicesPerNode) {
+    private static byte[] getIndices(byte origin, byte destination, byte supremum) {
         int delta = destination - origin;
-        if (delta < 0) { delta = indicesPerNode + delta; }
+        if (delta < 0) { delta = supremum + delta; }
         byte[] indices         = new byte[delta + 1];
 
         byte index      = origin;
         int  arrayIndex = 0;
         while (index != destination) {
             indices[arrayIndex++] = index;
-            index                 = (byte) ((index + 1) % indicesPerNode);
+            index                 = (byte) ((index + 1) % supremum);
         }
         indices[arrayIndex] = destination;
 
@@ -83,7 +83,7 @@ public class IndicesCalculator {
     }
 
     public static boolean areIndicesCrossing(byte origin1, byte destination1, byte origin2, byte destination2,
-                                             byte indicesPerNode) {
+                                             byte supremum) {
         int i = origin1;
 
         // DFA: A out of {start1,end1}; B out of {start2,end2}
@@ -95,8 +95,8 @@ public class IndicesCalculator {
         // if common destination: true should be returned => order of the if-statements is relevant
         boolean stateA            = true;
         int     irrelevantCounter = 0;
-        while (irrelevantCounter++ < 2 * indicesPerNode) {
-            i = (i + 1) % indicesPerNode;
+        while (irrelevantCounter++ < 2 * supremum) {
+            i = (i + 1) % supremum;
             if (stateA) {                                                 // state A
                 if (i == origin2 || i == destination2)                    // -B->
                     stateA = false;                                       // state AB

@@ -185,11 +185,11 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         byte destination1   = leaving.get(v1.getDriver().peekRoute());
         byte origin2        = incoming.get(v2.getDirectedEdge());
         byte destination2   = leaving.get(v2.getDriver().peekRoute());
-        byte indicesPerNode = (byte) (1 + MathUtils.max(origin1, destination1, origin2, destination2));
+        byte supremum = (byte) (1 + MathUtils.max(origin1, destination1, origin2, destination2));
 
 
         // if vehicles are crossing each other's way
-        if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2, indicesPerNode)) {
+        if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2, supremum)) {
             // compare priorities of origins
             byte cmp = (byte) (v1.getDirectedEdge().getPriorityLevel() - v2.getDirectedEdge().getPriorityLevel());
             boolean edgePriorityEnabled = config.edgePriorityEnabled;
@@ -201,7 +201,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
                     // compare right before left (or left before right)
                     if (config.priorityToTheRightEnabled) {
                         byte leftmostMatchingIdx = IndicesCalculator.leftmostIndexInMatching(
-                                origin1, destination1, origin2, destination2, indicesPerNode);
+                                origin1, destination1, origin2, destination2, supremum);
                         if (leftmostMatchingIdx == origin1)
                             return 1;
                         if (leftmostMatchingIdx == origin2)
