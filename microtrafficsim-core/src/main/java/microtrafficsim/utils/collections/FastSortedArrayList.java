@@ -1,12 +1,14 @@
 package microtrafficsim.utils.collections;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 /**
  * <p>
- * Is an {@code ArrayList} keeping all elements sorted and implements {@code Queue}. In difference to
- * {@link SortedArrayList}, this class stores the values directly and sorts them if needed.
+ * Is an {@code ArrayList} keeping all elements sorted and implements {@code Queue}. This class stores the values
+ * directly and sorts them if needed.
  *
  * <p>
  * Which method sorts and which one doesn't is described in their JavaDoc. In general, the list gets sorted in every
@@ -307,6 +309,58 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     | iterator |
     |==========|
     */
+    /**
+     * Does not {@link #sort() sort}
+     */
+    @Override
+    public ListIterator<E> listIterator(int index) {
+        return super.listIterator(index);
+    }
+
+    /**
+     * Does not {@link #sort() sort}
+     */
+    @Override
+    public ListIterator<E> listIterator() {
+        return super.listIterator();
+    }
+
+    /**
+     * Does {@link #sort() sort}
+     */
+    @Override
+    public void forEach(Consumer<? super E> action) {
+        sort();
+        super.forEach(action);
+    }
+
+    /**
+     * Does {@link #sort() sort}
+     */
+    @Override
+    public Spliterator<E> spliterator() {
+        sort();
+        return super.spliterator();
+    }
+
+    /**
+     * Does {@link #sort() sort}
+     */
+    @Override
+    public Stream<E> stream() {
+        sort();
+        return super.stream();
+    }
+
+    /**
+     * Does {@link #sort() sort}
+     */
+    @Override
+    public Stream<E> parallelStream() {
+        sort();
+        return super.stream();
+    }
+
     /**
      * Does {@link #sort() sort}
      */
