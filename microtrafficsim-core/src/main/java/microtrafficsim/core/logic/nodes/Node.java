@@ -438,6 +438,12 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         for (DirectedEdge edge : leaving.keySet()) {
             // invert leaving XOR incoming edges
             Vec2d v = Vec2d.mul(edge.getOriginDirection(), -1);
+            // important for hashing later due to:
+            // 0.0 == -0.0 but new Double(0.0).hashCode() != new Double(-0.0).hashCode()
+            if (v.x == 0.0)
+                v.x = 0.0;
+            if (v.y == 0.0)
+                v.y = 0.0;
 
             // set zero reference if not done yet
             if (zero == null)
@@ -452,6 +458,12 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         /* collect all incoming edges */
         for (DirectedEdge edge : incoming.keySet()) {
             Vec2d v = new Vec2d(edge.getDestinationDirection());
+            // important for hashing later due to:
+            // 0.0 == -0.0 but new Double(0.0).hashCode() != new Double(-0.0).hashCode()
+            if (v.x == 0.0)
+                v.x = 0.0;
+            if (v.y == 0.0)
+                v.y = 0.0;
 
             // set zero reference if not done yet
             if (zero == null)

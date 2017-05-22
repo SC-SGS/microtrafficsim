@@ -10,7 +10,6 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-
 /**
  * <p>
  * This class tests {@link Geometry#sortClockwiseAsc(Vec2d, Collection, boolean)}.
@@ -36,7 +35,6 @@ public class TestSortVec2dCCW extends AbstractTestSortVec2 {
     public void differentFloatSizes() {
         zero = new Vec2d(0.1f, 100f);
 
-        /* counterclockwise */
         ccwSortedVec2d.add(zero);
         ccwSortedVec2d.add(new Vec2d(-42.424242f, 24.242424f));    // left top
         ccwSortedVec2d.add(new Vec2d(-42.424242f, 24.242424f));    // left top
@@ -51,48 +49,58 @@ public class TestSortVec2dCCW extends AbstractTestSortVec2 {
 
     @Test
     public void plusCrossroadScenario() {
-        zero = new Vec2d(0.7427612, -0.6695564);    // right bottom
+        zero = new Vec2d(0.7427612f, -0.6695564f);    // right bottom
 
         ccwSortedVec2d.add(zero);
-        ccwSortedVec2d.add(new Vec2d(0.886666, 0.4624104));    // right top
-        ccwSortedVec2d.add(new Vec2d(-0.76506644, 0.6439514));    // left top
-        ccwSortedVec2d.add(new Vec2d(-0.9005878, -0.43467405));    // left bottom
+        ccwSortedVec2d.add(new Vec2d(0.886666f, 0.4624104f));    // right top
+        ccwSortedVec2d.add(new Vec2d(-0.76506644f, 0.6439514f));    // left top
+        ccwSortedVec2d.add(new Vec2d(-0.9005878f, -0.43467405f));    // left bottom
     }
 
     @Test
     public void pointSymmetricCrossTest0() {
-        zero = new Vec2d(-0.001, 0.001);
+        zero = new Vec2d(-0.001f, 0.001f);
 
         ccwSortedVec2d.add(zero);
-        ccwSortedVec2d.add(new Vec2d(-0.001, -0.001));
-        ccwSortedVec2d.add(new Vec2d( 0.000, -0.001));
-        ccwSortedVec2d.add(new Vec2d( 0.001, -0.001));
-        ccwSortedVec2d.add(new Vec2d( 0.001,  0.001));
-        ccwSortedVec2d.add(new Vec2d( 0.000,  0.001));
+        ccwSortedVec2d.add(new Vec2d(-0.001f, -0.001f));
+        ccwSortedVec2d.add(new Vec2d( 0.000f, -0.001f));
+        ccwSortedVec2d.add(new Vec2d( 0.001f, -0.001f));
+        ccwSortedVec2d.add(new Vec2d( 0.001f,  0.001f));
+        ccwSortedVec2d.add(new Vec2d( 0.000f,  0.001f));
     }
 
     @Test
     public void pointSymmetricCrossTest0Normalized() {
-        zero = new Vec2d(-0.001, 0.001).normalize();
+        zero = new Vec2d(-0.001f, 0.001f).normalize();
 
         ccwSortedVec2d.add(zero);
-        ccwSortedVec2d.add(new Vec2d(-0.001, -0.001).normalize());
-        ccwSortedVec2d.add(new Vec2d( 0.000, -0.001).normalize());
-        ccwSortedVec2d.add(new Vec2d( 0.001, -0.001).normalize());
-        ccwSortedVec2d.add(new Vec2d( 0.001,  0.001).normalize());
-        ccwSortedVec2d.add(new Vec2d( 0.000,  0.001).normalize());
+        ccwSortedVec2d.add(new Vec2d(-0.001f, -0.001f).normalize());
+        ccwSortedVec2d.add(new Vec2d( 0.000f, -0.001f).normalize());
+        ccwSortedVec2d.add(new Vec2d( 0.001f, -0.001f).normalize());
+        ccwSortedVec2d.add(new Vec2d( 0.001f,  0.001f).normalize());
+        ccwSortedVec2d.add(new Vec2d( 0.000f,  0.001f).normalize());
     }
 
     @Test
     public void pointSymmetricCrossTest1() {
-        zero = new Vec2d(-0.001, -0.001);
+        zero = new Vec2d(-0.001f, -0.001f);
 
         ccwSortedVec2d.add(zero);
-        ccwSortedVec2d.add(new Vec2d( 0.000, -0.001));
-        ccwSortedVec2d.add(new Vec2d( 0.001, -0.001));
-        ccwSortedVec2d.add(new Vec2d( 0.001,  0.001));
-        ccwSortedVec2d.add(new Vec2d( 0.000,  0.001));
-        ccwSortedVec2d.add(new Vec2d(-0.001,  0.001));
+        ccwSortedVec2d.add(new Vec2d( 0.000f, -0.001f));
+        ccwSortedVec2d.add(new Vec2d( 0.001f, -0.001f));
+        ccwSortedVec2d.add(new Vec2d( 0.001f,  0.001f));
+        ccwSortedVec2d.add(new Vec2d( 0.000f,  0.001f));
+        ccwSortedVec2d.add(new Vec2d(-0.001f,  0.001f));
+    }
+
+    @Test
+    public void zeroAndMinusZero() {
+        zero = new Vec2d(0f, 1f);
+
+        ccwSortedVec2d.add(zero);
+        ccwSortedVec2d.add(new Vec2d( -0f,  1f ));
+        ccwSortedVec2d.add(new Vec2d(  1f,  0f));
+        ccwSortedVec2d.add(new Vec2d(  1f, -0f));
     }
 
 
@@ -112,8 +120,13 @@ public class TestSortVec2dCCW extends AbstractTestSortVec2 {
         LinkedList<Vec2d> cwSortedVec2d = new LinkedList<>();
         for (Vec2d v : ccwSortedVec2d)
             cwSortedVec2d.add(v);
-        cwSortedVec2d.poll();
-        cwSortedVec2d.add(zero);
+        for (int i = 0; i < cwSortedVec2d.size(); i++) {
+            Vec2d tmp = cwSortedVec2d.poll();
+            cwSortedVec2d.add(tmp);
+
+            if (!cwSortedVec2d.peek().equals(zero))
+                break;
+        }
         Collections.reverse(cwSortedVec2d);
 
 

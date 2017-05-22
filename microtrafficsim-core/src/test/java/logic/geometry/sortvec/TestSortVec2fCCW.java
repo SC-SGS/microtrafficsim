@@ -3,7 +3,6 @@ package logic.geometry.sortvec;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.Vec2f;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -94,6 +93,16 @@ public class TestSortVec2fCCW extends AbstractTestSortVec2 {
         ccwSortedVec2f.add(new Vec2f(-0.001f,  0.001f));
     }
 
+    @Test
+    public void zeroAndMinusZero() {
+        zero = new Vec2f(0f, 1f);
+
+        ccwSortedVec2f.add(zero);
+        ccwSortedVec2f.add(new Vec2f( -0f,  1f ));
+        ccwSortedVec2f.add(new Vec2f(  1f,  0f));
+        ccwSortedVec2f.add(new Vec2f(  1f, -0f));
+    }
+
 
     /*
     |=======|
@@ -111,8 +120,13 @@ public class TestSortVec2fCCW extends AbstractTestSortVec2 {
         LinkedList<Vec2f> cwSortedVec2f = new LinkedList<>();
         for (Vec2f v : ccwSortedVec2f)
             cwSortedVec2f.add(v);
-        cwSortedVec2f.poll();
-        cwSortedVec2f.add(zero);
+        for (int i = 0; i < cwSortedVec2f.size(); i++) {
+            Vec2f tmp = cwSortedVec2f.poll();
+            cwSortedVec2f.add(tmp);
+
+            if (!cwSortedVec2f.peek().equals(zero))
+                break;
+        }
         Collections.reverse(cwSortedVec2f);
 
 
