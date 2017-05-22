@@ -2,9 +2,9 @@ package logic.validation;
 
 import logic.validation.scenarios.pluscrossroad.AbstractPlusCrossroadScenario;
 import logic.validation.scenarios.pluscrossroad.FullPlusCrossroadScenario;
-import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.convenience.mapviewer.MapViewer;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.logic.Direction;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
@@ -28,7 +28,6 @@ import static org.junit.Assert.assertEquals;
  * @author Dominic Parga Cacheiro
  */
 public class TestNodeCrossingIndices {
-
     private static Logger logger = new EasyMarkableLogger(TestNodeCrossingIndices.class);
 
     @Test
