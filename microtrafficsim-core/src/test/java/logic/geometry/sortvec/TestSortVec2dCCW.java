@@ -20,16 +20,12 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Dominic Parga Cacheiro
  */
-public class TestSortVec2dCCW {
+public class TestSortVec2dCCW extends AbstractTestSortVec2 {
+    private int sortRepetationCount = 1000;
 
-    /* general */
-    private int               sortRepetationCount = 1000;
-    private LinkedList<Vec2d> cwSortedVec2d;
-    private ArrayList<Vec2d>  mixedVec2d;
-
-    /* different for each test case */
     private LinkedList<Vec2d> ccwSortedVec2d;
     private Vec2d             zero;
+
 
     /*
     |============|
@@ -63,6 +59,43 @@ public class TestSortVec2dCCW {
         ccwSortedVec2d.add(new Vec2d(-0.9005878, -0.43467405));    // left bottom
     }
 
+    @Test
+    public void pointSymmetricCrossTest0() {
+        zero = new Vec2d(-0.001, 0.001);
+
+        ccwSortedVec2d.add(zero);
+        ccwSortedVec2d.add(new Vec2d(-0.001, -0.001));
+        ccwSortedVec2d.add(new Vec2d( 0.000, -0.001));
+        ccwSortedVec2d.add(new Vec2d( 0.001, -0.001));
+        ccwSortedVec2d.add(new Vec2d( 0.001,  0.001));
+        ccwSortedVec2d.add(new Vec2d( 0.000,  0.001));
+    }
+
+    @Test
+    public void pointSymmetricCrossTest0Normalized() {
+        zero = new Vec2d(-0.001, 0.001).normalize();
+
+        ccwSortedVec2d.add(zero);
+        ccwSortedVec2d.add(new Vec2d(-0.001, -0.001).normalize());
+        ccwSortedVec2d.add(new Vec2d( 0.000, -0.001).normalize());
+        ccwSortedVec2d.add(new Vec2d( 0.001, -0.001).normalize());
+        ccwSortedVec2d.add(new Vec2d( 0.001,  0.001).normalize());
+        ccwSortedVec2d.add(new Vec2d( 0.000,  0.001).normalize());
+    }
+
+    @Test
+    public void pointSymmetricCrossTest1() {
+        zero = new Vec2d(-0.001, -0.001);
+
+        ccwSortedVec2d.add(zero);
+        ccwSortedVec2d.add(new Vec2d( 0.000, -0.001));
+        ccwSortedVec2d.add(new Vec2d( 0.001, -0.001));
+        ccwSortedVec2d.add(new Vec2d( 0.001,  0.001));
+        ccwSortedVec2d.add(new Vec2d( 0.000,  0.001));
+        ccwSortedVec2d.add(new Vec2d(-0.001,  0.001));
+    }
+
+
     /*
     |=======|
     | setup |
@@ -71,42 +104,35 @@ public class TestSortVec2dCCW {
     @Before
     public void setup() {
         ccwSortedVec2d = new LinkedList<>();
-        cwSortedVec2d = new LinkedList<>();
     }
 
     @After
     public void testCW() {
-
         /* setup cw */
+        LinkedList<Vec2d> cwSortedVec2d = new LinkedList<>();
         for (Vec2d v : ccwSortedVec2d)
             cwSortedVec2d.add(v);
         cwSortedVec2d.poll();
         cwSortedVec2d.add(zero);
         Collections.reverse(cwSortedVec2d);
 
-        mixedVec2d = new ArrayList<>(ccwSortedVec2d);
-        Collections.shuffle(mixedVec2d);
 
         /* assertion */
-        for (int i = 0; i < sortRepetationCount; i++) {
-            Queue<Vec2d> sortedCW = Geometry.sortClockwiseAsc(zero, mixedVec2d, true);
-
-            for (Vec2d v : cwSortedVec2d)
-                assertEquals(v, sortedCW.poll());
-        }
+        for (int i = 0; i < sortRepetationCount; i++)
+            testSorting(cwSortedVec2d, true);
     }
 
     @After
     public void testCCW() {
-        mixedVec2d = new ArrayList<>(ccwSortedVec2d);
-        Collections.shuffle(mixedVec2d);
+        for (int i = 0; i < sortRepetationCount; i++)
+            testSorting(ccwSortedVec2d, false);
+    }
 
-        boolean notFailed = true;
-        for (int i = 0; i < sortRepetationCount; i++) {
-            Queue<Vec2d> sortedCCW = Geometry.sortClockwiseAsc(zero, mixedVec2d, false);
+    private void testSorting(List<Vec2d> expected, boolean cw) {
+        List<Vec2d> mixedVec2d = shuffleCorrectly(expected);
+        Queue<Vec2d> actualSorted = Geometry.sortClockwiseAsc(zero, mixedVec2d, cw);
 
-            for (Vec2d v : ccwSortedVec2d)
-                assertEquals(v, sortedCCW.poll());
-        }
+        for (Vec2d v : expected)
+            assertEquals(v, actualSorted.poll());
     }
 }
