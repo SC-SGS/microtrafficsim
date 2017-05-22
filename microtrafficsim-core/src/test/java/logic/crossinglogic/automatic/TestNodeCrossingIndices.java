@@ -179,11 +179,6 @@ public class TestNodeCrossingIndices {
                 graph.addNode(node);
             graph.updateGraphGUID();
             graph.getNodes().forEach(Node::updateEdgeIndices);
-
-            // todo remove
-            System.err.println("##### ##### ##### ##### ##### ##### ##### ##### ##");
-            System.err.println(graph);
-            System.err.println("##### ##### ##### ##### ##### ##### ##### ##### ##");
         } /* finish creating graph */
 
 
@@ -192,8 +187,102 @@ public class TestNodeCrossingIndices {
         for (Map.Entry<Lane, Byte> entry : indices.entrySet()) {
             entries.add(new Tuple<>(entry.getValue(), entry.getKey()));
         }
-        // todo remove
-//        entries.forEach(tuple -> System.err.println("idx = " + tuple.obj0 + " : " + tuple.obj1));
+
+        for (Tuple<Byte, Lane> tuple : entries) {
+            int crossingIdx = tuple.obj0;
+            Lane lane       = tuple.obj1;
+
+            switch (crossingIdx) {
+                // assertLane(lane, edgeId, laneIdx)
+                case  0:        assertLane(lane,  6, 0);        break;
+                case  1:        assertLane(lane,  6, 1);        break;
+                case  2:        assertLane(lane,  6, 2);        break;
+                case  3:        assertLane(lane,  7, 1);        break;
+                case  4:        assertLane(lane,  7, 0);        break;
+                case  5:        assertLane(lane,  8, 0);        break;
+                case  6:        assertLane(lane,  8, 1);        break;
+                case  7:        assertLane(lane,  9, 0);        break;
+                case  8:        assertLane(lane, 10, 0);        break;
+                case  9:        assertLane(lane, 11, 1);        break;
+                case 10:        assertLane(lane, 11, 0);        break;
+            }
+        }
+
+
+        /*
+         * entries.forEach(tuple -> System.out.println("idx = " + tuple.obj0 + " : " + tuple.obj1));
+         *
+         * idx = 0 : <Lane>
+         *     edge id    = 6
+         *     edge hash  = 1516444577
+         *     lane index = 0
+         * <\Lane>
+         *
+         * idx = 1 : <Lane>
+         *     edge id    = 6
+         *     edge hash  = 1516444577
+         *     lane index = 1
+         * <\Lane>
+         *
+         * idx = 2 : <Lane>
+         *     edge id    = 6
+         *     edge hash  = 1516444577
+         *     lane index = 2
+         * <\Lane>
+         *
+         * idx = 3 : <Lane>
+         *     edge id    = 7
+         *     edge hash  = 2013709575
+         *     lane index = 1
+         * <\Lane>
+         *
+         * idx = 4 : <Lane>
+         *     edge id    = 7
+         *     edge hash  = 2013709575
+         *     lane index = 0
+         * <\Lane>
+         *
+         * idx = 5 : <Lane>
+         *     edge id    = 8
+         *     edge hash  = -83424079
+         *     lane index = 0
+         * <\Lane>
+         *
+         * idx = 6 : <Lane>
+         *     edge id    = 8
+         *     edge hash  = -83424079
+         *     lane index = 1
+         * <\Lane>
+         *
+         * idx = 7 : <Lane>
+         *     edge id    = 9
+         *     edge hash  = -398568398
+         *     lane index = 0
+         * <\Lane>
+         *
+         * idx = 8 : <Lane>
+         *     edge id    = 10
+         *     edge hash  = 85924207
+         *     lane index = 0
+         * <\Lane>
+         *
+         * idx = 9 : <Lane>
+         *     edge id    = 11
+         *     edge hash  = 1099001002
+         *     lane index = 1
+         * <\Lane>
+         *
+         * idx = 10 : <Lane>
+         *     edge id    = 11
+         *     edge hash  = 1099001002
+         *     lane index = 0
+         * <\Lane>
+         */
+    }
+
+    private void assertLane(Lane lane, int edgeId, int laneIdx) {
+        assertEquals("Lane \n" + lane + " has wrong edge id.", edgeId, lane.getAssociatedEdge().getId());
+        assertEquals("Lane \n" + lane + " has wrong index.", laneIdx, lane.getIndex());
     }
 
 

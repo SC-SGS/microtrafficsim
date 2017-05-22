@@ -480,9 +480,6 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         // iterate over the sorted vectors
         while (!sortedVectors.isEmpty()) {
             Vec2d v = sortedVectors.poll();
-            System.err.println();
-            System.err.println("aha = " + v);
-            System.err.println();
             // take the current vector's edges
             ArrayList<Tuple<DirectedEdge, Boolean>> nextEdges = edges.remove(v);
 
@@ -500,27 +497,6 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
                 }
             }
         }
-
-
-
-
-
-
-        /* printing for debugging */ // todo remove
-        FastSortedArrayList<Triple<Boolean, DirectedEdge, Byte>> sortedEdges = new FastSortedArrayList<>(
-                leaving.size() + incoming.size(),
-                (t1, t2) -> Byte.compare(t1.obj2, t2.obj2));
-        for (Map.Entry<DirectedEdge, Byte> entry : leaving.entrySet())
-            sortedEdges.add(new Triple<>(IS_LEAVING, entry.getKey(), entry.getValue()));
-        for (Map.Entry<DirectedEdge, Byte> entry : incoming.entrySet())
-            sortedEdges.add(new Triple<>(IS_INCOMING, entry.getKey(), entry.getValue()));
-
-
-        /* iterate over lanes and fill map */
-        System.err.println();
-        System.err.println(this.toString());
-        for (Triple<Boolean, DirectedEdge, Byte> triple : sortedEdges)
-            System.err.println(triple.obj2 + " : " + triple.obj1);
     }
 
     /**
