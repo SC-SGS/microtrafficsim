@@ -1,16 +1,20 @@
 package logic.geometry.sortvec;
 
+import microtrafficsim.utils.logging.EasyMarkableLogger;
+import org.slf4j.Logger;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-
 /**
  * @author Dominic Parga Cacheiro
  */
 public abstract class AbstractTestSortVec2 {
+    public static final Logger logger = new EasyMarkableLogger(AbstractTestSortVec2.class);
+
+
     // if shuffling is unsuccessful after this, an AssertionError is thrown
     private static final int shuffleRepetationCount = 10;
 
@@ -29,7 +33,11 @@ public abstract class AbstractTestSortVec2 {
             if (!notShuffled)
                 break;
         }
-        assertFalse("Vectors are still not shuffled after " + shuffleRepetationCount + " times", notShuffled);
+        if (notShuffled) {
+            logger.warn("Vectors are still not shuffled after " + shuffleRepetationCount + " times. Reverse order is " +
+                    "taken instead.");
+            Collections.reverse(mixed);
+        }
 
         return mixed;
     }
