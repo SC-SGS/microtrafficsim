@@ -19,7 +19,7 @@ public class RouteContainerExtractor implements ExchangeFormat.Extractor<RouteCo
             throws RouteIsNotDefinedException, ExchangeFormatException {
         Config cfg = fmt.getConfig().get(Config.class);
         if (cfg == null) throw new ExchangeFormatException(
-                "Config for " + RouteContainerExtractor.class.getSimpleName() + " missing");
+                "Config for " + getClass().getSimpleName() + " missing");
 
         /* extract data */
         ScenarioRouteInfo info = src.get(ScenarioRouteInfo.class);

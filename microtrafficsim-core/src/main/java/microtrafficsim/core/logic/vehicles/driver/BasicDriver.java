@@ -97,7 +97,7 @@ public class BasicDriver implements Driver {
     @Override
     public String toString() {
         LevelStringBuilder strBuilder = new LevelStringBuilder();
-        strBuilder.appendln("<driver>");
+        strBuilder.appendln("<" + getClass().getSimpleName() + ">");
         strBuilder.incLevel();
 
         strBuilder.appendln("seed  = " + random.getSeed());
@@ -105,7 +105,7 @@ public class BasicDriver implements Driver {
         strBuilder.append(route);
 
         strBuilder.decLevel();
-        strBuilder.appendln("<\\driver>");
+        strBuilder.appendln("</" + getClass().getSimpleName() + ">");
         return strBuilder.toString();
     }
 

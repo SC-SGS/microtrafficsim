@@ -42,7 +42,7 @@ public class StreetGraph implements Graph {
                 .setLevelSubString("    ")
                 .setLevelSeparator(System.lineSeparator());
 
-        builder.appendln("<" + StreetGraph.class.getSimpleName() + ">").incLevel(); {
+        builder.appendln("<" + getClass().getSimpleName() + ">").incLevel(); {
             builder.appendln("GUID hash = " + guid.hashCode());
             builder.appendln();
             builder.appendln();
@@ -50,7 +50,7 @@ public class StreetGraph implements Graph {
             builder.appendln();
             builder.appendln();
             edges.values().forEach(builder::appendln);
-        } builder.decLevel().append("<\\" + StreetGraph.class.getSimpleName() + ">");
+        } builder.decLevel().append("</" + getClass().getSimpleName() + ">");
 
         return builder.toString();
     }

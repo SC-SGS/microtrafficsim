@@ -27,11 +27,11 @@ public class VehicleStamp {
                 .setDefaultLevelSeparator()
                 .setDefaultLevelSubString();
 
-        builder.appendln("<" + VehicleStamp.class.getSimpleName() + ">").incLevel(); {
+        builder.appendln("<" + getClass().getSimpleName() + ">").incLevel(); {
             builder.appendln("id = " + id);
             builder.appendln("cell position = " + cellPosition);
             builder.appendln(edge);
-        } builder.decLevel().append("<\\" + VehicleStamp.class.getSimpleName() + ">");
+        } builder.decLevel().append("</" + getClass().getSimpleName() + ">");
 
         return builder.toString();
     }

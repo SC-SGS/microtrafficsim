@@ -94,7 +94,7 @@ public abstract class BasicVehicle implements Vehicle {
             strBuilder.appendln("node.id = " + lane.getAssociatedEdge().getDestination().getId());
         }
         strBuilder.decLevel();
-        strBuilder.appendln("<\\vehicle>");
+        strBuilder.appendln("</" + getClass().getSimpleName() + ">");
         return strBuilder.toString();
     }
 

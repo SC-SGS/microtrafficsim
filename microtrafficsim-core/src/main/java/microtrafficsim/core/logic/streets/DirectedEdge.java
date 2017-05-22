@@ -121,7 +121,7 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
             stringBuilder.appendln();
             for (Lane lane : lanes)
                 stringBuilder.appendln(lane);
-        } stringBuilder.decLevel().append("<\\DirectedEdge>");
+        } stringBuilder.decLevel().append("</DirectedEdge>");
 
         return stringBuilder.toString();
     }

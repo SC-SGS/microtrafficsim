@@ -243,7 +243,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
     */
     @Override
     public void reset() {
-        logger.debug("reset " + VehicleScenarioBuilder.class.getSimpleName());
+        logger.debug("reset " + getClass().getSimpleName());
         idGenerator.reset();
         seedGenerator.reset();
     }

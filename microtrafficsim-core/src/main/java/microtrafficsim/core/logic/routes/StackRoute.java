@@ -46,7 +46,7 @@ public class StackRoute extends Stack<ShortestPathEdge<Node>> implements Route {
         }
 
         strBuilder.decLevel();
-        strBuilder.appendln("<\\route>");
+        strBuilder.appendln("</route>");
         return strBuilder.toString();
     }
 

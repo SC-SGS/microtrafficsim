@@ -22,7 +22,6 @@ import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 
 /**
@@ -33,7 +32,6 @@ import java.util.function.Supplier;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded {
-
     private final long          id;
     private Coordinate          coordinate;
     private CrossingLogicConfig config;
@@ -94,13 +92,13 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
             /* id */
             builder.appendln("<id>").incLevel(); {
                 builder.appendln(id);
-            } builder.decLevel().appendln("<\\id>").appendln();
+            } builder.decLevel().appendln("</id>").appendln();
 
 
             /* coordinate */
             builder.appendln("<coordinate>").incLevel(); {
                 builder.appendln(coordinate.toString());
-            } builder.decLevel().appendln("<\\coordinate>").appendln();
+            } builder.decLevel().appendln("</coordinate>").appendln();
 
 
             Procedure2<String, HashMap<DirectedEdge, Byte>> edgesToString = (type, map) -> {
@@ -114,14 +112,14 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
                         if (iter.hasNext())
                             builder.appendln();
                     }
-                } builder.decLevel().appendln("<\\" + type + " edges>").appendln();
+                } builder.decLevel().appendln("</" + type + " edges>").appendln();
             };
 
 
             edgesToString.invoke("incoming", incoming);
             edgesToString.invoke("leaving", leaving);
 
-        } builder.decLevel().appendln("<\\Node>");
+        } builder.decLevel().appendln("</Node>");
 
         return builder.toString();
     }
@@ -586,6 +584,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         return coordinate;
     }
 
+
     /*
     |================|
     | (i) Resettable |
@@ -602,6 +601,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         newRegisteredVehicles.clear();
         anyChangeSinceUpdate = false;
     }
+
 
     /*
     |============|

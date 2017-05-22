@@ -466,9 +466,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
      * a tower, this method does not work correctly.
      */
     private void createAndFillTower(Skipnode<E> infimum, Skipnode<E> node, Skipnode<E> supremum) {
-
         int towerHeight = throwCoinUntilFalse();
-//        int towerHeight = coinCount; // todo remove
         for (int towerLevel = 1; towerLevel <= towerHeight; towerLevel++) {
 
                 /* set infimum's pointer */
@@ -662,7 +660,6 @@ public class PrioritySkipList<E> implements SkipList<E> {
      * @author Dominic Parga Cacheiro
      */
     private class Tower<E> {
-
         private ArrayList<Skipnode<E>> skipnodes;
         private ArrayList<Integer>     linkLengths;
 
@@ -677,7 +674,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
         @Override
         public String toString() {
             LevelStringBuilder builder = new LevelStringBuilder();
-            builder.appendln("<tower>");
+            builder.appendln("<" + getClass().getSimpleName() + ">");
             builder.incLevel();
 
             for (int towerLevel = getHeight(); towerLevel >= 0; towerLevel--) {
@@ -685,7 +682,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
             }
 
             builder.decLevel();
-            builder.append("</tower>");
+            builder.appendln("</" + getClass().getSimpleName() + ">");
             return builder.toString();
         }
 
@@ -787,7 +784,6 @@ public class PrioritySkipList<E> implements SkipList<E> {
      * @author Dominic Parga Cacheiro
      */
     private class Skipnode<E> {
-
         public final E        value;
         public final Tower<E> tower;
 
@@ -801,7 +797,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
         @Override
         public String toString() {
             LevelStringBuilder builder = new LevelStringBuilder();
-            builder.appendln("<skipnode>");
+            builder.appendln("<" + getClass().getSimpleName() + ">");
             builder.incLevel();
 
             builder.appendln("value:");
@@ -809,7 +805,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
             builder.appendln(tower);
 
             builder.decLevel();
-            builder.append("</skipnode>");
+            builder.appendln("</" + getClass().getSimpleName() + ">");
             return builder.toString();
         }
 

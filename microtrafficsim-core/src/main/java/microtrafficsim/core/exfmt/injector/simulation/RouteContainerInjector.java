@@ -17,7 +17,7 @@ public class RouteContainerInjector implements ExchangeFormat.Injector<RouteCont
             throws ExchangeFormatException {
         Config cfg = fmt.getConfig().get(Config.class);
         if (cfg == null) throw new ExchangeFormatException(
-                "Config for " + RouteContainerInjector.class.getSimpleName() + " missing");
+                "Config for " + getClass().getSimpleName() + " missing");
 
         ScenarioRouteInfo info = new ScenarioRouteInfo(cfg.graphGUID, src);
         dst.set(info);
