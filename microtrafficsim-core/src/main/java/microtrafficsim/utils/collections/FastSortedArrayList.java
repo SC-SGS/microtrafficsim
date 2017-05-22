@@ -1,20 +1,26 @@
 package microtrafficsim.utils.collections;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 /**
  * <p>
- * Is an {@code ArrayList} keeping all elements sorted and implements {@code Queue}. In difference to
- * {@link SortedArrayList}, this class stores the values directly and sorts them if needed.
+ * Is an {@code ArrayList} keeping all elements sorted and implements {@code Queue}. This class stores the values
+ * directly and sorts them if needed.
  *
  * <p>
  * Which method sorts and which one doesn't is described in their JavaDoc. In general, the list gets sorted in every
  * method where: <br>
  * &bull runtime could be improved by a sorted list (e.g. {@link #get(Object)} or {@link #contains(Object)}) <br>
- * &bull the identity of this list is relevant (e.g. {@link #equals(Object)})
+ * &bull the identity/order of this list is relevant (e.g. {@link #equals(Object)}, {@link #poll()}) <br>
+ * It is not sorted for description methods ({@link #toString()}), for {@link #listIterator() list iterators} and
+ * getter
+ * using indices ({@link #get(int)}).<br>
  * <br>
- * You can sort the list calling {@link #sort()}. It only sorts the list if it is "dirty".
+ * You can sort the list calling {@link #sort()}. It only sorts the list if it's order is "dirty" (e.g. after calling
+ * {@link #add(Object)}).
  *
  * @author Dominic Parga Cacheiro
  */
@@ -37,8 +43,7 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     }
 
     public FastSortedArrayList(Collection<? extends E> collection, Comparator<? super E> comparator) {
-        super();
-        this.comparator = comparator;
+        this(collection.size(), comparator);
         addAll(collection);
     }
 
@@ -262,22 +267,24 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     }
 
     /**
-     * Does not {@link #sort() sort}
+     * Does {@link #sort() sort}
      */
     @Override
     public E remove() {
         if (isEmpty())
             throw new NoSuchElementException(isEmptyMsg());
+        sort();
         return remove(0);
     }
 
     /**
-     * Does not {@link #sort() sort}
+     * Does {@link #sort() sort}
      */
     @Override
     public E poll() {
         if (isEmpty())
             return null;
+        sort();
         return remove(0);
     }
 
@@ -307,6 +314,58 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     | iterator |
     |==========|
     */
+    /**
+     * Does not {@link #sort() sort}
+     */
+    @Override
+    public ListIterator<E> listIterator(int index) {
+        return super.listIterator(index);
+    }
+
+    /**
+     * Does not {@link #sort() sort}
+     */
+    @Override
+    public ListIterator<E> listIterator() {
+        return super.listIterator();
+    }
+
+    /**
+     * Does {@link #sort() sort}
+     */
+    @Override
+    public void forEach(Consumer<? super E> action) {
+        sort();
+        super.forEach(action);
+    }
+
+    /**
+     * Does {@link #sort() sort}
+     */
+    @Override
+    public Spliterator<E> spliterator() {
+        sort();
+        return super.spliterator();
+    }
+
+    /**
+     * Does {@link #sort() sort}
+     */
+    @Override
+    public Stream<E> stream() {
+        sort();
+        return super.stream();
+    }
+
+    /**
+     * Does {@link #sort() sort}
+     */
+    @Override
+    public Stream<E> parallelStream() {
+        sort();
+        return super.stream();
+    }
+
     /**
      * Does {@link #sort() sort}
      */
@@ -401,6 +460,10 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     }
 
     /**
+     * <p>
+     * Uses Java's {@link ArrayList#sort(Comparator) list sort algorithm}.
+     *
+     * <p>
      * Does {@code sort} if needed
      */
     public void sort() {

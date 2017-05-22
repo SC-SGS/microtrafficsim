@@ -2,6 +2,7 @@ package microtrafficsim.math;
 
 import microtrafficsim.core.logic.Direction;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.utils.collections.FastSortedArrayList;
 
 import java.util.*;
 
@@ -93,30 +94,21 @@ public class Geometry {
      * @return A queue containing the given vectors sorted
      */
     public static Queue<Vec2f> sortClockwiseAsc(Vec2f zero, Collection<Vec2f> vectors, boolean clockwise) {
-
         Direction direction = clockwise ? Direction.LEFT : Direction.RIGHT;
 
         HashMap<Vec2f, Double> alphas = new HashMap<>();
         for (Vec2f v : vectors) {
             if (alphas.containsKey(v))
                 continue;
-            float  dot   = (Vec2f.dot(zero, v) / (zero.len() * v.len()));
+            double dot = (Vec2f.dot(zero, v) / (zero.len() * v.len()));
+            dot = MathUtils.clamp(dot, -1, 1);
             double alpha = Math.acos(dot);
             if (direction == calcCurveDirection(new Vec2f(), zero, Vec2f.add(zero, v)))
                 alpha = 2 * Math.PI - alpha;
             alphas.put(v, alpha);
         }
 
-        LinkedList<Vec2f> sortedList = new LinkedList<>(vectors);
-        sortedList.sort((o1, o2) -> {
-            double a1 = alphas.get(o1);
-            double a2 = alphas.get(o2);
-            if (a1 > a2) return 1;
-            if (a1 < a2) return -1;
-            return 0;
-        });
-
-        return sortedList;
+        return new FastSortedArrayList<>(vectors, Comparator.comparingDouble(alphas::get));
     }
 
     /**
@@ -134,29 +126,20 @@ public class Geometry {
      * @return A queue containing the given vectors sorted
      */
     public static Queue<Vec2d> sortClockwiseAsc(Vec2d zero, Collection<Vec2d> vectors, boolean clockwise) {
-
         Direction direction = clockwise ? Direction.LEFT : Direction.RIGHT;
 
         HashMap<Vec2d, Double> alphas = new HashMap<>();
         for (Vec2d v : vectors) {
             if (alphas.containsKey(v))
                 continue;
-            double  dot   = (Vec2d.dot(zero, v) / (zero.len() * v.len()));
+            double dot = (Vec2d.dot(zero, v) / (zero.len() * v.len()));
+            dot = MathUtils.clamp(dot, -1, 1);
             double alpha = Math.acos(dot);
             if (direction == calcCurveDirection(new Vec2d(), zero, Vec2d.add(zero, v)))
                 alpha = 2 * Math.PI - alpha;
             alphas.put(v, alpha);
         }
 
-        LinkedList<Vec2d> sortedList = new LinkedList<>(vectors);
-        sortedList.sort((o1, o2) -> {
-            double a1 = alphas.get(o1);
-            double a2 = alphas.get(o2);
-            if (a1 > a2) return 1;
-            if (a1 < a2) return -1;
-            return 0;
-        });
-
-        return sortedList;
+        return new FastSortedArrayList<>(vectors, Comparator.comparingDouble(alphas::get));
     }
 }
