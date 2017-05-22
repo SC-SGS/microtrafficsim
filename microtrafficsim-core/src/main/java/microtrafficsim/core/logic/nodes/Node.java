@@ -14,12 +14,15 @@ import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
+import microtrafficsim.utils.collections.FastSortedArrayList;
+import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.functional.Procedure2;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 
 /**
@@ -400,19 +403,6 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         connectedLanes.add(leaving);
     }
 
-    /**
-     * Adds a {@link DirectedEdge} to this node. It's traffic index for
-     * calculating crossing order is set to -1.
-     */
-    public void addEdge(DirectedEdge edge) {
-        if (edge.getOrigin() == this)
-            leaving.put(edge, (byte) -1);
-        else if (edge.getDestination() == this)
-            incoming.put(edge, (byte) -1);
-        else
-            throw new IllegalArgumentException("edge not connected to this node");
-    }
-
     public void addLeavingEdge(DirectedEdge edge) {
         if (edge.getOrigin() != this)
             throw new IllegalArgumentException("edge.getOrigin() != this");
@@ -433,7 +423,6 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
      * calculation.
      */
     public void updateEdgeIndices() {
-
         /* init */
         final boolean IS_LEAVING = true;
         final boolean IS_INCOMING = false;
@@ -470,8 +459,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
             vectorsEdges.add(new Tuple<>(edge, IS_INCOMING));
         }
 
-
-        /* now: all vectors are keys and can be sorted*/
+        /* now: all vectors are keys and can be sorted */
         Queue<Vec2d> sortedVectors = Geometry.sortClockwiseAsc(zero, edges.keySet(), !config.drivingOnTheRight);
         byte nextCrossingIndex = 0;
         // iterate over the sorted vectors
@@ -494,7 +482,64 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
                 }
             }
         }
+
+
+
+
+
+
+        /* printing for debugging */ // todo remove
+        FastSortedArrayList<Triple<Boolean, DirectedEdge, Byte>> sortedEdges = new FastSortedArrayList<>(
+                leaving.size() + incoming.size(),
+                (t1, t2) -> Byte.compare(t1.obj2, t2.obj2));
+        for (Map.Entry<DirectedEdge, Byte> entry : leaving.entrySet())
+            sortedEdges.add(new Triple<>(IS_LEAVING, entry.getKey(), entry.getValue()));
+        for (Map.Entry<DirectedEdge, Byte> entry : incoming.entrySet())
+            sortedEdges.add(new Triple<>(IS_INCOMING, entry.getKey(), entry.getValue()));
+
+
+        /* iterate over lanes and fill map */
+        for (Triple<Boolean, DirectedEdge, Byte> triple : sortedEdges)
+            System.err.println(triple.obj2 + " : " + triple.obj1);
     }
+
+    /**
+     * This method needs {@link #updateEdgeIndices() updated crossing indices for all edges} to work correctly.
+     *
+     * @return a map containing all lanes (concerning to an edge of this node) mapping to a crossing index.
+     */
+    public Map<Lane, Byte> calcLaneIndices() {
+        boolean IS_LEAVING = true;
+        boolean IS_INCOMING = false;
+
+
+        /* add edges sorted by their index */
+        FastSortedArrayList<Triple<Boolean, DirectedEdge, Byte>> sortedEdges = new FastSortedArrayList<>(
+                leaving.size() + incoming.size(),
+                (t1, t2) -> Byte.compare(t1.obj2, t2.obj2));
+        for (Map.Entry<DirectedEdge, Byte> entry : leaving.entrySet())
+            sortedEdges.add(new Triple<>(IS_LEAVING, entry.getKey(), entry.getValue()));
+        for (Map.Entry<DirectedEdge, Byte> entry : incoming.entrySet())
+            sortedEdges.add(new Triple<>(IS_INCOMING, entry.getKey(), entry.getValue()));
+
+
+        /* iterate over lanes and fill map */
+        final Map<Lane, Byte> indicesMap = new HashMap<>();
+        byte nextCrossingIndex = 0;
+        for (Triple<Boolean, DirectedEdge, Byte> triple : sortedEdges) {
+            ArrayList<Lane> lanes = triple.obj1.getLanes();
+            // if leaving => indices ascending like ascending lane-idx
+            // if incoming => indices reverse to ascending lane-idx
+            if (triple.obj0 == IS_INCOMING)
+                Collections.reverse(lanes);
+
+            for (Lane lane : lanes)
+                indicesMap.put(lane, nextCrossingIndex++);
+        }
+
+        return indicesMap;
+    }
+
 
     /*
     |======================|

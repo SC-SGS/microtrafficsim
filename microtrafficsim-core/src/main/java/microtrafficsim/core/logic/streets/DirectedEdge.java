@@ -14,8 +14,7 @@ import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.ArrayList;
 
 
 /**
@@ -106,8 +105,32 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                 .getHash();
     }
 
-    public Collection<Lane> getLanes() {
-        return Arrays.asList(lanes);
+    @Override
+    public String toString() {
+        LevelStringBuilder stringBuilder = new LevelStringBuilder()
+                .setDefaultLevelSeparator()
+                .setDefaultLevelSubString();
+
+        stringBuilder.appendln("<DirectedEdge>").incLevel(); {
+            stringBuilder.appendln("id = " + streetInfo.raw.id);
+            stringBuilder.appendln("hash = " + hashCode());
+            stringBuilder.appendln("(orig -len-> dest) = ("
+                    + streetInfo.raw.origin.getId()
+                    + " -" + streetInfo.numberOfCells + "-> "
+                    + streetInfo.raw.destination.getId() + ")");
+            stringBuilder.appendln();
+            for (Lane lane : lanes)
+                stringBuilder.appendln(lane);
+        } stringBuilder.decLevel().append("<\\DirectedEdge>");
+
+        return stringBuilder.toString();
+    }
+
+    public ArrayList<Lane> getLanes() {
+        ArrayList<Lane> list = new ArrayList<>(lanes.length);
+        for (Lane lane : lanes)
+            list.add(lane);
+        return list;
     }
 
     /**
@@ -136,27 +159,6 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
     public void setMetersPerCell(float metersPerCell) {
         streetInfo.raw.metersPerCell = metersPerCell;
         reset();
-    }
-
-    @Override
-    public String toString() {
-        LevelStringBuilder stringBuilder = new LevelStringBuilder()
-                .setDefaultLevelSeparator()
-                .setDefaultLevelSubString();
-
-        stringBuilder.appendln("<DirectedEdge>").incLevel(); {
-            stringBuilder.appendln("id = " + streetInfo.raw.id);
-            stringBuilder.appendln("hash = " + hashCode());
-            stringBuilder.appendln("info = ("
-                    + streetInfo.raw.origin.getId()
-                    + " -" + streetInfo.numberOfCells + "-> "
-                    + streetInfo.raw.destination.getId() + ")");
-            stringBuilder.appendln();
-            for (Lane lane : lanes)
-                stringBuilder.appendln(lane);
-        } stringBuilder.decLevel().append("<\\DirectedEdge>");
-
-        return stringBuilder.toString();
     }
 
 

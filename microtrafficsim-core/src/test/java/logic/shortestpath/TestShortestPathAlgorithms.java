@@ -376,10 +376,10 @@ public class TestShortestPathAlgorithms {
         forward.setEntity(entity);
         backward.setEntity(entity);
 
-        origin.addEdge(forward);
-        origin.addEdge(backward);
-        destination.addEdge(forward);
-        destination.addEdge(backward);
+        origin.addLeavingEdge(forward);
+        origin.addIncomingEdge(backward);
+        destination.addIncomingEdge(forward);
+        destination.addLeavingEdge(backward);
 
         return entity;
     }
@@ -407,8 +407,8 @@ public class TestShortestPathAlgorithms {
         StreetEntity entity = new StreetEntity(forward, null, null);
         forward.setEntity(entity);
 
-        origin.addEdge(forward);
-        destination.addEdge(forward);
+        origin.addLeavingEdge(forward);
+        destination.addIncomingEdge(forward);
 
         return entity;
     }
@@ -436,8 +436,8 @@ public class TestShortestPathAlgorithms {
         StreetEntity entity = new StreetEntity(backward, null, null);
         backward.setEntity(entity);
 
-        origin.addEdge(backward);
-        destination.addEdge(backward);
+        origin.addIncomingEdge(backward);
+        destination.addLeavingEdge(backward);
 
         return entity;
     }

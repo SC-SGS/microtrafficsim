@@ -61,6 +61,7 @@ public class Lane implements Resettable {
     public String toString() {
         LevelStringBuilder stringBuilder = new LevelStringBuilder();
         stringBuilder.appendln("<Lane>").incLevel(); {
+            stringBuilder.appendln("edge id    = " + associatedEdge.getId());
             stringBuilder.appendln("edge hash  = " + associatedEdge.hashCode());
             stringBuilder.appendln("lane index = " + index);
         } stringBuilder.decLevel().appendln("<\\Lane>");

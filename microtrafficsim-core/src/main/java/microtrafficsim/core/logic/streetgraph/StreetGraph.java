@@ -38,22 +38,21 @@ public class StreetGraph implements Graph {
 
     @Override
     public String toString() {
-        LevelStringBuilder output = new LevelStringBuilder()
+        LevelStringBuilder builder = new LevelStringBuilder()
                 .setLevelSubString("    ")
-                .setLevelSeparator(System.lineSeparator())
-                .append(StreetGraph.class.toString())
-                .append(":GUID_hash=" + guid.hashCode())
-                .appendln(": {").incLevel();
+                .setLevelSeparator(System.lineSeparator());
 
-        output.appendln("Nodes: {").incLevel();
-        nodes.values().forEach(output::appendln);
-        output.decLevel().appendln("}");
+        builder.appendln("<" + StreetGraph.class.getSimpleName() + ">").incLevel(); {
+            builder.appendln("GUID hash = " + guid.hashCode());
+            builder.appendln();
+            builder.appendln();
+            nodes.values().forEach(builder::appendln);
+            builder.appendln();
+            builder.appendln();
+            edges.values().forEach(builder::appendln);
+        } builder.decLevel().append("<\\" + StreetGraph.class.getSimpleName() + ">");
 
-        output.appendln("Edges: {").incLevel();
-        edges.values().forEach(output::appendln);
-        output.decLevel().appendln("}");
-
-        return output.decLevel().append("}").toString();
+        return builder.toString();
     }
 
 

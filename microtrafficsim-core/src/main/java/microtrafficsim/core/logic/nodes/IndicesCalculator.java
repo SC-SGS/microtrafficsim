@@ -7,7 +7,8 @@ public class IndicesCalculator {
     public static final byte NO_MATCH = -42;
 
     /**
-     * TODO
+     * TODO no strings are used, but bytes
+     *
      * <p>
      * This method assumes to get two strings containing sorted indices like
      * they appear in traffic logic ({@link DirectedEdge}) to calculate two
@@ -36,7 +37,7 @@ public class IndicesCalculator {
      *
      *
      * @return The first index of this unique matching or
-     * StringMatcher.NO_MATCH, if there is no matching.
+     * {@link IndicesCalculator}.NO_MATCH, if there is no matching.
      */
     public static byte leftmostIndexInMatching(byte origin1, byte destination1, byte origin2, byte destination2,
                                                byte supremum) {
