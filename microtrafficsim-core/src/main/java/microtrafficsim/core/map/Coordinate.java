@@ -99,6 +99,6 @@ public class Coordinate {
 
     @Override
     public String toString() {
-        return this.getClass().getName() + " { " + lat + ", " + lon + "}";
+        return this.getClass().getName() + " { " + lat + ", " + lon + " }";
     }
 }

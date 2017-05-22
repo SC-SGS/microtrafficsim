@@ -423,12 +423,15 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
      * calculation.
      */
     public void updateEdgeIndices() {
+        if (leaving.keySet().size() == 0 && incoming.keySet().size() == 0)
+            return;
+
+
         /* init */
         final boolean IS_LEAVING = true;
         final boolean IS_INCOMING = false;
         HashMap<Vec2d, ArrayList<Tuple<DirectedEdge, Boolean>>> edges = new HashMap<>();
         Vec2d zero = null;
-
 
         /* get all vectors for sorting later */
         /* collect all leaving edges */
@@ -465,6 +468,9 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         // iterate over the sorted vectors
         while (!sortedVectors.isEmpty()) {
             Vec2d v = sortedVectors.poll();
+            System.err.println();
+            System.err.println("aha = " + v);
+            System.err.println();
             // take the current vector's edges
             ArrayList<Tuple<DirectedEdge, Boolean>> nextEdges = edges.remove(v);
 
@@ -499,6 +505,8 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
 
 
         /* iterate over lanes and fill map */
+        System.err.println();
+        System.err.println(this.toString());
         for (Triple<Boolean, DirectedEdge, Byte> triple : sortedEdges)
             System.err.println(triple.obj2 + " : " + triple.obj1);
     }
