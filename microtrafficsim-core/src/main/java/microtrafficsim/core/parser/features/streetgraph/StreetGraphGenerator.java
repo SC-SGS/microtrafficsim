@@ -16,6 +16,7 @@ import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.DistanceCalculator;
 import microtrafficsim.math.HaversineDistanceCalculator;
+import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
@@ -372,12 +373,16 @@ public class StreetGraphGenerator implements FeatureGenerator {
         Vec2d nb = Vec2d.normalize(b);
 
         double cross = na.cross(nb);
-        if (cross > 0.0)               // b left of a
-            return clockwise ? Math.acos(na.dot(nb)) : (2 * Math.PI - Math.acos(na.dot(nb)));
-        else if (cross < 0.0)          // b left of a
-            return clockwise ? (2 * Math.PI - Math.acos(na.dot(nb))) : Math.acos(na.dot(nb));
-        else
+        if (cross == 0.0) {
             return Math.PI;
+        } else {
+            double inner = Math.acos(MathUtils.clamp(na.dot(nb), -1.0, 1.0));
+
+            if (cross > 0.0)               // b left of a
+                return clockwise ? inner : (2 * Math.PI - inner);
+            else
+                return clockwise ? (2 * Math.PI - inner) : inner;
+        }
     }
 
 
