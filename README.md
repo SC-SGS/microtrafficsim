@@ -1,7 +1,7 @@
 # Microscopic Traffic Simulation
 with OpenStreetMap data.
 
-![Teaser: New York](teaser.png "Teaser: New York")
+![Teaser: New York](resources/teaser.png "Teaser: New York")
 
 ## News
 Testing the simulation execution for determinism has finished. According
