@@ -24,9 +24,6 @@ public interface Vehicle extends LogicVehicleEntity {
 
     void setDriver(Driver driver);
 
-    void setVehicleInFront(Vehicle vehicleInFront);
-
-    void setVehicleInBack(Vehicle vehicleInBack);
 
     /*
     |===========|
@@ -44,6 +41,7 @@ public interface Vehicle extends LogicVehicleEntity {
     void setState(VehicleState state);
 
     void addStateListener(VehicleStateListener listener);
+
 
     /*
     |===========================|

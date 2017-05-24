@@ -4,7 +4,6 @@ import com.jogamp.opengl.GL3;
 import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
@@ -259,17 +258,17 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
             Vec2d      dir     = projection.project(ctarget).sub(pos).normalize();
 
             // adjust position to lane
-            Lane lane = logic.getLane();
+            DirectedEdge.Lane lane = logic.getLane();
             if (lane == null) continue;
 
-            DirectedEdge edge = lane.getAssociatedEdge();
+            DirectedEdge edge = lane.getEdge();
             StreetEntity street = edge.getEntity();
 
             double laneOffset;
             if (street.getForwardEdge() != null && street.getBackwardEdge() != null) {
-                laneOffset = edge.getLanes().size() - lane.getIndex() - 0.5;
+                laneOffset = edge.getNumberOfLanes() - lane.getIndex() - 0.5;
             } else {
-                laneOffset = (edge.getLanes().size() - 1.0) / 2.0 - lane.getIndex();
+                laneOffset = (edge.getNumberOfLanes() - 1.0) / 2.0 - lane.getIndex();
             }
             laneOffset *= laneOffsetSign * VEHICLE_LANE_OFFSET_SCALE * VEHICLE_SCALE_NORM;
 

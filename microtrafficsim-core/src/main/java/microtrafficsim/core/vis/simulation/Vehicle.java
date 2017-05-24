@@ -59,7 +59,7 @@ public class Vehicle implements VisualizationVehicleEntity {
 
     @Override
     public void updatePosition() {
-        DirectedEdge edge = entity.getLogic().getDirectedEdge();
+        DirectedEdge edge = entity.getLogic().getLane().getEdge();
         Street       geom = edge.getEntity().getGeometry();
         layer = geom.layer;
 

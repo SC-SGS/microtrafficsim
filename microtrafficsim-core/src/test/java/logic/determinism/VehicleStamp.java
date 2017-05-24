@@ -1,23 +1,19 @@
 package logic.determinism;
 
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * @author Dominic Parga Cacheiro
  */
 public class VehicleStamp {
     public long id;
-    public DirectedEdge edge; // todo lane
+    public DirectedEdge.Lane lane; // todo lane
     public int cellPosition;
 
-    public VehicleStamp(long id, DirectedEdge edge, int cellPosition) {
+    public VehicleStamp(long id, DirectedEdge.Lane lane, int cellPosition) {
         this.id = id;
-        this.edge = edge;
+        this.lane = lane;
         this.cellPosition = cellPosition;
     }
 
@@ -30,7 +26,7 @@ public class VehicleStamp {
         builder.appendln("<" + getClass().getSimpleName() + ">").incLevel(); {
             builder.appendln("id = " + id);
             builder.appendln("cell position = " + cellPosition);
-            builder.appendln(edge);
+            builder.appendln(lane);
         } builder.decLevel().append("</" + getClass().getSimpleName() + ">");
 
         return builder.toString();
@@ -51,13 +47,13 @@ public class VehicleStamp {
         if (id != stamp.id)
             return false;
 
-        if (edge == null && stamp.edge != null)
+        if (lane == null && stamp.lane != null)
             return false;
-        if (edge != null) {
-            if (stamp.edge == null)
+        if (lane != null) {
+            if (stamp.lane == null)
                 return false;
 
-            if (edge.hashCode() != stamp.edge.hashCode())
+            if (lane.hashCode() != stamp.lane.hashCode())
                 return false;
         }
 

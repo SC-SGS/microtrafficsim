@@ -6,15 +6,18 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.information.FullStreetInfo;
 import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.logic.streets.information.RawStreetInfo;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.Resettable;
+import microtrafficsim.utils.collections.IndexableLinkedBand;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.utils.strings.builder.BasicStringBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
-import java.util.ArrayList;
+import java.util.Iterator;
 
 
 /**
@@ -24,19 +27,23 @@ import java.util.ArrayList;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, Resettable {
+public class DirectedEdge
+        implements ShortestPathEdge<Node>, LogicStreetEntity, Resettable, Iterable<DirectedEdge.Lane>
+{
 
-    /* street information */
-    private FullStreetInfo streetInfo;
-
-    /* visualization */
+    private final FullStreetInfo streetInfo;
     private StreetEntity entity;
+    private final IndexableLinkedBand<Vehicle> lanes;
 
-    /* geometry */
-    private Lane[] lanes;
 
     /**
-     * @see #DirectedEdge(RawStreetInfo)
+     * In addition to standard initialization, this constructor also calculates
+     * the number of cells of this edge and adds this edge to the origin node's
+     * leaving edges.
+     *
+     * For detailed parameter information
+     * see
+     * {@link RawStreetInfo#RawStreetInfo(long, double, Vec2d, Vec2d, Orientation, Node, Node, StreetType, int, float, float, SimulationConfig.StreetPriorityFunction)}
      */
     public DirectedEdge(long id,
                         double lengthInMeters,
@@ -46,8 +53,9 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                         StreetType type,
                         int nLanes,
                         float maxVelocity,
-                        float metersPerCell, SimulationConfig.StreetPriorityFunction priorityFn) {
-        this(new RawStreetInfo(
+                        float metersPerCell, SimulationConfig.StreetPriorityFunction priorityFn)
+    {
+        streetInfo = new FullStreetInfo(new RawStreetInfo(
                 id,
                 lengthInMeters,
                 originDirection, destinationDirection,
@@ -58,40 +66,14 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                 maxVelocity,
                 metersPerCell, priorityFn
         ));
+        lanes = new IndexableLinkedBand<>(streetInfo.raw.nLanes);
     }
 
-    /**
-     * In addition to standard initialization, this constructor also calculates
-     * the number of cells of this edge and adds this edge to the origin node's
-     * leaving edges.
-     *
-     * For detailed parameter information
-     * see
-     * {@link RawStreetInfo#RawStreetInfo(long, double, Vec2d, Vec2d, Orientation, Node, Node, StreetType, int, float, float, SimulationConfig.StreetPriorityFunction)}
-     *
-     * @param rawStreetInfo contains all relevant, "persistent" information about this edge
-     */
-    public DirectedEdge(RawStreetInfo rawStreetInfo) {
-        streetInfo = new FullStreetInfo(rawStreetInfo);
 
-        lanes    = new Lane[rawStreetInfo.nLanes];
-        for (int i = 0; i < rawStreetInfo.nLanes; i++) {
-            lanes[i] = new Lane(this, i);
-        }
+    public Lane getLane(int laneNo) {
+        return new Lane(this, laneNo);
     }
 
-    @Override
-    public long getId() {
-        return streetInfo.raw.id;
-    }
-
-    public StreetType getStreetType() {
-        return streetInfo.raw.type;
-    }
-
-    public int getNumberOfLanes() {
-        return streetInfo.raw.nLanes;
-    }
 
 
     @Override
@@ -119,30 +101,49 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                     + " -" + streetInfo.numberOfCells + "-> "
                     + streetInfo.raw.destination.getId() + ")");
             stringBuilder.appendln();
-            for (Lane lane : lanes)
+            for (Lane lane : this)
                 stringBuilder.appendln(lane);
         } stringBuilder.decLevel().append("</DirectedEdge>");
 
         return stringBuilder.toString();
     }
 
-    public ArrayList<Lane> getLanes() {
-        ArrayList<Lane> list = new ArrayList<>(lanes.length);
-        for (Lane lane : lanes)
-            list.add(lane);
-        return list;
+    /**
+     * Resets the {@code streetInfo} and all lanes.
+     */
+    @Override
+    public void reset() {
+        streetInfo.reset();
+        lanes.clear();
     }
 
-    /**
-     * @return lane of index i counted from right to left, starting with 0
-     */
-    public Lane getLane(int i) {
-        return lanes[i];
+
+
+    @Override
+    public Iterator<Lane> iterator() {
+        return new AscLaneIterator();
     }
 
-    /**
-     * @return max allowed velocity in cells/s
-     */
+    public Iterator<Lane> reverseIterator() {
+        return new DescLaneIterator();
+    }
+
+    @Override
+    public StreetEntity getEntity() {
+        return entity;
+    }
+
+    @Override
+    public void setEntity(StreetEntity entity) {
+        this.entity = entity;
+    }
+
+
+
+    public int getNumberOfLanes() {
+        return streetInfo.raw.nLanes;
+    }
+
     public int getMaxVelocity() {
         return streetInfo.maxVelocity;
     }
@@ -151,37 +152,6 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
         return streetInfo.priorityLevel;
     }
 
-    /**
-     * Sets the value {@code metersPerCell} to the given one and calls {@link #reset()} afterwards.
-     *
-     * @param metersPerCell new value
-     */
-    public void setMetersPerCell(float metersPerCell) {
-        streetInfo.raw.metersPerCell = metersPerCell;
-        reset();
-    }
-
-
-    /*
-    |================|
-    | (i) Resettable |
-    |================|
-    */
-    /**
-     * Resets the {@code streetInfo} and all lanes.
-     */
-    @Override
-    public void reset() {
-        streetInfo.reset();
-        for (Lane lane : lanes)
-            lane.reset();
-    }
-
-    /*
-    |===============|
-    | visualization |
-    |===============|
-    */
     public Vec2d getOriginDirection() {
         return streetInfo.raw.originDirection;
     }
@@ -190,11 +160,15 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
         return streetInfo.raw.destinationDirection;
     }
 
-    /*
-    |======================|
-    | (i) IDijkstrableEdge |
-    |======================|
-    */
+    @Override
+    public long getId() {
+        return streetInfo.raw.id;
+    }
+
+    public StreetType getStreetType() {
+        return streetInfo.raw.type;
+    }
+
     @Override
     public int getLength() {
         return streetInfo.numberOfCells;
@@ -220,18 +194,138 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
         return streetInfo.raw.destination;
     }
 
-    /*
-    |=======================|
-    | (i) LogicStreetEntity |
-    |=======================|
-    */
-    @Override
-    public StreetEntity getEntity() {
-        return entity;
+
+
+
+    /**
+     * Just an immutable container for vehicles.
+     */
+    public static class Lane {
+        private DirectedEdge edge;
+        private int index;
+
+
+        public Lane(DirectedEdge edge, int index) {
+            this.edge = edge;
+            this.index = index;
+        }
+
+
+        public DirectedEdge getEdge() {
+            return edge;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        public int getMaxVelocity() {
+            return edge.getMaxVelocity();
+        }
+
+
+        public synchronized int getMaxInsertionIndex() {
+            if (edge.lanes.isEmpty(index)) {
+                return edge.getLength() - 1;
+            } else {
+                return edge.lanes.getFirst(index).getCellPosition() - 1;
+            }
+        }
+
+        public synchronized boolean hasVehicleInFront(Vehicle vehicle) {
+            return edge.lanes.getNext(index, vehicle.getCellPosition()) != null;
+        }
+
+        public synchronized Vehicle getVehicleInFront(Vehicle vehicle) {
+            return edge.lanes.getNext(index, vehicle.getCellPosition());
+        }
+
+
+        /**
+         * @return true if success (<=> no vehicle has been on the given position)
+         */
+        public synchronized boolean insertVehicle(Vehicle vehicle, int cellPosition) {
+            Vehicle removedVehicle = edge.lanes.set(vehicle, index, cellPosition);
+            boolean success = removedVehicle == null;
+
+            BasicStringBuilder builder = new BasicStringBuilder();
+            builder.appendln("Inserting a vehicle to the lane removed a vehicle.")
+                    .appendln("INSERTED = " + vehicle)
+                    .appendln("REMOVED = " + removedVehicle);
+            assert success : builder.toString();
+
+            return success;
+        }
+
+        public synchronized void moveVehicle(Vehicle vehicle, int delta) {
+            if (delta != 0) {
+                removeVehicle(vehicle);
+                insertVehicle(vehicle, vehicle.getCellPosition() + delta);
+            }
+        }
+
+        /**
+         * @return true if success (<=> no vehicle has been on the given position)
+         */
+        public synchronized boolean removeVehicle(Vehicle vehicle) {
+            boolean success;
+
+            Vehicle removedVehicle = edge.lanes.remove(index, vehicle.getCellPosition());
+            success = removedVehicle == vehicle;
+
+            BasicStringBuilder builder = new BasicStringBuilder();
+            builder.appendln("Removing a vehicle from the lane removed an unexpected, different vehicle.")
+                    .appendln("EXPECTED = " + vehicle)
+                    .appendln("ACTUALLY REMOVED  = " + removedVehicle);
+            assert success : builder.toString();
+
+            return success;
+        }
+
+
+        @Override
+        public int hashCode() {
+            return new FNVHashBuilder().add(edge).add(index).getHash();
+        }
+
+        @Override
+        public String toString() {
+            LevelStringBuilder stringBuilder = new LevelStringBuilder();
+            stringBuilder.appendln("<Lane>").incLevel(); {
+                stringBuilder.appendln("edge id    = " + edge.getId());
+                stringBuilder.appendln("edge hash  = " + edge.hashCode());
+                stringBuilder.appendln("lane index = " + index);
+            } stringBuilder.decLevel().appendln("</Lane>");
+
+            return stringBuilder.toString();
+        }
     }
 
-    @Override
-    public void setEntity(StreetEntity entity) {
-        this.entity = entity;
+    public class AscLaneIterator implements Iterator<Lane> {
+        int index = 0;
+
+        @Override
+        public boolean hasNext() {
+            return index < getNumberOfLanes();
+        }
+
+        @Override
+        public Lane next() {
+            return new Lane(DirectedEdge.this, index++);
+        }
+    }
+
+    public class DescLaneIterator implements Iterator<Lane> {
+        int index = getNumberOfLanes() - 1;
+
+        @Override
+        public boolean hasNext() {
+            return index >= 0;
+        }
+
+        @Override
+        public Lane next() {
+            return new Lane(DirectedEdge.this, index--);
+        }
     }
 }

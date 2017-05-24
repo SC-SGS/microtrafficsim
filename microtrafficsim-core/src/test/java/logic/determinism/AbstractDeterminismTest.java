@@ -3,6 +3,7 @@ package logic.determinism;
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
@@ -156,7 +157,7 @@ public abstract class AbstractDeterminismTest {
         for (Vehicle vehicle : simulation.getScenario().getVehicleContainer()) {
             VehicleStamp stamp = new VehicleStamp(
                     vehicle.getId(),
-                    vehicle.getDirectedEdge(),
+                    vehicle.getLane(),
                     vehicle.getCellPosition());
             stamps.put(vehicle.getId(), stamp);
         }

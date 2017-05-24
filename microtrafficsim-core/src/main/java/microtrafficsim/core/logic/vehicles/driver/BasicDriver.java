@@ -131,11 +131,11 @@ public class BasicDriver implements Driver {
 
     @Override
     public int getMaxVelocity() {
-        DirectedEdge edge = vehicle.getDirectedEdge();
-        if (edge == null)
+        DirectedEdge.Lane lane = vehicle.getLane();
+        if (lane == null)
             return Integer.MAX_VALUE;
         else
-            return edge.getMaxVelocity();
+            return lane.getMaxVelocity();
     }
 
     @Override

@@ -2,7 +2,6 @@ package microtrafficsim.core.logic.vehicles.machines;
 
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
@@ -23,15 +22,13 @@ public abstract class BasicVehicle implements Vehicle {
 
     /* variable information */
     private Driver driver;
-    private Lane lane;
+    private DirectedEdge.Lane lane;
 
     /* dynamic information */
     private VehicleState state;
     private int          cellPosition;
     private int          velocity;
     private boolean      lastVelocityWasZero;
-    private Vehicle      vehicleInFront;
-    private Vehicle      vehicleInBack;
 
     /* fix information */
     public final long                       id;
@@ -56,8 +53,6 @@ public abstract class BasicVehicle implements Vehicle {
         cellPosition        = -1;
         velocity            = 0;
         lastVelocityWasZero = false;
-        vehicleInFront      = null;
-        vehicleInBack       = null;
 
         /* fix information */
         this.id    = id;
@@ -81,17 +76,15 @@ public abstract class BasicVehicle implements Vehicle {
                 .appendln("cell position = " + cellPosition)
                 .appendln("velocity v = " + velocity)
                 .appendln("maximum  v = " + getMaxVelocity())
-                .appendln("last v was zero = " + lastVelocityWasZero)
-                .appendln("front vehicle = " + (vehicleInFront != null ? vehicleInFront.getId() : "null"))
-                .appendln("back  vehicle = " + (vehicleInBack != null ? vehicleInBack.getId() : "null"));
+                .appendln("last v was zero = " + lastVelocityWasZero);
         if (driver != null)
             strBuilder.append(driver);
         if (lane != null) {
             strBuilder.append(lane);
             strBuilder.appendln("");
             strBuilder.appendln("-- infos from next node --");
-            strBuilder.appendln("permission = " + lane.getAssociatedEdge().getDestination().permissionToCross(this));
-            strBuilder.appendln("node.id = " + lane.getAssociatedEdge().getDestination().getId());
+            strBuilder.appendln("permission = " + lane.getEdge().getDestination().permissionToCross(this));
+            strBuilder.appendln("node.id = " + lane.getEdge().getDestination().getId());
         }
         strBuilder.decLevel();
         strBuilder.appendln("</" + getClass().getSimpleName() + ">");
@@ -138,35 +131,17 @@ public abstract class BasicVehicle implements Vehicle {
             entity.getVisualization().setBaseColor(style.getColor(this));
     }
 
-    private synchronized void addVehicleInFront(Vehicle vehicle) {
-        this.vehicleInFront   = vehicle;
-        vehicle.setVehicleInBack(this);
-    }
-
-    private synchronized void removeVehicleInBack() {
-        if (vehicleInBack != null) {
-            vehicleInBack.setVehicleInFront(vehicleInFront);
-            vehicleInBack = null;
-        }
-    }
 
     private void leaveCurrentRoad() {
-        lane.getAssociatedEdge().getDestination().unregisterVehicle(this);
-        lane.lock.lock(); {
-            lane.removeVehicle(this);
-            removeVehicleInBack();
-        } lane.lock.unlock();
+        lane.getEdge().getDestination().unregisterVehicle(this);
+        lane.removeVehicle(this);
 
         // -1 * distance to end of road
-        cellPosition = cellPosition - lane.getAssociatedEdge().getLength();
+        cellPosition = cellPosition - lane.getEdge().getLength();
     }
 
     private void enterNextRoad() {
         lane = driver.popRoute().getLane(0);
-        lane.lock.lock();
-            Vehicle lastVehicle = lane.getLastVehicle();
-            if (lastVehicle != null) { addVehicleInFront(lastVehicle); }
-        lane.lock.unlock();
         cellPosition = cellPosition + velocity;
         lane.insertVehicle(this, cellPosition);
         if (entity.getVisualization() != null)
@@ -264,20 +239,20 @@ public abstract class BasicVehicle implements Vehicle {
     @Override
     public void brake() {
         if (state == VehicleState.SPAWNED) {
+            Vehicle vehicleInFront = lane.getVehicleInFront(this);
             if (vehicleInFront != null) {
                 // brake for front vehicle
                 int distance = vehicleInFront.getCellPosition() - cellPosition;
                 velocity     = Math.min(velocity, distance - 1);
             } else {    // this vehicle is first in lane
-                DirectedEdge edge     = lane.getAssociatedEdge();
-                int          distance = edge.getLength() - cellPosition;
+                int distance = lane.getEdge().getLength() - cellPosition;
                 // Would cross node?
                 if (velocity >= distance) {
                     if (driver.getRoute().isEmpty()) {
                         // brake for end of road
                         velocity = Math.min(velocity, distance - 1);
                     } else {
-                        if (edge.getDestination().permissionToCross(this)) {
+                        if (lane.getEdge().getDestination().permissionToCross(this)) {
                             // if next road has vehicles => brake for this
                             // else => brake for end of next road
                             int maxInsertionIndex = driver.peekRoute().getLane(0).getMaxInsertionIndex();
@@ -313,8 +288,7 @@ public abstract class BasicVehicle implements Vehicle {
     @Override
     public void move() {
         if (state == VehicleState.SPAWNED) {
-            DirectedEdge edge     = lane.getAssociatedEdge();
-            int          distance = edge.getLength() - getCellPosition();
+            int distance = lane.getEdge().getLength() - getCellPosition();
             // Will cross node?
             if (velocity >= distance)
                 if (!driver.getRoute().isEmpty()) {
@@ -344,10 +318,10 @@ public abstract class BasicVehicle implements Vehicle {
             didOneSimulationStep();
 
             if (!driver.getRoute().isEmpty()) {
-                int distance    = lane.getAssociatedEdge().getLength() - cellPosition;
-                int maxVelocity = Math.min(getMaxVelocity(), lane.getAssociatedEdge().getMaxVelocity());
-                if (maxVelocity >= distance && vehicleInFront == null)
-                    lane.getAssociatedEdge().getDestination().registerVehicle(this);
+                int distance    = lane.getEdge().getLength() - cellPosition;
+                int maxVelocity = Math.min(getMaxVelocity(), lane.getMaxVelocity());
+                if (maxVelocity >= distance && !lane.hasVehicleInFront(this))
+                    lane.getEdge().getDestination().registerVehicle(this);
             }
         }
     }
@@ -372,15 +346,6 @@ public abstract class BasicVehicle implements Vehicle {
         return driver;
     }
 
-    @Override
-    public void setVehicleInFront(Vehicle vehicleInFront) {
-        this.vehicleInFront = vehicleInFront;
-    }
-
-    @Override
-    public void setVehicleInBack(Vehicle vehicleInBack) {
-        this.vehicleInBack = vehicleInBack;
-    }
 
     /*
     |========================|
@@ -398,13 +363,7 @@ public abstract class BasicVehicle implements Vehicle {
     }
 
     @Override
-    public DirectedEdge getDirectedEdge() {
-        if (lane == null) return null;
-        return lane.getAssociatedEdge();
-    }
-
-    @Override
-    public Lane getLane() {
+    public DirectedEdge.Lane getLane() {
         return lane;
     }
 }

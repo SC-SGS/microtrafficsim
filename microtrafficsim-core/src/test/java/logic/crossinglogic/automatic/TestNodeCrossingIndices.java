@@ -9,7 +9,6 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.Bounds;
@@ -182,15 +181,15 @@ public class TestNodeCrossingIndices {
         } /* finish creating graph */
 
 
-        Map<Lane, Byte> indices = c.calcLaneIndices();
-        FastSortedArrayList<Tuple<Byte, Lane>> entries = new FastSortedArrayList<>((t1, t2) -> Byte.compare(t1.obj0, t2.obj0));
-        for (Map.Entry<Lane, Byte> entry : indices.entrySet()) {
+        Map<DirectedEdge.Lane, Byte> indices = c.calcLaneIndices();
+        FastSortedArrayList<Tuple<Byte, DirectedEdge.Lane>> entries = new FastSortedArrayList<>((t1, t2) -> Byte.compare(t1.obj0, t2.obj0));
+        for (Map.Entry<DirectedEdge.Lane, Byte> entry : indices.entrySet()) {
             entries.add(new Tuple<>(entry.getValue(), entry.getKey()));
         }
 
-        for (Tuple<Byte, Lane> tuple : entries) {
+        for (Tuple<Byte, DirectedEdge.Lane> tuple : entries) {
             int crossingIdx = tuple.obj0;
-            Lane lane       = tuple.obj1;
+            DirectedEdge.Lane lane = tuple.obj1;
 
             switch (crossingIdx) {
                 // assertLane(lane, edgeId, laneIdx)
@@ -280,8 +279,8 @@ public class TestNodeCrossingIndices {
          */
     }
 
-    private void assertLane(Lane lane, int edgeId, int laneIdx) {
-        assertEquals("Lane \n" + lane + " has wrong edge id.", edgeId, lane.getAssociatedEdge().getId());
+    private void assertLane(DirectedEdge.Lane lane, int edgeId, int laneIdx) {
+        assertEquals("Lane \n" + lane + " has wrong edge id.", edgeId, lane.getEdge().getId());
         assertEquals("Lane \n" + lane + " has wrong index.", laneIdx, lane.getIndex());
     }
 

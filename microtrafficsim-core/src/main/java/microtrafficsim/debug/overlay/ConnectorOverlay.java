@@ -5,7 +5,6 @@ import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.Overlay;
@@ -188,13 +187,13 @@ public class ConnectorOverlay implements Overlay {
     private void addConnectors(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart, int laneOffsetSign,
                                Node node)
     {
-        for (Map.Entry<Lane, ArrayList<Lane>> connector : node.getConnectors().entrySet()) {
-            Lane from = connector.getKey();
+        for (Map.Entry<DirectedEdge.Lane, ArrayList<DirectedEdge.Lane>> connector : node.getConnectors().entrySet()) {
+            DirectedEdge.Lane from = connector.getKey();
 
-            for (Lane to : connector.getValue()) {
+            for (DirectedEdge.Lane to : connector.getValue()) {
                 addConnector(vertices, indices, restart, laneOffsetSign,
-                        from.getAssociatedEdge(), from.getIndex(),
-                        to.getAssociatedEdge(), to.getIndex());
+                        from.getEdge(), from.getIndex(),
+                        to.getEdge(), to.getIndex());
             }
         }
     }
@@ -333,9 +332,9 @@ public class ConnectorOverlay implements Overlay {
 
         double offset = 0.0;
         if (street.getForwardEdge() != null && street.getBackwardEdge() != null) {
-            offset = edge.getLanes().size() - lane - 0.5;
+            offset = edge.getNumberOfLanes() - lane - 0.5;
         } else {
-            offset = (edge.getLanes().size() - 1.0) / 2.0 - lane;
+            offset = (edge.getNumberOfLanes() - 1.0) / 2.0 - lane;
         }
 
         return offset * LANE_OFFSET_SCALE;

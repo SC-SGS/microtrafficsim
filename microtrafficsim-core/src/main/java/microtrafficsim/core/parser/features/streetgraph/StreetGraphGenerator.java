@@ -261,8 +261,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
     }
 
     private void addUTurnConnectors(Node via, DirectedEdge from, DirectedEdge to) {
-        int nLanesFrom = from.getLanes().size();
-        int nLanesTo = to.getLanes().size();
+        int nLanesFrom = from.getNumberOfLanes();
+        int nLanesTo = to.getNumberOfLanes();
         int n = Math.min(nLanesFrom, nLanesTo);
 
         // add connectors from inner to outer lanes respectively
@@ -283,8 +283,8 @@ public class StreetGraphGenerator implements FeatureGenerator {
     private void addDirectConnectors(Node via, DirectedEdge from, DirectedEdge to, TurnLanePreference pref) {
         if (from == null || to == null) return;
 
-        int nLanesFrom = from.getLanes().size();
-        int nLanesTo = to.getLanes().size();
+        int nLanesFrom = from.getNumberOfLanes();
+        int nLanesTo = to.getNumberOfLanes();
         int n = Math.min(nLanesFrom, nLanesTo);
 
         if (pref == null || pref == TurnLanePreference.OUTER) {

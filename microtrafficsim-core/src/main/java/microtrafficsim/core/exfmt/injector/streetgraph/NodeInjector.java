@@ -7,7 +7,6 @@ import microtrafficsim.core.exfmt.ecs.components.GraphNodeComponent;
 import microtrafficsim.core.exfmt.ecs.entities.PointEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.streets.Lane;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -35,13 +34,13 @@ public class NodeInjector implements ExchangeFormat.Injector<Node> {
             edges.add(edge.getId());
 
         // add connectors
-        for (Map.Entry<Lane, ArrayList<Lane>> connector : src.getConnectors().entrySet()) {
-            Lane fromLane = connector.getKey();
-            ArrayList<Lane> connected = connector.getValue();
-            DirectedEdge fromEdge = fromLane.getAssociatedEdge();
+        for (Map.Entry<DirectedEdge.Lane, ArrayList<DirectedEdge.Lane>> connector : src.getConnectors().entrySet()) {
+            DirectedEdge.Lane fromLane = connector.getKey();
+            ArrayList<DirectedEdge.Lane> connected = connector.getValue();
+            DirectedEdge fromEdge = fromLane.getEdge();
 
-            for (Lane toLane : connected) {
-                DirectedEdge toEdge = toLane.getAssociatedEdge();
+            for (DirectedEdge.Lane toLane : connected) {
+                DirectedEdge toEdge = toLane.getEdge();
 
                 connectors.add(new GraphNodeComponent.Connector(
                         fromEdge.getId(), fromEdge.getEntity().getForwardEdge() == fromEdge, fromLane.getIndex(),

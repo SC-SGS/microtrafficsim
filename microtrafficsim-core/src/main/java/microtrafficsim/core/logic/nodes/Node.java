@@ -1,7 +1,6 @@
 package microtrafficsim.core.logic.nodes;
 
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.Coordinate;
@@ -42,7 +41,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
     private HashMap<Vehicle, Set<Vehicle>> assessedVehicles;
     private HashSet<Vehicle>               maxPrioVehicles;
     private boolean                        anyChangeSinceUpdate;
-    private HashMap<Lane, ArrayList<Lane>> connectors;
+    private HashMap<DirectedEdge.Lane, ArrayList<DirectedEdge.Lane>> connectors;
 
     // edges
     private HashMap<DirectedEdge, Byte> leaving;     // edge, index(for crossing logic)
@@ -133,7 +132,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         return config;
     }
 
-    public HashMap<Lane, ArrayList<Lane>> getConnectors() {
+    public HashMap<DirectedEdge.Lane, ArrayList<DirectedEdge.Lane>> getConnectors() {
         return connectors;
     }
 
@@ -180,11 +179,11 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         }
 
         // (3) both SPAWNED => there is always a current edge and a next edge per vehicle
-        assert v1.getDirectedEdge() != null : "Vehicle 1 in node-comparator has no directed edge!";
-        assert v2.getDirectedEdge() != null : "Vehicle 2 in node-comparator has no directed edge!";
-        byte origin1        = incoming.get(v1.getDirectedEdge());
+        assert v1.getLane() != null : "Vehicle 1 in node-comparator has no directed edge!";
+        assert v2.getLane() != null : "Vehicle 2 in node-comparator has no directed edge!";
+        byte origin1        = incoming.get(v1.getLane().getEdge());
         byte destination1   = leaving.get(v1.getDriver().peekRoute());
-        byte origin2        = incoming.get(v2.getDirectedEdge());
+        byte origin2        = incoming.get(v2.getLane().getEdge());
         byte destination2   = leaving.get(v2.getDriver().peekRoute());
         byte supremum = (byte) (1 + MathUtils.max(origin1, destination1, origin2, destination2));
 
@@ -192,7 +191,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         // if vehicles are crossing each other's way
         if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2, supremum)) {
             // compare priorities of origins
-            byte cmp = (byte) (v1.getDirectedEdge().getPriorityLevel() - v2.getDirectedEdge().getPriorityLevel());
+            byte cmp = (byte) (v1.getLane().getEdge().getPriorityLevel() - v2.getLane().getEdge().getPriorityLevel());
             boolean edgePriorityEnabled = config.edgePriorityEnabled;
             if (cmp == 0 || !edgePriorityEnabled) {
                 // compare priorities of destinations
@@ -396,8 +395,8 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
      * @param incoming the edge from which this connector connects to the leaving edge.
      * @param leaving the edge to which this connector connects.
      */
-    public void addConnector(Lane incoming, Lane leaving) {
-        ArrayList<Lane> connectedLanes = connectors.computeIfAbsent(incoming, k -> new ArrayList<>());
+    public void addConnector(DirectedEdge.Lane incoming, DirectedEdge.Lane leaving) {
+        ArrayList<DirectedEdge.Lane> connectedLanes = connectors.computeIfAbsent(incoming, k -> new ArrayList<>());
         connectedLanes.add(leaving);
     }
 
@@ -502,7 +501,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
      *
      * @return a map containing all lanes (concerning to an edge of this node) mapping to a crossing index.
      */
-    public Map<Lane, Byte> calcLaneIndices() {
+    public Map<DirectedEdge.Lane, Byte> calcLaneIndices() {
         boolean IS_LEAVING = true;
         boolean IS_INCOMING = false;
 
@@ -518,17 +517,19 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
 
 
         /* iterate over lanes and fill map */
-        final Map<Lane, Byte> indicesMap = new HashMap<>();
+        final Map<DirectedEdge.Lane, Byte> indicesMap = new HashMap<>();
         byte nextCrossingIndex = 0;
         for (Triple<Boolean, DirectedEdge, Byte> triple : sortedEdges) {
-            ArrayList<Lane> lanes = triple.obj1.getLanes();
+            Iterator<DirectedEdge.Lane> iter;
             // if leaving => indices ascending like ascending lane-idx
             // if incoming => indices reverse to ascending lane-idx
-            if (triple.obj0 == IS_INCOMING)
-                Collections.reverse(lanes);
+            if (triple.obj0 == IS_LEAVING)
+                iter = triple.obj1.iterator();
+            else
+                iter = triple.obj1.reverseIterator();
 
-            for (Lane lane : lanes)
-                indicesMap.put(lane, nextCrossingIndex++);
+            while (iter.hasNext())
+                indicesMap.put(iter.next(), nextCrossingIndex++);
         }
 
         return indicesMap;
@@ -559,12 +560,12 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
             return Collections.unmodifiableSet(this.leaving.keySet());
 
         HashSet<DirectedEdge> result = new HashSet<>();
-        for (Lane lane : incoming.getLanes()) {
-            ArrayList<Lane> connected = connectors.get(lane);
+        for (DirectedEdge.Lane lane : incoming) {
+            ArrayList<DirectedEdge.Lane> connected = connectors.get(lane);
 
             if (connected != null)
-                for (Lane leaving : connected)
-                    result.add(leaving.getAssociatedEdge());
+                for (DirectedEdge.Lane leaving : connected)
+                    result.add(leaving.getEdge());
         }
 
         return result;

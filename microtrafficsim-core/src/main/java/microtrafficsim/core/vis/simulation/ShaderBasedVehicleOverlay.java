@@ -3,9 +3,7 @@ package microtrafficsim.core.vis.simulation;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
@@ -34,7 +32,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Supplier;
 
 
 // TODO: shader based anti-aliasing in fragment-shader?
@@ -227,17 +224,17 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
             Vec2d      dir     = projection.project(ctarget).sub(pos).normalize();
 
             // adjust position to lane
-            Lane lane = logic.getLane();
+            DirectedEdge.Lane lane = logic.getLane();
             if (lane == null) continue;
 
-            DirectedEdge edge = lane.getAssociatedEdge();
+            DirectedEdge edge = lane.getEdge();
             StreetEntity street = edge.getEntity();
 
             double laneOffset;
             if (street.getForwardEdge() != null && street.getBackwardEdge() != null) {
-                laneOffset = edge.getLanes().size() - lane.getIndex() - 0.5;
+                laneOffset = edge.getNumberOfLanes() - lane.getIndex() - 0.5;
             } else {
-                laneOffset = (edge.getLanes().size() - 1.0) / 2.0 - lane.getIndex();
+                laneOffset = (edge.getNumberOfLanes() - 1.0) / 2.0 - lane.getIndex();
             }
             laneOffset *= laneOffsetSign * VEHICLE_LANE_OFFSET_SCALE * VEHICLE_SCALE_NORM;
 
