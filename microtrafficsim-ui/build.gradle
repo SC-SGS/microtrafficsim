@@ -22,7 +22,7 @@ run {
 
 
 def distName = 'microtrafficsim'
-def distVersion = '1.0.0'
+def distVersion = '1.0.1'
 def distRelease = '1'
 
 def main = 'microtrafficsim.ui.Main'
