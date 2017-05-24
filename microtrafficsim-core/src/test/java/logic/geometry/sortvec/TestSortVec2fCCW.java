@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * <p>
@@ -19,16 +19,12 @@ import static junit.framework.TestCase.assertEquals;
  *
  * @author Dominic Parga Cacheiro
  */
-public class TestSortVec2fCCW {
+public class TestSortVec2fCCW extends AbstractTestSortVec2 {
+    private int sortRepetationCount = 1000;
 
-    /* general */
-    private int               sortRepetationCount = 1000;
-    private LinkedList<Vec2f> cwSortedVec2f;
-    private ArrayList<Vec2f>  mixedVec2f;
-
-    /* different for each test case */
     private LinkedList<Vec2f> ccwSortedVec2f;
     private Vec2f             zero;
+
 
     /*
     |============|
@@ -51,10 +47,7 @@ public class TestSortVec2fCCW {
         ccwSortedVec2f.add(new Vec2f(0.2f, 100f));                 // top, right from zero
     }
 
-    /**
-     * Due to rounding errors this method is expected to fail most of the time.
-     */
-//    @Test
+    @Test
     public void plusCrossroadScenario() {
         zero = new Vec2f(0.7427612f, -0.6695564f);    // right bottom
 
@@ -64,6 +57,53 @@ public class TestSortVec2fCCW {
         ccwSortedVec2f.add(new Vec2f(-0.9005878f, -0.43467405f));    // left bottom
     }
 
+    @Test
+    public void pointSymmetricCrossTest0() {
+        zero = new Vec2f(-0.001f, 0.001f);
+
+        ccwSortedVec2f.add(zero);
+        ccwSortedVec2f.add(new Vec2f(-0.001f, -0.001f));
+        ccwSortedVec2f.add(new Vec2f( 0.000f, -0.001f));
+        ccwSortedVec2f.add(new Vec2f( 0.001f, -0.001f));
+        ccwSortedVec2f.add(new Vec2f( 0.001f,  0.001f));
+        ccwSortedVec2f.add(new Vec2f( 0.000f,  0.001f));
+    }
+
+    @Test
+    public void pointSymmetricCrossTest0Normalized() {
+        zero = new Vec2f(-0.001f, 0.001f).normalize();
+
+        ccwSortedVec2f.add(zero);
+        ccwSortedVec2f.add(new Vec2f(-0.001f, -0.001f).normalize());
+        ccwSortedVec2f.add(new Vec2f( 0.000f, -0.001f).normalize());
+        ccwSortedVec2f.add(new Vec2f( 0.001f, -0.001f).normalize());
+        ccwSortedVec2f.add(new Vec2f( 0.001f,  0.001f).normalize());
+        ccwSortedVec2f.add(new Vec2f( 0.000f,  0.001f).normalize());
+    }
+
+    @Test
+    public void pointSymmetricCrossTest1() {
+        zero = new Vec2f(-0.001f, -0.001f);
+
+        ccwSortedVec2f.add(zero);
+        ccwSortedVec2f.add(new Vec2f( 0.000f, -0.001f));
+        ccwSortedVec2f.add(new Vec2f( 0.001f, -0.001f));
+        ccwSortedVec2f.add(new Vec2f( 0.001f,  0.001f));
+        ccwSortedVec2f.add(new Vec2f( 0.000f,  0.001f));
+        ccwSortedVec2f.add(new Vec2f(-0.001f,  0.001f));
+    }
+
+    @Test
+    public void zeroAndMinusZero() {
+        zero = new Vec2f(0f, 1f);
+
+        ccwSortedVec2f.add(zero);
+        ccwSortedVec2f.add(new Vec2f( -0f,  1f ));
+        ccwSortedVec2f.add(new Vec2f(  1f,  0f));
+        ccwSortedVec2f.add(new Vec2f(  1f, -0f));
+    }
+
+
     /*
     |=======|
     | setup |
@@ -72,41 +112,40 @@ public class TestSortVec2fCCW {
     @Before
     public void setup() {
         ccwSortedVec2f = new LinkedList<>();
-        cwSortedVec2f = new LinkedList<>();
     }
 
     @After
     public void testCW() {
-
         /* setup cw */
+        LinkedList<Vec2f> cwSortedVec2f = new LinkedList<>();
         for (Vec2f v : ccwSortedVec2f)
             cwSortedVec2f.add(v);
-        cwSortedVec2f.poll();
-        cwSortedVec2f.add(zero);
+        for (int i = 0; i < cwSortedVec2f.size(); i++) {
+            Vec2f tmp = cwSortedVec2f.poll();
+            cwSortedVec2f.add(tmp);
+
+            if (!cwSortedVec2f.peek().equals(zero))
+                break;
+        }
         Collections.reverse(cwSortedVec2f);
 
-        mixedVec2f = new ArrayList<>(ccwSortedVec2f);
-        Collections.shuffle(mixedVec2f);
 
         /* assertion */
-        for (int i = 0; i < sortRepetationCount; i++) {
-            Queue<Vec2f> sortedCW = Geometry.sortClockwiseAsc(zero, mixedVec2f, true);
-
-            for (Vec2f v : cwSortedVec2f)
-                assertEquals(v, sortedCW.poll());
-        }
+        for (int i = 0; i < sortRepetationCount; i++)
+            testSorting(cwSortedVec2f, true);
     }
 
     @After
     public void testCCW() {
-        mixedVec2f = new ArrayList<>(ccwSortedVec2f);
-        Collections.shuffle(mixedVec2f);
+        for (int i = 0; i < sortRepetationCount; i++)
+            testSorting(ccwSortedVec2f, false);
+    }
 
-        for (int i = 0; i < sortRepetationCount; i++) {
-            Queue<Vec2f> sortedCCW = Geometry.sortClockwiseAsc(zero, mixedVec2f, false);
+    private void testSorting(List<Vec2f> expected, boolean cw) {
+        List<Vec2f> mixedVec2f = shuffleCorrectly(expected);
+        Queue<Vec2f> actualSorted = Geometry.sortClockwiseAsc(zero, mixedVec2f, cw);
 
-            for (Vec2f v : ccwSortedVec2f)
-                assertEquals(v, sortedCCW.poll());
-        }
+        for (Vec2f v : expected)
+            assertEquals(v, actualSorted.poll());
     }
 }

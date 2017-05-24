@@ -13,7 +13,6 @@ import static org.junit.Assert.assertEquals;
  * @author Dominic Parga Cacheiro
  */
 public class TestLeftmostIndex {
-
     // String s1, s2, d, e;
     private byte origin_s1, destination_s1, origin_s2, destination_s2, origin_d, destination_d, origin_e, destination_e,
             indicesPerNode, origin_wtf, destination_wtf;
