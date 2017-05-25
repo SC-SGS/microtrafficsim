@@ -29,7 +29,7 @@ import java.util.*;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded {
+public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded, Comparable<Node> {
 
     private final long          id;
     private Coordinate          coordinate;
@@ -41,11 +41,11 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
     private HashMap<Vehicle, Set<Vehicle>> assessedVehicles;
     private HashSet<Vehicle>               maxPrioVehicles;
     private boolean                        anyChangeSinceUpdate;
-    private HashMap<Lane, ArrayList<Lane>> connectors;
+    private TreeMap<Lane, ArrayList<Lane>> connectors;
 
     // edges
-    private HashMap<DirectedEdge, Byte> leaving;     // edge, index(for crossing logic)
-    private HashMap<DirectedEdge, Byte> incoming;    // edge, index(for crossing logic)
+    private TreeMap<DirectedEdge, Byte> leaving;     // edge, index(for crossing logic)
+    private TreeMap<DirectedEdge, Byte> incoming;    // edge, index(for crossing logic)
 
 
     /**
@@ -64,17 +64,13 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         anyChangeSinceUpdate  = false;
 
         // edges
-        connectors = new HashMap<>();
-        leaving = new HashMap<>();
-        incoming = new HashMap<>();
+        connectors = new TreeMap<>();
+        leaving = new TreeMap<>();
+        incoming = new TreeMap<>();
     }
 
-    @Override
-    public int hashCode() {
-        return new FNVHashBuilder()
-                .add(id)
-                .add(coordinate)
-                .getHash();
+    public Key key() {
+        return new Key(this);
     }
 
     @Override
@@ -100,7 +96,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
             } builder.decLevel().appendln("<\\coordinate>").appendln();
 
 
-            Procedure2<String, HashMap<DirectedEdge, Byte>> edgesToString = (type, map) -> {
+            Procedure2<String, Map<DirectedEdge, Byte>> edgesToString = (type, map) -> {
                 builder.appendln("<" + type + " edges>").incLevel(); {
                     Iterator<DirectedEdge> iter = map.keySet().iterator();
                     while (iter.hasNext()) {
@@ -132,7 +128,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         return config;
     }
 
-    public HashMap<Lane, ArrayList<Lane>> getConnectors() {
+    public Map<Lane, ArrayList<Lane>> getConnectors() {
         return connectors;
     }
 
@@ -536,7 +532,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
         if (incoming == null)
             return Collections.unmodifiableSet(this.leaving.keySet());
 
-        HashSet<DirectedEdge> result = new HashSet<>();
+        TreeSet<DirectedEdge> result = new TreeSet<>();
         for (Lane lane : incoming.getLanes()) {
             ArrayList<Lane> connected = connectors.get(lane);
 
@@ -592,5 +588,39 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded 
     @Override
     public long getSeed() {
         return random.getSeed();
+    }
+
+
+    @Override
+    public int compareTo(Node o) {
+        return key().compareTo(o.key());
+    }
+
+    public static class Key implements Comparable<Key> {
+        private long nodeId;
+
+        private Key() {
+
+        }
+
+        private Key(Node node) {
+            nodeId = node.id;
+        }
+
+        @Override
+        public int compareTo(Node.Key o) {
+            return Long.compare(nodeId, o.nodeId);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this)
+                return true;
+
+            if (!(obj instanceof Node.Key))
+                return false;
+
+            return compareTo((Node.Key) obj) == 0;
+        }
     }
 }

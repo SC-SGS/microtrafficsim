@@ -8,7 +8,6 @@ import microtrafficsim.core.logic.routes.StackRoute;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 
@@ -42,8 +41,8 @@ public class ScenarioRouteInfo extends Container.Entry {
 
 
     public RouteContainer toRouteContainer(Graph graph) {
-        Map<Integer, Node> nodeMap = graph.getNodeMap();
-        Map<Integer, DirectedEdge> edgeMap = graph.getEdgeMap();
+        Map<Node.Key, Node> nodeMap = graph.getNodeMap();
+        Map<DirectedEdge.Key, DirectedEdge> edgeMap = graph.getEdgeMap();
 
 
         RouteContainer routeContainer = new SortedRouteContainer();
@@ -51,15 +50,15 @@ public class ScenarioRouteInfo extends Container.Entry {
         for (SparseRoute sparseRoute : sparseRoutes) {
             if (MetaRoute.class == sparseRoute.routeClass) {
                 Route route = new MetaRoute(
-                        nodeMap.get(sparseRoute.originHash),
-                        nodeMap.get(sparseRoute.destinationHash),
+                        nodeMap.get(sparseRoute.originKey),
+                        nodeMap.get(sparseRoute.destinationKey),
                         sparseRoute.spawnDelay);
 
                 routeContainer.add(route);
             } else if (StackRoute.class == sparseRoute.routeClass) {
                 StackRoute route = new StackRoute(sparseRoute.spawnDelay);
-                for (int edgeHash : sparseRoute.edgeHashes) {
-                    route.add(edgeMap.get(edgeHash));
+                for (DirectedEdge.Key key: sparseRoute.edgeKeys) {
+                    route.add(edgeMap.get(key));
                 }
 
                 routeContainer.add(route);
@@ -74,11 +73,11 @@ public class ScenarioRouteInfo extends Container.Entry {
         SparseRoute sparseRoute = new SparseRoute();
 
         sparseRoute.routeClass = route.getClass();
-        sparseRoute.originHash = route.getOrigin().hashCode();
-        sparseRoute.destinationHash = route.getDestination().hashCode();
+        sparseRoute.originKey = route.getOrigin().key();
+        sparseRoute.destinationKey = route.getDestination().key();
         sparseRoute.spawnDelay = route.getSpawnDelay();
-        for (ShortestPathEdge<Node> edge : route)
-            sparseRoute.edgeHashes.add(edge.hashCode());
+        for (DirectedEdge edge : route)
+            sparseRoute.edgeKeys.add(edge.key());
 
         sparseRoutes.add(sparseRoute);
     }
@@ -86,9 +85,9 @@ public class ScenarioRouteInfo extends Container.Entry {
 
     public static class SparseRoute {
         private Class<? extends Route> routeClass;
-        private int originHash;
-        private int destinationHash;
+        private Node.Key originKey;
+        private Node.Key destinationKey;
         private int spawnDelay;
-        private ArrayList<Integer> edgeHashes = new ArrayList<>();
+        private ArrayList<DirectedEdge.Key> edgeKeys = new ArrayList<>();
     }
 }

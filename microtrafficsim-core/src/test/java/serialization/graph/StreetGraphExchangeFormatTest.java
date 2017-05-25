@@ -199,38 +199,38 @@ public class StreetGraphExchangeFormatTest {
 
 
     /*
-    |=============|
-    | by hashcode |
-    |=============|
+    |=========|
+    | by keys |
+    |=========|
     */
     @Test
-    public void testFullSerializationAndDeserializationByHashCodes() {
+    public void testFullSerializationAndDeserializationByKeys() {
         assertEquals(osm.getNodes().size(), xfm.getNodes().size());
         assertEquals(osm.getEdges().size(), xfm.getEdges().size());
 
         // check nodes
         for (Node osmNode : osm.getNodes()) {
-            Node xfmNode = nodeByHashCode(xfm.getNodes(), osmNode);
+            Node xfmNode = nodeByKey(xfm.getNodes(), osmNode);
             assertNotNull(xfmNode);
 
             // check incoming edges
             assertEquals(osmNode.getIncomingEdges().size(), xfmNode.getIncomingEdges().size());
             for (DirectedEdge osmEdge : osmNode.getIncomingEdges()) {
-                DirectedEdge xfmEdge = edgeByHashCodes(xfmNode.getIncomingEdges(), osmEdge);
+                DirectedEdge xfmEdge = edgeByKeys(xfmNode.getIncomingEdges(), osmEdge);
                 assertNotNull(xfmEdge);
             }
 
             // check leaving edges
             assertEquals(osmNode.getLeavingEdges().size(), xfmNode.getLeavingEdges().size());
             for (DirectedEdge osmEdge : osmNode.getLeavingEdges()) {
-                DirectedEdge xfmEdge = edgeByHashCodes(xfmNode.getLeavingEdges(), osmEdge);
+                DirectedEdge xfmEdge = edgeByKeys(xfmNode.getLeavingEdges(), osmEdge);
                 assertNotNull(xfmEdge);
             }
 
             // check connectors
             assertEquals(osmNode.getConnectors().size(), xfmNode.getConnectors().size());
             for (Map.Entry<Lane, ArrayList<Lane>> osmConnector : osmNode.getConnectors().entrySet()) {
-                Map.Entry<Lane, ArrayList<Lane>> xfmConnector = connectorByHashCodes(xfmNode.getConnectors().entrySet(),
+                Map.Entry<Lane, ArrayList<Lane>> xfmConnector = connectorByKeys(xfmNode.getConnectors().entrySet(),
                         osmConnector);
                 assertNotNull(xfmConnector);
             }
@@ -238,7 +238,7 @@ public class StreetGraphExchangeFormatTest {
 
         // check edges
         for (DirectedEdge osmEdge : osm.getEdges()) {
-            DirectedEdge xfmEdge = edgeByHashCodes(xfm.getEdges(), osmEdge);
+            DirectedEdge xfmEdge = edgeByKeys(xfm.getEdges(), osmEdge);
             assertNotNull(xfmEdge);
 
             // TODO: check other properties
@@ -246,26 +246,26 @@ public class StreetGraphExchangeFormatTest {
     }
 
 
-    private Node nodeByHashCode(Set<Node> nodes, Node query) {
+    private Node nodeByKey(Set<Node> nodes, Node query) {
         for (Node node : nodes)
-            if (node.hashCode() == query.hashCode())
+            if (node.key().equals(query.key()))
                 return node;
 
         return null;
     }
 
-    private DirectedEdge edgeByHashCodes(Set<DirectedEdge> edges, DirectedEdge query) {
+    private DirectedEdge edgeByKeys(Set<DirectedEdge> edges, DirectedEdge query) {
         for (DirectedEdge edge : edges)
-            if (edgeEqualsByHashCodes(edge, query))
+            if (edgeEqualsByKeys(edge, query))
                 return edge;
 
         return null;
     }
 
-    private Map.Entry<Lane, ArrayList<Lane>> connectorByHashCodes(Set<Map.Entry<Lane, ArrayList<Lane>>> connectors, Map
+    private Map.Entry<Lane, ArrayList<Lane>> connectorByKeys(Set<Map.Entry<Lane, ArrayList<Lane>>> connectors, Map
             .Entry<Lane, ArrayList<Lane>> query) {
         for (Map.Entry<Lane, ArrayList<Lane>> connector : connectors) {
-            if (connectorEqualsByHashCode(connector, query))
+            if (connectorEqualsByKey(connector, query))
                 return connector;
         }
 
@@ -273,22 +273,22 @@ public class StreetGraphExchangeFormatTest {
     }
 
 
-    private boolean edgeEqualsByHashCodes(DirectedEdge a, DirectedEdge b) {
-        return a.hashCode() == b.hashCode()
-                && a.getOrigin().hashCode() == b.getOrigin().hashCode()
-                && a.getDestination().hashCode() == b.getDestination().hashCode();
+    private boolean edgeEqualsByKeys(DirectedEdge a, DirectedEdge b) {
+        return a.key().equals(b.key())
+                && a.getOrigin().key().equals(b.getOrigin().key())
+                && a.getDestination().key().equals(b.getDestination().key());
     }
 
-    private boolean laneEqualsByHashCodes(Lane a, Lane b) {
-        return edgeEqualsByHashCodes(a.getAssociatedEdge(), b.getAssociatedEdge()) && a.getIndex() == b.getIndex();
+    private boolean laneEqualsByKeys(Lane a, Lane b) {
+        return edgeEqualsByKeys(a.getAssociatedEdge(), b.getAssociatedEdge()) && a.getIndex() == b.getIndex();
     }
 
-    private boolean lanesEqualsByHashCodes(Collection<Lane> a, Collection<Lane> b) {
+    private boolean lanesEqualsByKeys(Collection<Lane> a, Collection<Lane> b) {
         for (Lane la : a) {
             boolean found = false;
 
             for (Lane lb : b) {
-                if (laneEqualsByHashCodes(la, lb)) {
+                if (laneEqualsByKeys(la, lb)) {
                     found = true;
                     break;
                 }
@@ -301,7 +301,7 @@ public class StreetGraphExchangeFormatTest {
         return true;
     }
 
-    private boolean connectorEqualsByHashCode(Map.Entry<Lane, ArrayList<Lane>> a, Map.Entry<Lane, ArrayList<Lane>> b) {
-        return laneEqualsByHashCodes(a.getKey(), b.getKey()) && lanesEqualsByHashCodes(a.getValue(), b.getValue());
+    private boolean connectorEqualsByKey(Map.Entry<Lane, ArrayList<Lane>> a, Map.Entry<Lane, ArrayList<Lane>> b) {
+        return laneEqualsByKeys(a.getKey(), b.getKey()) && lanesEqualsByKeys(a.getValue(), b.getValue());
     }
 }

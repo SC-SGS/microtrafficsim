@@ -4,10 +4,7 @@ import microtrafficsim.math.random.distributions.WheelOfFortune;
 import microtrafficsim.utils.collections.PrioritySkipListSet;
 import microtrafficsim.utils.collections.SkipList;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Basic implementation using a {@link PrioritySkipListSet} comparing by the objects' hashcodes. For the random number
@@ -19,7 +16,7 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
 
     private Random random;
     private SkipList<T> elements;
-    private Map<T, Integer> fields;
+    private TreeMap<T, Integer> fields;
     private int n;
 
     public BasicWheelOfFortune(long seed) {
@@ -31,9 +28,17 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
      * @param random
      */
     public BasicWheelOfFortune(Random random) {
+        this(random, null);
+    }
+
+    public BasicWheelOfFortune(long seed, Comparator<? super T> comparator) {
+        this(new Random(seed), comparator);
+    }
+
+    public BasicWheelOfFortune(Random random, Comparator<? super T> comparator) {
         this.random = random;
-        elements    = new PrioritySkipListSet<>(Comparator.comparingLong(Object::hashCode));
-        fields      = new HashMap<>();
+        elements    = new PrioritySkipListSet<>(comparator);
+        fields      = new TreeMap<>(comparator);
         n           = 0;
     }
 
