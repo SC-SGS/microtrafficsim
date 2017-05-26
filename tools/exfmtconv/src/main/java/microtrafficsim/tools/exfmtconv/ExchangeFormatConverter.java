@@ -19,6 +19,7 @@ import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.core.vis.map.projections.Projection;
 import microtrafficsim.osm.parser.features.FeatureGenerator;
 import microtrafficsim.utils.collections.Tuple;
+import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +29,9 @@ import java.io.File;
 public class ExchangeFormatConverter {
     private final static Logger logger = LoggerFactory.getLogger(ExchangeFormatConverter.class);
 
-    public final static Bounds CLIP = new Bounds(48.8, 9.1, 48.85, 9.28);
-    public final static File FILE_IN = new File("/mnt/development/workspaces/microtrafficsim/osmfiles/stuttgart-small.osm");
-    public final static File FILE_OUT = new File("/mnt/development/workspaces/microtrafficsim/osmfiles/stuttgart-small-extract.mtsmap");
+    public final static Bounds DEFAULT_CLIP = null;
+    public final static File DEFAULT_FILE_IN = new File("map.osm");
+    public final static File DEFAULT_FILE_OUT = new File("map.mtsmap");
 
     public final static Projection PROJECTION = new MercatorProjection();
     public final static TilingScheme TILING_SCHEME = new QuadTreeTilingScheme(PROJECTION);
@@ -122,7 +123,89 @@ public class ExchangeFormatConverter {
 
 
     public static void main(String[] args) throws Exception {
-        ExchangeFormatConverter conv = new ExchangeFormatConverter();
-        conv.convert(FILE_IN, FILE_OUT, CLIP);
+        File in = DEFAULT_FILE_IN;
+        File out = DEFAULT_FILE_OUT;
+        Bounds clip = DEFAULT_CLIP;
+
+        Options options = new Options();
+        options.addOption(Option
+                .builder("h")
+                .longOpt("help")
+                .desc("print this message")
+                .build());
+
+        options.addOption(Option
+                .builder("i")
+                .longOpt("input")
+                .hasArg()
+                .argName("IN_FILE")
+                .desc("input file")
+                .build());
+
+        options.addOption(Option
+                .builder("o")
+                .longOpt("output")
+                .hasArg()
+                .argName("OUT_FILE")
+                .desc("output file")
+                .build());
+
+        options.addOption(Option
+                .builder("c")
+                .longOpt("clip")
+                .hasArg()
+                .numberOfArgs(4)
+                .valueSeparator(';')
+                .argName("MINLAT;MINLON;MAXLAT;MAXLON")
+                .desc("clip to specified bounds")
+                .build());
+
+        try {
+            CommandLine line = new DefaultParser().parse(options, args);
+
+            if (line.hasOption("help")) {
+                HelpFormatter formatter = new HelpFormatter();
+                formatter.printHelp("exfmtconv", options );
+                System.exit(0);
+            }
+
+            if (line.hasOption("input")) {
+                in = new File(line.getOptionValue("input"));
+            }
+
+            if (line.hasOption("output")) {
+                out = new File(line.getOptionValue("output"));
+            }
+
+            if (line.hasOption("clip")) {
+                String[] bounds = line.getOptionValues("clip");
+
+                try {
+                    clip = new Bounds(
+                            Double.parseDouble(bounds[0]),
+                            Double.parseDouble(bounds[1]),
+                            Double.parseDouble(bounds[2]),
+                            Double.parseDouble(bounds[3])
+                    );
+                } catch (NumberFormatException e) {
+                    System.err.println("\nError: Invalid argument for option '-c | --clip'");
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.flush();
+            System.err.println("\nError:");
+            System.err.println("    " + e.getMessage());
+            System.exit(1);
+        }
+
+        try {
+            new ExchangeFormatConverter().convert(in, out, clip);
+        } catch (Exception e) {
+            System.err.flush();
+            System.err.println("\nError: Failed to convert files:");
+            System.err.println("    " + e.getMessage());
+            System.exit(1);
+        }
     }
 }
