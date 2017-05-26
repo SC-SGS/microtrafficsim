@@ -9,16 +9,16 @@ import java.util.function.UnaryOperator;
  * @author Dominic Parga Cacheiro
  */
 public class SortedArrayList<E> extends ArrayList<E> implements Queue<E> {
-    private final Comparator<? super E> comparator;
+    private Comparator<? super E> comparator;
 
     public SortedArrayList() {
         super();
-        comparator = null;
+        initComparator(null);
     }
 
     public SortedArrayList(Comparator<? super E> comparator) {
         super();
-        this.comparator = comparator;
+        initComparator(comparator);
     }
 
     public SortedArrayList(Collection<? extends E> c) {
@@ -27,7 +27,7 @@ public class SortedArrayList<E> extends ArrayList<E> implements Queue<E> {
 
     public SortedArrayList(Collection<? extends E> collection, Comparator<? super E> comparator) {
         super();
-        this.comparator = comparator;
+        initComparator(comparator);
         addAll(collection);
     }
 
@@ -37,7 +37,30 @@ public class SortedArrayList<E> extends ArrayList<E> implements Queue<E> {
 
     public SortedArrayList(int initialCapacity, Comparator<? super E> comparator) {
         super(initialCapacity);
-        this.comparator = comparator;
+        initComparator(comparator);
+    }
+
+    private void initComparator(Comparator<? super E> comparator) {
+        if (comparator != null) {
+            this.comparator = (o1, o2) -> {
+                int cmp = comparator.compare(o1, o2);
+
+                if (cmp == 0)
+                    cmp = Long.compare(o1.hashCode(), o2.hashCode());
+
+                return cmp;
+            };
+        } else {
+            this.comparator = (o1, o2) -> {
+                Comparable<? super E> e1 = (Comparable<? super E>) o1;
+                int cmp = e1.compareTo(o2);
+
+                if (cmp == 0)
+                    cmp = Long.compare(o1.hashCode(), o2.hashCode());
+
+                return cmp;
+            };
+        }
     }
 
 
@@ -68,7 +91,7 @@ public class SortedArrayList<E> extends ArrayList<E> implements Queue<E> {
         int index = binarySearch(o);
         if (index >= 0) {
             while (index > 0) {
-                int cmp = compare(get(index), get(index - 1));
+                int cmp = comparator.compare(get(index), get(index - 1));
 
                 if (cmp == 0) index--;
                 else break;
@@ -90,7 +113,7 @@ public class SortedArrayList<E> extends ArrayList<E> implements Queue<E> {
         int index = binarySearch(o);
         if (index >= 0) {
             while (index < size() - 1) {
-                int cmp = compare(get(index), get(index + 1));
+                int cmp = comparator.compare(get(index), get(index + 1));
 
                 if (cmp == 0) index++;
                 else break;
@@ -248,10 +271,7 @@ public class SortedArrayList<E> extends ArrayList<E> implements Queue<E> {
      * @see Collections#binarySearch(List, Object, Comparator)
      */
     protected int binarySearch(Object o) {
-        if (comparator == null)
-            return Collections.binarySearch(this, o, Comparator.comparingLong(Object::hashCode));
-        else
-            return Collections.binarySearch(this, (E) o, comparator);
+        return Collections.binarySearch(this, (E) o, comparator);
     }
 
     protected int searchInsertionPoint(Object o) {
@@ -259,12 +279,6 @@ public class SortedArrayList<E> extends ArrayList<E> implements Queue<E> {
         return index < 0 ? -(index + 1) : index;
     }
 
-    protected int compare(Object o1, Object o2) {
-        if (comparator == null)
-            return Long.compare(o1.hashCode(), o2.hashCode());
-        else
-            return comparator.compare((E) o1, (E) o2);
-    }
 
 
     /*

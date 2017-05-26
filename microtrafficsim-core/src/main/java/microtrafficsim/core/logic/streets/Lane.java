@@ -5,6 +5,7 @@ import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -14,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class Lane implements Resettable {
+public class Lane implements Resettable, Comparable<Lane> {
 
     public final ReentrantLock lock;
     private DirectedEdge associatedEdge;
@@ -30,9 +31,8 @@ public class Lane implements Resettable {
         lastVehicle         = null;
     }
 
-    @Override
-    public int hashCode() {
-        return new FNVHashBuilder().add(associatedEdge).add(index).getHash();
+    public Key key() {
+        return new Key(this);
     }
 
     /**
@@ -66,7 +66,7 @@ public class Lane implements Resettable {
         stringBuilder.appendln("lane index = " + index);
 
         stringBuilder.decLevel();
-        stringBuilder.appendln("<\\Lane>");
+        stringBuilder.appendln("</Lane>");
         return stringBuilder.toString();
     }
 
@@ -107,5 +107,44 @@ public class Lane implements Resettable {
 
     public synchronized Vehicle getLastVehicle() {
         return lastVehicle;
+    }
+
+
+    @Override
+    public int compareTo(Lane o) {
+        return key().compareTo(o.key());
+    }
+
+    public static class Key implements Comparable<Key> {
+        private DirectedEdge.Key edgeKey;
+        private int index;
+
+        private Key() {
+
+        }
+
+        private Key(Lane lane) {
+            edgeKey = lane.associatedEdge.key();
+            index = lane.index;
+        }
+
+        @Override
+        public int compareTo(Lane.Key o) {
+            int cmp = edgeKey.compareTo(o.edgeKey);
+            if (cmp == 0)
+                cmp = Integer.compare(index, o.index);
+            return cmp;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this)
+                return true;
+
+            if (!(obj instanceof Lane.Key))
+                return false;
+
+            return compareTo((Lane.Key) obj) == 0;
+        }
     }
 }

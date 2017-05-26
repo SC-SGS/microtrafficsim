@@ -45,12 +45,12 @@ public class UnmodifiableGraph implements Graph {
     }
 
     @Override
-    public Map<Integer, Node> getNodeMap() {
+    public Map<Node.Key, Node> getNodeMap() {
         return Collections.unmodifiableMap(graph.getNodeMap());
     }
 
     @Override
-    public Map<Integer, DirectedEdge> getEdgeMap() {
+    public Map<DirectedEdge.Key, DirectedEdge> getEdgeMap() {
         return Collections.unmodifiableMap(graph.getEdgeMap());
     }
 

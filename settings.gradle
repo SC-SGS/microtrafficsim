@@ -6,3 +6,5 @@ include 'microtrafficsim-core'
 include 'examples:parser'
 include 'examples:simulation'
 include 'examples:mapviewer'
+
+include 'tools:exfmtconv'

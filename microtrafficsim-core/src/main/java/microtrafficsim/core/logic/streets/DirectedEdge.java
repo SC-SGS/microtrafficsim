@@ -16,6 +16,7 @@ import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 
 
 /**
@@ -25,15 +26,10 @@ import java.util.Collection;
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
-public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, Resettable {
+public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, Resettable, Comparable<DirectedEdge> {
 
-    /* street information */
     private FullStreetInfo streetInfo;
-
-    /* visualization */
     private StreetEntity entity;
-
-    /* geometry */
     private Lane[] lanes;
 
     /**
@@ -86,6 +82,10 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
         return streetInfo.raw.id;
     }
 
+    public Orientation getOrientation() {
+        return streetInfo.raw.orientation;
+    }
+
     public StreetType getStreetType() {
         return streetInfo.raw.type;
     }
@@ -95,16 +95,10 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
     }
 
 
-    @Override
-    public int hashCode() {
-        return new FNVHashBuilder()
-                .add(streetInfo.raw.id)
-                // origin and destination needed because the id is used by forward and backward edge of the same street
-                .add(streetInfo.raw.origin.hashCode())
-                .add(streetInfo.raw.destination.hashCode())
-                .add(streetInfo.raw.orientation == Orientation.FORWARD)
-                .getHash();
+    public Key key() {
+        return new Key(this);
     }
+
 
     public Collection<Lane> getLanes() {
         return Arrays.asList(lanes);
@@ -144,15 +138,14 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
                 .setDefaultLevelSeparator()
                 .setDefaultLevelSubString();
 
-        stringBuilder.appendln("<DirectedEdge>").incLevel(); {
-            stringBuilder.appendln("id = " + streetInfo.raw.id);
+        stringBuilder.appendln("<" + getClass().getSimpleName() + ">").incLevel(); {
+            stringBuilder.appendln(key());
             stringBuilder.appendln("hash = " + hashCode());
             stringBuilder.appendln("info = ("
                     + streetInfo.raw.origin.getId()
                     + " -" + streetInfo.numberOfCells + "-> "
                     + streetInfo.raw.destination.getId() + ")");
-
-        } stringBuilder.decLevel().append("<\\DirectedEdge>");
+        } stringBuilder.decLevel().append("</" + getClass().getSimpleName() + ">");
 
         return stringBuilder.toString();
     }
@@ -229,5 +222,50 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
     @Override
     public void setEntity(StreetEntity entity) {
         this.entity = entity;
+    }
+
+
+
+    @Override
+    public int compareTo(DirectedEdge o) {
+        return key().compareTo(o.key());
+    }
+
+    public static class Key implements Comparable<Key> {
+        private long edgeId;
+        private Orientation orientation;
+
+        private Key() {
+
+        }
+
+        private Key(DirectedEdge edge) {
+            edgeId = edge.streetInfo.raw.id;
+            orientation = edge.streetInfo.raw.orientation;
+        }
+
+        @Override
+        public String toString() {
+            return "id = " + edgeId + " (" + orientation.toString() + ")";
+        }
+
+        @Override
+        public int compareTo(Key o) {
+            int cmp = Long.compare(edgeId, o.edgeId);
+            if (cmp == 0)
+                cmp = orientation.compareTo(o.orientation);
+            return cmp;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this)
+                return true;
+
+            if (!(obj instanceof Key))
+                return false;
+
+            return compareTo((Key) obj) == 0;
+        }
     }
 }

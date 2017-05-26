@@ -12,6 +12,7 @@ import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -19,7 +20,7 @@ import java.util.HashMap;
 public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
 
     public final Node bottomLeft, topLeft, mid, topRight, bottomRight;
-    private final HashMap<Node, Integer> lengthToMid;
+    private final TreeMap<Node, Integer> lengthToMid;
 
     public AbstractPlusCrossroadScenario(SimulationConfig config,
                                          Graph graph,
@@ -38,7 +39,7 @@ public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
         bottomRight = sortedNodes.get(4); // length to mid: 12
 
         /* street lengths for general sub-scenario definition (below) */
-        lengthToMid = new HashMap<>();
+        lengthToMid = new TreeMap<>();
         lengthToMid.put(bottomLeft,   8);
         lengthToMid.put(topLeft,      7);
         lengthToMid.put(mid,          0);

@@ -57,7 +57,7 @@ public class VehicleStamp {
             if (stamp.edge == null)
                 return false;
 
-            if (edge.hashCode() != stamp.edge.hashCode())
+            if (!edge.key().equals(stamp.edge.key()))
                 return false;
         }
 

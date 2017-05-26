@@ -129,7 +129,7 @@ public class AreaScenario extends BasicRandomScenario {
         private final UnprojectedAreas destinationAreas;
         private final WheelOfFortune<Node> rdmOriginSupplier;
         private final WheelOfFortune<Node> rdmDestinationSupplier;
-        private final Map<TypedPolygonArea, ArrayList<Node>> areaToNode;
+        private final HashMap<TypedPolygonArea, ArrayList<Node>> areaToNode;
         private final Random nodeRandom;
 
         private boolean isDirty = false;

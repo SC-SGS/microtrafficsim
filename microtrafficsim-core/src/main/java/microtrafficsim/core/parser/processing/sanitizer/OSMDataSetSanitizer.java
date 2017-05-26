@@ -72,7 +72,7 @@ public class OSMDataSetSanitizer implements Processor {
     public void execute(Parser parser, DataSet dataset) {
         logger.info("executing sanitizer");
 
-        if (genprops.bounds == FeatureGenerator.Properties.BoundaryManagement.RECALCULATE)
+        if (genprops.clip == FeatureGenerator.Properties.BoundaryManagement.RECALCULATE)
             recalculateBounds(dataset);
 
         sanitizeWays(dataset);

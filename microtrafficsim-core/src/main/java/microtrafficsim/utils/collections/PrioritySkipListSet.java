@@ -24,7 +24,7 @@ import java.util.*;
  */
 public class PrioritySkipListSet<E> implements SkipList<E> {
     private PrioritySkipList<E> priorityQueue;
-    private HashMap<Object, E>  storedValues;
+    private TreeMap<E, E>  storedValues;
 
 
     /**
@@ -32,7 +32,7 @@ public class PrioritySkipListSet<E> implements SkipList<E> {
      */
     public PrioritySkipListSet() {
         priorityQueue = new PrioritySkipList<>();
-        storedValues  = new HashMap<>();
+        storedValues  = new TreeMap<>();
     }
 
     /**
@@ -40,7 +40,7 @@ public class PrioritySkipListSet<E> implements SkipList<E> {
      */
     public PrioritySkipListSet(long seed) {
         priorityQueue = new PrioritySkipList<>(seed);
-        storedValues = new HashMap<>();
+        storedValues = new TreeMap<>();
     }
 
     /**
@@ -48,7 +48,7 @@ public class PrioritySkipListSet<E> implements SkipList<E> {
      */
     public PrioritySkipListSet(Comparator<? super E> comparator) {
         priorityQueue = new PrioritySkipList<>(comparator);
-        storedValues = new HashMap<>();
+        storedValues = new TreeMap<>(comparator);
     }
 
     /**
@@ -61,7 +61,7 @@ public class PrioritySkipListSet<E> implements SkipList<E> {
      */
     public PrioritySkipListSet(long seed, Comparator<? super E> comparator) {
         priorityQueue = new PrioritySkipList<>(seed, comparator);
-        storedValues = new HashMap<>();
+        storedValues = new TreeMap<>(comparator);
     }
 
 
@@ -138,7 +138,8 @@ public class PrioritySkipListSet<E> implements SkipList<E> {
     @Override
     public E poll() {
         E storedValue = priorityQueue.poll();
-        storedValues.remove(storedValue);
+        if (storedValue != null)
+            storedValues.remove(storedValue);
         return storedValue;
     }
 

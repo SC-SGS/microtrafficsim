@@ -32,7 +32,7 @@ public class WheelOfFortuneTest {
 
     @Before
     public void init() {
-        wheelOfFortune = new BasicWheelOfFortune<>(new Random());
+        wheelOfFortune = new BasicWheelOfFortune<>(new Random(), (d1, d2) -> d1.getObj().compareTo(d2.getObj()));
         references.clear();
     }
 

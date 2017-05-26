@@ -69,7 +69,7 @@ public class TestData {
         FeatureDefinition streetgraph = new FeatureDefinition("streetgraph", sgdep, sggen, n -> false, sgmatcher);
 
         FeatureGenerator.Properties properties = new FeatureGenerator.Properties();
-        properties.bounds = FeatureGenerator.Properties.BoundaryManagement.NONE;
+        properties.clip = FeatureGenerator.Properties.BoundaryManagement.NONE;
 
         Parser parser = new Parser(new OSMProcessor(properties, streetgraph));
         parser.getWayEntityManager().putInitializer(StreetComponent.class, new StreetComponentFactory());
