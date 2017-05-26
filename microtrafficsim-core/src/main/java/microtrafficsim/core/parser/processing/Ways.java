@@ -351,7 +351,7 @@ public class Ways {
         return splits;
     }
 
-    public static WayEntity[] clip(DataSet dataset, WayEntity way, LongGenerator wayIdGen,
+    public static WayEntity[] clip(DataSet dataset, Bounds bounds, WayEntity way, LongGenerator wayIdGen,
                                    BiFunction<Coordinate, WayEntity, NodeEntity> nodeFactory) {
         ArrayList<Boolean> accept      = new ArrayList<>();
         ArrayList<Integer> splitpoints = new ArrayList<>();
@@ -359,7 +359,7 @@ public class Ways {
         ArrayList<Long> nodes = ArrayUtils.toList(way.nodes);
 
         NodeEntity first = dataset.nodes.get(nodes.get(0));
-        accept.add(csComputeCode(dataset.bounds, first.lat, first.lon) == CS_OUTCODE_INSIDE);
+        accept.add(csComputeCode(bounds, first.lat, first.lon) == CS_OUTCODE_INSIDE);
 
         for (int i = 1; i < nodes.size(); i++) {
             NodeEntity a = dataset.nodes.get(nodes.get(i-1));
@@ -373,8 +373,8 @@ public class Ways {
             double latB = b.lat;
             double lonB = b.lon;
 
-            int outcodeA = csComputeCode(dataset.bounds, latA, lonA);
-            int outcodeB = csComputeCode(dataset.bounds, latB, lonB);
+            int outcodeA = csComputeCode(bounds, latA, lonA);
+            int outcodeB = csComputeCode(bounds, latB, lonB);
 
             boolean acceptSegment;
             while (true) {
@@ -390,36 +390,36 @@ public class Ways {
                 int outside = outcodeA != CS_OUTCODE_INSIDE ? outcodeA : outcodeB;
 
                 if ((outside & CS_OUTCODE_MINLAT) != 0) {
-                    pos = (dataset.bounds.minlat - a.lat) / (b.lat - a.lat);
-                    lat = dataset.bounds.minlat;
+                    pos = (bounds.minlat - a.lat) / (b.lat - a.lat);
+                    lat = bounds.minlat;
                     lon = a.lon + (b.lon - a.lon) * pos;
 
                 } else if ((outside & CS_OUTCODE_MAXLAT) != 0) {
-                    pos = (dataset.bounds.maxlat - a.lat) / (b.lat - a.lat);
-                    lat = dataset.bounds.maxlat;
+                    pos = (bounds.maxlat - a.lat) / (b.lat - a.lat);
+                    lat = bounds.maxlat;
                     lon = a.lon + (b.lon - a.lon) * pos;
 
                 } else if ((outside & CS_OUTCODE_MINLON) != 0) {
-                    pos = (dataset.bounds.minlon - a.lon) / (b.lon - a.lon);
+                    pos = (bounds.minlon - a.lon) / (b.lon - a.lon);
                     lat = a.lat + (b.lat - a.lat) * pos;
-                    lon = dataset.bounds.minlon;
+                    lon = bounds.minlon;
 
                 } else if ((outside & CS_OUTCODE_MAXLON) != 0) {
-                    pos = (dataset.bounds.maxlon - a.lon) / (b.lon - a.lon);
+                    pos = (bounds.maxlon - a.lon) / (b.lon - a.lon);
                     lat = a.lat + (b.lat - a.lat) * pos;
-                    lon = dataset.bounds.maxlon;
+                    lon = bounds.maxlon;
                 }
 
                 if (outside == outcodeA) {
                     posA = pos;
                     latA = lat;
                     lonA = lon;
-                    outcodeA = csComputeCode(dataset.bounds, latA, lonA);
+                    outcodeA = csComputeCode(bounds, latA, lonA);
                 } else {
                     posB = pos;
                     latB = lat;
                     lonB = lon;
-                    outcodeB = csComputeCode(dataset.bounds, latB, lonB);
+                    outcodeB = csComputeCode(bounds, latB, lonB);
                 }
             }
 

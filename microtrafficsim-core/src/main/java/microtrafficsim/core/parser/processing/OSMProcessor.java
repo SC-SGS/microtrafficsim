@@ -1,6 +1,7 @@
 package microtrafficsim.core.parser.processing;
 
 import microtrafficsim.build.BuildSetup;
+import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.parser.processing.Ways.MergePoint;
 import microtrafficsim.core.parser.processing.sanitizer.OSMDataSetSanitizer;
@@ -426,7 +427,9 @@ public class OSMProcessor implements Processor {
      * @param properties the generator-properties used for processing/generating.
      */
     private void clipWays(DataSet dataset, FeatureGenerator.Properties properties) {
-        if (properties.bounds != FeatureGenerator.Properties.BoundaryManagement.CLIP) return;
+        if (properties.clip != FeatureGenerator.Properties.BoundaryManagement.CLIP) return;
+
+        Bounds bounds = properties.bounds != null ? properties.bounds : dataset.bounds;
 
         LongGenerator nodeIdGen = new NodeIdGen(dataset);
         BiFunction<Coordinate, WayEntity, NodeEntity> nodeFactory = (c, way) -> {
@@ -443,7 +446,7 @@ public class OSMProcessor implements Processor {
 
         HashMap<Long, WayEntity> ways = new HashMap<>();
         for (WayEntity way : dataset.ways.values())
-            for (WayEntity clipped : Ways.clip(dataset, way, idgenClipWay, nodeFactory))
+            for (WayEntity clipped : Ways.clip(dataset, bounds, way, idgenClipWay, nodeFactory))
                 ways.put(clipped.id, clipped);
 
         dataset.ways = ways;

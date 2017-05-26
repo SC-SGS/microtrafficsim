@@ -140,7 +140,7 @@ public class ParserExample {
 
         // set the generator properties to recalculate the map-bounds after parsing
         FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
-        genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.RECALCULATE;
+        genprops.clip = FeatureGenerator.Properties.BoundaryManagement.RECALCULATE;
 
         // generate the parser
         return new OSMParser.Config()

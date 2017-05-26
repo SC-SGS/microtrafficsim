@@ -1,0 +1,32 @@
+plugins {
+    id 'application'
+    id "edu.sc.seis.macAppBundle" version "2.1.6"
+}
+
+dependencies {
+    compile project(':microtrafficsim-core')
+
+    // SLF4J
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
+}
+
+// handle command line arguments via '-Dexec.args="..."'
+run {
+    if (System.getProperty("exec.args")) {
+        args System.getProperty("exec.args").split()
+    }
+}
+
+
+mainClassName = 'microtrafficsim.tools.exfmtconv.ExchangeFormatConverter'
+macAppBundle {
+    mainClassName = 'microtrafficsim.tools.exfmtconv.ExchangeFormatConverter'
+}
+
+
+// set jar and distribution name
+jar.baseName = 'microtrafficsim-tools-exfmtconv'
+distributions.main.baseName = 'microtrafficsim-tools-exfmtconv'
+
+applicationDefaultJvmArgs = ["-Xmx3g"]
