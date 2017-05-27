@@ -99,11 +99,6 @@ public abstract class BasicVehicle implements Vehicle {
         return strBuilder.toString();
     }
 
-    @Override
-    public int hashCode() {
-        return new FNVHashBuilder().add(id).getHash();
-    }
-
     public void setDriver(Driver driver) {
         this.driver = driver;
     }

@@ -16,7 +16,6 @@ import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.functional.Procedure2;
-import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.*;
@@ -38,8 +37,8 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
 
     // crossing logic
     private PriorityQueue<Vehicle>         newRegisteredVehicles;
-    private HashMap<Vehicle, Set<Vehicle>> assessedVehicles;
-    private HashSet<Vehicle>               maxPrioVehicles;
+    private TreeMap<Vehicle, Set<Vehicle>> assessedVehicles;
+    private TreeSet<Vehicle>               maxPrioVehicles;
     private boolean                        anyChangeSinceUpdate;
     private TreeMap<Lane, ArrayList<Lane>> connectors;
 
@@ -58,8 +57,8 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
 
         // crossing logic
         random                = new Random();  // set below for determinism
-        assessedVehicles      = new HashMap<>();
-        maxPrioVehicles       = new HashSet<>();
+        assessedVehicles      = new TreeMap<>(Comparator.comparingLong(Vehicle::getId));
+        maxPrioVehicles       = new TreeSet<>(Comparator.comparingLong(Vehicle::getId));
         newRegisteredVehicles = new PriorityQueue<>(Comparator.comparingLong(Vehicle::getId));
         anyChangeSinceUpdate  = false;
 
@@ -221,7 +220,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
         /* add new registered vehicles */
         while (!newRegisteredVehicles.isEmpty()) { // invariant: all vehicles in this set are new at this point
             Vehicle newVehicle = newRegisteredVehicles.poll();
-            Set<Vehicle> defeatedVehicles = new HashSet<>();
+            Set<Vehicle> defeatedVehicles = new TreeSet<>(Comparator.comparingLong(Vehicle::getId));
 
             // calculate priority counter
             newVehicle.getDriver().resetPriorityCounter();
