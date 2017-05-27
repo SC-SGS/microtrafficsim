@@ -22,16 +22,13 @@ run {
 
 
 def distName = 'microtrafficsim'
-def distVersion = '1.0.0'
+def distVersion = '1.0.1'
 def distRelease = '1'
 
 def main = 'microtrafficsim.ui.Main'
 
 
 mainClassName = "${main}"
-macAppBundle {
-    mainClassName = "${main}"
-}
 jar {
      manifest {
          attributes "Main-Class": "${main}"
@@ -42,6 +39,16 @@ jar {
      }
  }
 
+macAppBundle {
+    appName = 'microtrafficsim'
+    dmgName = "${distName}_${distVersion}-${distRelease}_all.app"
+
+    icon = "${rootProject.projectDir}/resources/icon/microtrafficsim.icns"
+    version = "${distVersion}-${distRelease}"
+
+    mainClassName = "${main}"
+    bundleJRE = false
+}
 
 ospackage {
     packageName = "${distName}"
@@ -76,21 +83,16 @@ task distRpm(type: Rpm) {
 
 task distDeb(type: Deb) {
     dependsOn startScripts
-}
 
-task distApp(type: Zip) {
-    dependsOn createApp
-
-    from fileTree("${->project.buildDir}/${->project.macAppBundle.appOutputDir}/${->project.macAppBundle.appName}.app") {
-        into 'microtrafficsim.app'
-    }
-
-    destinationDir = file("${->project.buildDir}/distributions")
-    archiveName = "${distName}_${distVersion}-${distRelease}_all.app.zip"
+    packageGroup 'science'
 }
 
 distZip {
     archiveName = "$distName"
+
+    into("${archiveName}/icon") {
+        from "${rootProject.projectDir}/resources/icon/png"
+    }
 
     doLast {
         def name = "${distName}_${distVersion}-${distRelease}_all.zip"
@@ -115,20 +117,30 @@ task writeArchPkgbuild() {
         pkgbuild <<= "pkgver=${distVersion}\n"
         pkgbuild <<= "pkgrel=${distRelease}\n"
         pkgbuild <<= "pkgdesc='Microscopic Traffic Simulation using OpenStreetMap'\n"
+        pkgbuild <<= "categories=\"Application;Science\"\n"
         pkgbuild <<= "arch=('any')\n"
         pkgbuild <<= "url='https://github.com/sgs-us/microtrafficsim/'\n"
         pkgbuild <<= "license=('GPL-3.0')\n"
         pkgbuild <<= "\n"
         pkgbuild <<= "depends=('java-environment')\n"
+        pkgbuild <<= "makedepends=('gendesk')\n"
         pkgbuild <<= "source=(\"${distZipUrl}\")\n"
         pkgbuild <<= "sha256sums=('${distZipSha256}')\n"
+        pkgbuild <<= "\n"
+        pkgbuild <<= "build() {\n"
+        pkgbuild <<= "    mv \"\${pkgname}/icon/512x512.png\" \${pkgname}.png\n"
+        pkgbuild <<= "    rm -r \"\${pkgname}/icon\"\n"
+        pkgbuild <<= "    rm \"\${pkgname}/bin/\${pkgname}.bat\"\n"
+        pkgbuild <<= "    gendesk -f -n --pkgname \"\${pkgname}\" --pkgdesc \"\${pkgdesc}\" --categories \"\${categories}\"\n"
+        pkgbuild <<= "}\n"
         pkgbuild <<= "\n"
         pkgbuild <<= "package() {\n"
         pkgbuild <<= "    mkdir -p \"\${pkgdir}/usr/\"{bin,share}\n"
         pkgbuild <<= "    cp -r \"\${pkgname}\" \"\${pkgdir}/usr/share/\"\n"
-        pkgbuild <<= "    rm \"\${pkgdir}/usr/share/\${pkgname}/bin/\${pkgname}.bat\"\n"
         pkgbuild <<= "    chmod 755 \"\${pkgdir}/usr/share/\${pkgname}/bin/\${pkgname}\"\n"
         pkgbuild <<= "    ln -s \"/usr/share/\${pkgname}/bin/\${pkgname}\" \"\${pkgdir}/usr/bin/\${pkgname}\"\n"
+        pkgbuild <<= "    install -Dm644 \"\${pkgname}.desktop\" \"\${pkgdir}/usr/share/applications/\${pkgname}.desktop\"\n"
+        pkgbuild <<= "    install -Dm644 \"\${pkgname}.png\" \"\${pkgdir}/usr/share/pixmaps/\${pkgname}.png\"\n"
         pkgbuild <<= "}\n"
 
         file("$tmpdir/PKGBUILD").write(pkgbuild.toString())
@@ -152,7 +164,7 @@ task distAll {
     dependsOn distRpm
     dependsOn distDeb
     dependsOn distArchPkg
-    dependsOn distApp
+    dependsOn createAppZip
 }
 
 

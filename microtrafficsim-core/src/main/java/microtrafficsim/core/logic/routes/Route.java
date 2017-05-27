@@ -1,12 +1,13 @@
 package microtrafficsim.core.logic.routes;
 
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathEdge;
 
 /**
  * @author Dominic Parga Cacheiro
  */
-public interface Route extends Iterable<ShortestPathEdge<Node>> {
+public interface Route extends Iterable<DirectedEdge> {
     int getSpawnDelay();
 
     void setSpawnDelay(int spawnDelay);
@@ -22,7 +23,7 @@ public interface Route extends Iterable<ShortestPathEdge<Node>> {
 
     int size();
 
-    ShortestPathEdge<Node> peek();
+    DirectedEdge peek();
 
-    ShortestPathEdge<Node> pop();
+    DirectedEdge pop();
 }

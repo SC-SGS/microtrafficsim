@@ -142,7 +142,8 @@ public class SimulationController implements GUIController {
         overlay.setSimulation(simulation);
 
         /* gui */
-        frame       = new JFrame(FrameTitle.DEFAULT.get());
+        frame = new JFrame(FrameTitle.DEFAULT.get());
+        frame.setIconImage(new ImageIcon(SimulationController.class.getResource("/icon/128x128.png")).getImage());
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowActivated(WindowEvent e) {

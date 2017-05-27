@@ -53,7 +53,7 @@ public class VehicleStamp {
             if (stamp.lane == null)
                 return false;
 
-            if (lane.hashCode() != stamp.lane.hashCode())
+            if (!lane.getEdge().key().equals(stamp.lane.getEdge().key()))
                 return false;
         }
 

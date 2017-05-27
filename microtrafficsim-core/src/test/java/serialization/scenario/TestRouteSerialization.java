@@ -24,6 +24,7 @@ import microtrafficsim.utils.resources.PackagedResource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
+import testhelper.DefaultAssertions;
 import testhelper.ResourceClassLinks;
 
 import java.io.File;
@@ -140,7 +141,7 @@ public class TestRouteSerialization {
 
             Route route = iterRoutes.next();
             Route loadedRoute = iterLoaded.next();
-            assertEquals("Routes are not equal.", route.hashCode(), loadedRoute.hashCode());
+            DefaultAssertions.assertRoutes(route, loadedRoute);
         }
 
         assertTrue(

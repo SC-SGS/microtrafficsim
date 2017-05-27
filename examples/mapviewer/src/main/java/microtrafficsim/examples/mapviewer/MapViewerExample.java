@@ -122,6 +122,7 @@ public class MapViewerExample {
     private JFrame setUpFrame(MapViewer viewer) {
         /* create and initialize the JFrame */
         JFrame frame = new JFrame(getDefaultFrameTitle());
+        frame.setIconImage(new ImageIcon(MapViewerExample.class.getResource("/icon/128x128.png")).getImage());
         frame.setSize(viewer.getInitialWindowWidth(), viewer.getInitialWindowHeight());
         frame.add(viewer.getVisualizationPanel());
 

@@ -96,16 +96,15 @@ public class BasicDriver implements Driver {
 
     @Override
     public String toString() {
-        LevelStringBuilder strBuilder = new LevelStringBuilder();
-        strBuilder.appendln("<" + getClass().getSimpleName() + ">");
-        strBuilder.incLevel();
+        LevelStringBuilder strBuilder = new LevelStringBuilder()
+                .setDefaultLevelSeparator()
+                .setDefaultLevelSubString();
+        strBuilder.appendln("<" + getClass().getSimpleName() + ">").incLevel(); {
+            strBuilder.appendln("seed  = " + random.getSeed());
+            strBuilder.appendln("priority counter = " + priorityCounter);
+            strBuilder.appendln(route);
+        } strBuilder.decLevel().appendln("</" + getClass().getSimpleName() + ">");
 
-        strBuilder.appendln("seed  = " + random.getSeed());
-        strBuilder.appendln("priority counter = " + priorityCounter);
-        strBuilder.append(route);
-
-        strBuilder.decLevel();
-        strBuilder.appendln("</" + getClass().getSimpleName() + ">");
         return strBuilder.toString();
     }
 

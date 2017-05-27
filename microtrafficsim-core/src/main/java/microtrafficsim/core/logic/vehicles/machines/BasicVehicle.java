@@ -67,27 +67,29 @@ public abstract class BasicVehicle implements Vehicle {
 
     @Override
     public String toString() {
-        LevelStringBuilder strBuilder = new LevelStringBuilder();
-        strBuilder.appendln("<vehicle>");
-        strBuilder.incLevel();
-        strBuilder
-                .appendln("id = " + id)
-                .appendln("state = " + state)
-                .appendln("cell position = " + cellPosition)
-                .appendln("velocity v = " + velocity)
-                .appendln("maximum  v = " + getMaxVelocity())
-                .appendln("last v was zero = " + lastVelocityWasZero);
-        if (driver != null)
-            strBuilder.append(driver);
-        if (lane != null) {
-            strBuilder.append(lane);
-            strBuilder.appendln("");
-            strBuilder.appendln("-- infos from next node --");
-            strBuilder.appendln("permission = " + lane.getEdge().getDestination().permissionToCross(this));
-            strBuilder.appendln("node.id = " + lane.getEdge().getDestination().getId());
+        LevelStringBuilder strBuilder = new LevelStringBuilder()
+                .setDefaultLevelSeparator()
+                .setDefaultLevelSubString();
+        strBuilder.appendln("<" + getClass().getSimpleName() + ">").incLevel();
+        {
+            strBuilder
+                    .appendln("id = " + id)
+                    .appendln("state = " + state)
+                    .appendln("cell position = " + cellPosition)
+                    .appendln("velocity v = " + velocity)
+                    .appendln("maximum  v = " + getMaxVelocity())
+                    .appendln("last v was zero = " + lastVelocityWasZero);
+            if (driver != null)
+                strBuilder.appendln(driver);
+            if (lane != null) {
+                strBuilder.appendln(lane);
+                strBuilder.appendln("");
+                strBuilder.appendln("-- infos from next node --");
+                strBuilder.appendln("permission = " + lane.getEdge().getDestination().permissionToCross(this));
+                strBuilder.appendln("node.id = " + lane.getEdge().getDestination().getId());
+            }
         }
-        strBuilder.decLevel();
-        strBuilder.appendln("</" + getClass().getSimpleName() + ">");
+        strBuilder.decLevel().appendln("</" + getClass().getSimpleName() + ">");
         return strBuilder.toString();
     }
 

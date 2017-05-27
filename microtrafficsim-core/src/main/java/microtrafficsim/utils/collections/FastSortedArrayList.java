@@ -25,17 +25,17 @@ import java.util.stream.Stream;
  * @author Dominic Parga Cacheiro
  */
 public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
-    private final Comparator<? super E> comparator;
+    private Comparator<? super E> comparator;
     private boolean isDirty = true;
 
     public FastSortedArrayList() {
         super();
-        comparator = null;
+        initComparator(null);
     }
 
     public FastSortedArrayList(Comparator<? super E> comparator) {
         super();
-        this.comparator = comparator;
+        initComparator(comparator);
     }
 
     public FastSortedArrayList(Collection<? extends E> c) {
@@ -53,7 +53,14 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
 
     public FastSortedArrayList(int initialCapacity, Comparator<? super E> comparator) {
         super(initialCapacity);
-        this.comparator = comparator;
+        initComparator(comparator);
+    }
+
+    private void initComparator(Comparator<? super E> comparator) {
+        if (comparator != null)
+            this.comparator = comparator::compare;
+        else
+            this.comparator = (o1, o2) -> ((Comparable<? super E>) o1).compareTo(o2);
     }
 
 
@@ -97,7 +104,7 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
      */
     @Override
     public boolean contains(Object o) {
-        return binarySearch(o) >= 0;
+        return binarySearch((E) o) >= 0;
     }
 
     /**
@@ -108,10 +115,10 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
      */
     @Override
     public int indexOf(Object o) {
-        int index = binarySearch(o);
+        int index = binarySearch((E) o);
         if (index >= 0) {
             while (index > 0) {
-                int cmp = compare(get(index), get(index - 1));
+                int cmp = comparator.compare(get(index), get(index - 1));
 
                 if (cmp == 0) index--;
                 else break;
@@ -130,10 +137,10 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
      */
     @Override
     public int lastIndexOf(Object o) {
-        int index = binarySearch(o);
+        int index = binarySearch((E) o);
         if (index >= 0) {
             while (index < size() - 1) {
-                int cmp = compare(get(index), get(index + 1));
+                int cmp = comparator.compare(get(index), get(index + 1));
 
                 if (cmp == 0) index++;
                 else break;
@@ -228,6 +235,20 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
         return super.get(index);
     }
 
+    public E getFirst() {
+        if (isEmpty())
+            return null;
+        sort();
+        return get(0);
+    }
+
+    public E getLast() {
+        if (isEmpty())
+            return null;
+        sort();
+        return get(size() - 1);
+    }
+
     /**
      * Does not {@link #sort() sort}
      */
@@ -295,6 +316,7 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     public E element() {
         if (isEmpty())
             throw new NoSuchElementException(isEmptyMsg());
+        sort();
         return get(0);
     }
 
@@ -303,9 +325,7 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
      */
     @Override
     public E peek() {
-        if (isEmpty())
-            return null;
-        return get(0);
+        return getFirst();
     }
 
 
@@ -378,15 +398,7 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     /**
      * Does {@link #sort() sort}
      */
-    public Iterator<E> iteratorAsc() {
-        sort();
-        return new AscendingIterator();
-    }
-
-    /**
-     * Does {@link #sort() sort}
-     */
-    public Iterator<E> iteratorDesc() {
+    public Iterator<E> descendingIterator() {
         sort();
         return new DescendingIterator();
     }
@@ -444,20 +456,11 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
      *
      * @see Collections#binarySearch(List, Object, Comparator)
      */
-    protected int binarySearch(Object o) {
+    protected int binarySearch(E e) {
         sort();
-        if (comparator == null)
-            return Collections.binarySearch(this, o, Comparator.comparingLong(Object::hashCode));
-        else
-            return Collections.binarySearch(this, (E) o, comparator);
+        return Collections.binarySearch(this, e, comparator);
     }
 
-    protected int compare(Object o1, Object o2) {
-        if (comparator == null)
-            return Long.compare(o1.hashCode(), o2.hashCode());
-        else
-            return comparator.compare((E) o1, (E) o2);
-    }
 
     /**
      * <p>
@@ -468,11 +471,7 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
      */
     public void sort() {
         if (isDirty) {
-            if (comparator == null)
-                super.sort(Comparator.comparingLong(Object::hashCode));
-            else
-                super.sort(comparator);
-
+            super.sort(comparator);
             isDirty = false;
         }
     }

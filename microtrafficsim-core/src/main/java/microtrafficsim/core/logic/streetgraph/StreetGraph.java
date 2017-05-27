@@ -18,11 +18,11 @@ import java.util.*;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro, Maximilian Luz
  */
 public class StreetGraph implements Graph {
-    private GraphGUID                      guid;
-    private Bounds                         bounds;
-    private HashMap<Integer, Node>         nodes;
-    private HashMap<Integer, DirectedEdge> edges;
-    private long                           seed;
+    private GraphGUID guid;
+    private Bounds bounds;
+    private TreeMap<Node.Key, Node> nodes;
+    private TreeMap<DirectedEdge.Key, DirectedEdge> edges;
+    private long seed;
 
     /**
      * Just a standard constructor.
@@ -31,8 +31,8 @@ public class StreetGraph implements Graph {
      */
     public StreetGraph(Bounds bounds) {
         this.bounds = bounds;
-        this.nodes  = new HashMap<>();
-        this.edges  = new HashMap<>();
+        this.nodes  = new TreeMap<>();
+        this.edges  = new TreeMap<>();
         this.seed   = Random.createSeed();
     }
 
@@ -74,33 +74,33 @@ public class StreetGraph implements Graph {
 
 
     @Override
-    public Map<Integer, Node> getNodeMap() {
+    public Map<Node.Key, Node> getNodeMap() {
         return Collections.unmodifiableMap(nodes);
     }
 
     @Override
-    public Map<Integer, DirectedEdge> getEdgeMap() {
+    public Map<DirectedEdge.Key, DirectedEdge> getEdgeMap() {
         return Collections.unmodifiableMap(edges);
     }
 
     @Override
-    public Set<Node> getNodes() {
-        return new HashSet<>(nodes.values());
+    public TreeSet<Node> getNodes() {
+        return new TreeSet<>(nodes.values());
     }
 
     @Override
-    public Set<DirectedEdge> getEdges() {
-        return new HashSet<>(edges.values());
+    public TreeSet<DirectedEdge> getEdges() {
+        return new TreeSet<>(edges.values());
     }
 
     @Override
     public void addNode(Node node) {
-        nodes.put(node.hashCode(), node);
+        nodes.put(node.key(), node);
     }
 
     @Override
     public void addEdge(DirectedEdge edge) {
-        edges.put(edge.hashCode(), edge);
+        edges.put(edge.key(), edge);
     }
 
 

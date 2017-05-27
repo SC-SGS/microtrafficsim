@@ -76,7 +76,7 @@ public class TestFastSortedArrayList {
         actualList.sort();
         Collections.sort(expectedList);
 
-        Iterator<Integer> ascIter = actualList.iteratorAsc();
+        Iterator<Integer> ascIter = actualList.iterator();
         Iterator<Integer> expectedIter = expectedList.iterator();
         while (expectedIter.hasNext()) {
             assertEquals("Wrong order when iterating.", expectedIter.next(), ascIter.next());
@@ -97,7 +97,7 @@ public class TestFastSortedArrayList {
         Collections.sort(expectedList);
         Collections.reverse(expectedList);
 
-        Iterator<Integer> descIter = actualList.iteratorDesc();
+        Iterator<Integer> descIter = actualList.descendingIterator();
         Iterator<Integer> expectedIter = expectedList.iterator();
         while (expectedIter.hasNext()) {
             assertEquals("Wrong order when iterating.", expectedIter.next(), descIter.next());

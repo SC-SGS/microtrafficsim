@@ -12,12 +12,17 @@ import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.Resettable;
-import microtrafficsim.utils.collections.IndexableLinkedBand;
-import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.utils.collections.FastSortedArrayList;
+import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.strings.builder.BasicStringBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -28,12 +33,15 @@ import java.util.Iterator;
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
 public class DirectedEdge
-        implements ShortestPathEdge<Node>, LogicStreetEntity, Resettable, Iterable<DirectedEdge.Lane>
+        implements ShortestPathEdge<Node>,
+        LogicStreetEntity,
+        Resettable,
+        Iterable<DirectedEdge.Lane>,
+        Comparable<DirectedEdge>
 {
-
     private final FullStreetInfo streetInfo;
     private StreetEntity entity;
-    private final IndexableLinkedBand<Vehicle> lanes;
+    private final LaneContainer lanes;
 
 
     /**
@@ -66,25 +74,21 @@ public class DirectedEdge
                 maxVelocity,
                 metersPerCell, priorityFn
         ));
-        lanes = new IndexableLinkedBand<>(streetInfo.raw.nLanes);
+        lanes = new LaneContainer(streetInfo.raw.nLanes);
     }
 
 
+    /**
+     * @return lane of index i counted from outside to inside, starting with 0
+     */
     public Lane getLane(int laneNo) {
         return new Lane(this, laneNo);
     }
 
 
 
-    @Override
-    public int hashCode() {
-        return new FNVHashBuilder()
-                .add(streetInfo.raw.id)
-                // origin and destination needed because the id is used by forward and backward edge of the same street
-                .add(streetInfo.raw.origin.hashCode())
-                .add(streetInfo.raw.destination.hashCode())
-                .add(streetInfo.raw.orientation == Orientation.FORWARD)
-                .getHash();
+    public Key key() {
+        return new Key(this);
     }
 
     @Override
@@ -93,8 +97,8 @@ public class DirectedEdge
                 .setDefaultLevelSeparator()
                 .setDefaultLevelSubString();
 
-        stringBuilder.appendln("<DirectedEdge>").incLevel(); {
-            stringBuilder.appendln("id = " + streetInfo.raw.id);
+        stringBuilder.appendln("<" + getClass().getSimpleName() + ">").incLevel(); {
+            stringBuilder.appendln(key());
             stringBuilder.appendln("hash = " + hashCode());
             stringBuilder.appendln("(orig -len-> dest) = ("
                     + streetInfo.raw.origin.getId()
@@ -103,7 +107,7 @@ public class DirectedEdge
             stringBuilder.appendln();
             for (Lane lane : this)
                 stringBuilder.appendln(lane);
-        } stringBuilder.decLevel().append("</DirectedEdge>");
+        } stringBuilder.decLevel().append("</" + getClass().getSimpleName() + ">");
 
         return stringBuilder.toString();
     }
@@ -144,6 +148,9 @@ public class DirectedEdge
         return streetInfo.raw.nLanes;
     }
 
+    /**
+     * @return max allowed velocity in cells/s
+     */
     public int getMaxVelocity() {
         return streetInfo.maxVelocity;
     }
@@ -163,6 +170,10 @@ public class DirectedEdge
     @Override
     public long getId() {
         return streetInfo.raw.id;
+    }
+
+    public Orientation getOrientation() {
+        return streetInfo.raw.orientation;
     }
 
     public StreetType getStreetType() {
@@ -200,7 +211,7 @@ public class DirectedEdge
     /**
      * Just an immutable container for vehicles.
      */
-    public static class Lane {
+    public static class Lane implements Comparable<Lane> {
         private DirectedEdge edge;
         private int index;
 
@@ -224,40 +235,40 @@ public class DirectedEdge
         }
 
 
-        public synchronized int getMaxInsertionIndex() {
+        public int getMaxInsertionIndex() {
             if (edge.lanes.isEmpty(index)) {
                 return edge.getLength() - 1;
             } else {
-                return edge.lanes.getFirst(index).getCellPosition() - 1;
+                return edge.lanes.getLastVehicle(index).getCellPosition() - 1;
             }
         }
 
-        public synchronized boolean hasVehicleInFront(Vehicle vehicle) {
-            return edge.lanes.getNext(index, vehicle.getCellPosition()) != null;
+        public boolean hasVehicleInFront(Vehicle vehicle) {
+            return edge.lanes.getNextOf(index, vehicle.getCellPosition()) != null;
         }
 
-        public synchronized Vehicle getVehicleInFront(Vehicle vehicle) {
-            return edge.lanes.getNext(index, vehicle.getCellPosition());
+        public Vehicle getVehicleInFront(Vehicle vehicle) {
+            return edge.lanes.getNextOf(index, vehicle.getCellPosition());
         }
 
 
         /**
-         * @return true if success (<=> no vehicle has been on the given position)
+         * @return true if an element was removed
          */
-        public synchronized boolean insertVehicle(Vehicle vehicle, int cellPosition) {
-            Vehicle removedVehicle = edge.lanes.set(vehicle, index, cellPosition);
-            boolean success = removedVehicle == null;
+        public boolean insertVehicle(Vehicle vehicle, int cellPosition) {
+            Vehicle removed = edge.lanes.set(vehicle, index, cellPosition);
+            boolean success = removed == null;
 
             BasicStringBuilder builder = new BasicStringBuilder();
             builder.appendln("Inserting a vehicle to the lane removed a vehicle.")
                     .appendln("INSERTED = " + vehicle)
-                    .appendln("REMOVED = " + removedVehicle);
+                    .appendln("REMOVED  = " + removed);
             assert success : builder.toString();
 
-            return success;
+            return !success;
         }
 
-        public synchronized void moveVehicle(Vehicle vehicle, int delta) {
+        public void moveVehicle(Vehicle vehicle, int delta) {
             if (delta != 0) {
                 removeVehicle(vehicle);
                 insertVehicle(vehicle, vehicle.getCellPosition() + delta);
@@ -267,14 +278,14 @@ public class DirectedEdge
         /**
          * @return true if success (<=> no vehicle has been on the given position)
          */
-        public synchronized boolean removeVehicle(Vehicle vehicle) {
+        public boolean removeVehicle(Vehicle vehicle) {
             boolean success;
 
             Vehicle removedVehicle = edge.lanes.remove(index, vehicle.getCellPosition());
             success = removedVehicle == vehicle;
 
             BasicStringBuilder builder = new BasicStringBuilder();
-            builder.appendln("Removing a vehicle from the lane removed an unexpected, different vehicle.")
+            builder.appendln("Removing a vehicle from the lane removed an unexpected, different as vehicle.")
                     .appendln("EXPECTED = " + vehicle)
                     .appendln("ACTUALLY REMOVED  = " + removedVehicle);
             assert success : builder.toString();
@@ -283,9 +294,8 @@ public class DirectedEdge
         }
 
 
-        @Override
-        public int hashCode() {
-            return new FNVHashBuilder().add(edge).add(index).getHash();
+        public Lane.Key key() {
+            return new Lane.Key(this);
         }
 
         @Override
@@ -298,6 +308,45 @@ public class DirectedEdge
             } stringBuilder.decLevel().appendln("</Lane>");
 
             return stringBuilder.toString();
+        }
+
+
+        @Override
+        public int compareTo(Lane o) {
+            return key().compareTo(o.key());
+        }
+
+        public static class Key implements Comparable<Lane.Key> {
+            private DirectedEdge.Key edgeKey;
+            private int index;
+
+            private Key() {
+
+            }
+
+            private Key(Lane lane) {
+                edgeKey = lane.edge.key();
+                index = lane.index;
+            }
+
+            @Override
+            public int compareTo(Lane.Key o) {
+                int cmp = edgeKey.compareTo(o.edgeKey);
+                if (cmp == 0)
+                    cmp = Integer.compare(index, o.index);
+                return cmp;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == this)
+                    return true;
+
+                if (!(obj instanceof Lane.Key))
+                    return false;
+
+                return compareTo((Lane.Key) obj) == 0;
+            }
         }
     }
 
@@ -326,6 +375,196 @@ public class DirectedEdge
         @Override
         public Lane next() {
             return new Lane(DirectedEdge.this, index--);
+        }
+    }
+
+
+
+    private static class LaneContainer {
+        private ArrayList<FastSortedArrayList<Cell>> lanes;
+        private final Lock lock;
+        private final Condition[] laneIsFree;
+        private final boolean[] laneIsBusy;
+
+
+        private LaneContainer(int nLanes) {
+            lanes = new ArrayList<>(nLanes);
+            lock = new ReentrantLock(true);
+            laneIsFree = new Condition[nLanes];
+            laneIsBusy = new boolean[nLanes];
+
+            for (int i = 0; i < nLanes; i++) {
+                lanes.add(new FastSortedArrayList<>());
+                laneIsFree[i] = lock.newCondition();
+                laneIsBusy[i] = false;
+            }
+        }
+
+
+        private synchronized boolean isEmpty(int laneNo) {
+//            lock.lock();
+//            try {
+//                while (laneIsBusy[laneNo])
+//                    laneIsFree[laneNo].await();
+//
+//                laneIsFree[laneNo].signal();
+//            } finally {
+//                lock.unlock();
+//                return false;
+//            }
+            return lanes.get(laneNo).isEmpty();
+        }
+
+        /**
+         * @return The first vehicle in the lane. 'First' means the vehicle being on the street for the longest time
+         * <=> the vehicle on the lane that entered it at first.
+         */
+        private synchronized Vehicle getFirstVehicle(int laneNo) {
+            return lanes.get(laneNo).getLast().vehicle;
+        }
+
+        /**
+         * @return The last vehicle in the lane. 'Last' means the vehicle being on the street for the shortest time
+         * <=> the vehicle on the lane that entered it at last.
+         */
+        private synchronized Vehicle getLastVehicle(int laneNo) {
+            return lanes.get(laneNo).getFirst().vehicle;
+        }
+
+        private synchronized Vehicle getPrevOf(int laneNo, int cellNo) {
+            if (isEmpty(laneNo))
+                return null;
+
+            Iterator<Cell> iterator = lanes.get(laneNo).iterator();
+            Cell prev = iterator.next();
+            while (iterator.hasNext()) {
+                Cell next = iterator.next();
+
+                if (next.number < cellNo)
+                    prev = next;
+                else
+                    break;
+            }
+
+            if (prev.number == cellNo)
+                return null;
+            return prev.vehicle;
+        }
+
+        private synchronized Vehicle getNextOf(int laneNo, int cellNo) {
+            if (isEmpty(laneNo))
+                return null;
+
+            Iterator<Cell> iterator = lanes.get(laneNo).descendingIterator();
+            Cell next = iterator.next();
+            while (iterator.hasNext()) {
+                Cell prev = iterator.next();
+
+                if (prev.number > cellNo)
+                    next = prev;
+                else
+                    break;
+            }
+
+            if (next.number == cellNo)
+                return null;
+            return next.vehicle;
+        }
+
+        /**
+         * @return true if an element was removed
+         */
+        private synchronized Vehicle set(Vehicle vehicle, int laneNo, int cellNo) {
+            FastSortedArrayList<Cell> lane = lanes.get(laneNo);
+
+            int index = lane.indexOf(new Cell(null, cellNo));
+            Vehicle removed = null;
+            if (index >= 0)
+                removed = lane.remove(index).vehicle;
+
+            lane.add(new Cell(vehicle, cellNo));
+            return removed;
+        }
+
+        private synchronized Vehicle remove(int laneNo, int cellNo) {
+            FastSortedArrayList<Cell> lane = lanes.get(laneNo);
+            int listIndex = lane.indexOf(new Cell(cellNo));
+            if (listIndex >= 0)
+                return lane.remove(listIndex).vehicle;
+            return null;
+        }
+
+        private void clear() {
+            for (int i = 0; i < lanes.size(); i++) {
+                synchronized (lanes.get(i)) {
+                    lanes.get(i).clear();
+                }
+            }
+        }
+
+
+        private class Cell implements Comparable<Cell> {
+            private Vehicle vehicle;
+            private int number;
+
+            public Cell(int number) {
+                this(null, number);
+            }
+
+            public Cell(Vehicle vehicle, int number) {
+                this.vehicle = vehicle;
+                this.number = number;
+            }
+
+            @Override
+            public int compareTo(Cell o) {
+                return Integer.compare(number, o.number);
+            }
+        }
+    }
+
+
+
+    @Override
+    public int compareTo(DirectedEdge o) {
+        return key().compareTo(o.key());
+    }
+
+    public static class Key implements Comparable<Key> {
+        private long edgeId;
+        private Orientation orientation;
+
+        private Key() {
+
+        }
+
+        private Key(DirectedEdge edge) {
+            edgeId = edge.streetInfo.raw.id;
+            orientation = edge.streetInfo.raw.orientation;
+        }
+
+        @Override
+        public String toString() {
+            return "id = " + edgeId + " (" + orientation.toString() + ")";
+        }
+
+        @Override
+        public int compareTo(Key o) {
+            int cmp = Long.compare(edgeId, o.edgeId);
+            if (cmp == 0)
+                cmp = orientation.compareTo(o.orientation);
+            return cmp;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this)
+                return true;
+
+            if (!(obj instanceof Key))
+                return false;
+
+            return compareTo((Key) obj) == 0;
         }
     }
 }

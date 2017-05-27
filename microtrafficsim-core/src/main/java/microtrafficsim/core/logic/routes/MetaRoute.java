@@ -1,8 +1,7 @@
 package microtrafficsim.core.logic.routes;
 
 import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.shortestpath.ShortestPathEdge;
-import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 
 import java.util.Iterator;
 
@@ -25,14 +24,6 @@ public class MetaRoute implements Route {
         this.spawnDelay = spawndelay;
     }
 
-
-    @Override
-    public int hashCode() {
-        return new FNVHashBuilder()
-                .add(origin)
-                .add(destination)
-                .getHash();
-    }
 
     @Override
     public String toString() {
@@ -79,15 +70,15 @@ public class MetaRoute implements Route {
     }
 
     @Override
-    public Iterator<ShortestPathEdge<Node>> iterator() {
-        return new Iterator<ShortestPathEdge<Node>>() {
+    public Iterator<DirectedEdge> iterator() {
+        return new Iterator<DirectedEdge>() {
             @Override
             public boolean hasNext() {
                 return false;
             }
 
             @Override
-            public ShortestPathEdge<Node> next() {
+            public DirectedEdge next() {
                 return null;
             }
         };
@@ -97,7 +88,7 @@ public class MetaRoute implements Route {
      * @throws UnsupportedOperationException
      */
     @Override
-    public ShortestPathEdge<Node> peek() {
+    public DirectedEdge peek() {
         throw new UnsupportedOperationException();
     }
 
@@ -105,7 +96,7 @@ public class MetaRoute implements Route {
      * @throws UnsupportedOperationException
      */
     @Override
-    public ShortestPathEdge<Node> pop() {
+    public DirectedEdge pop() {
         throw new UnsupportedOperationException();
     }
 }

@@ -51,6 +51,9 @@ public class UIValidation {
 
 
     public static void main(String[] args) {
+        LoggingLevel.setEnabledGlobally(false, false, false, false, false);
+
+
         /* build setup: scenario */
         String osmFilename;
         Consumer<SimulationConfig> setupConfig;
@@ -99,8 +102,6 @@ public class UIValidation {
         } else {
             throw new UnsupportedOperationException("Your chosen scenario class is not supported.");
         }
-
-        LoggingLevel.setEnabledGlobally(false, true, true, true, true);
 
 
         /* get map file */

@@ -1,8 +1,7 @@
 package microtrafficsim.core.logic.routes;
 
 import microtrafficsim.core.logic.nodes.Node;
-import microtrafficsim.core.shortestpath.ShortestPathEdge;
-import microtrafficsim.utils.hashing.FNVHashBuilder;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.Stack;
@@ -10,7 +9,7 @@ import java.util.Stack;
 /**
  * @author Dominic Parga Cacheiro
  */
-public class StackRoute extends Stack<ShortestPathEdge<Node>> implements Route {
+public class StackRoute extends Stack<DirectedEdge> implements Route {
     private int spawnDelay;
 
 
@@ -24,36 +23,24 @@ public class StackRoute extends Stack<ShortestPathEdge<Node>> implements Route {
 
 
     @Override
-    public synchronized int hashCode() {
-        FNVHashBuilder hashBuilder = new FNVHashBuilder();
-        forEach(hashBuilder::add);
-        return hashBuilder.getHash();
-    }
-
-    @Override
     public synchronized String toString() {
         LevelStringBuilder strBuilder = new LevelStringBuilder();
-        strBuilder.appendln("<route>");
+        strBuilder.appendln("<" + getClass().getSimpleName() + ">");
         strBuilder.incLevel();
 
         if (isEmpty())
             strBuilder.appendln("Route is empty.");
         else {
-            strBuilder.appendln("hash  = " + hashCode());
-            strBuilder.appendln("start = " + getOrigin().toString());
-            strBuilder.appendln("end   = " + getDestination().toString());
-            strBuilder.appendln("size  = " + size());
+            strBuilder.appendln("hash       = " + hashCode());
+            strBuilder.appendln("spawndelay = " + spawnDelay);
+            strBuilder.appendln("start      = " + getOrigin().toString());
+            strBuilder.appendln("end        = " + getDestination().toString());
+            strBuilder.appendln("size       = " + size());
         }
 
         strBuilder.decLevel();
-        strBuilder.appendln("</route>");
+        strBuilder.appendln("</" + getClass().getSimpleName() + ">");
         return strBuilder.toString();
-    }
-
-    @Override
-    public synchronized boolean equals(Object o) {
-        return hashCode() == o.hashCode()
-                && super.equals(o);
     }
 
 

@@ -1,5 +1,6 @@
 package microtrafficsim.core.logic.streetgraph;
 
+import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
@@ -18,10 +19,13 @@ public class GraphGUID {
         Bounds bounds = new Bounds(graph.getBounds());
 
         FNVHashBuilder nodes = new FNVHashBuilder();
-        graph.getNodes().forEach(nodes::add);
+        graph.getNodes().forEach((node) -> nodes.add(node.getId()));
 
         FNVHashBuilder edges = new FNVHashBuilder();
-        graph.getEdges().forEach(nodes::add);
+        graph.getEdges().forEach((edge) -> {
+            edges.add(edge.getId());
+            edges.add(edge.getOrientation() == Orientation.FORWARD);
+        });
 
         return new GraphGUID(bounds, nodes.getHash(), edges.getHash());
     }
