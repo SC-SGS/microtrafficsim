@@ -307,7 +307,11 @@ public class OSMParser {
 
         @Override
         public void execute(DataSet dataset, FeatureDefinition feature, FeatureGenerator.Properties genprops) {
-            this.bounds = new Bounds(dataset.bounds);
+            if (genprops.clip == Properties.BoundaryManagement.CLIP && genprops.bounds != null) {
+                this.bounds = genprops.bounds;
+            } else {
+                this.bounds = new Bounds(dataset.bounds);
+            }
         }
     }
 }

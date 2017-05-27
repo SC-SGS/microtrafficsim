@@ -1,7 +1,7 @@
 
 // filter out 'examples' subproject as it is not a 'real' java project
 def javaProjects() {
-    subprojects.findAll { subproject -> !(subproject.name == 'examples') }
+    subprojects.findAll { subproject -> !(subproject.name == 'examples' || subproject.name == 'tools') }
 }
 
 configure(javaProjects()) {

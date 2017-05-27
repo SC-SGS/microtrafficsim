@@ -32,7 +32,7 @@ public class DefaultParserConfig {
     public static OSMParser.Config get(MapStyleSheet style, SimulationConfig config) {
         /* global properties for (all) generators */
         FeatureGenerator.Properties genprops = new FeatureGenerator.Properties();
-        genprops.bounds = FeatureGenerator.Properties.BoundaryManagement.CLIP;
+        genprops.clip = FeatureGenerator.Properties.BoundaryManagement.CLIP;
 
         /* create a configuration, add factories for parsed components */
         OSMParser.Config parser = new OSMParser.Config().setGeneratorProperties(genprops);

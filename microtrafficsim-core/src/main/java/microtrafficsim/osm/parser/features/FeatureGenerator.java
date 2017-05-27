@@ -1,5 +1,6 @@
 package microtrafficsim.osm.parser.features;
 
+import microtrafficsim.core.map.Bounds;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
 
@@ -37,7 +38,12 @@ public interface FeatureGenerator {
         /**
          * The boundary-management to use.
          */
-        public BoundaryManagement bounds = BoundaryManagement.NONE;
+        public BoundaryManagement clip = BoundaryManagement.NONE;
+
+        /**
+         * Optional bounds to be used for clipping (when BoundaryManagement == BoundaryManagement.CLIP)
+         */
+        public Bounds bounds;
     }
 
     /**

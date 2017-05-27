@@ -4,9 +4,7 @@ import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -23,9 +21,9 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
      * Default constructor. It initializes the used sets as concurrent ones, so they can be edited while iterated.
      */
     public ConcurrentVehicleContainer() {
-        spawnedVehicles     = new HashSet<>();
-        notSpawnedVehicles  = new HashSet<>();
-        vehicles            = new HashSet<>();
+        spawnedVehicles     = new TreeSet<>(Comparator.comparingLong(Vehicle::getId));
+        notSpawnedVehicles  = new TreeSet<>(Comparator.comparingLong(Vehicle::getId));
+        vehicles            = new TreeSet<>(Comparator.comparingLong(Vehicle::getId));
     }
 
     /*
@@ -66,7 +64,9 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
      */
     @Override
     public synchronized Set<Vehicle> getVehicles() {
-        return new HashSet<>(vehicles);
+        TreeSet<Vehicle> set = new TreeSet<>(Comparator.comparingLong(Vehicle::getId));
+        set.addAll(vehicles);
+        return set;
     }
 
     /**
@@ -74,7 +74,9 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
      */
     @Override
     public synchronized Set<Vehicle> getSpawnedVehicles() {
-        return new HashSet<>(vehicles);
+        TreeSet<Vehicle> set = new TreeSet<>(Comparator.comparingLong(Vehicle::getId));
+        set.addAll(spawnedVehicles);
+        return set;
     }
 
     /**
@@ -82,7 +84,9 @@ public class ConcurrentVehicleContainer implements VehicleContainer {
      */
     @Override
     public synchronized Set<Vehicle> getNotSpawnedVehicles() {
-        return new HashSet<>(vehicles);
+        TreeSet<Vehicle> set = new TreeSet<>(Comparator.comparingLong(Vehicle::getId));
+        set.addAll(notSpawnedVehicles);
+        return set;
     }
 
     /*
