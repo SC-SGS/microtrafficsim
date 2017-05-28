@@ -18,6 +18,7 @@ import microtrafficsim.utils.strings.builder.BasicStringBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.concurrent.locks.Condition;
@@ -209,7 +210,7 @@ public class DirectedEdge
 
 
     /**
-     * Just an immutable container for vehicles.
+     * Just an immutable container used by vehicles as lane/edge reference.
      */
     public static class Lane implements Comparable<Lane> {
         private DirectedEdge edge;
@@ -420,7 +421,8 @@ public class DirectedEdge
          * <=> the vehicle on the lane that entered it at first.
          */
         private synchronized Vehicle getFirstVehicle(int laneNo) {
-            return lanes.get(laneNo).getLast().vehicle;
+            ArrayList<Cell> lane = lanes.get(laneNo);
+            return lane.get(lane.size() - 1).vehicle;
         }
 
         /**
@@ -428,7 +430,7 @@ public class DirectedEdge
          * <=> the vehicle on the lane that entered it at last.
          */
         private synchronized Vehicle getLastVehicle(int laneNo) {
-            return lanes.get(laneNo).getFirst().vehicle;
+            return lanes.get(laneNo).get(0).vehicle;
         }
 
         private synchronized Vehicle getPrevOf(int laneNo, int cellNo) {
@@ -475,7 +477,7 @@ public class DirectedEdge
          * @return true if an element was removed
          */
         private synchronized Vehicle set(Vehicle vehicle, int laneNo, int cellNo) {
-            FastSortedArrayList<Cell> lane = lanes.get(laneNo);
+            ArrayList<Cell> lane = lanes.get(laneNo);
 
             int index = lane.indexOf(new Cell(null, cellNo));
             Vehicle removed = null;
@@ -487,18 +489,16 @@ public class DirectedEdge
         }
 
         private synchronized Vehicle remove(int laneNo, int cellNo) {
-            FastSortedArrayList<Cell> lane = lanes.get(laneNo);
+            ArrayList<Cell> lane = lanes.get(laneNo);
             int listIndex = lane.indexOf(new Cell(cellNo));
             if (listIndex >= 0)
                 return lane.remove(listIndex).vehicle;
             return null;
         }
 
-        private void clear() {
+        private synchronized void clear() {
             for (int i = 0; i < lanes.size(); i++) {
-                synchronized (lanes.get(i)) {
-                    lanes.get(i).clear();
-                }
+                lanes.get(i).clear();
             }
         }
 
