@@ -19,7 +19,7 @@ public interface LogicVehicleFactory {
 
         Vehicle vehicle = new Car(id, config.visualization.style);
         Driver driver = new BasicDriver(seed, metaRoute.getSpawnDelay());
-        driver.setRoute(metaRoute.clone());
+        driver.setRoute(metaRoute);
         driver.setVehicle(vehicle);
         vehicle.setDriver(driver);
 

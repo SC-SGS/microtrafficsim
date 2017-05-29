@@ -23,7 +23,7 @@ public class PartialPlusCrossroadScenario extends AbstractPlusCrossroadScenario 
                 (id, seed, scenario, metaRoute) -> {
                     BlockingCar vehicle = new BlockingCar(id, scenario.getConfig().visualization.style);
                     Driver driver = new BasicDriver(seed, 0, metaRoute.getSpawnDelay());
-                    driver.setRoute(metaRoute.clone());
+                    driver.setRoute(metaRoute);
                     driver.setVehicle(vehicle);
                     vehicle.setDriver(driver);
 

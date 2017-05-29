@@ -7,7 +7,6 @@ import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.math.MathUtils;
-import microtrafficsim.utils.hashing.FNVHashBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.LinkedList;
