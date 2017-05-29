@@ -6,6 +6,7 @@ import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.information.Orientation;
+import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.parser.processing.Connector;
 import microtrafficsim.core.parser.processing.GraphWayComponent;
@@ -82,7 +83,15 @@ public class StreetGraphGenerator implements FeatureGenerator {
     public void execute(DataSet dataset, FeatureDefinition feature, Properties properties) {
         logger.info("generating StreetGraph");
         this.graph = null;
-        Graph graph = new StreetGraph(dataset.bounds);
+
+        Bounds bounds;
+        if (properties.clip == Properties.BoundaryManagement.CLIP && properties.bounds != null) {
+            bounds = properties.bounds;
+        } else {
+            bounds = dataset.bounds;
+        }
+
+        Graph graph = new StreetGraph(bounds);
 
         // create required nodes and edges
         for (WayEntity way : dataset.ways.values()) {
