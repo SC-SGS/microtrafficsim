@@ -233,7 +233,7 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
 
     public static class Key implements Comparable<Key> {
         private long edgeId;
-        private Orientation orientation;
+        private int orientation;
 
         private Key() {
 
@@ -241,19 +241,21 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
 
         private Key(DirectedEdge edge) {
             edgeId = edge.streetInfo.raw.id;
-            orientation = edge.streetInfo.raw.orientation;
+            orientation = edge.streetInfo.raw.orientation == Orientation.FORWARD ? 1 : 0;
         }
 
         @Override
         public String toString() {
-            return "id = " + edgeId + " (" + orientation.toString() + ")";
+            return "id = " + edgeId + " (" +
+                    (orientation == 1 ? Orientation.FORWARD : Orientation.BACKWARD)
+                    + ")";
         }
 
         @Override
         public int compareTo(Key o) {
             int cmp = Long.compare(edgeId, o.edgeId);
             if (cmp == 0)
-                cmp = orientation.compareTo(o.orientation);
+                cmp = Integer.compare(orientation, o.orientation);
             return cmp;
         }
 

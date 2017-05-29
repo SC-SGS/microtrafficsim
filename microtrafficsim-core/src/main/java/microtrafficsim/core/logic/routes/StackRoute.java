@@ -24,22 +24,22 @@ public class StackRoute extends Stack<DirectedEdge> implements Route {
 
     @Override
     public synchronized String toString() {
-        LevelStringBuilder strBuilder = new LevelStringBuilder();
-        strBuilder.appendln("<" + getClass().getSimpleName() + ">");
-        strBuilder.incLevel();
-
-        if (isEmpty())
-            strBuilder.appendln("Route is empty.");
-        else {
-            strBuilder.appendln("hash       = " + hashCode());
-            strBuilder.appendln("spawndelay = " + spawnDelay);
-            strBuilder.appendln("start      = " + getOrigin().toString());
-            strBuilder.appendln("end        = " + getDestination().toString());
-            strBuilder.appendln("size       = " + size());
+        LevelStringBuilder strBuilder = new LevelStringBuilder()
+                .setDefaultLevelSubString()
+                .setDefaultLevelSeparator();
+        strBuilder.appendln("<" + getClass().getSimpleName() + ">").incLevel();
+        {
+            if (isEmpty())
+                strBuilder.appendln("Route is empty.");
+            else {
+                strBuilder.appendln("hash       = " + hashCode());
+                strBuilder.appendln("spawndelay = " + spawnDelay);
+                strBuilder.appendln("start      = " + getOrigin());
+                strBuilder.appendln("end        = " + getDestination());
+                strBuilder.appendln("size       = " + size());
+            }
         }
-
-        strBuilder.decLevel();
-        strBuilder.appendln("</" + getClass().getSimpleName() + ">");
+        strBuilder.decLevel().appendln("</" + getClass().getSimpleName() + ">");
         return strBuilder.toString();
     }
 
