@@ -53,7 +53,7 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
         super(config, graph, vehicleContainer);
 
         this.random = random;
-        fastestWayProbability = 0;
+        fastestWayProbability = 0.7f;
 
         /* scout factory */
         fastestPathAlg = BidirectionalAStars.fastestPathAStar(config.metersPerCell, config.globalMaxVelocity);
@@ -71,7 +71,8 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
     */
     @Override
     public Supplier<ShortestPathAlgorithm<Node, DirectedEdge>> getScoutFactory() {
-        return () -> (random.nextFloat() < fastestWayProbability)
+        float nextFloat = random.nextFloat();
+        return () -> (nextFloat < fastestWayProbability)
                         ? fastestPathAlg
                         : shortestPathAlg;
     }

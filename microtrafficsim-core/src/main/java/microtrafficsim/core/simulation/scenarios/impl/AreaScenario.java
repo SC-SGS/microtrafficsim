@@ -252,6 +252,7 @@ public class AreaScenario extends BasicRandomScenario {
 
         @Override
         public void reset() {
+
             nodeRandom.reset();
             rdmOriginSupplier.reset();
             rdmDestinationSupplier.reset();

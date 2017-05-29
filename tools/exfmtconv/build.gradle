@@ -21,14 +21,41 @@ run {
 }
 
 
-mainClassName = 'microtrafficsim.tools.exfmtconv.ExchangeFormatConverter'
+def distName = project.rootProject.ext.get("distname")
+def distVersion = project.rootProject.ext.get("distver")
+def distRelease = project.rootProject.ext.get("distrel")
+
+def toolName = "exfmtconv"
+def baseName = "${distName}-${toolName}"
+def jarName = "${distName}-tools-${toolName}"
+
+def main = 'microtrafficsim.tools.exfmtconv.ExchangeFormatConverter'
+
+
+mainClassName = "${main}"
 macAppBundle {
-    mainClassName = 'microtrafficsim.tools.exfmtconv.ExchangeFormatConverter'
+    appName =  "${baseName}"
+    dmgName = "${baseName}_${distVersion}-${distRelease}_all.app"
+
+    version = "${distVersion}-${distRelease}"
+
+    mainClassName = "${main}"
+    bundleJRE = false
+}
+
+distZip {
+    archiveName = "${baseName}"
+
+    doLast {
+        def name = "${baseName}_${distVersion}-${distRelease}_all.zip"
+        archivePath.renameTo(file("${->project.buildDir}/distributions/${name}"))
+    }
 }
 
 
 // set jar and distribution name
-jar.baseName = 'microtrafficsim-tools-exfmtconv'
-distributions.main.baseName = 'microtrafficsim-tools-exfmtconv'
+jar.baseName = "${jarName}"
+distributions.main.baseName = "${jarName}"
+startScripts.applicationName = "${baseName}"
 
 applicationDefaultJvmArgs = ["-Xmx3g"]
