@@ -71,7 +71,8 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
     */
     @Override
     public Supplier<ShortestPathAlgorithm<Node, DirectedEdge>> getScoutFactory() {
-        return () -> (random.nextFloat() < fastestWayProbability)
+        float nextFloat = random.nextFloat();
+        return () -> (nextFloat < fastestWayProbability)
                         ? fastestPathAlg
                         : shortestPathAlg;
     }

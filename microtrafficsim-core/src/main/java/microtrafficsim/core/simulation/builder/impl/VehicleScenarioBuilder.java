@@ -27,6 +27,8 @@ import microtrafficsim.utils.strings.StringUtils;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -158,6 +160,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
     private void multiThreadedVehicleRouteAssignment(Scenario scenario, ProgressListener listener)
             throws InterruptedException {
         lastPercentage = 0;
+        TreeMap<Long, ShortestPathAlgorithm<Node, DirectedEdge>> vehicleScouts = new TreeMap<>();
 
         // create vehicles with empty routes and add them to the scenario (sequentially for determinism)
         for (Route metaRoute : scenario.getRoutes()) {  // "synchronized"
@@ -166,6 +169,8 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
 
             Vehicle vehicle = createVehicle(scenario, metaRoute.clone());
             scenario.getVehicleContainer().addVehicle(vehicle);
+
+            vehicleScouts.put(vehicle.getId(), scenario.getScoutFactory().get());
         }
 
         // calculate routes multithreaded
@@ -178,7 +183,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                     if (metaRoute instanceof MetaRoute) {
                         StackRoute route = new StackRoute(metaRoute.getSpawnDelay());
 
-                        ShortestPathAlgorithm<Node, DirectedEdge> scout = scenario.getScoutFactory().get();
+                        ShortestPathAlgorithm<Node, DirectedEdge> scout = vehicleScouts.get(vehicle.getId());
                         scout.findShortestPath(metaRoute.getOrigin(), metaRoute.getDestination(), route);
 
                         vehicle.getDriver().setRoute(route);
