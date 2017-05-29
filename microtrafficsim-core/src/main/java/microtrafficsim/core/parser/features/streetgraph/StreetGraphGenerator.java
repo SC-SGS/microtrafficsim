@@ -8,6 +8,7 @@ import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.parser.processing.Connector;
 import microtrafficsim.core.parser.processing.GraphWayComponent;
 import microtrafficsim.core.parser.processing.sanitizer.SanitizerWayComponent;
@@ -141,6 +142,12 @@ public class StreetGraphGenerator implements FeatureGenerator {
         DirectedEdge backward = null;
 
         double length = getLength(dataset, way);
+        StreetType type;
+        if (streetinfo.roundabout) {
+            type = microtrafficsim.osm.parser.features.streets.info.StreetType.ROUNDABOUT.toCoreStreetType();
+        } else {
+            type = streetinfo.streettype.toCoreStreetType();
+        }
 
         if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.FORWARD
             || streetinfo.oneway == OnewayInfo.REVERSIBLE) {
@@ -155,7 +162,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
                     originDirection, destinationDirection,
                     Orientation.FORWARD,
                     start, end,
-                    streetinfo.streettype.toCoreStreetType(),
+                    type,
                     streetinfo.lanes.forward,
                     streetinfo.maxspeed.forward,
                     config.metersPerCell, config.streetPriorityLevel);
@@ -174,7 +181,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
                     originDirection, destinationDirection,
                     Orientation.BACKWARD,
                     end, start,
-                    streetinfo.streettype.toCoreStreetType(),
+                    type,
                     streetinfo.lanes.backward,
                     streetinfo.maxspeed.backward,
                     config.metersPerCell, config.streetPriorityLevel);
