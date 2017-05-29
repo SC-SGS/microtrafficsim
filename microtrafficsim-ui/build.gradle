@@ -20,10 +20,11 @@ run {
     }
 }
 
+def distName = project.rootProject.ext.get("distname")
+def distVersion = project.rootProject.ext.get("distver")
+def distRelease = project.rootProject.ext.get("distrel")
 
-def distName = 'microtrafficsim'
-def distVersion = '1.0.1'
-def distRelease = '1'
+def jarName = "${distName}-ui"
 
 def main = 'microtrafficsim.ui.Main'
 
@@ -40,7 +41,7 @@ jar {
  }
 
 macAppBundle {
-    appName = 'microtrafficsim'
+    appName =  "${distName}"
     dmgName = "${distName}_${distVersion}-${distRelease}_all.app"
 
     icon = "${rootProject.projectDir}/resources/icon/microtrafficsim.icns"
@@ -169,8 +170,8 @@ task distAll {
 
 
 // set jar, distribution and application name
-jar.baseName = 'microtrafficsim-ui'
-distributions.main.baseName = 'microtrafficsim-ui'
-startScripts.applicationName = 'microtrafficsim'
+jar.baseName = "${jarName}"
+distributions.main.baseName = "${jarName}"
+startScripts.applicationName = "${distName}"
 
 applicationDefaultJvmArgs = ['-Xmx3g']
