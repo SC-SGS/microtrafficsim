@@ -7,7 +7,9 @@ import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.logic.streets.information.Orientation;
+import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.parser.processing.Connector;
 import microtrafficsim.core.parser.processing.GraphNodeComponent;
 import microtrafficsim.core.parser.processing.GraphWayComponent;
@@ -87,7 +89,15 @@ public class StreetGraphGenerator implements FeatureGenerator {
     public void execute(DataSet dataset, FeatureDefinition feature, Properties properties) {
         logger.info("generating StreetGraph");
         this.graph = null;
-        Graph graph = new StreetGraph(dataset.bounds);
+
+        Bounds bounds;
+        if (properties.clip == Properties.BoundaryManagement.CLIP && properties.bounds != null) {
+            bounds = properties.bounds;
+        } else {
+            bounds = dataset.bounds;
+        }
+
+        Graph graph = new StreetGraph(bounds);
 
         // create required nodes and edges
         for (WayEntity way : dataset.ways.values()) {
@@ -137,6 +147,12 @@ public class StreetGraphGenerator implements FeatureGenerator {
         DirectedEdge backward = null;
 
         double length = getLength(dataset, way);
+        StreetType type;
+        if (streetinfo.roundabout) {
+            type = microtrafficsim.osm.parser.features.streets.info.StreetType.ROUNDABOUT.toCoreStreetType();
+        } else {
+            type = streetinfo.streettype.toCoreStreetType();
+        }
 
         if (streetinfo.oneway == OnewayInfo.NO || streetinfo.oneway == OnewayInfo.FORWARD
             || streetinfo.oneway == OnewayInfo.REVERSIBLE) {
@@ -151,7 +167,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
                     originDirection, destinationDirection,
                     Orientation.FORWARD,
                     start, end,
-                    streetinfo.streettype.toCoreStreetType(),
+                    type,
                     streetinfo.lanes.forward,
                     streetinfo.maxspeed.forward,
                     config.metersPerCell, config.streetPriorityLevel);
@@ -170,7 +186,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
                     originDirection, destinationDirection,
                     Orientation.BACKWARD,
                     end, start,
-                    streetinfo.streettype.toCoreStreetType(),
+                    type,
                     streetinfo.lanes.backward,
                     streetinfo.maxspeed.backward,
                     config.metersPerCell, config.streetPriorityLevel);

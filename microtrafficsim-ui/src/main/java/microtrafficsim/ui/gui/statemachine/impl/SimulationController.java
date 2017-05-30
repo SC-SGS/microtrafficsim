@@ -400,7 +400,13 @@ public class SimulationController implements GUIController {
                 closePreferences();
                 pauseSim();
 
-                File loadedFile = file == null ? askForOpenFile(MapFilterSet.class) : file;
+                File loadedFile;
+                if (file == null) {
+                    loadedFile = askForOpenFile(MapFilterSet.class);
+                } else {
+                    loadedFile = file;
+                    filechooser.setSelectedFile(loadedFile);
+                }
                 if (UserInteractionUtils.isFileOkayForLoading(loadedFile))
                     loadAndShowMap(loadedFile);
 

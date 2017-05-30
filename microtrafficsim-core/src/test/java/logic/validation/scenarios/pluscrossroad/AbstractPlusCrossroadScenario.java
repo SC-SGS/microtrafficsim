@@ -126,9 +126,8 @@ public abstract class AbstractPlusCrossroadScenario extends QueueScenarioSmall {
             if (delay < 0)
                 delay = maxLength - lengthToMid.get(route.getOrigin());
 
-            Route newRoute = route.clone();
-            newRoute.setSpawnDelay(delay);
-            routeContainer.add(newRoute);
+            route.setSpawnDelay(delay);
+            routeContainer.add(route);
         }
 
         addSubScenario(routeContainer);

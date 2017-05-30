@@ -8,6 +8,7 @@ import microtrafficsim.core.logic.routes.StackRoute;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 
@@ -76,8 +77,9 @@ public class ScenarioRouteInfo extends Container.Entry {
         sparseRoute.originKey = route.getOrigin().key();
         sparseRoute.destinationKey = route.getDestination().key();
         sparseRoute.spawnDelay = route.getSpawnDelay();
-        for (DirectedEdge edge : route)
+        for (DirectedEdge edge : route) {
             sparseRoute.edgeKeys.add(edge.key());
+        }
 
         sparseRoutes.add(sparseRoute);
     }

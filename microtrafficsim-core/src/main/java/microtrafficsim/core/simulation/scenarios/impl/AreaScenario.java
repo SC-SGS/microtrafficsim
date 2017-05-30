@@ -2,6 +2,7 @@ package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.MetaRoute;
+import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.UnprojectedAreas;
 import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
@@ -251,6 +252,7 @@ public class AreaScenario extends BasicRandomScenario {
 
         @Override
         public void reset() {
+
             nodeRandom.reset();
             rdmOriginSupplier.reset();
             rdmDestinationSupplier.reset();
