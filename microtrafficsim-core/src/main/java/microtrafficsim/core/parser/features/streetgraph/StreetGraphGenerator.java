@@ -31,7 +31,10 @@ import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 
 // TODO: connectors could be optimized
@@ -248,12 +251,12 @@ public class StreetGraphGenerator implements FeatureGenerator {
         DirectedEdge edge = isStart ? sgwc.backward : sgwc.forward;
         if (edge == null) return;
 
-        boolean clockwise = config.crossingLogic.drivingOnTheRight;
+        boolean ccw = config.crossingLogic.drivingOnTheRight;
 
         LaneConnectorSet connectors = new LaneConnectorSet();
 
         // add leaving connectors according to priority, incl. cyclic
-        for (TargetEdge to : getConnectedEdgesSortedByPriority(dataset, from, node, gwc, sgwc, isStart, clockwise))
+        for (TargetEdge to : getConnectedEdgesSortedByPriority(dataset, from, node, gwc, sgwc, isStart, ccw))
             if (gwc.from.contains(new Connector(node, from, to.way)))
                 addLeavingConnectors(connectors, edge, to);
 
@@ -294,7 +297,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
     private void addUTurnConnectors(LaneConnectorSet connectors, DirectedEdge from, DirectedEdge to) {
         if (from == null || to == null) return;
 
-        final double angle = 0.0;
+        final double angle = Double.MAX_VALUE;
 
         int nLanesFrom = from.getNumberOfLanes();
         int nLanesDest = to.getNumberOfLanes();
@@ -315,7 +318,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
 
     private ArrayList<TargetEdge> getConnectedEdgesSortedByPriority(DataSet dataset, WayEntity from, NodeEntity node,
                                                                     GraphWayComponent gwc, StreetGraphWayComponent sgwc,
-                                                                    boolean isStart, boolean clockwise)
+                                                                    boolean isStart, boolean ccw)
     {
         GraphNodeComponent gnc = node.get(GraphNodeComponent.class);
         Vec2d reference = getDirectionVector(dataset, node, from);
@@ -328,22 +331,22 @@ public class StreetGraphGenerator implements FeatureGenerator {
             StreetGraphWayComponent sgwcto = to.get(StreetGraphWayComponent.class);
 
             if (to.nodes[0] == node.id && sgwcto.forward != null) {
-                double angle = getVectorAngle(reference, getDirectionVector(dataset, to, true), clockwise);
+                double angle = getVectorAngle(reference, getDirectionVector(dataset, to, true), ccw);
                 leaving.add(new TargetEdge(to, sgwcto.forward, angle));
             }
 
             if (to.nodes[to.nodes.length - 1] == node.id && sgwcto.backward != null) {
-                double angle = getVectorAngle(reference, getDirectionVector(dataset, to, false), clockwise);
+                double angle = getVectorAngle(reference, getDirectionVector(dataset, to, false), ccw);
                 leaving.add(new TargetEdge(to, sgwcto.backward, angle));
             }
         }
 
         // add self-cyclic edge
         if (isStart && gwc.cyclicStartToEnd && sgwc.backward != null) {
-            double angle = getVectorAngle(reference, getDirectionVector(dataset, from, false), clockwise);
+            double angle = getVectorAngle(reference, getDirectionVector(dataset, from, false), ccw);
             leaving.add(new TargetEdge(from, sgwc.backward, angle));
         } else if (!isStart && gwc.cyclicEndToStart && sgwc.forward != null) {
-            double angle = getVectorAngle(reference, getDirectionVector(dataset, from, true), clockwise);
+            double angle = getVectorAngle(reference, getDirectionVector(dataset, from, true), ccw);
             leaving.add(new TargetEdge(from, sgwc.forward, angle));
         }
 
@@ -384,7 +387,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
         return new Vec2d(to.lon - from.lon, to.lat - from.lat);
     }
 
-    private double getVectorAngle(Vec2d a, Vec2d b, boolean clockwise) {
+    private double getVectorAngle(Vec2d a, Vec2d b, boolean ccw) {
         Vec2d na = Vec2d.normalize(a);
         Vec2d nb = Vec2d.normalize(b);
 
@@ -394,10 +397,10 @@ public class StreetGraphGenerator implements FeatureGenerator {
         } else {
             double inner = Math.acos(MathUtils.clamp(na.dot(nb), -1.0, 1.0));
 
-            if (cross > 0.0)               // b left of a
-                return clockwise ? inner : (2 * Math.PI - inner);
-            else
-                return clockwise ? (2 * Math.PI - inner) : inner;
+            if (cross > 0.0)        // b left of a
+                return ccw ? inner : (2 * Math.PI - inner);
+            else                    // b right of a
+                return ccw ? (2 * Math.PI - inner) : inner;
         }
     }
 
@@ -484,6 +487,10 @@ public class StreetGraphGenerator implements FeatureGenerator {
         }
 
         boolean intersects(LaneConnector other) {
+            if (this.to.getAssociatedEdge() == other.to.getAssociatedEdge() && this.to.getIndex() == other.to.getIndex()) {
+                return true;
+            }
+
             if (this.from.getIndex() < other.from.getIndex()) {
                 if (this.to.getAssociatedEdge() == other.to.getAssociatedEdge()) {
                     if (this.to.getIndex() > other.to.getIndex()) {
@@ -518,10 +525,6 @@ public class StreetGraphGenerator implements FeatureGenerator {
             connectors.add(c);
         }
 
-        void remove(LaneConnector c) {
-            connectors.remove(c);
-        }
-
         boolean collides(LaneConnector c) {
             for (LaneConnector x : this)
                 if (x.intersects(c))
@@ -536,15 +539,4 @@ public class StreetGraphGenerator implements FeatureGenerator {
             return connectors.iterator();
         }
     }
-
-    private static final Comparator<LaneConnector> CMP_LANE_CONNECTOR = (a, b) -> {
-        int cmp = Integer.compare(a.from.getIndex(), b.from.getIndex());
-        if (cmp != 0) return cmp;
-
-        if (a.to.getAssociatedEdge() == b.to.getAssociatedEdge()) {
-            return Integer.compare(a.to.getIndex(), b.to.getIndex());
-        } else {
-            return Double.compare(a.angle, b.angle);
-        }
-    };
 }
