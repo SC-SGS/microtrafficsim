@@ -180,7 +180,7 @@ public class VehicleSimulation implements Simulation {
         willRunOneStep();
 
         if (scenario.isPrepared()) {
-            if (logger.isDebugEnabled()) {
+            if (logger.isTraceEnabled()) {
                 time = System.nanoTime();
                 vehicleStepExecutor.accelerateAll(scenario);
                 logger.trace(
