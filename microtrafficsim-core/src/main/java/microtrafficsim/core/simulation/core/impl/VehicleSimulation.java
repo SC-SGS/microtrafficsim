@@ -15,6 +15,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -32,6 +34,7 @@ public class VehicleSimulation implements Simulation {
     private boolean            paused;
     private Timer              timer;
     private TimerTask          timerTask;
+    private Lock               executionLock;
     private int                age;
     private List<StepListener> stepListeners;
 
@@ -44,6 +47,7 @@ public class VehicleSimulation implements Simulation {
     public VehicleSimulation() {
         paused = true;
         timer = new Timer();
+        executionLock = new ReentrantLock();
         this.stepListeners = new LinkedList<>();
     }
 
@@ -174,6 +178,7 @@ public class VehicleSimulation implements Simulation {
 
     @Override
     public final void doRunOneStep() {
+        executionLock.lock();
         willRunOneStep();
 
         if (scenario.isPrepared()) {
@@ -218,6 +223,7 @@ public class VehicleSimulation implements Simulation {
         }
 
         didRunOneStep();
+        executionLock.unlock();
     }
 
     @Override
