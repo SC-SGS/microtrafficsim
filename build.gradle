@@ -1,5 +1,5 @@
 project.ext.set("distname", "microtrafficsim")
-project.ext.set("distver", "1.0.2")
+project.ext.set("distver", "1.1.0")
 project.ext.set("distrel", "1")
 
 // filter out 'examples' subproject as it is not a 'real' java project

@@ -176,6 +176,7 @@ public class VehicleSimulation implements Simulation {
 
     @Override
     public final void doRunOneStep() {
+        executionLock.lock();
         willRunOneStep();
 
         if (scenario.isPrepared()) {
@@ -229,6 +230,7 @@ public class VehicleSimulation implements Simulation {
         }
 
         didRunOneStep();
+        executionLock.unlock();
     }
 
     @Override
