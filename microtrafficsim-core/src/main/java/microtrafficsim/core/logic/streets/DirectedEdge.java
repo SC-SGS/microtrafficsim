@@ -16,6 +16,8 @@ import microtrafficsim.utils.strings.builder.BasicStringBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -479,8 +481,9 @@ public class DirectedEdge
             if (0 <= index && index < lane.size())
                 if (lane.get(index).number == cellNo)
                     removed = lane.set(index, new Cell(vehicle, cellNo)).vehicle;
-            if (removed == null)
+            if (removed == null) {
                 lane.add(index + 1, new Cell(vehicle, cellNo));
+            }
 
             return removed;
         }
@@ -510,25 +513,58 @@ public class DirectedEdge
             return lane.get(index).number == cellNo ? index : -1;
         }
 
+        /**
+         * @return The index of the cell with {@code number <= cellNo}; <br>
+         *         if cellNo < lane.first.number => return -1; <br>
+         *         if cellNo > lane.last.number  => return lane.size - 1
+         */
         private int indexOfInfimum(ArrayList<Cell> lane, int cellNo) {
             if (lane.isEmpty())
                 return -1;
 
-            for (int i = 0; i < lane.size(); i++) {
-                if (lane.get(i).number > cellNo)
-                    return i - 1;
+            int low = 0;
+            int high = lane.size() - 1;
+
+            while (low <= high) {
+                int mid = (low + high) >>> 1;
+                int cmp = lane.get(mid).number - cellNo;
+
+                if (cmp < 0)
+                    low = mid + 1;
+                else if (cmp > 0)
+                    high = mid - 1;
+                else
+                    return mid;
             }
 
-            return lane.size() - 1;
+            return low - 1;
         }
 
+        /**
+         * @return The index of the cell with {@code number >= cellNo}; <br>
+         *         if cellNo < lane.first.number => return 0; <br>
+         *         if cellNo > lane.last.number  => return lane.size
+         */
         private int indexOfSupremum(ArrayList<Cell> lane, int cellNo) {
-            for (int i = lane.size() - 1; i >= 0; i--) {
-                if (lane.get(i).number < cellNo)
-                    return i + 1;
+            if (lane.isEmpty())
+                return -1;
+
+            int low = 0;
+            int high = lane.size() - 1;
+
+            while (low <= high) {
+                int mid = (low + high) >>> 1;
+                int cmp = lane.get(mid).number - cellNo;
+
+                if (cmp < 0)
+                    low = mid + 1;
+                else if (cmp > 0)
+                    high = mid - 1;
+                else
+                    return mid;
             }
 
-            return -1;
+            return high + 1;
         }
 
 
