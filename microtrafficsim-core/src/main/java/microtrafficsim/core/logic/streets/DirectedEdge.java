@@ -12,16 +12,11 @@ import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.Resettable;
-import microtrafficsim.utils.collections.FastSortedArrayList;
-import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.strings.builder.BasicStringBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -237,19 +232,31 @@ public class DirectedEdge
 
 
         public int getMaxInsertionIndex() {
+            int maxInsertionIndex;
+            edge.lanes.lockLane(index);
+
             if (edge.lanes.isEmpty(index)) {
-                return edge.getLength() - 1;
+                maxInsertionIndex = edge.getLength() - 1;
             } else {
-                return edge.lanes.getLastVehicle(index).getCellPosition() - 1;
+                maxInsertionIndex = edge.lanes.getLastVehicle(index).getCellPosition() - 1;
             }
+
+            edge.lanes.unlockLane(index);
+            return maxInsertionIndex;
         }
 
         public boolean hasVehicleInFront(Vehicle vehicle) {
-            return edge.lanes.getNextOf(index, vehicle.getCellPosition()) != null;
+            edge.lanes.lockLane(index);
+            boolean hasVehicleInFront = edge.lanes.getNextOf(index, vehicle.getCellPosition()) != null;
+            edge.lanes.unlockLane(index);
+            return hasVehicleInFront;
         }
 
         public Vehicle getVehicleInFront(Vehicle vehicle) {
-            return edge.lanes.getNextOf(index, vehicle.getCellPosition());
+            edge.lanes.lockLane(index);
+            Vehicle front = edge.lanes.getNextOf(index, vehicle.getCellPosition());
+            edge.lanes.unlockLane(index);
+            return front;
         }
 
 
@@ -257,7 +264,9 @@ public class DirectedEdge
          * @return true if an element was removed
          */
         public boolean insertVehicle(Vehicle vehicle, int cellPosition) {
+            edge.lanes.lockLane(index);
             Vehicle removed = edge.lanes.set(vehicle, index, cellPosition);
+            edge.lanes.unlockLane(index);
             boolean success = removed == null;
 
             BasicStringBuilder builder = new BasicStringBuilder();
@@ -271,8 +280,10 @@ public class DirectedEdge
 
         public void moveVehicle(Vehicle vehicle, int delta) {
             if (delta != 0) {
+                edge.lanes.lockLane(index);
                 removeVehicle(vehicle);
                 insertVehicle(vehicle, vehicle.getCellPosition() + delta);
+                edge.lanes.unlockLane(index);
             }
         }
 
@@ -282,7 +293,9 @@ public class DirectedEdge
         public boolean removeVehicle(Vehicle vehicle) {
             boolean success;
 
+            edge.lanes.lockLane(index);
             Vehicle removedVehicle = edge.lanes.remove(index, vehicle.getCellPosition());
+            edge.lanes.unlockLane(index);
             success = removedVehicle == vehicle;
 
             BasicStringBuilder builder = new BasicStringBuilder();
@@ -382,37 +395,30 @@ public class DirectedEdge
 
 
     private static class LaneContainer {
-        private ArrayList<FastSortedArrayList<Cell>> lanes;
-        private final Lock lock;
-        private final Condition[] laneIsFree;
-        private final boolean[] laneIsBusy;
+        private ArrayList<ArrayList<Cell>> lanes;
+        private final Lock[] lock;
 
 
         private LaneContainer(int nLanes) {
             lanes = new ArrayList<>(nLanes);
-            lock = new ReentrantLock(true);
-            laneIsFree = new Condition[nLanes];
-            laneIsBusy = new boolean[nLanes];
+            lock = new ReentrantLock[nLanes];
 
             for (int i = 0; i < nLanes; i++) {
-                lanes.add(new FastSortedArrayList<>());
-                laneIsFree[i] = lock.newCondition();
-                laneIsBusy[i] = false;
+                lanes.add(new ArrayList<>());
+                lock[i] = new ReentrantLock(true);
             }
         }
 
 
-        private synchronized boolean isEmpty(int laneNo) {
-//            lock.lock();
-//            try {
-//                while (laneIsBusy[laneNo])
-//                    laneIsFree[laneNo].await();
-//
-//                laneIsFree[laneNo].signal();
-//            } finally {
-//                lock.unlock();
-//                return false;
-//            }
+        private void lockLane(int laneNo) {
+            lock[laneNo].lock();
+        }
+
+        private void unlockLane(int laneNo) {
+            lock[laneNo].unlock();
+        }
+
+        private boolean isEmpty(int laneNo) {
             return lanes.get(laneNo).isEmpty();
         }
 
@@ -420,7 +426,7 @@ public class DirectedEdge
          * @return The first vehicle in the lane. 'First' means the vehicle being on the street for the longest time
          * <=> the vehicle on the lane that entered it at first.
          */
-        private synchronized Vehicle getFirstVehicle(int laneNo) {
+        private Vehicle getFirstVehicle(int laneNo) {
             ArrayList<Cell> lane = lanes.get(laneNo);
             return lane.get(lane.size() - 1).vehicle;
         }
@@ -429,77 +435,100 @@ public class DirectedEdge
          * @return The last vehicle in the lane. 'Last' means the vehicle being on the street for the shortest time
          * <=> the vehicle on the lane that entered it at last.
          */
-        private synchronized Vehicle getLastVehicle(int laneNo) {
+        private Vehicle getLastVehicle(int laneNo) {
             return lanes.get(laneNo).get(0).vehicle;
         }
 
-        private synchronized Vehicle getPrevOf(int laneNo, int cellNo) {
-            if (isEmpty(laneNo))
-                return null;
+        private Vehicle getPrevOf(int laneNo, int cellNo) {
+            Vehicle prev = null;
 
-            Iterator<Cell> iterator = lanes.get(laneNo).iterator();
-            Cell prev = iterator.next();
-            while (iterator.hasNext()) {
-                Cell next = iterator.next();
-
-                if (next.number < cellNo)
-                    prev = next;
-                else
-                    break;
+            if (!isEmpty(laneNo)) {
+                ArrayList<Cell> lane = lanes.get(laneNo);
+                int index = indexOfSupremum(lane, cellNo);
+                index--;
+                if (0 <= index)
+                    prev = lane.get(index).vehicle;
             }
 
-            if (prev.number == cellNo)
-                return null;
-            return prev.vehicle;
+            return prev;
         }
 
-        private synchronized Vehicle getNextOf(int laneNo, int cellNo) {
-            if (isEmpty(laneNo))
-                return null;
+        private Vehicle getNextOf(int laneNo, int cellNo) {
+            Vehicle next = null;
 
-            Iterator<Cell> iterator = lanes.get(laneNo).descendingIterator();
-            Cell next = iterator.next();
-            while (iterator.hasNext()) {
-                Cell prev = iterator.next();
-
-                if (prev.number > cellNo)
-                    next = prev;
-                else
-                    break;
+            if (!isEmpty(laneNo)) {
+                ArrayList<Cell> lane = lanes.get(laneNo);
+                int index = indexOfInfimum(lane, cellNo);
+                index++;
+                if (index < lane.size())
+                    next = lane.get(index).vehicle;
             }
 
-            if (next.number == cellNo)
-                return null;
-            return next.vehicle;
+            return next;
         }
 
         /**
          * @return true if an element was removed
          */
-        private synchronized Vehicle set(Vehicle vehicle, int laneNo, int cellNo) {
-            ArrayList<Cell> lane = lanes.get(laneNo);
-
-            int index = lane.indexOf(new Cell(null, cellNo));
+        private Vehicle set(Vehicle vehicle, int laneNo, int cellNo) {
             Vehicle removed = null;
-            if (index >= 0)
-                removed = lane.remove(index).vehicle;
 
-            lane.add(new Cell(vehicle, cellNo));
+            ArrayList<Cell> lane = lanes.get(laneNo);
+            int index = indexOfInfimum(lane, cellNo);
+
+            if (0 <= index && index < lane.size())
+                if (lane.get(index).number == cellNo)
+                    removed = lane.set(index, new Cell(vehicle, cellNo)).vehicle;
+            if (removed == null)
+                lane.add(index + 1, new Cell(vehicle, cellNo));
+
             return removed;
         }
 
-        private synchronized Vehicle remove(int laneNo, int cellNo) {
+        private Vehicle remove(int laneNo, int cellNo) {
+            Vehicle removed = null;
+
             ArrayList<Cell> lane = lanes.get(laneNo);
-            int listIndex = lane.indexOf(new Cell(cellNo));
+
+            int listIndex = indexOf(lane, cellNo);
             if (listIndex >= 0)
-                return lane.remove(listIndex).vehicle;
-            return null;
+                removed = lane.remove(listIndex).vehicle;
+
+            return removed;
         }
 
-        private synchronized void clear() {
-            for (int i = 0; i < lanes.size(); i++) {
+        private void clear() {
+            for (int i = 0; i < lanes.size(); i++)
                 lanes.get(i).clear();
+        }
+
+
+        private int indexOf(ArrayList<Cell> lane, int cellNo) {
+            int index = indexOfInfimum(lane, cellNo);
+            if (index < 0 || index >= lane.size())
+                return -1;
+            return lane.get(index).number == cellNo ? index : -1;
+        }
+
+        private int indexOfInfimum(ArrayList<Cell> lane, int cellNo) {
+            if (lane.isEmpty())
+                return -1;
+
+            for (int i = 0; i < lane.size(); i++) {
+                if (lane.get(i).number > cellNo)
+                    return i - 1;
             }
+
+            return lane.size() - 1;
+        }
+
+        private int indexOfSupremum(ArrayList<Cell> lane, int cellNo) {
+            for (int i = lane.size() - 1; i >= 0; i--) {
+                if (lane.get(i).number < cellNo)
+                    return i + 1;
+            }
+
+            return -1;
         }
 
 
