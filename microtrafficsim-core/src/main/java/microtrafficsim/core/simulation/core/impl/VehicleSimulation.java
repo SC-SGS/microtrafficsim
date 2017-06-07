@@ -182,35 +182,35 @@ public class VehicleSimulation implements Simulation {
         willRunOneStep();
 
         if (scenario.isPrepared()) {
-            if (logger.isDebugEnabled()) {
+            if (logger.isTraceEnabled()) {
                 time = System.nanoTime();
                 vehicleStepExecutor.willMoveAll(scenario);
                 logger.trace(
                         StringUtils.buildTimeString("time brake() etc. = ", System.nanoTime() - time, "ns").toString()
                 );
 
-                time = System.nanoTime();
+                long stamp = System.nanoTime();
                 vehicleStepExecutor.moveAll(scenario);
                 logger.trace(
-                        StringUtils.buildTimeString("time move() = ", System.nanoTime() - time, "ns").toString()
+                        StringUtils.buildTimeString("time move() = ", System.nanoTime() - stamp, "ns").toString()
                 );
 
-                time = System.nanoTime();
+                stamp = System.nanoTime();
                 vehicleStepExecutor.didMoveAll(scenario);
                 logger.trace(
-                        StringUtils.buildTimeString("time didMove() = ", System.nanoTime() - time, "ns").toString()
+                        StringUtils.buildTimeString("time didMove() = ", System.nanoTime() - stamp, "ns").toString()
                 );
 
-                time = System.nanoTime();
+                stamp = System.nanoTime();
                 vehicleStepExecutor.spawnAll(scenario);
                 logger.trace(
-                        StringUtils.buildTimeString("time spawn() = ", System.nanoTime() - time, "ns").toString()
+                        StringUtils.buildTimeString("time spawn() = ", System.nanoTime() - stamp, "ns").toString()
                 );
 
-                time = System.nanoTime();
+                stamp = System.nanoTime();
                 vehicleStepExecutor.updateNodes(scenario);
                 logger.trace(
-                        StringUtils.buildTimeString("time updateNodes() = ", System.nanoTime() - time, "ns").toString()
+                        StringUtils.buildTimeString("time updateNodes() = ", System.nanoTime() - stamp, "ns").toString()
                 );
             } else {
                 vehicleStepExecutor.willMoveAll(scenario);
