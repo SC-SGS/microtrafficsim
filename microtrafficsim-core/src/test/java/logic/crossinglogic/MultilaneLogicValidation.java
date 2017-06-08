@@ -31,7 +31,8 @@ public class MultilaneLogicValidation {
 
     public static void main(String[] args) {
         /* build setup: scenario */
-        LoggingLevel.setEnabledGlobally(false, false, false, false, false);
+        LoggingLevel.setEnabledGlobally(true, true, true, true, true);
+//        LoggingLevel.setEnabledGlobally(false, false, false, false, false);
 
 
         /* simulation config */
@@ -50,10 +51,10 @@ public class MultilaneLogicValidation {
             } catch (UnsupportedFeatureException e) {
                 e.printStackTrace();
             }
-            mapviewer.addOverlay(0, overlay);
+            mapviewer.addOverlay(1, overlay);
 
             ConnectorOverlay connectorOverlay = new ConnectorOverlay(mapviewer.getProjection(), config);
-            mapviewer.addOverlay(1, connectorOverlay);
+            mapviewer.addOverlay(0, connectorOverlay);
 
 
             /* setup JFrame */

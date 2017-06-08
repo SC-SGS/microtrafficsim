@@ -17,6 +17,7 @@ import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.math.DistanceCalculator;
 import microtrafficsim.math.HaversineDistanceCalculator;
+import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.osm.parser.base.DataSet;
 import microtrafficsim.osm.parser.ecs.Component;
@@ -29,7 +30,13 @@ import microtrafficsim.osm.parser.features.streets.info.OnewayInfo;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+
+// TODO: connectors could be optimized
 
 
 /**
@@ -103,7 +110,7 @@ public class StreetGraphGenerator implements FeatureGenerator {
         // add turn-lanes
         for (WayEntity way : dataset.ways.values()) {
             if (!way.features.contains(feature)) continue;
-            addConnectors(dataset, way);
+            addLeavingConnectors(dataset, way);
         }
 
         for (NodeEntity node : dataset.nodes.values())
@@ -220,156 +227,145 @@ public class StreetGraphGenerator implements FeatureGenerator {
      * itself).
      *
      * @param dataset the {@code DataSet} of which {@code wayFrom} is a part of.
-     * @param wayFrom the {@code WayEntity} for which all outgoing lane-connectors
+     * @param from the {@code WayEntity} for which all outgoing lane-connectors
      *                should be created.
      */
-    private void addConnectors(DataSet dataset, WayEntity wayFrom) {
-        StreetGraphWayComponent sgwcFrom = wayFrom.get(StreetGraphWayComponent.class);
-        if (sgwcFrom == null) return;
-        if (sgwcFrom.forward == null && sgwcFrom.backward == null) return;
+    private void addLeavingConnectors(DataSet dataset, WayEntity from) {
+        StreetGraphWayComponent sgwc = from.get(StreetGraphWayComponent.class);
+        if (sgwc == null) return;
+        if (sgwc.forward == null && sgwc.backward == null) return;
 
-        NodeEntity start = dataset.nodes.get(wayFrom.nodes[0]);
-        NodeEntity end = dataset.nodes.get(wayFrom.nodes[wayFrom.nodes.length - 1]);
+        GraphWayComponent gwc = from.get(GraphWayComponent.class);
 
-        GraphNodeComponent gncStart = start.get(GraphNodeComponent.class);
-        GraphNodeComponent gncEnd = end.get(GraphNodeComponent.class);
+        NodeEntity start = dataset.nodes.get(from.nodes[0]);
+        NodeEntity end = dataset.nodes.get(from.nodes[from.nodes.length - 1]);
 
-        Node sgNodeStart = start.get(StreetGraphNodeComponent.class).node;
-        Node sgNodeEnd = end.get(StreetGraphNodeComponent.class).node;
+        addLeavingConnectors(dataset, from, start, gwc, sgwc, true);
+        addLeavingConnectors(dataset, from, end, gwc, sgwc, false);
+    }
 
-        GraphWayComponent gwcFrom = wayFrom.get(GraphWayComponent.class);
+    private void addLeavingConnectors(DataSet dataset, WayEntity from, NodeEntity node, GraphWayComponent gwc,
+                                      StreetGraphWayComponent sgwc, boolean isStart)
+    {
+        DirectedEdge edge = isStart ? sgwc.backward : sgwc.forward;
+        if (edge == null) return;
+
+        boolean ccw = config.crossingLogic.drivingOnTheRight;
+
+        LaneConnectorSet connectors = new LaneConnectorSet();
+
+        // add leaving connectors according to priority, incl. cyclic
+        for (TargetEdge to : getConnectedEdgesSortedByPriority(dataset, from, node, gwc, sgwc, isStart, ccw))
+            if (gwc.from.contains(new Connector(node, from, to.way)))
+                addLeavingConnectors(connectors, edge, to);
 
         // add u-turn connectors
-        for (Connector c : gwcFrom.uturn) {
-            if (sgwcFrom.forward == null || sgwcFrom.backward == null) continue;
+        if (gwc.uturn.contains(new Connector(node, from, from)))
+            addUTurnConnectors(connectors, edge, isStart ? sgwc.forward : sgwc.backward);
 
-            if (c.via.id == wayFrom.nodes[0])
-                addUTurnConnectors(sgNodeStart, sgwcFrom.backward, sgwcFrom.forward);
-            else if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1])
-                addUTurnConnectors(sgNodeEnd, sgwcFrom.forward, sgwcFrom.backward);
-        }
-
-        // set up turn-lane preferences for leaving connectors
-        HashMap<Connector, TurnLanePreference> prefStart = getTurnLanePreferences(dataset, start, gncStart, wayFrom);
-        HashMap<Connector, TurnLanePreference> prefEnd = getTurnLanePreferences(dataset, end, gncEnd, wayFrom);
-
-        // add leaving connectors (no 'else if' because of cyclic connectors)
-        for (Connector c : gwcFrom.from) {
-            StreetGraphWayComponent sgwcTo = c.to.get(StreetGraphWayComponent.class);
-            if (sgwcTo == null) continue;
-
-            // <---o--->
-            if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[0])
-                addDirectConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.forward, prefStart.get(c));
-
-            // <---o<---
-            if (c.via.id == wayFrom.nodes[0] && c.via.id == c.to.nodes[c.to.nodes.length - 1])
-                addDirectConnectors(sgNodeStart, sgwcFrom.backward, sgwcTo.backward, prefStart.get(c));
-
-            // --->o--->
-            if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[0])
-                addDirectConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.forward, prefEnd.get(c));
-
-            // --->o<---
-            if (c.via.id == wayFrom.nodes[wayFrom.nodes.length - 1] && c.via.id == c.to.nodes[c.to.nodes.length - 1])
-                addDirectConnectors(sgNodeEnd, sgwcFrom.forward, sgwcTo.backward, prefEnd.get(c));
-        }
+        // add connectors to node
+        Node gn = node.get(StreetGraphNodeComponent.class).node;
+        for (LaneConnector c : connectors)
+            gn.addConnector(c.from, c.to);
     }
 
-    private void addUTurnConnectors(Node via, DirectedEdge from, DirectedEdge to) {
-        int nLanesFrom = from.getNumberOfLanes();
-        int nLanesTo = to.getNumberOfLanes();
-        int n = Math.min(nLanesFrom, nLanesTo);
+    private void addLeavingConnectors(LaneConnectorSet connectors, DirectedEdge from, TargetEdge to) {
+        if (to.angle <= Math.PI) {
+            for (int i = 0, j = 0; i < from.getNumberOfLanes() && j < to.edge.getNumberOfLanes(); i++) {
+                LaneConnector c = new LaneConnector(from.getLane(i), to.edge.getLane(j), to.angle);
 
-        // add connectors from inner to outer lanes respectively
-        for (int i = 1; i <= n; i++) {
-            via.addConnector(from.getLane(nLanesFrom - i), to.getLane(nLanesTo - i));
-        }
-    }
-
-    /**
-     * Adds all lane-connectors from {@code from} via {@code via} to {@code to}.
-     *
-     * @param via  the {@code Node} via which the generated connectors should go.
-     * @param from the {@code DirectedEdge} from which the generated connectors
-     *             should originate.
-     * @param to   the {@code DirectedEdge} to which the generated connectors
-     *             should lead.
-     */
-    private void addDirectConnectors(Node via, DirectedEdge from, DirectedEdge to, TurnLanePreference pref) {
-        if (from == null || to == null) return;
-
-        int nLanesFrom = from.getNumberOfLanes();
-        int nLanesTo = to.getNumberOfLanes();
-        int n = Math.min(nLanesFrom, nLanesTo);
-
-        if (pref == null || pref == TurnLanePreference.OUTER) {
-            for (int i = 0; i < n; i++) {
-                via.addConnector(from.getLane(i), to.getLane(i));
+                if (!connectors.collides(c)) {
+                    connectors.add(c);
+                    j++;
+                }
             }
         } else {
-            for (int i = 1; i <= n; i++) {
-                via.addConnector(from.getLane(nLanesFrom - i), to.getLane(nLanesTo - i));
+            int nLanesFrom = from.getNumberOfLanes();
+            int nLanesTo = to.edge.getNumberOfLanes();
+            for (int i = 1, j = 1; i <= nLanesFrom && j <= nLanesTo; i++) {
+                LaneConnector c = new LaneConnector(from.getLane(nLanesFrom - i), to.edge.getLane(nLanesTo - j), to.angle);
+
+                if (!connectors.collides(c)) {
+                    connectors.add(c);
+                    j++;
+                }
             }
         }
     }
 
+    private void addUTurnConnectors(LaneConnectorSet connectors, DirectedEdge from, DirectedEdge to) {
+        if (from == null || to == null) return;
 
-    private HashMap<Connector, TurnLanePreference> getTurnLanePreferences(DataSet dataset, NodeEntity node,
-                                                                          GraphNodeComponent gnc, WayEntity from)
+        final double angle = Double.MAX_VALUE;
+
+        int nLanesFrom = from.getNumberOfLanes();
+        int nLanesDest = to.getNumberOfLanes();
+        int nLanesMin = Math.min(nLanesFrom, nLanesDest);
+
+        // inner-most connector is always possible
+        connectors.add(new LaneConnector(from.getLane(nLanesFrom - 1), to.getLane(nLanesDest - 1), angle));
+
+        for (int i = 2; i <= nLanesMin; i++) {
+            LaneConnector c = new LaneConnector(from.getLane(nLanesFrom - i), to.getLane(nLanesDest - i), angle);
+
+            if (connectors.collides(c))
+                break;
+
+            connectors.add(new LaneConnector(from.getLane(nLanesFrom - i), to.getLane(nLanesDest - i), angle));
+        }
+    }
+
+    private ArrayList<TargetEdge> getConnectedEdgesSortedByPriority(DataSet dataset, WayEntity from, NodeEntity node,
+                                                                    GraphWayComponent gwc, StreetGraphWayComponent sgwc,
+                                                                    boolean isStart, boolean ccw)
     {
-        boolean drivingOnTheRight = config.crossingLogic.drivingOnTheRight;
+        GraphNodeComponent gnc = node.get(GraphNodeComponent.class);
         Vec2d reference = getDirectionVector(dataset, node, from);
 
-        // get all leaving ways
-        ArrayList<SortedWay> leaving = new ArrayList<>();
-        for (WayEntity to : gnc.ways)
-            if (to != from)
-                leaving.add(new SortedWay(to, getDirectionAngle(dataset, node, to, reference)));
+        // get all connected edges (note: no if-else due to cyclic target ways, skip self edge)
+        ArrayList<TargetEdge> leaving = new ArrayList<>();
+        for (WayEntity to : gnc.ways) {
+            if (to == from) continue;
 
-        // sort leaving ways from right to left (ccw)
-        leaving.sort(Comparator.comparingDouble(a -> a.angle));
+            StreetGraphWayComponent sgwcto = to.get(StreetGraphWayComponent.class);
 
-        /*
-         * Create preferences using the following heuristic:
-         * 1. Split leaving ways in two sets (left and right), based on their relative exit-direction.
-         * 2. Assign preference preference based on sets (left to preferred-left etc.), normalized by config.
-         */
-        HashMap<Connector, TurnLanePreference> prefs = new HashMap<>();
-        int len = leaving.size();
-        for (int i = 0; i < len; i++) {
-            TurnLanePreference pref;
-
-            if (len == 1) {                                 // special case: only one successor, prefer outer
-                pref = TurnLanePreference.OUTER;
-            } else {
-                boolean right;
-                if ((len & 1) == 1 && i == len / 2) {       // special case: center lane of odd number of lanes
-                    right = leaving.get(i).angle <= Math.PI;
-                } else {                                    // normal case
-                    right = i < len / 2;
-                }
-
-                if (right) {
-                    pref = drivingOnTheRight ? TurnLanePreference.OUTER : TurnLanePreference.INNER;
-                } else {
-                    pref = drivingOnTheRight ? TurnLanePreference.INNER : TurnLanePreference.OUTER;
-                }
+            if (to.nodes[0] == node.id && sgwcto.forward != null) {
+                double angle = getVectorAngle(reference, getDirectionVector(dataset, to, true), ccw);
+                leaving.add(new TargetEdge(to, sgwcto.forward, angle));
             }
 
-            prefs.put(new Connector(node, from, leaving.get(i).way), pref);
+            if (to.nodes[to.nodes.length - 1] == node.id && sgwcto.backward != null) {
+                double angle = getVectorAngle(reference, getDirectionVector(dataset, to, false), ccw);
+                leaving.add(new TargetEdge(to, sgwcto.backward, angle));
+            }
         }
 
-        return prefs;
-    }
+        // add self-cyclic edge
+        if (isStart && gwc.cyclicStartToEnd && sgwc.backward != null) {
+            double angle = getVectorAngle(reference, getDirectionVector(dataset, from, false), ccw);
+            leaving.add(new TargetEdge(from, sgwc.backward, angle));
+        } else if (!isStart && gwc.cyclicEndToStart && sgwc.forward != null) {
+            double angle = getVectorAngle(reference, getDirectionVector(dataset, from, true), ccw);
+            leaving.add(new TargetEdge(from, sgwc.forward, angle));
+        }
 
-    private TurnLanePreference normalize(boolean drivingOnTheRight, TurnLanePreference pref) {
-        if (drivingOnTheRight)
-            return pref;
-        else if (pref == TurnLanePreference.OUTER)
-            return TurnLanePreference.INNER;
-        else
-            return TurnLanePreference.OUTER;
+        // sort leaving edges by priority and number of lanes, use id and direction as tie-breaker
+        leaving.sort((a, b) -> {
+            int cmp = Byte.compare(a.edge.getPriorityLevel(), b.edge.getPriorityLevel());
+            if (cmp != 0) return cmp;
+
+            cmp = Integer.compare(a.edge.getNumberOfLanes(), b.edge.getNumberOfLanes());
+            if (cmp != 0) return cmp;
+
+            cmp = Long.compare(a.edge.getId(), b.edge.getId());
+            if (cmp != 0) return cmp;
+
+            int da = a.edge.getEntity().getForwardEdge() == a.edge ? 1 : -1;
+            int db = b.edge.getEntity().getForwardEdge() == b.edge ? 1 : -1;
+            return Integer.compare(da, db);
+        });
+
+        return leaving;
     }
 
     private Vec2d getDirectionVector(DataSet dataset, NodeEntity from, WayEntity way) {
@@ -383,21 +379,28 @@ public class StreetGraphGenerator implements FeatureGenerator {
         return new Vec2d(to.lon - from.lon, to.lat - from.lat);
     }
 
-    private double getDirectionAngle(DataSet dataset, NodeEntity from, WayEntity way, Vec2d reference) {
-        return getVectorAngle(reference, getDirectionVector(dataset, from, way));
+    private Vec2d getDirectionVector(DataSet dataset, WayEntity way, boolean start) {
+        NodeEntity from = start ? dataset.nodes.get(way.nodes[0]) : dataset.nodes.get(way.nodes[way.nodes.length - 1]);
+        NodeEntity to = start ? dataset.nodes.get(way.nodes[1]) : dataset.nodes.get(way.nodes[way.nodes.length - 2]);
+
+        return new Vec2d(to.lon - from.lon, to.lat - from.lat);
     }
 
-    private double getVectorAngle(Vec2d a, Vec2d b) {
+    private double getVectorAngle(Vec2d a, Vec2d b, boolean ccw) {
         Vec2d na = Vec2d.normalize(a);
         Vec2d nb = Vec2d.normalize(b);
 
         double cross = na.cross(nb);
-        if (cross > 0.0)               // b left of a
-            return Math.acos(na.dot(nb));
-        else if (cross < 0.0)          // b left of a
-            return 2 * Math.PI - Math.acos(na.dot(nb));
-        else
+        if (cross == 0.0) {
             return Math.PI;
+        } else {
+            double inner = Math.acos(MathUtils.clamp(na.dot(nb), -1.0, 1.0));
+
+            if (cross > 0.0)        // b left of a
+                return ccw ? inner : (2 * Math.PI - inner);
+            else                    // b right of a
+                return ccw ? (2 * Math.PI - inner) : inner;
+        }
     }
 
 
@@ -457,15 +460,82 @@ public class StreetGraphGenerator implements FeatureGenerator {
     }
 
 
-    private enum TurnLanePreference { OUTER, INNER, }
-
-    private static class SortedWay {
+    private static class TargetEdge {
         WayEntity way;
+        DirectedEdge edge;
         double angle;
 
-        SortedWay(WayEntity way, double angle) {
+        TargetEdge(WayEntity way, DirectedEdge edge, double angle) {
             this.way = way;
+            this.edge = edge;
             this.angle = angle;
+        }
+    }
+
+
+    private static class LaneConnector {
+        DirectedEdge.Lane from;
+        DirectedEdge.Lane to;
+
+        double angle;
+
+        LaneConnector(DirectedEdge.Lane from, DirectedEdge.Lane to, double angle) {
+            this.from = from;
+            this.to = to;
+            this.angle = angle;
+        }
+
+        boolean intersects(LaneConnector other) {
+            if (this.to.getEdge() == other.to.getEdge() && this.to.getIndex() == other.to.getIndex()) {
+                return true;
+            }
+
+            if (this.from.getIndex() < other.from.getIndex()) {
+                if (this.to.getEdge() == other.to.getEdge()) {
+                    if (this.to.getIndex() > other.to.getIndex()) {
+                        return true;
+                    }
+                } else {
+                    if (this.angle > other.angle) {
+                        return true;
+                    }
+                }
+
+            } else if (this.from.getIndex() > other.from.getIndex()) {
+                if (this.to.getEdge() == other.to.getEdge()) {
+                    if (this.to.getIndex() < other.to.getIndex()) {
+                        return true;
+                    }
+                } else {
+                    if (this.angle < other.angle) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+    }
+
+    private static class LaneConnectorSet implements Iterable<LaneConnector> {
+        private ArrayList<LaneConnector> connectors = new ArrayList<>();
+
+        void add(LaneConnector c) {
+            connectors.add(c);
+        }
+
+        boolean collides(LaneConnector c) {
+            for (LaneConnector x : this)
+                if (x.intersects(c))
+                    return true;
+
+            return false;
+        }
+
+
+        @Override
+        public Iterator<LaneConnector> iterator() {
+            return connectors.iterator();
         }
     }
 }
