@@ -41,7 +41,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
     private TreeMap<Vehicle, Set<Vehicle>> assessedVehicles;
     private TreeSet<Vehicle>               maxPrioVehicles;
     private boolean                        anyChangeSinceUpdate;
-    private TreeMap<DirectedEdge.Lane, ArrayList<DirectedEdge.Lane>> connectors;
+    private TreeMap<DirectedEdge.Lane, ArrayList<DirectedEdge.Lane>> connectors; // todo multilanes: double mapping
 
     // edges
     private TreeMap<DirectedEdge, Byte> leaving;     // edge, index(for crossing logic)
@@ -343,7 +343,6 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
      * registered at this node
      */
     public synchronized boolean unregisterVehicle(Vehicle vehicle) {
-
         Set<Vehicle> defeatedVehicles = assessedVehicles.remove(vehicle);
         if (defeatedVehicles == null) {
             newRegisteredVehicles.remove(vehicle);
@@ -537,6 +536,10 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
     | (i) ShortestPathNode |
     |======================|
     */
+    public DirectedEdge.Lane getLeavingLane(DirectedEdge.Lane incomingLane, DirectedEdge leavingEdge) {
+        return null; // todo
+    }
+
     /**
      * Get all leaving edges for the specified incoming edge, i.e. all edges that are connected (via connectors) to the
      * incoming edge on this node in such a way that a vehicle is allowed to travel from the incoming edge to said

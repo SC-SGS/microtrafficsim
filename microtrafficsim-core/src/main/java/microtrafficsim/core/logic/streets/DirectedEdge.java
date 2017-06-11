@@ -226,6 +226,18 @@ public class DirectedEdge
             return index;
         }
 
+        public Node getOrigin() {
+            return edge.getOrigin();
+        }
+
+        public Node getDestination() {
+            return edge.getDestination();
+        }
+
+        public int getLength() {
+            return edge.getLength();
+        }
+
         public int getMaxVelocity() {
             return edge.getMaxVelocity();
         }
@@ -246,10 +258,7 @@ public class DirectedEdge
         }
 
         public boolean hasVehicleInFront(Vehicle vehicle) {
-            edge.lanes.lockLane(index);
-            boolean hasVehicleInFront = edge.lanes.getNextOf(index, vehicle.getCellPosition()) != null;
-            edge.lanes.unlockLane(index);
-            return hasVehicleInFront;
+            return getVehicleInFront(vehicle) != null;
         }
 
         public Vehicle getVehicleInFront(Vehicle vehicle) {
@@ -257,6 +266,62 @@ public class DirectedEdge
             Vehicle front = edge.lanes.getNextOf(index, vehicle.getCellPosition());
             edge.lanes.unlockLane(index);
             return front;
+        }
+
+        /**
+         * @return assuming right-before-left, the outer vehicle is the right vehicle. If there is no right vehicle,
+         * the vehicle of greatest cell position smaller than the given vehicle's cell position is returned
+         */
+        public Vehicle getOuterVehicle(Vehicle vehicle) {
+            edge.lanes.lockLane(index);
+            Vehicle front = edge.lanes.getPrevOf(index - 1, vehicle.getCellPosition());
+            edge.lanes.unlockLane(index);
+            return front;
+        }
+
+        /**
+         * @return assuming right-before-left, the inner vehicle is the left vehicle. If there is no left vehicle,
+         * the vehicle of greatest cell position smaller than the given vehicle's cell position is returned
+         */
+        public Vehicle getInnerVehicle(Vehicle vehicle) {
+            edge.lanes.lockLane(index);
+            Vehicle front = edge.lanes.getPrevOf(index + 1, vehicle.getCellPosition());
+            edge.lanes.unlockLane(index);
+            return front;
+        }
+
+        /**
+         * @return true if is the outermost lane; if traffic rule is right-before-left, the outermost lane is the
+         * rightest lane
+         */
+        public boolean isOutermost() {
+            return index == 0;
+        }
+
+        /**
+         * @return true if is the innermost lane; if traffic rule is right-before-left, the innermost lane is the
+         * leftest lane
+         */
+        public boolean isInnermost() {
+            return index == edge.getNumberOfLanes() - 1;
+        }
+
+        /**
+         * @return a lane further out; if traffic rule is right-before-left, the outermost lane is the rightest lane
+         */
+        public Lane getOuterLane() {
+            if (index == 0)
+                return null;
+            return edge.getLane(index - 1);
+        }
+
+        /**
+         * @return a lane further in; if traffic rule is right-before-left, the outermost lane is the rightest lane
+         */
+        public Lane getInnerLane() {
+            if (index == edge.getNumberOfLanes() - 1)
+                return null;
+            return edge.getLane(index + 1);
         }
 
 

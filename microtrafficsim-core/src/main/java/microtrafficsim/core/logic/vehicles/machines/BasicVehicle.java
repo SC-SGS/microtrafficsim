@@ -109,7 +109,6 @@ public abstract class BasicVehicle implements Vehicle {
     |============|
     */
     private void didOneSimulationStep() {
-
         // anger
         if (velocity == 0) {
             if (lastVelocityWasZero) driver.becomeMoreAngry();
@@ -129,15 +128,19 @@ public abstract class BasicVehicle implements Vehicle {
 
 
     private void leaveCurrentRoad() {
-        lane.getEdge().getDestination().unregisterVehicle(this);
+        lane.getDestination().unregisterVehicle(this);
         lane.removeVehicle(this);
 
         // -1 * distance to end of road
-        cellPosition = cellPosition - lane.getEdge().getLength();
+        cellPosition = cellPosition - lane.getLength();
     }
 
     private void enterNextRoad() {
-        lane = driver.popRoute().getLane(0);
+        enterNextRoad(lane.getDestination().getLeavingLane(lane, driver.popRoute()));
+    }
+
+    private void enterNextRoad(DirectedEdge.Lane nextLane) {
+        lane = nextLane;
         cellPosition = cellPosition + velocity;
         lane.insertVehicle(this, cellPosition);
         if (entity.getVisualization() != null)
@@ -149,6 +152,18 @@ public abstract class BasicVehicle implements Vehicle {
         cellPosition = cellPosition + velocity;
         if (entity.getVisualization() != null)
             entity.getVisualization().updatePosition();
+    }
+
+    private void changeToOuterLane() {
+        lane.removeVehicle(this);
+        lane = lane.getOuterLane();
+        lane.insertVehicle(this, cellPosition);
+    }
+
+    private void changeToInnerLane() {
+        lane.removeVehicle(this);
+        lane = lane.getInnerLane();
+        lane.insertVehicle(this, cellPosition);
     }
 
     /*
@@ -169,30 +184,28 @@ public abstract class BasicVehicle implements Vehicle {
      */
     @Override
     public void spawn() {
-        if (state == VehicleState.NOT_SPAWNED) {
-            if (driver.getTravellingTime() >= 0) {
-                if (!driver.getRoute().isEmpty()) {
-                    if (!driver.getRoute().getOrigin().permissionToCross(this)) {
-                        velocity = 0;
-                    } else {    // allowed to spawn
-                        if (driver.peekRoute().getLane(0).getMaxInsertionIndex() < 0) {
-                            velocity = 0;
-                        } else {
-                            velocity = 1;
-                            driver.getRoute().getOrigin().unregisterVehicle(this);
-                            enterNextRoad();
-                            setState(VehicleState.SPAWNED);
-                        }
-                    }
-                } else {    // route is empty
+        if (driver.getTravellingTime() >= 0) {
+            if (!driver.getRoute().isEmpty()) {
+                if (!driver.getRoute().getOrigin().permissionToCross(this)) {
                     velocity = 0;
-
-                    despawn();
-                    return;
+                } else {    // allowed to spawn
+                    if (driver.peekRoute().getLane(0).getMaxInsertionIndex() < 0) {
+                        velocity = 0;
+                    } else {
+                        velocity = 1;
+                        driver.getRoute().getOrigin().unregisterVehicle(this);
+                        enterNextRoad(driver.popRoute().getLane(0));
+                        setState(VehicleState.SPAWNED);
+                    }
                 }
+            } else {    // route is empty
+                velocity = 0;
+
+                despawn();
+                return;
             }
-            didOneSimulationStep();
         }
+        didOneSimulationStep();
     }
 
     @Override
@@ -229,40 +242,50 @@ public abstract class BasicVehicle implements Vehicle {
 
     @Override
     public void changeLane() {
-        // todo
+        // todo multilane
+        if (!lane.isOutermost()) {
+            boolean willChangeLane = true;
+            int threshold = 1;
+
+            Vehicle outerVehicle = lane.getOuterVehicle(this);
+            if (outerVehicle != null)
+                if (cellPosition - outerVehicle.getCellPosition() <= threshold)
+                    willChangeLane = false;
+
+            if (willChangeLane)
+                changeToOuterLane();
+        }
     }
 
     @Override
     public void brake() {
-        if (state == VehicleState.SPAWNED) {
-            Vehicle vehicleInFront = lane.getVehicleInFront(this);
-            if (vehicleInFront != null) {
-                // brake for front vehicle
-                int distance = vehicleInFront.getCellPosition() - cellPosition;
-                velocity     = Math.min(velocity, distance - 1);
-            } else {    // this vehicle is first in lane
-                int distance = lane.getEdge().getLength() - cellPosition;
-                // Would cross node?
-                if (velocity >= distance) {
-                    if (driver.getRoute().isEmpty()) {
-                        // brake for end of road
-                        velocity = Math.min(velocity, distance - 1);
-                    } else {
-                        if (lane.getEdge().getDestination().permissionToCross(this)) {
-                            // if next road has vehicles => brake for this
-                            // else => brake for end of next road
-                            int maxInsertionIndex = driver.peekRoute().getLane(0).getMaxInsertionIndex();
+        Vehicle vehicleInFront = lane.getVehicleInFront(this);
+        if (vehicleInFront != null) {
+            // brake for front vehicle
+            int distance = vehicleInFront.getCellPosition() - cellPosition;
+            velocity     = Math.min(velocity, distance - 1);
+        } else {    // this vehicle is first in lane
+            int distance = lane.getEdge().getLength() - cellPosition;
+            // Would cross node?
+            if (velocity >= distance) {
+                boolean brakeForEndOfRoad = true;
+
+                if (!driver.getRoute().isEmpty()) {
+                    if (lane.getDestination().permissionToCross(this)) {
+                        // if next road has vehicles => brake for this
+                        // else => brake for end of next road
+                        DirectedEdge.Lane nextLane = lane.getDestination().getLeavingLane(lane, driver.peekRoute());
+                        if (nextLane != null) { // not correct lane
+                            int maxInsertionIndex = nextLane.getMaxInsertionIndex();
                             velocity = Math.min(velocity, distance + maxInsertionIndex);
-                        } else {
-                            // brake for end of road
-                            velocity = Math.min(velocity, distance - 1);
+                            brakeForEndOfRoad = false;
                         }
                     }
                 }
-            }
 
-            // brake for edges max velocity
-//            velocity = Math.min(velocity, lane.getAssociatedEdge().getMaxVelocity());
+                if (brakeForEndOfRoad)
+                    velocity = Math.min(velocity, distance - 1);
+            }
         }
 
         assert velocity >= 0 : "Velocity < 0 in braking. Actual = " + velocity;
@@ -270,7 +293,7 @@ public abstract class BasicVehicle implements Vehicle {
 
     @Override
     public void dawdle() {
-        if (velocity > 0 && state == VehicleState.SPAWNED) {
+        if (velocity > 0) {
             int newVelocity = driver.dawdle(velocity);
 
             assert newVelocity <= velocity
@@ -283,41 +306,38 @@ public abstract class BasicVehicle implements Vehicle {
 
     @Override
     public void move() {
-        if (state == VehicleState.SPAWNED) {
-            int distance = lane.getEdge().getLength() - getCellPosition();
-            // Will cross node?
-            if (velocity >= distance)
-                if (!driver.getRoute().isEmpty()) {
-                    leaveCurrentRoad();
-                    enterNextRoad();
-                } else {
-                    leaveCurrentRoad();
-                    despawn();
-                }
-            else {
-                // if standing at the end of the road
-                // and route is empty
-                // => despawn
-                if (velocity == 0 && distance == 1 && driver.getRoute().isEmpty()) {
-                    leaveCurrentRoad();
-                    despawn();
-                } else {
-                    drive();
-                }
+        int distance = lane.getEdge().getLength() - getCellPosition();
+        // Will cross node?
+        if (velocity >= distance) {
+            leaveCurrentRoad();
+            if (driver.getRoute().isEmpty())
+                despawn();
+            else
+                enterNextRoad();
+        } else {
+            // if standing at the end of the road
+            // and route is empty
+            // => despawn
+            if (velocity == 0 && distance == 1 && driver.getRoute().isEmpty()) {
+                leaveCurrentRoad();
+                despawn();
+            } else {
+                drive();
             }
         }
     }
 
     @Override
     public void didMove() {
-        if (state == VehicleState.SPAWNED) {
-            didOneSimulationStep();
+        didOneSimulationStep();
 
-            if (!driver.getRoute().isEmpty()) {
-                int distance    = lane.getEdge().getLength() - cellPosition;
-                int maxVelocity = Math.min(getMaxVelocity(), lane.getMaxVelocity());
-                if (maxVelocity >= distance && !lane.hasVehicleInFront(this))
-                    lane.getEdge().getDestination().registerVehicle(this);
+        if (!driver.getRoute().isEmpty()) {
+            if (lane.hasVehicleInFront(this)) {
+                lane.getDestination().unregisterVehicle(this);
+            } else {
+                int distance = lane.getLength() - cellPosition;
+                if (getMaxVelocity() >= distance)
+                    lane.getDestination().registerVehicle(this);
             }
         }
     }
