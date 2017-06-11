@@ -109,11 +109,11 @@ public interface Driver extends Hulk, Resettable {
     void setRoute(Route route);
 
     default DirectedEdge peekRoute() {
-        return (DirectedEdge) getRoute().peek();
+        return getRoute().peek();
     }
 
     default DirectedEdge popRoute() {
-        return (DirectedEdge) getRoute().pop();
+        return getRoute().pop();
     }
 
     /*

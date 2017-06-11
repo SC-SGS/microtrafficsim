@@ -244,9 +244,6 @@ public abstract class BasicVehicle implements Vehicle {
 
     @Override
     public void changeLane() {
-        if (lane == null)
-            return;
-
         // todo overtaking
 
         // tend to go on outer lane
@@ -338,13 +335,28 @@ public abstract class BasicVehicle implements Vehicle {
     public void didMove() {
         didOneSimulationStep();
 
-        if (lane.hasVehicleInFront(this)) {
-            lane.getDestination().unregisterVehicle(this);
-        } else if (!driver.getRoute().isEmpty()) {
-            int distance = lane.getLength() - cellPosition;
-            if (getMaxVelocity() >= distance)
-                lane.getDestination().registerVehicle(this);
+        boolean unregisterVehicle = true;
+
+        // the order of the if-statements is chosen by their runtime
+        // check for:
+        // - standing at the end of the road?
+        // - Is route empty? If yes, vehicle doesn't have to register
+        // - Is vehicle on the correct lane? If not, it has to change lane before register
+        // - Does vehicle have front vehicles? If yes, it doesn't have to register.
+        int distance = lane.getLength() - cellPosition;
+        if (getMaxVelocity() >= distance) {
+            if (!driver.getRoute().isEmpty()) {
+                if (lane.getDestination().isLaneCorrect(lane, driver.peekRoute())) {
+                    if (!lane.hasVehicleInFront(this)) {
+                        lane.getDestination().registerVehicle(this);
+                        unregisterVehicle = false;
+                    }
+                }
+            }
         }
+
+        if (unregisterVehicle)
+            lane.getDestination().unregisterVehicle(this);
     }
 
     @Override

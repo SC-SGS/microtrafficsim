@@ -37,6 +37,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
     private final Random        random;
 
     // crossing logic
+    private HashSet<Vehicle>               registerLog;
     private PriorityQueue<Vehicle>         newRegisteredVehicles;
     private TreeMap<Vehicle, Set<Vehicle>> assessedVehicles;
     private TreeSet<Vehicle>               maxPrioVehicles;
@@ -58,6 +59,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
 
         // crossing logic
         random                = new Random();  // set below for determinism
+        registerLog           = new HashSet<>();
         assessedVehicles      = new TreeMap<>(Comparator.comparingLong(Vehicle::getId));
         maxPrioVehicles       = new TreeSet<>(Comparator.comparingLong(Vehicle::getId));
         newRegisteredVehicles = new PriorityQueue<>(Comparator.comparingLong(Vehicle::getId));
@@ -329,12 +331,13 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
 
         newRegisteredVehicles.add(newVehicle);
         anyChangeSinceUpdate = true;
+        registerLog.add(newVehicle);
         return true;
     }
 
     /**
-     * Remove occurrence of the given vehicle in this node. Due to the complexity of the used hash maps, this method
-     * has a runtime complexity in O(n logn), where n is the number of vehicles registered in this node. <br>
+     * Remove occurrence of the given vehicle in this node. Due to the complexity of the used {@link TreeMap}s, this
+     * method has a runtime complexity in O(n logn), where n is the number of vehicles registered in this node. <br>
      * For each vehicle, the priority counter is updated and the other data structures containing the vehicle
      * getting unregistered are updated in O(log n) due to sets.
      *
@@ -343,22 +346,25 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
      * registered at this node
      */
     public synchronized boolean unregisterVehicle(Vehicle vehicle) {
+        if (!isRegistered(vehicle))
+            return false;
+
         Set<Vehicle> defeatedVehicles = assessedVehicles.remove(vehicle);
         if (defeatedVehicles == null) {
             newRegisteredVehicles.remove(vehicle);
-            return false;
+        } else {
+            for (Vehicle otherVehicle : assessedVehicles.keySet()) {
+                boolean otherWon = assessedVehicles.get(otherVehicle).remove(vehicle);
+
+                if (otherWon)
+                    otherVehicle.getDriver().decPriorityCounter();
+                else
+                    otherVehicle.getDriver().incPriorityCounter();
+            }
+
+            anyChangeSinceUpdate = true;
         }
 
-        for (Vehicle otherVehicle : assessedVehicles.keySet()) {
-            boolean otherWon = assessedVehicles.get(otherVehicle).remove(vehicle);
-
-            if (otherWon)
-                otherVehicle.getDriver().decPriorityCounter();
-            else
-                otherVehicle.getDriver().incPriorityCounter();
-        }
-
-        anyChangeSinceUpdate = true;
         return true;
     }
 
@@ -374,7 +380,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
     }
 
     public synchronized boolean isRegistered(Vehicle vehicle) {
-        return assessedVehicles.containsKey(vehicle) || newRegisteredVehicles.contains(vehicle);
+        return registerLog.contains(vehicle);
     }
 
     /*
@@ -537,6 +543,10 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
     | (i) ShortestPathNode |
     |======================|
     */
+    public boolean isLaneCorrect(DirectedEdge.Lane incomingLane, DirectedEdge leavingEdge) {
+        return getLeavingLane(incomingLane, leavingEdge) != null;
+    }
+
     public DirectedEdge.Lane getLeavingLane(DirectedEdge.Lane incomingLane, DirectedEdge leavingEdge) {
         return connectors.get(incomingLane).get(leavingEdge);
     }

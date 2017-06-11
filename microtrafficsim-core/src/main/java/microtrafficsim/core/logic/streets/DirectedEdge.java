@@ -151,6 +151,10 @@ public class DirectedEdge
         return streetInfo.maxVelocity;
     }
 
+    public float getRawMaxVelocity() {
+        return streetInfo.raw.maxVelocity;
+    }
+
     public byte getPriorityLevel() {
         return streetInfo.priorityLevel;
     }
