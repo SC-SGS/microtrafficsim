@@ -118,6 +118,13 @@ public class DirectedEdge implements ShortestPathEdge<Node>, LogicStreetEntity, 
         return streetInfo.maxVelocity;
     }
 
+    /**
+     * @return max allowed velocity in km/h
+     */
+    public float getRawMaxVelocity() {
+        return streetInfo.raw.maxVelocity;
+    }
+
     public byte getPriorityLevel() {
         return streetInfo.priorityLevel;
     }
