@@ -42,6 +42,11 @@ public class NavigableMapLaneContainer implements LaneContainer {
     }
 
     @Override
+    public Vehicle get(int laneNo, int cellNo) {
+        return lanes.get(laneNo).get(cellNo);
+    }
+
+    @Override
     public Vehicle getFirstVehicle(int laneNo) {
         return lanes.get(laneNo).lastEntry().getValue();
     }

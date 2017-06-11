@@ -13,6 +13,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -127,12 +128,15 @@ public class LaneConnectorTest {
 
     private static ArrayList<LaneConnector> getLeavingConnectors(DirectedEdge edge) {
         ArrayList<LaneConnector> leaving = new ArrayList<>();
-        for (Map.Entry<DirectedEdge.Lane, ArrayList<DirectedEdge.Lane>> connector : edge.getDestination().getConnectors().entrySet()) {
+
+        for (Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> connector
+                : edge.getDestination().getConnectors().entrySet())
+        {
             final DirectedEdge.Lane from = connector.getKey();
             final Vec2d fromVec = Vec2d.mul(from.getEdge().getDestinationDirection(), -1.0);
 
             if (from.getEdge() == edge) {
-                for (DirectedEdge.Lane to : connector.getValue()) {
+                for (DirectedEdge.Lane to : connector.getValue().values()) {
                     Vec2d toVec = to.getEdge().getOriginDirection();
                     leaving.add(new LaneConnector(from, to, angle(fromVec, toVec)));
                 }

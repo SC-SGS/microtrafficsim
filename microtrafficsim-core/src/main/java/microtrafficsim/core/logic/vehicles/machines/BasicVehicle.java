@@ -157,12 +157,14 @@ public abstract class BasicVehicle implements Vehicle {
     private void changeToOuterLane() {
         lane.removeVehicle(this);
         lane = lane.getOuterLane();
+        assert lane != null : "Lane after changing to outer lane is null.";
         lane.insertVehicle(this, cellPosition);
     }
 
     private void changeToInnerLane() {
         lane.removeVehicle(this);
         lane = lane.getInnerLane();
+        assert lane != null : "Lane after changing to inner lane is null.";
         lane.insertVehicle(this, cellPosition);
     }
 
@@ -242,15 +244,20 @@ public abstract class BasicVehicle implements Vehicle {
 
     @Override
     public void changeLane() {
-        // todo multilane
+        if (lane == null)
+            return;
+
+        // todo overtaking
+
+        // tend to go on outer lane
         if (!lane.isOutermost()) {
             boolean willChangeLane = true;
-            int threshold = 1;
 
             Vehicle outerVehicle = lane.getOuterVehicle(this);
-            if (outerVehicle != null)
-                if (cellPosition - outerVehicle.getCellPosition() <= threshold)
+            if (outerVehicle != null) {
+                if (cellPosition - outerVehicle.getCellPosition() <= 1)
                     willChangeLane = false;
+            }
 
             if (willChangeLane)
                 changeToOuterLane();
@@ -331,14 +338,12 @@ public abstract class BasicVehicle implements Vehicle {
     public void didMove() {
         didOneSimulationStep();
 
-        if (!driver.getRoute().isEmpty()) {
-            if (lane.hasVehicleInFront(this)) {
-                lane.getDestination().unregisterVehicle(this);
-            } else {
-                int distance = lane.getLength() - cellPosition;
-                if (getMaxVelocity() >= distance)
-                    lane.getDestination().registerVehicle(this);
-            }
+        if (lane.hasVehicleInFront(this)) {
+            lane.getDestination().unregisterVehicle(this);
+        } else if (!driver.getRoute().isEmpty()) {
+            int distance = lane.getLength() - cellPosition;
+            if (getMaxVelocity() >= distance)
+                lane.getDestination().registerVehicle(this);
         }
     }
 

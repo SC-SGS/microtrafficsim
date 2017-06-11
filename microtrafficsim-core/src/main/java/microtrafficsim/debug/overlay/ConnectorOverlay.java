@@ -26,6 +26,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.TreeMap;
 
 
 public class ConnectorOverlay implements Overlay {
@@ -187,10 +188,10 @@ public class ConnectorOverlay implements Overlay {
     private void addConnectors(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart, int laneOffsetSign,
                                Node node)
     {
-        for (Map.Entry<DirectedEdge.Lane, ArrayList<DirectedEdge.Lane>> connector : node.getConnectors().entrySet()) {
+        for (Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> connector : node.getConnectors().entrySet()) {
             DirectedEdge.Lane from = connector.getKey();
 
-            for (DirectedEdge.Lane to : connector.getValue()) {
+            for (DirectedEdge.Lane to : connector.getValue().values()) {
                 addConnector(vertices, indices, restart, laneOffsetSign,
                         from.getEdge(), from.getIndex(),
                         to.getEdge(), to.getIndex());

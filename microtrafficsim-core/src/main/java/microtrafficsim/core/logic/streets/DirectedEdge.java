@@ -273,10 +273,12 @@ public class DirectedEdge
          * the vehicle of greatest cell position smaller than the given vehicle's cell position is returned
          */
         public Vehicle getOuterVehicle(Vehicle vehicle) {
-            edge.lanes.lockLane(index);
-            Vehicle front = edge.lanes.getPrevOf(index - 1, vehicle.getCellPosition());
-            edge.lanes.unlockLane(index);
-            return front;
+            edge.lanes.lockLane(index - 1);
+            Vehicle outer = edge.lanes.get(index - 1, vehicle.getCellPosition());
+            if (outer == null)
+                outer = edge.lanes.getPrevOf(index - 1, vehicle.getCellPosition());
+            edge.lanes.unlockLane(index - 1);
+            return outer;
         }
 
         /**
@@ -284,10 +286,12 @@ public class DirectedEdge
          * the vehicle of greatest cell position smaller than the given vehicle's cell position is returned
          */
         public Vehicle getInnerVehicle(Vehicle vehicle) {
-            edge.lanes.lockLane(index);
-            Vehicle front = edge.lanes.getPrevOf(index + 1, vehicle.getCellPosition());
-            edge.lanes.unlockLane(index);
-            return front;
+            edge.lanes.lockLane(index + 1);
+            Vehicle outer = edge.lanes.get(index + 1, vehicle.getCellPosition());
+            if (outer == null)
+                outer = edge.lanes.getPrevOf(index + 1, vehicle.getCellPosition());
+            edge.lanes.unlockLane(index + 1);
+            return outer;
         }
 
         /**

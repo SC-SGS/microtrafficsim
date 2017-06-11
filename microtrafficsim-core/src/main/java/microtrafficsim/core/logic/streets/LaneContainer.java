@@ -21,6 +21,8 @@ public interface LaneContainer {
      */
     Vehicle getLastVehicle(int laneNo);
 
+    Vehicle get(int laneNo, int cellNo);
+
     Vehicle getPrevOf(int laneNo, int cellNo);
 
     Vehicle getNextOf(int laneNo, int cellNo);

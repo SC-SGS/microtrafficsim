@@ -41,7 +41,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
     private TreeMap<Vehicle, Set<Vehicle>> assessedVehicles;
     private TreeSet<Vehicle>               maxPrioVehicles;
     private boolean                        anyChangeSinceUpdate;
-    private TreeMap<DirectedEdge.Lane, ArrayList<DirectedEdge.Lane>> connectors; // todo multilanes: double mapping
+    private TreeMap<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> connectors;
 
     // edges
     private TreeMap<DirectedEdge, Byte> leaving;     // edge, index(for crossing logic)
@@ -128,7 +128,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
         return config;
     }
 
-    public TreeMap<DirectedEdge.Lane, ArrayList<DirectedEdge.Lane>> getConnectors() {
+    public TreeMap<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> getConnectors() {
         return connectors;
     }
 
@@ -391,8 +391,9 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
      * @param leaving the edge to which this connector connects.
      */
     public void addConnector(DirectedEdge.Lane incoming, DirectedEdge.Lane leaving) {
-        ArrayList<DirectedEdge.Lane> connectedLanes = connectors.computeIfAbsent(incoming, k -> new ArrayList<>());
-        connectedLanes.add(leaving);
+        TreeMap<DirectedEdge, DirectedEdge.Lane> connectedLanes
+                = connectors.computeIfAbsent(incoming, k -> new TreeMap<>());
+        connectedLanes.put(leaving.getEdge(), leaving);
     }
 
     public void addLeavingEdge(DirectedEdge edge) {
@@ -537,7 +538,11 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
     |======================|
     */
     public DirectedEdge.Lane getLeavingLane(DirectedEdge.Lane incomingLane, DirectedEdge leavingEdge) {
-        return null; // todo
+        return connectors.get(incomingLane).get(leavingEdge);
+    }
+
+    public Collection<DirectedEdge.Lane> getLeavingLanes(DirectedEdge.Lane incoming) {
+        return connectors.computeIfAbsent(incoming, k -> new TreeMap<>()).values();
     }
 
     /**
@@ -559,13 +564,9 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
             return Collections.unmodifiableSet(this.leaving.keySet());
 
         TreeSet<DirectedEdge> result = new TreeSet<>();
-        for (DirectedEdge.Lane lane : incoming) {
-            ArrayList<DirectedEdge.Lane> connected = connectors.get(lane);
-
-            if (connected != null)
-                for (DirectedEdge.Lane leaving : connected)
-                    result.add(leaving.getEdge());
-        }
+        for (DirectedEdge.Lane incomingLane : incoming)
+            for (DirectedEdge.Lane leaving : getLeavingLanes(incomingLane))
+                result.add(leaving.getEdge());
 
         return result;
     }
