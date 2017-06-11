@@ -151,6 +151,9 @@ public class DirectedEdge
         return streetInfo.maxVelocity;
     }
 
+    /**
+     * @return max allowed velocity in km/h
+     */
     public float getRawMaxVelocity() {
         return streetInfo.raw.maxVelocity;
     }
