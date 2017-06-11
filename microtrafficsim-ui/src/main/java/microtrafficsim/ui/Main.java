@@ -15,13 +15,15 @@ import java.io.File;
  * @author Maximilian Luz, Dominic Parga Cacheiro
  */
 public class Main {
-//    public static final File OPTIONAL_MAP_FILE = new File("/Users/Dominic/Documents/Studium/Bachelor_of_Disaster/microtrafficsim/simulation_files/maps/Backnang.osm");
+//    public static final File OPTIONAL_MAP_FILE = new File
+//            ("/Users/Dominic/Documents/Studium/Bachelor_of_Disaster/microtrafficsim/simulation_files/maps/" +
+//                    "Stuttgart.mtsmap");
     public static final File OPTIONAL_MAP_FILE = null;
 
 
     public static void main(String[] args) throws Exception {
-        LoggingLevel.setEnabledGlobally(true, true, true, true, true);
-//        LoggingLevel.setEnabledGlobally(false, false, false, false, false);
+//        LoggingLevel.setEnabledGlobally(true, true, true, true, true);
+        LoggingLevel.setEnabledGlobally(false, false, true, true, true);
 
         /* handle input arguments */
         final File file;
