@@ -15,6 +15,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -32,6 +34,7 @@ public class VehicleSimulation implements Simulation {
     private boolean            paused;
     private Timer              timer;
     private TimerTask          timerTask;
+    private Lock               executionLock;
     private int                age;
     private List<StepListener> stepListeners;
 
@@ -44,6 +47,7 @@ public class VehicleSimulation implements Simulation {
     public VehicleSimulation() {
         paused = true;
         timer = new Timer();
+        executionLock = new ReentrantLock();
         this.stepListeners = new LinkedList<>();
     }
 
@@ -174,38 +178,39 @@ public class VehicleSimulation implements Simulation {
 
     @Override
     public final void doRunOneStep() {
+        executionLock.lock();
         willRunOneStep();
 
         if (scenario.isPrepared()) {
-            if (logger.isDebugEnabled()) {
+            if (logger.isTraceEnabled()) {
                 time = System.nanoTime();
                 vehicleStepExecutor.willMoveAll(scenario);
                 logger.trace(
                         StringUtils.buildTimeString("time brake() etc. = ", System.nanoTime() - time, "ns").toString()
                 );
 
-                time = System.nanoTime();
+                long stamp = System.nanoTime();
                 vehicleStepExecutor.moveAll(scenario);
                 logger.trace(
-                        StringUtils.buildTimeString("time move() = ", System.nanoTime() - time, "ns").toString()
+                        StringUtils.buildTimeString("time move() = ", System.nanoTime() - stamp, "ns").toString()
                 );
 
-                time = System.nanoTime();
+                stamp = System.nanoTime();
                 vehicleStepExecutor.didMoveAll(scenario);
                 logger.trace(
-                        StringUtils.buildTimeString("time didMove() = ", System.nanoTime() - time, "ns").toString()
+                        StringUtils.buildTimeString("time didMove() = ", System.nanoTime() - stamp, "ns").toString()
                 );
 
-                time = System.nanoTime();
+                stamp = System.nanoTime();
                 vehicleStepExecutor.spawnAll(scenario);
                 logger.trace(
-                        StringUtils.buildTimeString("time spawn() = ", System.nanoTime() - time, "ns").toString()
+                        StringUtils.buildTimeString("time spawn() = ", System.nanoTime() - stamp, "ns").toString()
                 );
 
-                time = System.nanoTime();
+                stamp = System.nanoTime();
                 vehicleStepExecutor.updateNodes(scenario);
                 logger.trace(
-                        StringUtils.buildTimeString("time updateNodes() = ", System.nanoTime() - time, "ns").toString()
+                        StringUtils.buildTimeString("time updateNodes() = ", System.nanoTime() - stamp, "ns").toString()
                 );
             } else {
                 vehicleStepExecutor.willMoveAll(scenario);
@@ -218,6 +223,7 @@ public class VehicleSimulation implements Simulation {
         }
 
         didRunOneStep();
+        executionLock.unlock();
     }
 
     @Override
