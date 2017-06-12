@@ -261,17 +261,14 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
             Vec2d      dir     = projection.project(ctarget).sub(pos).normalize();
 
             // adjust position to lane
-            Lane lane = logic.getLane();
-            if (lane == null) continue;
-
-            DirectedEdge edge = lane.getAssociatedEdge();
-            StreetEntity street = edge.getEntity();
+            int lane = v.getIndexOfCurrentLane();
+            if (lane == -1) continue;
 
             double laneOffset;
-            if (street.getForwardEdge() != null && street.getBackwardEdge() != null) {
-                laneOffset = edge.getLanes().size() - lane.getIndex() - 0.5;
+            if (v.isCurrentStreetBidirectional()) {
+                laneOffset = v.getNumberOfLanesOnCurrentEdge() - v.getIndexOfCurrentLane() - 0.5;
             } else {
-                laneOffset = (edge.getLanes().size() - 1.0) / 2.0 - lane.getIndex();
+                laneOffset = (v.getNumberOfLanesOnCurrentEdge() - 1.0) / 2.0 - v.getIndexOfCurrentLane();
             }
             laneOffset *= laneOffsetSign * VEHICLE_LANE_OFFSET_SCALE * VEHICLE_SCALE_NORM;
 
