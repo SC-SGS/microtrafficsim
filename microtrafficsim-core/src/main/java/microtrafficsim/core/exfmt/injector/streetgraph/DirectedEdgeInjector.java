@@ -22,14 +22,14 @@ public class DirectedEdgeInjector implements ExchangeFormat.Injector<DirectedEdg
 
         if (src.getEntity().getForwardEdge() == src) {
             gec.setForwardLanes(src.getNumberOfLanes());
-            gec.setForwardMaxVelocity(src.getMaxVelocity());
+            gec.setForwardMaxVelocity(src.getRawMaxVelocity());
             gec.setOrigin(src.getOrigin().getId());
             gec.setOriginDirection(src.getOriginDirection());
             gec.setDestination(src.getDestination().getId());
             gec.setDestinationDirection(src.getDestinationDirection());
         } else {
             gec.setBackwardLanes(src.getNumberOfLanes());
-            gec.setBackwardMaxVelocity(src.getMaxVelocity());
+            gec.setBackwardMaxVelocity(src.getRawMaxVelocity());
             gec.setOrigin(src.getDestination().getId());
             gec.setOriginDirection(src.getDestinationDirection());
             gec.setDestination(src.getOrigin().getId());
