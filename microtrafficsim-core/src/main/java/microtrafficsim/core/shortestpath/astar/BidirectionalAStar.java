@@ -5,6 +5,7 @@ import microtrafficsim.core.shortestpath.ShortestPathEdge;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Stack;
 import java.util.function.ToDoubleBiFunction;
@@ -85,14 +86,14 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
         double estimation = estimationFunction.applyAsDouble(start, end);
 
         // forward
-        HashMap<N, WeightedNode<N, E>> forwardVisitedNodes = new HashMap<>();
-        PriorityQueue<WeightedNode<N, E>> forwardQueue = new PriorityQueue<>();
-        forwardQueue.add(new WeightedNode<>(start, null, null, 0.0, estimation));
+        Map<N, WeightedNode<N, E>> fwdVisitedNodes = new HashMap<>();
+        PriorityQueue<WeightedNode<N, E>> fwdQueue = new PriorityQueue<>();
+        fwdQueue.add(new WeightedNode<>(start, null, null, 0.0, estimation));
 
         // backward
-        HashMap<N, WeightedNode<N, E>> backwardVisitedNodes = new HashMap<>();
-        PriorityQueue<WeightedNode<N, E>> backwardQueue = new PriorityQueue<>();
-        backwardQueue.add(new WeightedNode<>(end, null, null, 0.0, estimation));
+        Map<N, WeightedNode<N, E>> bwdVisitedNodes = new HashMap<>();
+        PriorityQueue<WeightedNode<N, E>> bwdQueue = new PriorityQueue<>();
+        bwdQueue.add(new WeightedNode<>(end, null, null, 0.0, estimation));
 
         /*
         |================|
@@ -101,20 +102,20 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
         */
         WeightedNode<N, E> meetingNode = null;
         // while at least one is not empty
-        while (!forwardQueue.isEmpty() && !backwardQueue.isEmpty()) {
+        while (!fwdQueue.isEmpty() && !bwdQueue.isEmpty()) {
             // one step forwards
-            if (!forwardQueue.isEmpty()) {
-                WeightedNode<N, E> current = forwardQueue.poll();
+            if (!fwdQueue.isEmpty()) {
+                WeightedNode<N, E> current = fwdQueue.poll();
 
-                WeightedNode<N, E> backwardsCurrent = backwardVisitedNodes.get(current.node);
-                if (backwardsCurrent != null) { // shortest path found
+                WeightedNode<N, E> bwdCurrent = bwdVisitedNodes.get(current.node);
+                if (bwdCurrent != null) { // shortest path found
                     meetingNode = current;
-                    meetingNode.successor = backwardsCurrent.successor;
+                    meetingNode.successor = bwdCurrent.successor;
                     break;
                 }
 
-                if (!forwardVisitedNodes.keySet().contains(current.node)) {
-                    forwardVisitedNodes.put(current.node, current);
+                if (!fwdVisitedNodes.keySet().contains(current.node)) {
+                    fwdVisitedNodes.put(current.node, current);
 
                     // iterate over all leaving edges
                     for (E leaving : current.node.getLeavingEdges(current.predecessor)) {
@@ -122,37 +123,37 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
                         double g = current.g + edgeWeightFunction.applyAsDouble(leaving);
 
                         // push new node into priority queue
-                        if (!forwardVisitedNodes.keySet().contains(dest)) {
+                        if (!fwdVisitedNodes.keySet().contains(dest)) {
                             double h = estimationFunction.applyAsDouble(dest, end);
-                            forwardQueue.add(new WeightedNode<>(dest, leaving, null, g, h));
+                            fwdQueue.add(new WeightedNode<>(dest, leaving, null, g, h));
                         }
                     }
                 }
             }
 
             // one step backwards
-            if (!backwardQueue.isEmpty()) {
-                WeightedNode<N, E> current = backwardQueue.poll();
+            if (!bwdQueue.isEmpty()) {
+                WeightedNode<N, E> current = bwdQueue.poll();
 
-                WeightedNode<N, E> forwardsCurrent = forwardVisitedNodes.get(current.node);
-                if (forwardsCurrent != null) { // shortest path found
+                WeightedNode<N, E> fwdCurrent = fwdVisitedNodes.get(current.node);
+                if (fwdCurrent != null) { // shortest path found
                     meetingNode = current;
-                    meetingNode.predecessor = forwardsCurrent.predecessor;
+                    meetingNode.predecessor = fwdCurrent.predecessor;
                     break;
                 }
 
-                if (!backwardVisitedNodes.keySet().contains(current.node)) {
-                    backwardVisitedNodes.put(current.node, current);
+                if (!bwdVisitedNodes.keySet().contains(current.node)) {
+                    bwdVisitedNodes.put(current.node, current);
 
                     // iterate over all incoming edges
-                    for (E incoming : current.node.getIncomingEdges()) {
+                    for (E incoming : current.node.getIncomingEdges(current.successor)) {
                         N orig = incoming.getOrigin();
                         double g = current.g + edgeWeightFunction.applyAsDouble(incoming);
 
                         // push new node into priority queue
-                        if (!backwardVisitedNodes.keySet().contains(orig)) {
-                            double h = estimationFunction.applyAsDouble(start, end);
-                            backwardQueue.add(new WeightedNode<>(orig, null, incoming, g, h));
+                        if (!bwdVisitedNodes.keySet().contains(orig)) {
+                            double h = estimationFunction.applyAsDouble(start, orig);
+                            bwdQueue.add(new WeightedNode<>(orig, null, incoming, g, h));
                         }
                     }
                 }
@@ -173,7 +174,7 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
         WeightedNode<N, E> current = meetingNode;
         while (current.successor != null) {
             bin.push(current.successor);
-            current = backwardVisitedNodes.get(current.successor.getDestination());
+            current = bwdVisitedNodes.get(current.successor.getDestination());
         }
         while (!bin.isEmpty()) {
             result.push(bin.pop());
@@ -182,7 +183,7 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
         current = meetingNode;
         while (current.predecessor != null) {
             result.push(current.predecessor);
-            current = forwardVisitedNodes.get(current.predecessor.getOrigin());
+            current = fwdVisitedNodes.get(current.predecessor.getOrigin());
         }
     }
 }

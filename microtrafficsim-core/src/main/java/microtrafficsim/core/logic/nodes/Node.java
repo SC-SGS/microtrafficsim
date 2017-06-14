@@ -14,6 +14,7 @@ import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.collections.FastSortedArrayList;
+import microtrafficsim.utils.collections.MultiSet;
 import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.functional.Procedure2;
@@ -82,8 +83,8 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
 
     public String toStringVerbose() {
         LevelStringBuilder builder = new LevelStringBuilder()
-                .setLevelSeparator(System.lineSeparator())
-                .setLevelSubString("    ");
+                .setDefaultLevelSeparator()
+                .setDefaultLevelSubString();
 
         builder.appendln("<Node>").incLevel(); {
             /* id */
@@ -116,11 +117,21 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
             edgesToString.invoke("incoming", incoming);
             edgesToString.invoke("leaving", leaving);
 
-        } builder.decLevel().appendln("</Node>");
+            builder.appendln("<connectors: incoming(edge_laneIdx) -> leaving(edge_laneIdx)>").incLevel(); {
+                connectors.entrySet().forEach(entry -> {
+                    DirectedEdge.Lane incomingLane = entry.getKey();
+                    entry.getValue().entrySet().forEach(leaving -> {
+                        DirectedEdge.Lane leavingLane = leaving.getValue();
+                        builder.appendln(incomingLane.getEdge().getId() + "_" + incomingLane.getIndex()
+                                + " -> "
+                                + leavingLane.getEdge().getId() + "_" + leavingLane.getIndex());
+                    });
+                });
+            } builder.decLevel().appendln("</connectors>");
 
+        } builder.decLevel().append("</Node>");
         return builder.toString();
     }
-
 
     public long getId() {
         return id;
@@ -538,21 +549,23 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
     }
 
 
-    /*
-    |======================|
-    | (i) ShortestPathNode |
-    |======================|
-    */
+    public int findOutermostTurningLaneIndex(DirectedEdge incoming, DirectedEdge leaving) {
+        for (DirectedEdge.Lane lane : incoming)
+            if (isLaneCorrect(lane, leaving))
+                return lane.getIndex();
+
+        return -1;
+    }
+
     public boolean isLaneCorrect(DirectedEdge.Lane incomingLane, DirectedEdge leavingEdge) {
         return getLeavingLane(incomingLane, leavingEdge) != null;
     }
 
     public DirectedEdge.Lane getLeavingLane(DirectedEdge.Lane incomingLane, DirectedEdge leavingEdge) {
-        return connectors.get(incomingLane).get(leavingEdge);
-    }
-
-    public Collection<DirectedEdge.Lane> getLeavingLanes(DirectedEdge.Lane incoming) {
-        return connectors.computeIfAbsent(incoming, k -> new TreeMap<>()).values();
+        TreeMap<DirectedEdge, DirectedEdge.Lane> leaving = connectors.get(incomingLane);
+        if (leaving == null)
+            return null;
+        return leaving.get(leavingEdge);
     }
 
     /**
@@ -560,34 +573,57 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
      * incoming edge on this node in such a way that a vehicle is allowed to travel from the incoming edge to said
      * other edges.
      *
-     * @param incoming The edge from which a travelling vehicle is arriving. The leaving edges may be depending on the
-     *                 incoming edge, due to turn-restrictions. If {@code null}, every leaving edge will be returned
-     *                 (i.e. if a vehicle has just spawned at a node and no previous edge is exists).
+     * @param incomingEdge The edge from which a travelling vehicle is arriving. The leaving edges may be depending
+     *                     on the incoming edge, due to turn-restrictions. If {@code null}, every leaving edge will
+     *                     be returned (i.e. if a vehicle has just spawned at a node and no previous edge is exists).
      * @return All leaving edges depending on the incoming edge.
      */
     @Override
-    public Set<DirectedEdge> getLeavingEdges(DirectedEdge incoming) {
+    public Set<DirectedEdge> getLeavingEdges(DirectedEdge incomingEdge) {
         // TODO: maybe pre-compute leaving edges?
 
         // return everything if incoming edge is null
-        if (incoming == null)
-            return Collections.unmodifiableSet(this.leaving.keySet());
+        if (incomingEdge == null)
+            return Collections.unmodifiableSet(leaving.keySet());
 
         TreeSet<DirectedEdge> result = new TreeSet<>();
-        for (DirectedEdge.Lane incomingLane : incoming)
-            for (DirectedEdge.Lane leaving : getLeavingLanes(incomingLane))
-                result.add(leaving.getEdge());
+        for (DirectedEdge.Lane incomingLane : incomingEdge) {
+            TreeMap<DirectedEdge, DirectedEdge.Lane> leaving = connectors.get(incomingLane);
+            if (leaving != null)
+                result.addAll(leaving.keySet());
+        }
 
         return result;
     }
 
     public Set<DirectedEdge> getLeavingEdges() {
-        return Collections.unmodifiableSet(leaving.keySet());
+        return getLeavingEdges(null);
     }
 
     @Override
+    public Set<DirectedEdge> getIncomingEdges(DirectedEdge leavingEdge) {
+        // TODO: maybe pre-compute incoming edges?
+
+        // return everything if leaving edge is null
+        if (leavingEdge == null)
+            return Collections.unmodifiableSet(incoming.keySet());
+
+        TreeSet<DirectedEdge> result = new TreeSet<>();
+        connectors.entrySet().forEach(entry -> {
+            TreeMap<DirectedEdge, DirectedEdge.Lane> leaving = entry.getValue();
+            if (leaving != null) {
+                if (leaving.containsKey(leavingEdge)) {
+                    DirectedEdge.Lane incomingLane = entry.getKey();
+                    result.add(incomingLane.getEdge());
+                }
+            }
+        });
+
+        return result;
+    }
+
     public Set<DirectedEdge> getIncomingEdges() {
-        return Collections.unmodifiableSet(incoming.keySet());
+        return getIncomingEdges(null);
     }
 
     @Override

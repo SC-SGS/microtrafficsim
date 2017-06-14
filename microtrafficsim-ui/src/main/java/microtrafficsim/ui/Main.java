@@ -15,10 +15,10 @@ import java.io.File;
  * @author Maximilian Luz, Dominic Parga Cacheiro
  */
 public class Main {
-//    public static final File OPTIONAL_MAP_FILE = new File
-//            ("/Users/Dominic/Documents/Studium/Bachelor_of_Disaster/microtrafficsim/simulation_files/maps/" +
-//                    "Stuttgart.mtsmap");
-    public static final File OPTIONAL_MAP_FILE = null;
+    public static final File OPTIONAL_MAP_FILE = new File
+            ("/Users/Dominic/Documents/Studium/Bachelor_of_Disaster/microtrafficsim/simulation_files/maps/" +
+                    "Stuttgart.mtsmap");
+//    public static final File OPTIONAL_MAP_FILE = null;
 
 
     public static void main(String[] args) throws Exception {

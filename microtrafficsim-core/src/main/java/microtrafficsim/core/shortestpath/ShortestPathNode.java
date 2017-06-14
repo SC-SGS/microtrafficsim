@@ -20,7 +20,9 @@ public interface ShortestPathNode<E extends ShortestPathEdge> extends Mappable {
     Set<? extends E> getLeavingEdges(E incoming);
 
     /**
+     * @param leaving The incoming edges are depending on the leaving edge.
+     *                 Therefore, this parameter is needed.
      * @return A set of all edges that are coming in this node
      */
-    Set<? extends E> getIncomingEdges();
+    Set<? extends E> getIncomingEdges(E leaving);
 }

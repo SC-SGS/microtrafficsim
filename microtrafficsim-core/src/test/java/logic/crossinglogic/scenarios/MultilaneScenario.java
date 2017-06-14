@@ -30,8 +30,9 @@ public class MultilaneScenario extends QueueScenarioSmall {
                 config.seed,
                 (id, seed, scenario, metaRoute) -> {
                     Vehicle vehicle;
-                    if (metaRoute instanceof SlowRoute)
+                    if (metaRoute instanceof SlowRoute) {
                         vehicle = new Car(id, 1, scenario.getConfig().visualization.style);
+                    }
                     else
                         vehicle = new Car(id, scenario.getConfig().visualization.style);
                     Driver driver = new BasicDriver(seed, 0, metaRoute.getSpawnDelay());
@@ -83,7 +84,16 @@ public class MultilaneScenario extends QueueScenarioSmall {
 
         RouteContainer routeContainer = new SortedRouteContainer();
         routeContainer.add(new SlowRoute(tr, bl));
-        routeContainer.add(tr, bl, 4);
+        routeContainer.add(new SlowRoute(tr, bl));
+        routeContainer.add(new SlowRoute(tr, bl));
+        routeContainer.add(new SlowRoute(tr, bl));
+
+        routeContainer.add(new SlowRoute(tr, bl, 16));
+        routeContainer.add(new SlowRoute(tr, bl, 16));
+        routeContainer.add(new SlowRoute(tr, bl, 16));
+        routeContainer.add(new SlowRoute(tr, bl, 16));
+
+        routeContainer.add(tr, bl, 32);
         addSubScenario(routeContainer);
     }
 
@@ -113,6 +123,11 @@ public class MultilaneScenario extends QueueScenarioSmall {
 
         public SlowRoute(Node origin, Node destination, int spawndelay) {
             super(origin, destination, spawndelay);
+        }
+
+        @Override
+        public MetaRoute clone() {
+            return new SlowRoute(getOrigin(), getDestination(), getSpawnDelay());
         }
     }
 }

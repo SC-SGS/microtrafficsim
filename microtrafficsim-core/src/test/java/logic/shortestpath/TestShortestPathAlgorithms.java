@@ -466,7 +466,7 @@ public class TestShortestPathAlgorithms {
                     node.addConnector(incoming.getLane(0), leaving.getLane(0));
                 }
             }
-            node.getLeavingEdges(null);
+            node.getLeavingEdges();
         }
     }
 }

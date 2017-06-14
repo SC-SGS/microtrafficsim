@@ -7,7 +7,9 @@ import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.math.MathUtils;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
+import org.slf4j.Logger;
 
 import java.util.LinkedList;
 import java.util.function.Function;
@@ -16,12 +18,16 @@ import java.util.function.Function;
  * @author Dominic Parga Cacheiro
  */
 public abstract class BasicVehicle implements Vehicle {
+    public static final Logger logger = new EasyMarkableLogger(BasicVehicle.class);
+
+
     /* general */
     private final LinkedList<VehicleStateListener> stateListeners;
 
     /* variable information */
     private Driver driver;
     private DirectedEdge.Lane lane;
+    private int outermostTurningLaneIndex;
 
     /* dynamic information */
     private VehicleState state;
@@ -88,7 +94,7 @@ public abstract class BasicVehicle implements Vehicle {
                 strBuilder.appendln("node.id = " + lane.getEdge().getDestination().getId());
             }
         }
-        strBuilder.decLevel().appendln("</" + getClass().getSimpleName() + ">");
+        strBuilder.decLevel().append("</" + getClass().getSimpleName() + ">");
         return strBuilder.toString();
     }
 
@@ -145,6 +151,28 @@ public abstract class BasicVehicle implements Vehicle {
         lane.insertVehicle(this, cellPosition);
         if (entity.getVisualization() != null)
             entity.getVisualization().updatePosition();
+
+
+        DirectedEdge nextEdge = null;
+        if (!driver.getRoute().isEmpty()) {
+            nextEdge = driver.peekRoute();
+            outermostTurningLaneIndex = lane.getDestination().findOutermostTurningLaneIndex(lane.getEdge(), nextEdge);
+            if (outermostTurningLaneIndex < 0) { // todo dirty bugfix
+                logger.warn("Vehicle of id " + id + " has wrong route due to middlenode bug in A*. Outermost turning " +
+                        "lane index is set to 0 and route is cleared.");
+                outermostTurningLaneIndex = 0;
+                while (!driver.getRoute().isEmpty())
+                    driver.getRoute().pop();
+            }
+        } else {
+            outermostTurningLaneIndex = 0;
+        }
+
+        assert outermostTurningLaneIndex >= 0 : "Outermost turning lane index = " + outermostTurningLaneIndex + " < 0"
+                + "\n" + this
+                + "\n" + lane.getEdge()
+                + "\n" + lane.getDestination().toStringVerbose()
+                + "\n" + nextEdge;
     }
 
     private void drive() {
@@ -154,11 +182,41 @@ public abstract class BasicVehicle implements Vehicle {
             entity.getVisualization().updatePosition();
     }
 
+    private void checkedChangeToOuterLane() {
+        boolean willChangeLane = true;
+        if (lane.isOutermost())
+            willChangeLane = false;
+        else {
+            Vehicle outerVehicle = lane.getOuterVehicle(this);
+            if (outerVehicle != null)
+                if (cellPosition - outerVehicle.getCellPosition() <= 1)
+                    willChangeLane = false;
+        }
+
+        if (willChangeLane)
+            changeToOuterLane();
+    }
+
     private void changeToOuterLane() {
         lane.removeVehicle(this);
         lane = lane.getOuterLane();
         assert lane != null : "Lane after changing to outer lane is null.";
         lane.insertVehicle(this, cellPosition);
+    }
+
+    private void checkedChangeToInnerLane() {
+        boolean willChangeLane = true;
+        if (lane.isInnermost())
+            willChangeLane = false;
+        else {
+            Vehicle innerVehicle = lane.getInnerVehicle(this);
+            if (innerVehicle != null)
+                if (cellPosition - innerVehicle.getCellPosition() <= 1)
+                    willChangeLane = false;
+        }
+
+        if (willChangeLane)
+            changeToInnerLane();
     }
 
     private void changeToInnerLane() {
@@ -244,20 +302,34 @@ public abstract class BasicVehicle implements Vehicle {
 
     @Override
     public void changeLane() {
-        // todo overtaking
+        if (lane.getDestination().isRegistered(this)) {
+            tendToOutermostLane();
+        } else {
+            tendToOvertaking();
+        }
+    }
 
-        // tend to go on outer lane
-        if (!lane.isOutermost()) {
-            boolean willChangeLane = true;
+    private void tendToOutermostLane() {
+        if (lane.getIndex() > outermostTurningLaneIndex) {
+            checkedChangeToOuterLane();
+        } else if (lane.getIndex() < outermostTurningLaneIndex) {
+            checkedChangeToInnerLane();
+        }
+    }
 
-            Vehicle outerVehicle = lane.getOuterVehicle(this);
-            if (outerVehicle != null) {
-                if (cellPosition - outerVehicle.getCellPosition() <= 1)
-                    willChangeLane = false;
+    private void tendToOvertaking() {
+        Vehicle front = lane.getVehicleInFront(this);
+        if (front != null) {
+            int distance = front.getCellPosition() - cellPosition;
+
+            if (distance < getMaxVelocity()) {
+                if (velocity > front.getVelocity())
+                    checkedChangeToInnerLane();
+            } else {
+                tendToOutermostLane();
             }
-
-            if (willChangeLane)
-                changeToOuterLane();
+        } else {
+            tendToOutermostLane();
         }
     }
 
