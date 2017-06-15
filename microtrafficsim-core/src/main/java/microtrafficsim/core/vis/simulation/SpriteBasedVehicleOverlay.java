@@ -262,10 +262,9 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
             if (lane == null) continue;
 
             DirectedEdge edge = lane.getEdge();
-            StreetEntity street = edge.getEntity();
 
             double laneOffset;
-            if (street.getForwardEdge() != null && street.getBackwardEdge() != null) {
+            if (v.isCurrentStreetBidirectional()) {
                 laneOffset = edge.getNumberOfLanes() - lane.getIndex() - 0.5;
             } else {
                 laneOffset = (edge.getNumberOfLanes() - 1.0) / 2.0 - lane.getIndex();

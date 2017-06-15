@@ -18,10 +18,17 @@ public class Vehicle implements VisualizationVehicleEntity {
     private static final float MIN_TARGET_DISTANCE = 1.0f;
 
     private VehicleEntity entity;
-    private Coordinate    position;
-    private double        layer;
-    private Coordinate    target;
+
     private Color         color;
+
+    private Coordinate    position;
+    private Coordinate    target;
+    private double        layer;
+
+    private boolean isStreetBidirectional;
+    private int nLanesOnEdge;
+    private int idxLane = -1;
+
 
 
     /**
@@ -124,6 +131,10 @@ public class Vehicle implements VisualizationVehicleEntity {
         pSegment /= dSegment;
         position.lat = a.lat + (b.lat - a.lat) * pSegment;
         position.lon = a.lon + (b.lon - a.lon) * pSegment;
+
+        isStreetBidirectional = edge.getEntity().getForwardEdge() != null && edge.getEntity().getBackwardEdge() != null;
+        nLanesOnEdge = edge.getNumberOfLanes();
+        idxLane = entity.getLogic().getLane().getIndex();
     }
 
 
@@ -152,5 +163,9 @@ public class Vehicle implements VisualizationVehicleEntity {
      */
     public Coordinate getTarget() {
         return target;
+    }
+
+    public boolean isCurrentStreetBidirectional() {
+        return isStreetBidirectional;
     }
 }
