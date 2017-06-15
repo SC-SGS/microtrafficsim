@@ -190,6 +190,20 @@ public class VehicleSimulation implements Simulation {
                 );
 
                 long stamp = System.nanoTime();
+                vehicleStepExecutor.willChangeLaneAll(scenario);
+                logger.trace(
+                        StringUtils.buildTimeString("time willChangeLane() etc. = ", System.nanoTime() - stamp, "ns")
+                                .toString()
+                );
+
+                stamp = System.nanoTime();
+                vehicleStepExecutor.changeLaneAll(scenario);
+                logger.trace(
+                        StringUtils.buildTimeString("time changeLane() etc. = ", System.nanoTime() - stamp, "ns")
+                                .toString()
+                );
+
+                stamp = System.nanoTime();
                 vehicleStepExecutor.brakeAll(scenario);
                 logger.trace(
                         StringUtils.buildTimeString("time brake() etc. = ", System.nanoTime() - stamp, "ns").toString()
@@ -220,6 +234,8 @@ public class VehicleSimulation implements Simulation {
                 );
             } else {
                 vehicleStepExecutor.accelerateAll(scenario);
+                vehicleStepExecutor.willChangeLaneAll(scenario);
+                vehicleStepExecutor.changeLaneAll(scenario);
                 vehicleStepExecutor.brakeAll(scenario);
                 vehicleStepExecutor.moveAll(scenario);
                 vehicleStepExecutor.didMoveAll(scenario);

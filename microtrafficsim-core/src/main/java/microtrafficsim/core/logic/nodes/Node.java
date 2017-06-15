@@ -376,6 +376,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
             anyChangeSinceUpdate = true;
         }
 
+        registerLog.remove(vehicle);
         return true;
     }
 

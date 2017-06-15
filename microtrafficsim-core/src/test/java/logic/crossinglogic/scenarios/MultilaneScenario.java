@@ -30,9 +30,8 @@ public class MultilaneScenario extends QueueScenarioSmall {
                 config.seed,
                 (id, seed, scenario, metaRoute) -> {
                     Vehicle vehicle;
-                    if (metaRoute instanceof SlowRoute) {
+                    if (metaRoute instanceof SlowRoute)
                         vehicle = new Car(id, 1, scenario.getConfig().visualization.style);
-                    }
                     else
                         vehicle = new Car(id, scenario.getConfig().visualization.style);
                     Driver driver = new BasicDriver(seed, 0, metaRoute.getSpawnDelay());

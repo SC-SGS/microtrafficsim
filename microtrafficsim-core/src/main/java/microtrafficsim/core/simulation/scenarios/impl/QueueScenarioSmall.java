@@ -4,7 +4,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
+import microtrafficsim.core.shortestpath.astar.AStars;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
@@ -29,7 +29,7 @@ public class QueueScenarioSmall extends BasicScenario {
 
     protected QueueScenarioSmall(SimulationConfig config, Graph graph, ScenarioBuilder scenarioBuilder) {
         super(config, graph);
-        scout = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
+        scout = AStars.shortestPathAStar(config.metersPerCell);
         routeContainers = new ArrayList<>();
         curIdx = -1;
         isLooping = false;

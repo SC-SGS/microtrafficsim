@@ -28,6 +28,7 @@ public abstract class BasicVehicle implements Vehicle {
     private Driver driver;
     private DirectedEdge.Lane lane;
     private int outermostTurningLaneIndex;
+    private LaneChangeDirection laneChangeDirection;
 
     /* dynamic information */
     private VehicleState state;
@@ -52,6 +53,7 @@ public abstract class BasicVehicle implements Vehicle {
 
         /* variable information */
         lane = null;
+        laneChangeDirection = LaneChangeDirection.NONE;
 
         /* dynamic information */
         state               = VehicleState.NOT_SPAWNED;
@@ -153,26 +155,15 @@ public abstract class BasicVehicle implements Vehicle {
             entity.getVisualization().updatePosition();
 
 
-        DirectedEdge nextEdge = null;
+        DirectedEdge nextEdge;
         if (!driver.getRoute().isEmpty()) {
             nextEdge = driver.peekRoute();
             outermostTurningLaneIndex = lane.getDestination().findOutermostTurningLaneIndex(lane.getEdge(), nextEdge);
-            if (outermostTurningLaneIndex < 0) { // todo dirty bugfix
-                logger.warn("Vehicle of id " + id + " has wrong route due to middlenode bug in A*. Outermost turning " +
-                        "lane index is set to 0 and route is cleared.");
-                outermostTurningLaneIndex = 0;
-                while (!driver.getRoute().isEmpty())
-                    driver.getRoute().pop();
-            }
         } else {
             outermostTurningLaneIndex = 0;
         }
 
-        assert outermostTurningLaneIndex >= 0 : "Outermost turning lane index = " + outermostTurningLaneIndex + " < 0"
-                + "\n" + this
-                + "\n" + lane.getEdge()
-                + "\n" + lane.getDestination().toStringVerbose()
-                + "\n" + nextEdge;
+        assert outermostTurningLaneIndex >= 0 : "Outermost turning lane index = " + outermostTurningLaneIndex + " < 0";
     }
 
     private void drive() {
@@ -182,19 +173,64 @@ public abstract class BasicVehicle implements Vehicle {
             entity.getVisualization().updatePosition();
     }
 
-    private void checkedChangeToOuterLane() {
-        boolean willChangeLane = true;
+
+    private void tendToOvertaking() {
+        Vehicle front = lane.getVehicleInFront(this);
+        if (front != null) {
+            int distance = front.getCellPosition() - cellPosition;
+
+            if (distance < getMaxVelocity()) {
+                if (velocity > front.getVelocity())
+                    checkChangeToInnerLane();
+            } else {
+                tendToOutermostLane();
+            }
+        } else {
+            tendToOutermostLane();
+        }
+    }
+
+    private void tendToOutermostLane() {
+        if (lane.getIndex() > outermostTurningLaneIndex) {
+            checkChangeToOuterLane();
+        } else if (lane.getIndex() < outermostTurningLaneIndex) {
+            checkChangeToInnerLane();
+        }
+    }
+
+    private void checkChangeToOuterLane() {
+        laneChangeDirection = LaneChangeDirection.OUTER;
+
         if (lane.isOutermost())
-            willChangeLane = false;
+            laneChangeDirection = LaneChangeDirection.NONE;
         else {
             Vehicle outerVehicle = lane.getOuterVehicle(this);
             if (outerVehicle != null)
-                if (cellPosition - outerVehicle.getCellPosition() <= 1)
-                    willChangeLane = false;
+                if (cellPosition - outerVehicle.getCellPosition() <= 0)
+                    laneChangeDirection = LaneChangeDirection.NONE;
         }
+    }
 
-        if (willChangeLane)
-            changeToOuterLane();
+    private void checkChangeToInnerLane() {
+        laneChangeDirection = LaneChangeDirection.INNER;
+
+        if (lane.isInnermost()) {
+            laneChangeDirection = LaneChangeDirection.NONE;
+        } else {
+            // check for second inner vehicle
+            Vehicle innerVehicle = lane.getSecondInnerVehicle(this);
+            if (innerVehicle != null)
+                if (cellPosition - innerVehicle.getCellPosition() <= 0)
+                    laneChangeDirection = LaneChangeDirection.NONE;
+
+            // check for inner vehicle
+            if (laneChangeDirection != LaneChangeDirection.NONE) {
+                innerVehicle = lane.getInnerVehicle(this);
+                if (innerVehicle != null)
+                    if (cellPosition - innerVehicle.getCellPosition() <= 0)
+                        laneChangeDirection = LaneChangeDirection.NONE;
+            }
+        }
     }
 
     private void changeToOuterLane() {
@@ -204,25 +240,11 @@ public abstract class BasicVehicle implements Vehicle {
         lane.insertVehicle(this, cellPosition);
     }
 
-    private void checkedChangeToInnerLane() {
-        boolean willChangeLane = true;
-        if (lane.isInnermost())
-            willChangeLane = false;
-        else {
-            Vehicle innerVehicle = lane.getInnerVehicle(this);
-            if (innerVehicle != null)
-                if (cellPosition - innerVehicle.getCellPosition() <= 1)
-                    willChangeLane = false;
-        }
-
-        if (willChangeLane)
-            changeToInnerLane();
-    }
-
     private void changeToInnerLane() {
+        int index = lane.getIndex();
         lane.removeVehicle(this);
         lane = lane.getInnerLane();
-        assert lane != null : "Lane after changing to inner lane is null.";
+        assert lane != null : "Lane after changing to inner lane is null. Old idx = " + index;
         lane.insertVehicle(this, cellPosition);
     }
 
@@ -301,35 +323,22 @@ public abstract class BasicVehicle implements Vehicle {
     }
 
     @Override
-    public void changeLane() {
-        if (lane.getDestination().isRegistered(this)) {
+    public void willChangeLane() {
+        laneChangeDirection = LaneChangeDirection.NONE;
+
+        if (shouldRegister()) {
             tendToOutermostLane();
         } else {
             tendToOvertaking();
         }
     }
 
-    private void tendToOutermostLane() {
-        if (lane.getIndex() > outermostTurningLaneIndex) {
-            checkedChangeToOuterLane();
-        } else if (lane.getIndex() < outermostTurningLaneIndex) {
-            checkedChangeToInnerLane();
-        }
-    }
-
-    private void tendToOvertaking() {
-        Vehicle front = lane.getVehicleInFront(this);
-        if (front != null) {
-            int distance = front.getCellPosition() - cellPosition;
-
-            if (distance < getMaxVelocity()) {
-                if (velocity > front.getVelocity())
-                    checkedChangeToInnerLane();
-            } else {
-                tendToOutermostLane();
-            }
-        } else {
-            tendToOutermostLane();
+    @Override
+    public void changeLane() {
+        if (laneChangeDirection == LaneChangeDirection.OUTER) {
+            changeToOuterLane();
+        } else if (laneChangeDirection == LaneChangeDirection.INNER) {
+            changeToInnerLane();
         }
     }
 
@@ -407,8 +416,13 @@ public abstract class BasicVehicle implements Vehicle {
     public void didMove() {
         didOneSimulationStep();
 
-        boolean unregisterVehicle = true;
+        if (shouldRegister())
+            lane.getDestination().registerVehicle(this);
+        else
+            lane.getDestination().unregisterVehicle(this);
+    }
 
+    private boolean shouldRegister() {
         // the order of the if-statements is chosen by their runtime
         // check for:
         // - standing at the end of the road?
@@ -416,19 +430,13 @@ public abstract class BasicVehicle implements Vehicle {
         // - Is vehicle on the correct lane? If not, it has to change lane before register
         // - Does vehicle have front vehicles? If yes, it doesn't have to register.
         int distance = lane.getLength() - cellPosition;
-        if (getMaxVelocity() >= distance) {
-            if (!driver.getRoute().isEmpty()) {
-                if (lane.getDestination().isLaneCorrect(lane, driver.peekRoute())) {
-                    if (!lane.hasVehicleInFront(this)) {
-                        lane.getDestination().registerVehicle(this);
-                        unregisterVehicle = false;
-                    }
-                }
-            }
-        }
+        if (getMaxVelocity() >= distance)
+            if (!driver.getRoute().isEmpty())
+                if (lane.getDestination().isLaneCorrect(lane, driver.peekRoute()))
+                    if (!lane.hasVehicleInFront(this))
+                        return true;
 
-        if (unregisterVehicle)
-            lane.getDestination().unregisterVehicle(this);
+        return false;
     }
 
     @Override

@@ -29,10 +29,33 @@ public class MultiThreadedVehicleStepExecutor implements VehicleStepExecutor {
     public void accelerateAll(Scenario scenario) {
         try {
             delegator.doTask(
-                    (vehicle) -> {
-                        vehicle.accelerate();
-                        vehicle.changeLane();
-                    },
+                    Vehicle::accelerate,
+                    scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
+                    scenario.getConfig().multiThreading.vehiclesPerRunnable
+            );
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void willChangeLaneAll(Scenario scenario) {
+        try {
+            delegator.doTask(
+                    Vehicle::willChangeLane,
+                    scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
+                    scenario.getConfig().multiThreading.vehiclesPerRunnable
+            );
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void changeLaneAll(Scenario scenario) {
+        try {
+            delegator.doTask(
+                    Vehicle::changeLane,
                     scenario.getVehicleContainer().getSpawnedVehicles().iterator(),
                     scenario.getConfig().multiThreading.vehiclesPerRunnable
             );

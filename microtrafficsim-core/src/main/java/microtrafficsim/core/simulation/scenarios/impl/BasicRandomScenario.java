@@ -4,7 +4,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
+import microtrafficsim.core.shortestpath.astar.AStars;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
@@ -56,8 +56,8 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
         fastestWayProbability = 0.7f;
 
         /* scout factory */
-        fastestPathAlg = BidirectionalAStars.fastestPathAStar(config.metersPerCell, config.globalMaxVelocity);
-        shortestPathAlg = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
+        fastestPathAlg = AStars.fastestPathAStar(config.metersPerCell, config.globalMaxVelocity);
+        shortestPathAlg = AStars.shortestPathAStar(config.metersPerCell);
     }
 
     public abstract void redefineMetaRoutes();

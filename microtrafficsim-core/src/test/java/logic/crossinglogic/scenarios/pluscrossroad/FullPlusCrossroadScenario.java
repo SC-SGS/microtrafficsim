@@ -28,7 +28,6 @@ public class FullPlusCrossroadScenario extends AbstractPlusCrossroadScenario {
      * @return the given config updated; just for practical purpose
      */
     public static SimulationConfig setupConfig(SimulationConfig config) {
-
         AbstractPlusCrossroadScenario.setupConfig(config);
 
         config.maxVehicleCount                            = 2;

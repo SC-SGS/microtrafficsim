@@ -50,6 +50,8 @@ public interface Vehicle extends LogicVehicleEntity {
     */
     void accelerate();
 
+    void willChangeLane();
+
     void changeLane();
 
     void brake();
@@ -64,4 +66,10 @@ public interface Vehicle extends LogicVehicleEntity {
     int getVelocity();
 
     int getMaxVelocity();
+
+
+
+    enum LaneChangeDirection {
+        OUTER, INNER, NONE
+    }
 }

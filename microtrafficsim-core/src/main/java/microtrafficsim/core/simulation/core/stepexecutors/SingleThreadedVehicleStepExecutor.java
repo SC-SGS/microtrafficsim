@@ -15,6 +15,20 @@ public class SingleThreadedVehicleStepExecutor implements VehicleStepExecutor {
     public void accelerateAll(Scenario scenario) {
         for (Vehicle vehicle : scenario.getVehicleContainer().getSpawnedVehicles()) {
             vehicle.accelerate();
+            vehicle.willChangeLane();
+        }
+    }
+
+    @Override
+    public void willChangeLaneAll(Scenario scenario) {
+        for (Vehicle vehicle : scenario.getVehicleContainer().getSpawnedVehicles()) {
+            vehicle.willChangeLane();
+        }
+    }
+
+    @Override
+    public void changeLaneAll(Scenario scenario) {
+        for (Vehicle vehicle : scenario.getVehicleContainer().getSpawnedVehicles()) {
             vehicle.changeLane();
         }
     }

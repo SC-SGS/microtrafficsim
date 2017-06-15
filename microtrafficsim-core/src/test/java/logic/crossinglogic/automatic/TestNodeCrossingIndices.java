@@ -6,6 +6,7 @@ import logic.crossinglogic.scenarios.pluscrossroad.FullPlusCrossroadScenario;
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.logic.Direction;
 import microtrafficsim.core.logic.nodes.Node;
+import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
@@ -18,6 +19,7 @@ import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.VehicleSimulation;
+import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.math.Geometry;
 import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.math.Vec2d;
@@ -33,6 +35,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 

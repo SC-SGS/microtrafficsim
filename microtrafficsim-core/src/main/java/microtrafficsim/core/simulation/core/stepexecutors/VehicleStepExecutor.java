@@ -16,6 +16,10 @@ public interface VehicleStepExecutor {
      */
     void accelerateAll(Scenario scenario);
 
+    void willChangeLaneAll(Scenario scenario);
+
+    void changeLaneAll(Scenario scenario);
+
     /**
      * Prepares the moving step by calculating breaking.
      *

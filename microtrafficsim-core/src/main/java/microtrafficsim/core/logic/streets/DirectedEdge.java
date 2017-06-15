@@ -294,11 +294,23 @@ public class DirectedEdge
          */
         public Vehicle getInnerVehicle(Vehicle vehicle) {
             edge.lanes.lockLane(index + 1);
-            Vehicle outer = edge.lanes.get(index + 1, vehicle.getCellPosition());
-            if (outer == null)
-                outer = edge.lanes.getPrevOf(index + 1, vehicle.getCellPosition());
+            Vehicle inner = edge.lanes.get(index + 1, vehicle.getCellPosition());
+            if (inner == null)
+                inner = edge.lanes.getPrevOf(index + 1, vehicle.getCellPosition());
             edge.lanes.unlockLane(index + 1);
-            return outer;
+            return inner;
+        }
+
+        public Vehicle getSecondInnerVehicle(Vehicle vehicle) {
+            if (index + 2 >= edge.getNumberOfLanes())
+                return null;
+
+            edge.lanes.lockLane(index + 2);
+            Vehicle inner = edge.lanes.get(index + 2, vehicle.getCellPosition());
+            if (inner == null)
+                inner = edge.lanes.getPrevOf(index + 2, vehicle.getCellPosition());
+            edge.lanes.unlockLane(index + 2);
+            return inner;
         }
 
         /**
