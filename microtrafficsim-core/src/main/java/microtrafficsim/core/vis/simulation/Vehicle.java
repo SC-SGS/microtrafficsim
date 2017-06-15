@@ -26,8 +26,6 @@ public class Vehicle implements VisualizationVehicleEntity {
     private double        layer;
 
     private boolean isStreetBidirectional;
-    private int nLanesOnEdge;
-    private int idxLane = -1;
 
 
 
@@ -133,8 +131,6 @@ public class Vehicle implements VisualizationVehicleEntity {
         position.lon = a.lon + (b.lon - a.lon) * pSegment;
 
         isStreetBidirectional = edge.getEntity().getForwardEdge() != null && edge.getEntity().getBackwardEdge() != null;
-        nLanesOnEdge = edge.getNumberOfLanes();
-        idxLane = entity.getLogic().getLane().getIndex();
     }
 
 
