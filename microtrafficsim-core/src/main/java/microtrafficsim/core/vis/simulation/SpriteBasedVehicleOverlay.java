@@ -1,10 +1,7 @@
 package microtrafficsim.core.vis.simulation;
 
 import com.jogamp.opengl.GL3;
-import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
-import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;

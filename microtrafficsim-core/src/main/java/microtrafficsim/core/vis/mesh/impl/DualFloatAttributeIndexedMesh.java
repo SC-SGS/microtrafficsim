@@ -29,13 +29,15 @@ import java.util.Set;
  *
  * @author Maximilian Luz
  */
-public class SingleFloatAttributeIndexedMesh implements Mesh {
+public class DualFloatAttributeIndexedMesh implements Mesh {
     private State state;
 
     private int usage;
     private int mode;
-    private VertexAttribute attribute;
-    private DataType datatype;
+    private VertexAttribute attrib1;
+    private VertexAttribute attrib2;
+    private DataType datatype1;
+    private DataType datatype2;
 
     private FloatBuffer vertices;
     private IntBuffer   indices;
@@ -44,7 +46,8 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
     private BufferStorage     ibo;
     private VertexArrayObject vao;    // from OpenGL 3.1 upwards a VAO is always required for drawing
 
-    private VertexAttributePointer ptrAttrib;
+    private VertexAttributePointer ptrAttrib1;
+    private VertexAttributePointer ptrAttrib2;
 
     private List<Bucket> buckets;
 
@@ -56,21 +59,25 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
      *
      * @param usage     the OpenGL usage of the mesh.
      * @param mode      the OpenGL draw-mode of the mesh.
-     * @param attribute the attribute stored in the vertex-buffer of this mesh, must be a float compatible attribute.
-     * @param datatype  the OpenGL data-type of the data to be drawn, must be a single-precision floating-point type
+     * @param attrib1   the first attribute stored in the vertex-buffer of this mesh, must be a float compatible attribute.
+     * @param attrib2   the second attribute stored in the vertex-buffer of this mesh, must be a float compatible attribute.
+     * @param datatype1 the OpenGL data-type of the first attribute to be drawn, must be a single-precision floating-point type
+     * @param datatype2 the OpenGL data-type of the second attribute to be drawn, must be a single-precision floating-point type
      *                  compatible with {@code attribute}.
      * @param vertices  the vertex buffer.
      * @param indices   the index buffer.
      */
-    public SingleFloatAttributeIndexedMesh(int usage, int mode, VertexAttribute attribute, DataType datatype,
-                                           FloatBuffer vertices, IntBuffer indices)
+    public DualFloatAttributeIndexedMesh(int usage, int mode, VertexAttribute attrib1, VertexAttribute attrib2,
+                                         DataType datatype1, DataType datatype2, FloatBuffer vertices, IntBuffer indices)
     {
         this.state = State.UNINITIALIZED;
 
         this.usage = usage;
         this.mode  = mode;
-        this.attribute = attribute;
-        this.datatype = datatype;
+        this.attrib1 = attrib1;
+        this.attrib2 = attrib2;
+        this.datatype1 = datatype1;
+        this.datatype2 = datatype2;
 
         this.vertices = vertices;
         this.indices  = indices;
@@ -79,21 +86,6 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
         this.ibo = null;
 
         this.ltObservers = new HashSet<>();
-    }
-
-
-    /**
-     * Creates a new mesh with the given properties, using {@code VertexAttributes.POSITION2} as attribute and
-     * {@code DataTypes.FLOAT_2} as data-type.
-     *
-     * @param usage     the OpenGL usage of the mesh.
-     * @param mode      the OpenGL draw-mode of the mesh.
-     * @param vertices  the vertex buffer.
-     * @param indices   the index buffer.
-     * @return the new mesh.
-     */
-    public static SingleFloatAttributeIndexedMesh newPos2Mesh(int usage, int mode, FloatBuffer vertices, IntBuffer indices) {
-        return new SingleFloatAttributeIndexedMesh(usage, mode, VertexAttributes.POSITION2, DataTypes.FLOAT_2, vertices, indices);
     }
 
     /**
@@ -106,8 +98,14 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
      * @param indices   the index buffer.
      * @return the new mesh.
      */
-    public static SingleFloatAttributeIndexedMesh newPos3Mesh(int usage, int mode, FloatBuffer vertices, IntBuffer indices) {
-        return new SingleFloatAttributeIndexedMesh(usage, mode, VertexAttributes.POSITION3, DataTypes.FLOAT_3, vertices, indices);
+    public static DualFloatAttributeIndexedMesh newPos3LineMesh(int usage, int mode, FloatBuffer vertices, IntBuffer indices) {
+        return new DualFloatAttributeIndexedMesh(
+                usage, mode,
+                VertexAttributes.POSITION3,
+                VertexAttributes.LINE,
+                DataTypes.FLOAT_3,
+                DataTypes.FLOAT_3,
+                vertices, indices);
     }
 
 
@@ -152,7 +150,10 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
         ibo = BufferStorage.create(gl, GL2GL3.GL_ELEMENT_ARRAY_BUFFER);
         vao = VertexArrayObject.create(gl);
 
-        ptrAttrib = VertexAttributePointer.create(attribute, datatype, vbo);
+        final int len = (datatype1.size + datatype2.size) * 4;
+        final int offs1 = datatype1.size * 4;
+        ptrAttrib1 = VertexAttributePointer.create(attrib1, datatype1, vbo, len, 0);
+        ptrAttrib2 = VertexAttributePointer.create(attrib2, datatype2, vbo, len, offs1);
 
         state = State.INITIALIZED;
         return true;
@@ -211,8 +212,11 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
         vbo.bind(gl);
         ibo.bind(gl);
 
-        ptrAttrib.set(gl);
-        ptrAttrib.enable(gl);
+        ptrAttrib1.set(gl);
+        ptrAttrib1.enable(gl);
+
+        ptrAttrib2.set(gl);
+        ptrAttrib2.enable(gl);
 
         gl.glDrawElements(mode, indices.capacity(), GL2GL3.GL_UNSIGNED_INT, 0);
 
@@ -243,8 +247,11 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
         vbo.bind(gl);
         ibo.bind(gl);
 
-        ptrAttrib.set(gl);
-        ptrAttrib.enable(gl);
+        ptrAttrib1.set(gl);
+        ptrAttrib1.enable(gl);
+
+        ptrAttrib2.set(gl);
+        ptrAttrib2.enable(gl);
 
         vao.unbind(gl);
 
@@ -310,8 +317,11 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
             vbo.bind(gl);
             ibo.bind(gl);
 
-            ptrAttrib.set(gl);
-            ptrAttrib.enable(gl);
+            ptrAttrib1.set(gl);
+            ptrAttrib1.enable(gl);
+
+            ptrAttrib2.set(gl);
+            ptrAttrib2.enable(gl);
 
             gl.glDrawElements(mode, count, GL2GL3.GL_UNSIGNED_INT, offset * 4);
 

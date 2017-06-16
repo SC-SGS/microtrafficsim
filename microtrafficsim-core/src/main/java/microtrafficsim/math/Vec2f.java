@@ -49,6 +49,15 @@ public class Vec2f {
     }
 
     /**
+     * Constructs a new vector by copying the specified one, transforms doubles to float.
+     *
+     * @param xy the vector from which the values should be copied.
+     */
+    public Vec2f(Vec2d xy) {
+        this((float) xy.x, (float) xy.y);
+    }
+
+    /**
      * Sets the components of this vector.
      *
      * @param x the {@code x}-component

@@ -128,6 +128,8 @@ public class TileBasedVisualizer implements Visualizer {
         attributes.putDefaultAttributeBinding("a_texcoord", VertexAttributes.TEXCOORD2);
 
         attributes.putDefaultAttributeBinding("a_color", VertexAttributes.COLOR);
+
+        attributes.putDefaultAttributeBinding("a_line", VertexAttributes.LINE);
     }
 
 

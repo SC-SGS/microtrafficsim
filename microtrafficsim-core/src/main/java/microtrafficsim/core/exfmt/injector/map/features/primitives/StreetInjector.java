@@ -28,7 +28,8 @@ public class StreetInjector implements ExchangeFormat.Injector<Street> {
             return v;
         });
 
-        entity.set(StreetComponent.class, new StreetComponent(entity, src.layer, src.length, src.distances));
+        entity.set(StreetComponent.class, new StreetComponent(entity, src.layer, src.length, src.distances,
+                src.numLanesFwd, src.numLanesBwd));
 
         EntityManager mgr = fmt.getConfig().get(EntityManager.class);
         if (mgr != null) mgr.process(fmt, ctx, dst, entity);

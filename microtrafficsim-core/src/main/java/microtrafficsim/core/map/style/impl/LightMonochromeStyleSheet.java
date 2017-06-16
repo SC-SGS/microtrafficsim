@@ -78,71 +78,42 @@ public class LightMonochromeStyleSheet extends BasicStyleSheet {
     }
 
     @Override
-    protected float getStreetLineWidthOutline(String streetType, int zoom) {
+    protected float getStreetLaneWidth(String streetType, int zoom) {
         float offset = 0;
         float exp1 = 0;
 
         switch (streetType) {
             case "motorway":
             case "trunk":
-                offset = 50.f;
-                exp1   = 1.30f;
-                break;
-            case "primary":
-            case "secondary":
-            case "tertiary":
-                offset = 40.f;
-                exp1   = 1.20f;
-                break;
-            case "unclassified":
-            case "residential":
-            case "road":
-                offset = 30.f;
-                exp1   = 1.15f;
-                break;
-            case "living_street":
-                offset = 25.f;
-                exp1   = 1.10f;
-                break;
-            default:
-                logger.info("The outline line width of " + streetType + " is not defined.");
-        }
-
-        return LINE_WIDTH_BASE_FUNCTION.get(offset, 20.f, exp1, 0.75f, zoom);
-    }
-
-    @Override
-    protected float getStreetLineWidthInline(String streetType, int zoom) {
-        float offset = 0;
-        float exp1 = 0;
-
-        switch (streetType) {
-            case "motorway":
-            case "trunk":
-                offset = 45.f;
+                offset = 45.0f;
                 exp1   = 1.32f;
                 break;
             case "primary":
             case "secondary":
             case "tertiary":
-                offset = 35.f;
+                offset = 42.5f;
                 exp1   = 1.22f;
                 break;
             case "unclassified":
             case "residential":
             case "road":
-                offset = 25.f;
+                offset = 40.0f;
                 exp1   = 1.17f;
                 break;
             case "living_street":
-                offset = 20.f;
+                offset = 37.5f;
                 exp1   = 1.12f;
                 break;
             default:
-                logger.info("The inline line width of " + streetType + " is not defined.");
+                logger.info("The lane width of " + streetType + " is not defined.");
         }
 
-        return LINE_WIDTH_BASE_FUNCTION.get(offset, 20.f, exp1, 0.3f, zoom);
+        return LINE_WIDTH_BASE_FUNCTION.get(offset * 12, 20.f, exp1, 0.3f, zoom);
+    }
+
+    @Override
+    protected float getStreetOutlineWidth(String streetType, int zoom) {
+        return LINE_WIDTH_BASE_FUNCTION.get(20.f, 22.5f, 1.5f, 0.3f, zoom);
     }
 
 

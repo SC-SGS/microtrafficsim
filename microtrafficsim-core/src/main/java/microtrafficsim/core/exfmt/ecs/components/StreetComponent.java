@@ -9,12 +9,18 @@ public class StreetComponent extends Component {
     private double layer;
     private double length;
     private double[] distances;
+    private int numLanesFwd;
+    private int numLanesBwd;
 
-    public StreetComponent(Entity entity, double layer, double length, double[] distances) {
+    public StreetComponent(Entity entity, double layer, double length, double[] distances, int numLanesFwd,
+                           int numLanesBwd)
+    {
         super(entity);
         this.layer = layer;
         this.length = length;
         this.distances = distances;
+        this.numLanesFwd = numLanesFwd;
+        this.numLanesBwd = numLanesBwd;
     }
 
 
@@ -42,5 +48,22 @@ public class StreetComponent extends Component {
 
     public void setDistances(double[] distances) {
         this.distances = distances;
+    }
+
+
+    public int getLanesFwd() {
+        return numLanesFwd;
+    }
+
+    public void setLanesFwd(int numLanesFwd) {
+        this.numLanesFwd = numLanesFwd;
+    }
+
+    public int getLanesBwd() {
+        return numLanesBwd;
+    }
+
+    public void setLanesBwd(int numLanesBwd) {
+        this.numLanesBwd = numLanesBwd;
     }
 }
