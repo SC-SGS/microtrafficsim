@@ -248,6 +248,21 @@ public abstract class BasicVehicle implements Vehicle {
         lane.insertVehicle(this, cellPosition);
     }
 
+
+    /**
+     * @return true, if there is a front vehicle
+     */
+    private boolean tryBrakingForFrontVehicle() {
+        Vehicle vehicleInFront = lane.getVehicleInFront(this);
+        if (vehicleInFront != null) {
+            int distance = vehicleInFront.getCellPosition() - cellPosition;
+            velocity = Math.min(velocity, distance - 1);
+            return true;
+        }
+
+        return false;
+    }
+
     /*
     |=============|
     | (i) Vehicle |
@@ -335,10 +350,14 @@ public abstract class BasicVehicle implements Vehicle {
 
     @Override
     public void changeLane() {
-        if (laneChangeDirection == LaneChangeDirection.OUTER) {
-            changeToOuterLane();
-        } else if (laneChangeDirection == LaneChangeDirection.INNER) {
-            changeToInnerLane();
+        if (laneChangeDirection != LaneChangeDirection.NONE) {
+            if (laneChangeDirection == LaneChangeDirection.OUTER) {
+                changeToOuterLane();
+            } else if (laneChangeDirection == LaneChangeDirection.INNER) {
+                changeToInnerLane();
+            }
+
+            lane.getDestination().unregisterVehicle(this);
         }
     }
 

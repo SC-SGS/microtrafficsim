@@ -23,6 +23,7 @@ import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
+import microtrafficsim.debug.overlay.ConnectorOverlay;
 import microtrafficsim.ui.gui.menues.MTSMenuBar;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
@@ -99,8 +100,9 @@ public class SimulationController implements GUIController {
 
     /* visualization and parsing */
     private final TileBasedMapViewer mapviewer; // has to be final for correct map update
-    private final VehicleOverlay     overlay;
+    private final VehicleOverlay     vehicleOverlay;
     private ScenarioAreaOverlay      scenarioAreaOverlay;
+    private ConnectorOverlay         connectorOverlay;
 
     private Graph streetgraph;
 
@@ -134,12 +136,12 @@ public class SimulationController implements GUIController {
 
         /* visualization and parsing */
         mapviewer = buildSetup.mapviewer;
-        overlay   = buildSetup.overlay;
+        vehicleOverlay = buildSetup.overlay;
 
         /* simulation */
         simulation      = buildSetup.simulation;
         scenarioBuilder = buildSetup.scenarioBuilder;
-        overlay.setSimulation(simulation);
+        vehicleOverlay.setSimulation(simulation);
 
         /* gui */
         frame = new JFrame(FrameTitle.DEFAULT.get());
@@ -211,8 +213,13 @@ public class SimulationController implements GUIController {
         /* overlays */
         scenarioAreaOverlay = new ScenarioAreaOverlay();
         SwingUtilities.invokeLater(() -> scenarioAreaOverlay.setEnabled(false, false, false));
-        mapviewer.addOverlay(0, scenarioAreaOverlay);
-        mapviewer.addOverlay(1, overlay);
+        mapviewer.addOverlay(1, scenarioAreaOverlay);
+        mapviewer.addOverlay(2, vehicleOverlay);
+
+        if (microtrafficsim.build.BuildSetup.CONNECTOR_OVERLAY_ENABLED) {
+            connectorOverlay = new ConnectorOverlay(mapviewer.getProjection(), config);
+            mapviewer.addOverlay(0, connectorOverlay);
+        }
 
 
         /* setup JFrame */
@@ -681,7 +688,7 @@ public class SimulationController implements GUIController {
             /* show map */
             if (success) {
                 simulation.removeCurrentScenario();
-                overlay.setEnabled(true);
+                vehicleOverlay.setEnabled(true);
                 scenarioAreaOverlay.setEnabled(true, true, false);
 
                 setNewFrameTitle = () -> updateFrameTitle(FrameTitle.DEFAULT, file);
@@ -712,6 +719,8 @@ public class SimulationController implements GUIController {
             if (result.obj0 != null) {
                 mapviewer.setMap(result.obj1);
                 streetgraph = result.obj0;
+                if (microtrafficsim.build.BuildSetup.CONNECTOR_OVERLAY_ENABLED)
+                    connectorOverlay.update(streetgraph);
 
                 return true;
             }

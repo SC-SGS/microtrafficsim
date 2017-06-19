@@ -14,7 +14,6 @@ import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.collections.FastSortedArrayList;
-import microtrafficsim.utils.collections.MultiSet;
 import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.functional.Procedure2;
@@ -46,8 +45,10 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
     private TreeMap<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> connectors;
 
     // edges
-    private TreeMap<DirectedEdge, Byte> leaving;     // edge, index(for crossing logic)
-    private TreeMap<DirectedEdge, Byte> incoming;    // edge, index(for crossing logic)
+    private final TreeSet<DirectedEdge> leaving;
+    private final TreeSet<DirectedEdge> incoming;
+    private final TreeMap<DirectedEdge.Lane, Byte> leavingLanes;     // lane, index(for crossing logic)
+    private final TreeMap<DirectedEdge.Lane, Byte> incomingLanes;     // lane, index(for crossing logic)
 
 
     /**
@@ -68,8 +69,10 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
 
         // edges
         connectors = new TreeMap<>();
-        leaving = new TreeMap<>();
-        incoming = new TreeMap<>();
+        leaving = new TreeSet<>();
+        incoming = new TreeSet<>();
+        leavingLanes = new TreeMap<>();
+        incomingLanes = new TreeMap<>();
     }
 
     public Key key() {
@@ -99,13 +102,12 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
             } builder.decLevel().appendln("</coordinate>").appendln();
 
 
-            Procedure2<String, Map<DirectedEdge, Byte>> edgesToString = (type, map) -> {
+            Procedure2<String, Set<DirectedEdge>> edgesToString = (type, set) -> {
                 builder.appendln("<" + type + " edges>").incLevel(); {
-                    Iterator<DirectedEdge> iter = map.keySet().iterator();
+                    Iterator<DirectedEdge> iter = set.iterator();
                     while (iter.hasNext()) {
                         DirectedEdge edge = iter.next();
                         builder.appendln(edge);
-                        builder.appendln("with crossing index = " + map.get(edge));
 
                         if (iter.hasNext())
                             builder.appendln();
@@ -188,14 +190,20 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
         }
 
         // (3) both SPAWNED => there is always a current edge and a next edge per vehicle
-        assert v1.getLane() != null : "Vehicle 1 in node-comparator has no directed edge!";
-        assert v2.getLane() != null : "Vehicle 2 in node-comparator has no directed edge!";
-        byte origin1        = incoming.get(v1.getLane().getEdge());
-        byte destination1   = leaving.get(v1.getDriver().peekRoute());
-        byte origin2        = incoming.get(v2.getLane().getEdge());
-        byte destination2   = leaving.get(v2.getDriver().peekRoute());
-        byte supremum = (byte) (1 + MathUtils.max(origin1, destination1, origin2, destination2));
+        assert v1.getLane() != null : "Vehicle 1 in node-comparator has no lane!";
+        assert v2.getLane() != null : "Vehicle 2 in node-comparator has no lane!";
+        DirectedEdge.Lane v1LeavingLane = getLeavingLane(v1.getLane(), v1.getDriver().peekRoute());
+        DirectedEdge.Lane v2LeavingLane = getLeavingLane(v2.getLane(), v2.getDriver().peekRoute());
+        assert v1LeavingLane != null : "Vehicle 1 in node-comparator has no matching leaving lane!";
+        assert v2LeavingLane != null : "Vehicle 2 in node-comparator has no matching leaving lane!";
+        byte origin1        = incomingLanes.get(v1.getLane());
+        byte destination1   = leavingLanes.get(v1LeavingLane);
+        byte origin2        = incomingLanes.get(v2.getLane());
+        byte destination2   = leavingLanes.get(v2LeavingLane);
+        assert MathUtils.min(origin1, destination1, origin2, destination2) >= 0 : "Wrong crossing indices";
 
+        byte supremum = (byte) (1 + MathUtils.max(origin1, destination1, origin2, destination2));
+        assert supremum >= 0 : "Crossing indices cannot be stored as byte any longer.";
 
         // if vehicles are crossing each other's way
         if (IndicesCalculator.areIndicesCrossing(origin1, destination1, origin2, destination2, supremum)) {
@@ -231,7 +239,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
      * If any vehicle has unregistered since the last call of {@code update}, all vehicles are compared to each other
      * for getting the highest priority. This needs O(n^2) comparisons due to the Gauss sum.
      */
-    public synchronized void update() {
+    public void update() {
 
         /* add new registered vehicles */
         while (!newRegisteredVehicles.isEmpty()) { // invariant: all vehicles in this set are new at this point
@@ -342,6 +350,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
 
         newRegisteredVehicles.add(newVehicle);
         anyChangeSinceUpdate = true;
+
         registerLog.add(newVehicle);
         return true;
     }
@@ -372,6 +381,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
                 else
                     otherVehicle.getDriver().incPriorityCounter();
             }
+            maxPrioVehicles.remove(vehicle);
 
             anyChangeSinceUpdate = true;
         }
@@ -418,35 +428,51 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
         if (edge.getOrigin() != this)
             throw new IllegalArgumentException("edge.getOrigin() != this");
 
-        leaving.put(edge, (byte) -1);
+        leaving.add(edge);
+        edge.forEach(lane -> leavingLanes.put(lane, (byte) -1));
     }
 
     public void addIncomingEdge(DirectedEdge edge) {
         if (edge.getDestination() != this)
             throw new IllegalArgumentException("edge.getDestination() != this");
 
-        incoming.put(edge, (byte) -1);
+        incoming.add(edge);
+        edge.forEach(lane -> incomingLanes.put(lane, (byte) -1));
     }
 
     /**
-     * This method should be called after all edges are added to this node. It
-     * calculates the order of the edges that is needed for crossing logic
-     * calculation.
+     * This method should be called after all edges are added to this node. It calculates the order of the edges'
+     * lanes that is needed for crossing logic calculation.
      */
-    public void updateEdgeIndices() {
-        if (leaving.keySet().size() == 0 && incoming.keySet().size() == 0)
-            return;
+    public synchronized void updateCrossingIndices() {
+        Tuple<TreeMap<DirectedEdge.Lane, Byte>, TreeMap<DirectedEdge.Lane, Byte>> tuple = calcCrossingIndices();
+        leavingLanes.clear();
+        leavingLanes.putAll(tuple.obj0);
+        incomingLanes.clear();
+        incomingLanes.putAll(tuple.obj1);
+    }
+
+    /**
+     * @return tuple (leaving lane indices map, incoming lane indices map)
+     */
+    public synchronized Tuple<TreeMap<DirectedEdge.Lane, Byte>, TreeMap<DirectedEdge.Lane, Byte>> calcCrossingIndices() {
+        if (leaving.size() == 0 && incoming.size() == 0)
+            return new Tuple<>(new TreeMap<>(), new TreeMap<>());
+
+        TreeMap<DirectedEdge.Lane, Byte> leavingLanes = new TreeMap<>();
+        TreeMap<DirectedEdge.Lane, Byte> incomingLanes = new TreeMap<>();
 
 
         /* init */
         final boolean IS_LEAVING = true;
         final boolean IS_INCOMING = false;
         HashMap<Vec2d, ArrayList<Tuple<DirectedEdge, Boolean>>> edges = new HashMap<>();
+
         Vec2d zero = null;
 
         /* get all vectors for sorting later */
         /* collect all leaving edges */
-        for (DirectedEdge edge : leaving.keySet()) {
+        for (DirectedEdge edge : leaving) {
             // invert leaving XOR incoming edges
             Vec2d v = Vec2d.mul(edge.getOriginDirection(), -1);
             // important for hashing later due to:
@@ -467,7 +493,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
 
 
         /* collect all incoming edges */
-        for (DirectedEdge edge : incoming.keySet()) {
+        for (DirectedEdge edge : incoming) {
             Vec2d v = new Vec2d(edge.getDestinationDirection());
             // important for hashing later due to:
             // 0.0 == -0.0 but new Double(0.0).hashCode() != new Double(-0.0).hashCode()
@@ -498,55 +524,24 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
             // add its leaving edges before its incoming edges
             for (Tuple<DirectedEdge, Boolean> nextEdge : nextEdges) {
                 if (nextEdge.obj1 == IS_LEAVING) {
-                    leaving.put(nextEdge.obj0, nextCrossingIndex++);
+                    // if leaving => indices ascending like ascending lane-idx
+                    Iterator<DirectedEdge.Lane> iter = nextEdge.obj0.iterator();
+                    while (iter.hasNext())
+                        leavingLanes.put(iter.next(), nextCrossingIndex++);
                 }
             }
 
             for (Tuple<DirectedEdge, Boolean> nextEdge : nextEdges) {
                 if (nextEdge.obj1 == IS_INCOMING) {
-                    incoming.put(nextEdge.obj0, nextCrossingIndex++);
+                    // if incoming => indices reverse to ascending lane-idx
+                    Iterator<DirectedEdge.Lane> iter = nextEdge.obj0.reverseIterator();
+                    while (iter.hasNext())
+                        incomingLanes.put(iter.next(), nextCrossingIndex++);
                 }
             }
         }
-    }
 
-    /**
-     * This method needs {@link #updateEdgeIndices() updated crossing indices for all edges} to work correctly.
-     *
-     * @return a map containing all lanes (concerning to an edge of this node) mapping to a crossing index.
-     */
-    public Map<DirectedEdge.Lane, Byte> calcLaneIndices() {
-        boolean IS_LEAVING = true;
-        boolean IS_INCOMING = false;
-
-
-        /* add edges sorted by their index */
-        FastSortedArrayList<Triple<Boolean, DirectedEdge, Byte>> sortedEdges = new FastSortedArrayList<>(
-                leaving.size() + incoming.size(),
-                (t1, t2) -> Byte.compare(t1.obj2, t2.obj2));
-        for (Map.Entry<DirectedEdge, Byte> entry : leaving.entrySet())
-            sortedEdges.add(new Triple<>(IS_LEAVING, entry.getKey(), entry.getValue()));
-        for (Map.Entry<DirectedEdge, Byte> entry : incoming.entrySet())
-            sortedEdges.add(new Triple<>(IS_INCOMING, entry.getKey(), entry.getValue()));
-
-
-        /* iterate over lanes and fill map */
-        final Map<DirectedEdge.Lane, Byte> indicesMap = new HashMap<>();
-        byte nextCrossingIndex = 0;
-        for (Triple<Boolean, DirectedEdge, Byte> triple : sortedEdges) {
-            Iterator<DirectedEdge.Lane> iter;
-            // if leaving => indices ascending like ascending lane-idx
-            // if incoming => indices reverse to ascending lane-idx
-            if (triple.obj0 == IS_LEAVING)
-                iter = triple.obj1.iterator();
-            else
-                iter = triple.obj1.reverseIterator();
-
-            while (iter.hasNext())
-                indicesMap.put(iter.next(), nextCrossingIndex++);
-        }
-
-        return indicesMap;
+        return new Tuple<>(leavingLanes, incomingLanes);
     }
 
 
@@ -585,7 +580,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
 
         // return everything if incoming edge is null
         if (incomingEdge == null)
-            return Collections.unmodifiableSet(leaving.keySet());
+            return Collections.unmodifiableSet(leaving);
 
         TreeSet<DirectedEdge> result = new TreeSet<>();
         for (DirectedEdge.Lane incomingLane : incomingEdge) {
@@ -607,7 +602,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
 
         // return everything if leaving edge is null
         if (leavingEdge == null)
-            return Collections.unmodifiableSet(incoming.keySet());
+            return Collections.unmodifiableSet(incoming);
 
         TreeSet<DirectedEdge> result = new TreeSet<>();
         connectors.entrySet().forEach(entry -> {

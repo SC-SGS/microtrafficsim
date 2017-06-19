@@ -110,6 +110,7 @@ public class IndicesCalculator {
                     return false;                                         // ABB
             }
         }
+        assert false : "Method 'areIndicesCrossing(...)' could not calculate correctly.";
         return false;    // should never be reached if method parameters are correct
     }
 }

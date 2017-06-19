@@ -49,7 +49,7 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
         // finish graph
         graph.setSeed(cfg.seed);
         for (Node node : graph.getNodes()) {
-            node.updateEdgeIndices();
+            node.updateCrossingIndices();
         }
         graph.updateGraphGUID();
 

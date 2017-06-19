@@ -24,7 +24,7 @@ public class AreaScenarioDeterminismTest extends AbstractDeterminismTest {
 
     /* testing parameters */
     private static final int checks = 10;
-    private static final int maxStep = 3000;
+    private static final int maxStep = 1000;
     private static final int simulationRuns = 3;
 
 

@@ -42,6 +42,13 @@ public class MathUtils {
         return ints[0];
     }
 
+    public static int min(int... ints) {
+        int i = 1;
+        while (i < ints.length)
+            ints[0] = Math.min(ints[0], ints[i++]);
+        return ints[0];
+    }
+
     /**
      * Implementation detail: The runtime complexity is in O(log2(n)). <br>
      * Negative numbers has the same number of digits as the corresponding positive ones.

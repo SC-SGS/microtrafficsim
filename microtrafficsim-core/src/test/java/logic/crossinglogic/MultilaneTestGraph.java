@@ -202,7 +202,7 @@ public class MultilaneTestGraph {
         // finish graph
         graph.setSeed(config.seed);
         for (Node node : graph.getNodes()) {
-            node.updateEdgeIndices();
+            node.updateCrossingIndices();
         }
         graph.updateGraphGUID();
 

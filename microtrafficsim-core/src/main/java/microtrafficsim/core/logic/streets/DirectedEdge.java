@@ -102,7 +102,7 @@ public class DirectedEdge
                     + streetInfo.raw.destination.getId() + ")");
             stringBuilder.appendln();
             for (Lane lane : this)
-                stringBuilder.appendln(lane);
+                stringBuilder.append(lane);
         } stringBuilder.decLevel().append("</" + getClass().getSimpleName() + ">");
 
         return stringBuilder.toString();
@@ -185,6 +185,7 @@ public class DirectedEdge
 
     @Override
     public int getLength() {
+        assert streetInfo.numberOfCells >= 2 : "cell number = " + streetInfo.numberOfCells + " < 2";
         return streetInfo.numberOfCells;
     }
 
@@ -322,6 +323,23 @@ public class DirectedEdge
         }
 
         /**
+         * @return true if is the outermost vehicle. ; if traffic rule is right-before-left, the outermost
+         * vehicle has no vehicles right to it
+         */
+        public boolean isOutermostVehicle(Vehicle vehicle) {
+            for (int i = index - 1; i >= 0; i++) {
+                edge.lanes.lockLane(i);
+                boolean isOutermostVehicle = edge.lanes.get(i, vehicle.getCellPosition()) == null;
+                edge.lanes.unlockLane(i);
+
+                if (!isOutermostVehicle)
+                    return false;
+            }
+
+            return true;
+        }
+
+        /**
          * @return true if is the innermost lane; if traffic rule is right-before-left, the innermost lane is the
          * leftest lane
          */
@@ -406,6 +424,10 @@ public class DirectedEdge
             stringBuilder.appendln("<Lane>").incLevel(); {
                 stringBuilder.appendln("edge id    = " + edge.getId());
                 stringBuilder.appendln("edge hash  = " + edge.hashCode());
+                stringBuilder.appendln("(orig -len-> dest) = ("
+                        + getOrigin().getId()
+                        + " -" + getLength() + "-> "
+                        + getDestination().getId() + ")");
                 stringBuilder.appendln("lane index = " + index);
             } stringBuilder.decLevel().appendln("</Lane>");
 
