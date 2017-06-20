@@ -14,7 +14,7 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public class DarkStyleSheet extends BasicStyleSheet {
-    private final EasyMarkableLogger logger = new EasyMarkableLogger(DarkStyleSheet.class);
+    private final static EasyMarkableLogger logger = new EasyMarkableLogger(DarkStyleSheet.class);
 
 
     @Override

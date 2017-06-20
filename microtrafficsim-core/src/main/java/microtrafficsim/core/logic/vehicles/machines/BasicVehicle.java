@@ -342,8 +342,7 @@ public abstract class BasicVehicle implements Vehicle {
 
             if (!driver.getRoute().isEmpty()) {
                 int distance    = lane.getAssociatedEdge().getLength() - cellPosition;
-                int maxVelocity = Math.min(getMaxVelocity(), lane.getAssociatedEdge().getMaxVelocity());
-                if (maxVelocity >= distance && vehicleInFront == null)
+                if (getMaxVelocity() >= distance && vehicleInFront == null)
                     lane.getAssociatedEdge().getDestination().registerVehicle(this);
             }
         }
