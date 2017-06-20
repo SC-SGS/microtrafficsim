@@ -14,7 +14,7 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public class LightMonochromeStyleSheet extends BasicStyleSheet {
-    private final EasyMarkableLogger logger = new EasyMarkableLogger(LightMonochromeStyleSheet.class);
+    private static final EasyMarkableLogger logger = new EasyMarkableLogger(LightMonochromeStyleSheet.class);
 
     private final static LineWidthBaseFunction LINE_WIDTH_BASE_FUNCTION = (offset, base, exp1, exp2, zoom) -> {
         if (zoom >= 12)
