@@ -23,7 +23,7 @@ public final class MultiThreadingConfig {
      */
     public void setup() {
         nThreads            = 8;
-        vehiclesPerRunnable = 200;
+        vehiclesPerRunnable = 300;
         nodesPerThread      = 500;
     }
 

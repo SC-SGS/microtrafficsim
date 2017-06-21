@@ -7,6 +7,7 @@ import microtrafficsim.core.exfmt.ecs.components.GraphEdgeComponent;
 import microtrafficsim.core.exfmt.ecs.components.StreetComponent;
 import microtrafficsim.core.exfmt.ecs.entities.LineEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.math.Vec2d;
 
 
 public class DirectedEdgeInjector implements ExchangeFormat.Injector<DirectedEdge> {
@@ -31,9 +32,9 @@ public class DirectedEdgeInjector implements ExchangeFormat.Injector<DirectedEdg
             gec.setBackwardLanes(src.getNumberOfLanes());
             gec.setBackwardMaxVelocity(src.getRawMaxVelocity());
             gec.setOrigin(src.getDestination().getId());
-            gec.setOriginDirection(src.getDestinationDirection());
+            gec.setOriginDirection(Vec2d.mul(src.getDestinationDirection(), -1.0));
             gec.setDestination(src.getOrigin().getId());
-            gec.setDestinationDirection(src.getOriginDirection());
+            gec.setDestinationDirection(Vec2d.mul(src.getOriginDirection(), -1.0));
         }
 
         // Inject the street-geometry if it has not already been injected. This might be necessary when the street

@@ -70,7 +70,7 @@ public class DirectedEdge
                 maxVelocity,
                 metersPerCell, priorityFn
         ));
-        lanes = new ArrayListLaneContainer(streetInfo.raw.nLanes);
+        lanes = new NavigableSkipListLaneContainer(streetInfo.raw.nLanes);
     }
 
 

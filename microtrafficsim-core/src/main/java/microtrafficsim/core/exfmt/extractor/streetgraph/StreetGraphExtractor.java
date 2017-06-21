@@ -19,6 +19,7 @@ import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.simulation.configs.CrossingLogicConfig;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.math.Vec2d;
 
 import java.util.HashMap;
 
@@ -122,7 +123,7 @@ public class StreetGraphExtractor implements ExchangeFormat.Extractor<StreetGrap
                 backward = new DirectedEdge(
                         entity.getId(),
                         gec.getLength(),
-                        gec.getDestinationDirection(), gec.getOriginDirection(),
+                        Vec2d.mul(gec.getDestinationDirection(), -1.0), Vec2d.mul(gec.getOriginDirection(), -1.0),
                         Orientation.BACKWARD,
                         destination, origin,
                         gec.getStreetType(),

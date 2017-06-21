@@ -2,6 +2,7 @@ package microtrafficsim.core.logic.nodes;
 
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.VehicleState;
+import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.Coordinate;
 import microtrafficsim.core.shortestpath.ShortestPathNode;
@@ -13,8 +14,6 @@ import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
-import microtrafficsim.utils.collections.FastSortedArrayList;
-import microtrafficsim.utils.collections.Triple;
 import microtrafficsim.utils.collections.Tuple;
 import microtrafficsim.utils.functional.Procedure2;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
@@ -280,7 +279,8 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
             // get vehicles with max prio
             int maxPrio = Integer.MIN_VALUE;
             for (Vehicle vehicle : assessedVehicles.keySet()) {
-                if (maxPrio <= vehicle.getDriver().getPriorityCounter()) {
+                Driver driver = vehicle.getDriver();
+                if (maxPrio <= driver.getPriorityCounter()) {
                     // For all vehicles until now: the current vehicle is allowed to drive regarding priority.
                     // BUT: it is still NOT allowed if all of the following conditions are true
 
@@ -297,16 +297,24 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
                     // (1)
                     if (!anyChangeSinceUpdate) {
                         // (3), different order than above for better performance
-                        if (config.friendlyStandingInJamEnabled)
+                        if (config.friendlyStandingInJamEnabled) {
+                            DirectedEdge.Lane leavingLane;
+                            if (vehicle.getState() == VehicleState.SPAWNED) {
+                                leavingLane = getLeavingLane(vehicle.getLane(), driver.peekRoute());
+                            } else {
+                                leavingLane = vehicle.getDriver().peekRoute().getLane(0);
+                            }
                             // (2), different order than above for better performance
-                            if (!(vehicle.getDriver().peekRoute().getLane(0).getMaxInsertionIndex() >= 0))
+                            if (!(leavingLane.getMaxInsertionIndex() >= 0)) {
                                 continue;
+                            }
+                        }
                     }
 
                     // if priority is truly greater than current max => remove all current vehicles of max priority
-                    if (maxPrio < vehicle.getDriver().getPriorityCounter()) {
+                    if (maxPrio < driver.getPriorityCounter()) {
                         maxPrioVehicles.clear();
-                        maxPrio = vehicle.getDriver().getPriorityCounter();
+                        maxPrio = driver.getPriorityCounter();
                     }
                     maxPrioVehicles.add(vehicle);
                 }

@@ -26,7 +26,7 @@ public class VehicleSimulation implements Simulation {
     private Logger logger = new EasyMarkableLogger(VehicleSimulation.class);
 
     private Scenario scenario;
-    private VehicleStepExecutor vehicleStepExecutor;
+    protected VehicleStepExecutor vehicleStepExecutor;
 
     // simulation steps
     private boolean            paused;
@@ -177,6 +177,14 @@ public class VehicleSimulation implements Simulation {
     @Override
     public final void doRunOneStep() {
         executionLock.lock();
+        unsecureDoRunOneSteup();
+        executionLock.unlock();
+    }
+
+    /**
+     * Not thread safe!
+     */
+    protected void unsecureDoRunOneSteup() {
         willRunOneStep();
 
         if (scenario.isPrepared()) {
@@ -242,11 +250,14 @@ public class VehicleSimulation implements Simulation {
                 vehicleStepExecutor.spawnAll(scenario);
                 vehicleStepExecutor.updateNodes(scenario);
             }
-            age++;
+            incAge();
         }
 
         didRunOneStep();
-        executionLock.unlock();
+    }
+
+    protected void incAge() {
+        age++;
     }
 
     @Override

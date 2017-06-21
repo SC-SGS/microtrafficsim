@@ -5,21 +5,21 @@ import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.NavigableMap;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class NavigableMapLaneContainer implements LaneContainer {
+public class NavigableSkipListLaneContainer implements LaneContainer {
     private ArrayList<NavigableMap<Integer, Vehicle>> lanes;
     private final Lock[] lock;
 
 
-    public NavigableMapLaneContainer(int nLanes) {
+    public NavigableSkipListLaneContainer(int nLanes) {
         lanes = new ArrayList<>(nLanes);
         lock = new ReentrantLock[nLanes];
 
         for (int i = 0; i < nLanes; i++) {
-            lanes.add(new TreeMap<>());
+            lanes.add(new ConcurrentSkipListMap<>());
             lock[i] = new ReentrantLock(true);
         }
     }
@@ -27,12 +27,12 @@ public class NavigableMapLaneContainer implements LaneContainer {
 
     @Override
     public void lockLane(int laneNo) {
-        lock[laneNo].lock();
+//        lock[laneNo].lock();
     }
 
     @Override
     public void unlockLane(int laneNo) {
-        lock[laneNo].unlock();
+//        lock[laneNo].unlock();
     }
 
     @Override
