@@ -36,10 +36,10 @@ public class StreetFeatureGenerator implements MapFeatureGenerator<Street> {
      * distance-calculation.
      * <p>
      * This call is equivalent to {@link StreetFeatureGenerator#StreetFeatureGenerator(DistanceCalculator)
-     * StreetFeatureGenerator(HaversineDistanceCalculator::getDistance()}
+     * StreetFeatureGenerator(true, HaversineDistanceCalculator::getDistance()}
      */
     public StreetFeatureGenerator() {
-        this(HaversineDistanceCalculator::getDistance);
+        this(HaversineDistanceCalculator::getDistance);       // TODO: extract drivinOnTheRight
     }
 
     /**
@@ -94,7 +94,13 @@ public class StreetFeatureGenerator implements MapFeatureGenerator<Street> {
 
             // create street
             StreetComponent sc = way.get(StreetComponent.class);
-            Street street      = new Street(way.id, coords.toArray(new Coordinate[coords.size()]), sc.layer, len, dist);
+            Street street = new Street(
+                    way.id,
+                    coords.toArray(new Coordinate[coords.size()]),
+                    sc.layer,
+                    len, dist,
+                    sc.lanes.forward, sc.lanes.backward
+            );
 
             StreetGraphWayComponent sgwc = way.get(StreetGraphWayComponent.class);
             if (sgwc != null) {

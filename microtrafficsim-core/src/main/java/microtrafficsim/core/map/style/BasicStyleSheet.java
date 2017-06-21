@@ -84,7 +84,8 @@ public abstract class BasicStyleSheet implements StyleSheet {
                     Style style = genStreetStyle(
                             shader,
                             getStreetOutlineColor(streetType),
-                            getStreetLineWidthOutline(streetType, zoom),
+                            getStreetLaneWidth(streetType, zoom),
+                            getStreetOutlineWidth(streetType, zoom),
                             SCALE_MAXLEVEL);
                     layers.add(genLayer(featureName + ":outline:" + zoom, layers.size(), zoom, zoom, featureName, style));
                 }
@@ -98,7 +99,8 @@ public abstract class BasicStyleSheet implements StyleSheet {
                     Style style = genStreetStyle(
                             shader,
                             getStreetInlineColor(streetType),
-                            getStreetLineWidthInline(streetType, zoom),
+                            getStreetLaneWidth(streetType, zoom),
+                            0.0f,
                             SCALE_MAXLEVEL);
                     layers.add(genLayer(featureName + ":inline:" + zoom, layers.size(), zoom, zoom, featureName, style));
                 }
@@ -205,23 +207,23 @@ public abstract class BasicStyleSheet implements StyleSheet {
     protected abstract Color getStreetInlineColor(String streetType);
 
     /**
-     * Return the width of the outline for the specified street-type and zoom-level.
+     * Return the width of one lane for the specified street-type and zoom-level.
      *
      * @param streetType the type of the street as specified in the StreetBasePredicate.
      * @param zoom the zoom-level for which this property should be queried.
-     * @return the width of the outline for the specified arguments. This size is expressed as complete width of the
-     * line as rendered, including inline and outline.
+     * @return the width of one lane for the specified arguments. The complete width of a street is calculated as:
+     * {@code (lanesForward + lanesBackward) * laneWidth} for the inline, and
+     * {@code (lanesForward + lanesBackward) * laneWidth + 2 * outlineWidth} for the outline.
      */
-    protected abstract float getStreetLineWidthOutline(String streetType, int zoom);
+    protected abstract float getStreetLaneWidth(String streetType, int zoom);
 
     /**
-     * Return the width of the outline for the specified street-type and zoom-level.
-     *
+     * Return the width-offset to be added to each side of the street (i.e. the outline)
      * @param streetType the type of the street as specified in the StreetBasePredicate.
      * @param zoom the zoom-level for which this property should be queried.
-     * @return the width of the outline for the specified arguments.
+     * @return the width of the outline of a street for the specified properties.
      */
-    protected abstract float getStreetLineWidthInline(String streetType, int zoom);
+    protected abstract float getStreetOutlineWidth(String streetType, int zoom);
 
 
     /**
@@ -250,12 +252,10 @@ public abstract class BasicStyleSheet implements StyleSheet {
     protected ShaderProgramSource getStreetShader() {
         Resource vert = new PackagedResource(DarkMonochromeStyleSheet.class, "/shaders/features/streets/streets.vs");
         Resource frag = new PackagedResource(DarkMonochromeStyleSheet.class, "/shaders/features/streets/streets.fs");
-        Resource geom = new PackagedResource(DarkMonochromeStyleSheet.class, "/shaders/features/streets/streets_round.gs");
 
         ShaderProgramSource prog = new ShaderProgramSource("streets");
         prog.addSource(GL3.GL_VERTEX_SHADER, vert);
         prog.addSource(GL3.GL_FRAGMENT_SHADER, frag);
-        prog.addSource(GL3.GL_GEOMETRY_SHADER, geom);
 
         return prog;
     }
@@ -265,17 +265,16 @@ public abstract class BasicStyleSheet implements StyleSheet {
      *
      * @param shader    the shader to be used in the generated style.
      * @param color     the color to be used in generated style.
-     * @param linewidth the line-width of the generated style.
+     * @param lanewidth the width of a single lane of the generated style.
+     * @param outline   the width of the outline of the generated style.
      * @param scalenorm the scale-normal of the generated style.
      * @return the generated style.
      */
-    protected Style genStreetStyle(ShaderProgramSource shader, Color color, float linewidth, float scalenorm) {
+    protected Style genStreetStyle(ShaderProgramSource shader, Color color, float lanewidth, float outline, float scalenorm) {
         Style style = new Style(shader);
         style.setUniformSupplier("u_color", color::toVec4f);
-        style.setUniformSupplier("u_linewidth", () -> linewidth);
-        style.setUniformSupplier("u_viewscale_norm", () -> scalenorm);
-        style.setProperty("adjacency_primitives", true);
-        style.setProperty("use_joins_when_possible", true);
+        style.setProperty("lanewidth", lanewidth * scalenorm);
+        style.setProperty("outline", outline * scalenorm);
         return style;
     }
 

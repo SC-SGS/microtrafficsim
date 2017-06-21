@@ -117,6 +117,16 @@ public class Vec3d {
 
 
     /**
+     * Creates a new Vec2d containing the x and y value of this vector.
+     *
+     * @return the x and y component of this vector in a new Vec2d.
+     */
+    public Vec2d xy() {
+        return new Vec2d(x, y);
+    }
+
+
+    /**
      * Calculates and returns the length of this vector.
      *
      * @return the length of this vector.

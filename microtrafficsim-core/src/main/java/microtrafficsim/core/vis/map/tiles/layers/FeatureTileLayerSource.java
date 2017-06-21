@@ -23,7 +23,7 @@ public class FeatureTileLayerSource implements TileLayerSource {
     private TileFeatureProvider provider;
     private long                revision;
 
-    private ArrayList<TileLayerSourceChangeListener>      listeners;
+    private ArrayList<TileLayerSourceChangeListener>  listeners;
     private TileFeatureProvider.FeatureChangeListener featureListener;
 
 

@@ -21,8 +21,9 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     private final String feature;
     private final TilingScheme scheme;
     private final long         revision;
-    private final boolean adjacency;
-    private final boolean forceJoins;
+    private final float   lanewidth;
+    private final float   outline;
+    private final boolean drivingOnTheRight;
 
     /**
      * Creates a new {@code StreetMeshKey}.
@@ -34,8 +35,8 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
      * @param feature    the feature from which this mesh was created.
      * @param scheme     the tiling-scheme used for the mesh.
      * @param revision   the revision of this mesh.
-     * @param adjacency  {@code true} if the mesh is generated as adjacency-mesh.
-     * @param forceJoins {@code true} if joins should be created whenever possible.
+     * @param lanewidth  the width of one lane.
+     * @param drivingOnTheRight {@code true} if the forward edge of a street is on the right.
      */
     public StreetMeshKey(RenderContext       context,
                          TileRect            tiles,
@@ -44,8 +45,9 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                          String              feature,
                          TilingScheme        scheme,
                          long                revision,
-                         boolean             adjacency,
-                         boolean             forceJoins) {
+                         float               lanewidth,
+                         float               outline,
+                         boolean             drivingOnTheRight) {
         this.context    = context;
         this.tiles      = tiles;
         this.target     = target;
@@ -53,8 +55,9 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
         this.feature    = feature;
         this.scheme     = scheme;
         this.revision   = revision;
-        this.adjacency  = adjacency;
-        this.forceJoins = forceJoins;
+        this.lanewidth  = lanewidth;
+        this.outline    = outline;
+        this.drivingOnTheRight = drivingOnTheRight;
     }
 
 
@@ -70,8 +73,9 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                 && this.feature.equals(other.feature)
                 && this.scheme.equals(other.scheme)
                 && this.revision == other.revision
-                && this.adjacency == other.adjacency
-                && this.forceJoins == other.forceJoins;
+                && this.lanewidth == other.lanewidth
+                && this.outline == other.outline
+                && this.drivingOnTheRight == other.drivingOnTheRight;
     }
 
     @Override
@@ -83,8 +87,9 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                 .add(feature)
                 .add(scheme)
                 .add(revision)
-                .add(adjacency)
-                .add(forceJoins)
+                .add(lanewidth)
+                .add(outline)
+                .add(drivingOnTheRight)
                 .getHash();
     }
 }

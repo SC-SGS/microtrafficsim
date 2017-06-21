@@ -97,34 +97,50 @@ public class MultilaneTestGraph {
                 },
         };
 
-        Street[] streets = {
-                genStreetFeature(0, coordinates[0], 0.0),
-                genStreetFeature(1, coordinates[1], 0.0),
-                genStreetFeature(2, coordinates[2], 0.0),
-                genStreetFeature(3, coordinates[3], 0.0),
-                genStreetFeature(4, coordinates[4], 0.0),
-                genStreetFeature(5, coordinates[5], 0.0),
-                genStreetFeature(6, coordinates[6], 0.0),
-                genStreetFeature(7, coordinates[7], 0.0),
 
-                genStreetFeature(8, coordinates[8], 0.0),
-                genStreetFeature(9, coordinates[9], -1.0),
-                genStreetFeature(10, coordinates[10], 0.0),
+
+        int[] nLanes = new int[] {
+                2,
+                3,
+                3,
+                2,
+                2,
+                3,
+                3,
+                2,
+                3,
+                3,
+                3
+        };
+
+        Street[] streets = {
+                genStreetFeature(0, coordinates[0], 0.0, nLanes[0]),
+                genStreetFeature(1, coordinates[1], 0.0, nLanes[1]),
+                genStreetFeature(2, coordinates[2], 0.0, nLanes[2]),
+                genStreetFeature(3, coordinates[3], 0.0, nLanes[3]),
+                genStreetFeature(4, coordinates[4], 0.0, nLanes[4]),
+                genStreetFeature(5, coordinates[5], 0.0, nLanes[5]),
+                genStreetFeature(6, coordinates[6], 0.0, nLanes[6]),
+                genStreetFeature(7, coordinates[7], 0.0, nLanes[7]),
+
+                genStreetFeature(8, coordinates[8], 0.0, nLanes[8]),
+                genStreetFeature(9, coordinates[9], -1.0, nLanes[9]),
+                genStreetFeature(10, coordinates[10], 0.0, nLanes[10]),
         };
 
         // graph edges
-        StreetEntity x_to_xtr  = genEntity(streets[0],   x, xtr, 2, config);
-        StreetEntity xtr_to_tr = genEntity(streets[1], xtr,  tr, 3, config);
-        StreetEntity tr_to_xtl = genEntity(streets[2],  tr, xtl, 3, config);
-        StreetEntity xtl_to_x  = genEntity(streets[3], xtl,   x, 2, config);
-        StreetEntity x_to_xbr  = genEntity(streets[4],   x, xbr, 2, config);
-        StreetEntity xbr_to_bl = genEntity(streets[5], xbr,  bl, 3, config);
-        StreetEntity bl_to_xbl = genEntity(streets[6],  bl, xbl, 3, config);
-        StreetEntity xbl_to_x  = genEntity(streets[7], xbl,   x, 2, config);
+        StreetEntity x_to_xtr  = genEntity(streets[0],   x, xtr, nLanes[0], config);
+        StreetEntity xtr_to_tr = genEntity(streets[1], xtr,  tr, nLanes[1], config);
+        StreetEntity tr_to_xtl = genEntity(streets[2],  tr, xtl, nLanes[2], config);
+        StreetEntity xtl_to_x  = genEntity(streets[3], xtl,   x, nLanes[3], config);
+        StreetEntity x_to_xbr  = genEntity(streets[4],   x, xbr, nLanes[4], config);
+        StreetEntity xbr_to_bl = genEntity(streets[5], xbr,  bl, nLanes[5], config);
+        StreetEntity bl_to_xbl = genEntity(streets[6],  bl, xbl, nLanes[6], config);
+        StreetEntity xbl_to_x  = genEntity(streets[7], xbl,   x, nLanes[7], config);
 
-        StreetEntity tr_to_ct  = genEntity(streets[8],  tr,  ct, 3, config);
-        StreetEntity ct_to_cb  = genEntity(streets[9],  ct,  cb, 3, config);
-        StreetEntity cb_to_bl  = genEntity(streets[10], cb,  bl, 3, config);
+        StreetEntity tr_to_ct  = genEntity(streets[8],  tr,  ct, nLanes[8], config);
+        StreetEntity ct_to_cb  = genEntity(streets[9],  ct,  cb, nLanes[9], config);
+        StreetEntity cb_to_bl  = genEntity(streets[10], cb,  bl, nLanes[10], config);
 
         StreetEntity[] entities = {
                 x_to_xtr,
@@ -214,8 +230,8 @@ public class MultilaneTestGraph {
     }
 
 
-    private static Street genStreetFeature(long id, Coordinate[] coords, double layer) {
-        return new Street(id, coords, layer, length(coords), distances(coords));
+    private static Street genStreetFeature(long id, Coordinate[] coords, double layer, int nLanes) {
+        return new Street(id, coords, layer, length(coords), distances(coords), nLanes, nLanes);
     }
 
     private static double length(Coordinate[] coords) {
@@ -236,7 +252,7 @@ public class MultilaneTestGraph {
     }
 
 
-    private static StreetEntity genEntity(Street from, Node orig, Node dest, int lanes, SimulationConfig config) {
+    private static StreetEntity genEntity(Street from, Node orig, Node dest, int nLanes, SimulationConfig config) {
         float mpc = config.metersPerCell;
         float mv = config.globalMaxVelocity * 3.6f * config.metersPerCell;
         SimulationConfig.StreetPriorityFunction priority = new SimulationConfig.DefaultStreetPriorityFunction();
@@ -258,7 +274,7 @@ public class MultilaneTestGraph {
                 Orientation.FORWARD,
                 orig, dest,
                 new StreetType(StreetType.ROAD),
-                lanes,
+                nLanes,
                 mv,
                 mpc, priority);
         DirectedEdge backward = new DirectedEdge(
@@ -268,7 +284,7 @@ public class MultilaneTestGraph {
                 Orientation.BACKWARD,
                 dest, orig,
                 new StreetType(StreetType.ROAD),
-                lanes,
+                nLanes,
                 mv,
                 mpc, priority);
 
