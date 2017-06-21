@@ -1,5 +1,6 @@
 package microtrafficsim.core.parser.processing.sanitizer;
 
+import microtrafficsim.math.MathUtils;
 import microtrafficsim.osm.parser.Parser;
 import microtrafficsim.osm.parser.Processor;
 import microtrafficsim.osm.parser.base.DataSet;
@@ -172,6 +173,11 @@ public class OSMDataSetSanitizer implements Processor {
 
         sanitizeMaxspeedInfo(streetcomp.maxspeed, streetcomp.oneway, sancomp.highway);
         sanitizeLaneInfo(streetcomp.lanes, streetcomp.oneway, sancomp.highway);
+
+        if (!genprops.multilane) {
+            streetcomp.lanes.forward = MathUtils.clamp(streetcomp.lanes.forward, 0, 1);
+            streetcomp.lanes.backward = MathUtils.clamp(streetcomp.lanes.backward, 0, 1);
+        }
     }
 
     /**

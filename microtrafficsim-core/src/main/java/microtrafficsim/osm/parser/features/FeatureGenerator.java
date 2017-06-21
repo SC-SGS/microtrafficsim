@@ -43,7 +43,12 @@ public interface FeatureGenerator {
         /**
          * Optional bounds to be used for clipping (when BoundaryManagement == BoundaryManagement.CLIP)
          */
-        public Bounds bounds;
+        public Bounds bounds = null;
+
+        /**
+         * Whether to parse and output multiple lanes per street or limit the lanes to one per direction.
+         */
+        public boolean multilane = true;
     }
 
     /**
