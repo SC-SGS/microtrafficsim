@@ -1,9 +1,19 @@
 package preprocessing.graph;
 
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
+import microtrafficsim.core.exfmt.ExchangeFormat;
+import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
+import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.map.MapSegment;
+import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
+import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
+import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
+import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -39,16 +49,33 @@ public class LaneConnectorTest {
 
     @BeforeClass
     public static void initialize() throws Exception {
-        File osmxml;
+        File map;
 
         //noinspection ConstantConditions
         if (OPTIONAL_TEST_FILE == null)
-            osmxml = new PackagedResource(GraphConsistencyTest.class, "/preprocessing/graph/map.osm").asTemporaryFile();
+            map = new PackagedResource(GraphConsistencyTest.class, "/preprocessing/graph/map.osm").asTemporaryFile();
         else
-            osmxml = OPTIONAL_TEST_FILE;
+            map = OPTIONAL_TEST_FILE;
 
         config = config();
-        graph = DefaultParserConfig.get(config).build().parse(osmxml).streetgraph;
+        if (map.getName().endsWith(".osm")) {
+            graph = DefaultParserConfig.get(config).build().parse(map).streetgraph;
+        } else {
+            ExchangeFormatSerializer serializer = ExchangeFormatSerializer.create();
+            ExchangeFormat exfmt = ExchangeFormat.getDefault();
+
+            exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(
+                    new QuadTreeTilingScheme(new MercatorProjection()), 12));
+
+            exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
+            ExchangeFormat.Manipulator xmp = exfmt.manipulator(serializer.read(map));
+            try {
+                QuadTreeTiledMapSegment unused = xmp.extract(QuadTreeTiledMapSegment.class);
+            } catch (NotAvailableException e) {     // thrown when no TileGrid available
+                MapSegment unused = xmp.extract(MapSegment.class);
+            }
+            graph = xmp.extract(StreetGraph.class);
+        }
     }
 
 

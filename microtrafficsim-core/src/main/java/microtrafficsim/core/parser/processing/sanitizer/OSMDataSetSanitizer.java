@@ -226,9 +226,9 @@ public class OSMDataSetSanitizer implements Processor {
     private void sanitizeLaneInfo(LaneInfo laneinfo, OnewayInfo oneway, String highway) {
         // TODO: cleanup
 
-        int lanes    = laneinfo.sum;
-        int forward  = laneinfo.forward;
-        int backward = laneinfo.backward;
+        int lanes    = (laneinfo.sum >= 0 || laneinfo.sum == LaneInfo.UNGIVEN) ? laneinfo.sum : 0;
+        int forward  = (laneinfo.forward >= 0 || laneinfo.forward == LaneInfo.UNGIVEN) ? laneinfo.forward : 0;
+        int backward = (laneinfo.backward >= 0 || laneinfo.backward == LaneInfo.UNGIVEN) ? laneinfo.backward : 0;
 
         if (oneway == OnewayInfo.NO) {
             // none given: use defaults
