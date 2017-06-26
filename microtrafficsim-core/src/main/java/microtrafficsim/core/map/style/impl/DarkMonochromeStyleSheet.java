@@ -14,16 +14,7 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public class DarkMonochromeStyleSheet extends BasicStyleSheet {
-    private static final EasyMarkableLogger logger = new EasyMarkableLogger(DarkMonochromeStyleSheet.class);
-
-    private final static LineWidthBaseFunction LINE_WIDTH_BASE_FUNCTION = (offset, base, exp1, exp2, zoom) -> {
-        if (zoom >= 12)
-            return offset + base * (float) Math.pow(exp1, (19 - zoom));
-        else if (zoom >= 10)
-            return offset + base * (float) Math.pow(exp1, (19 - 12)) + base * (float) Math.pow(exp2, 12 - zoom);
-        else
-            return offset + base * (float) Math.pow(exp1, (19 - 12)) - base * (float) Math.pow(exp2, 12 - 11);
-    };
+    private final static EasyMarkableLogger logger = new EasyMarkableLogger(DarkMonochromeStyleSheet.class);
 
 
     @Override
@@ -65,41 +56,15 @@ public class DarkMonochromeStyleSheet extends BasicStyleSheet {
 
     @Override
     protected float getStreetLaneWidth(String streetType, int zoom) {
-        float offset = 0;
-        float exp1 = 0;
+        final int z = Math.max(zoom, 11);
+        final double s = zoom > 11 ? 1 : Math.pow(1.95, 11 - zoom);
 
-        switch (streetType) {
-            case "motorway":
-            case "trunk":
-                offset = 45.0f;
-                exp1   = 1.4f;
-                break;
-            case "primary":
-            case "secondary":
-            case "tertiary":
-                offset = 42.5f;
-                exp1   = 1.3f;
-                break;
-            case "unclassified":
-            case "residential":
-            case "road":
-                offset = 40.0f;
-                exp1   = 1.2f;
-                break;
-            case "living_street":
-                offset = 37.5f;
-                exp1   = 1.15f;
-                break;
-            default:
-                logger.info("The lane width of " + streetType + " is not defined.");
-        }
-
-        return LINE_WIDTH_BASE_FUNCTION.get(offset * 12, 20.f, exp1, 0.3f, zoom);
+        return (float) ((30.0 + 5.0 * Math.pow(1.75, (19 - z))) * s);
     }
 
     @Override
     protected float getStreetOutlineWidth(String streetType, int zoom) {
-        return LINE_WIDTH_BASE_FUNCTION.get(20.f, 22.5f, 1.5f, 0.3f, zoom);
+        return (float) (1.0 * Math.pow(1.75, 19 - zoom));
     }
 
     @Override
@@ -107,9 +72,5 @@ public class DarkMonochromeStyleSheet extends BasicStyleSheet {
         Color[] colors = VehicleColorSchemes.RED_TO_GREEN;
         int v = MathUtils.clamp(vehicle.getVelocity(), 0, colors.length - 1);
         return colors[v];
-    }
-
-    public interface LineWidthBaseFunction {
-        float get(float offset, float base, float exp1, float exp2, int zoom);
     }
 }

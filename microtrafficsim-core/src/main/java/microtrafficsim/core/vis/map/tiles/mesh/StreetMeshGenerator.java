@@ -36,7 +36,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
     @Override
     public FeatureMeshKey getKey(RenderContext context, FeatureTileLayerSource source, TileId tile, Rect2d target) {
-        Common common = getCommonProps(source.getStyle(), true);
+        Common common = getCommonProps(null, source.getStyle(), true);
         return new StreetMeshKey(
                 context,
                 getFeatureBounds(source, tile),
@@ -63,17 +63,17 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
         // get tile and source properties
         TilingScheme scheme = src.getTilingScheme();
-        Projection projection = scheme.getProjection();
         Rect2d bounds = scheme.getBounds(getFeatureBounds(src, tile));
+        MeshProjection projection = new MeshProjection(scheme.getProjection(), bounds, target);
 
-        Common props = getCommonProps(src.getStyle(), true);        // TODO: get from config
+        Common props = getCommonProps(projection, src.getStyle(), true);        // TODO: get from config
 
         // generate mesh
         VertexSet<Vertex>            vertices = new VertexSet<>();
         HashMap<Double, IndexBucket> buckets = new HashMap<>();
 
         try {
-            generate(context, feature, new MeshProjection(projection, bounds, target), props, vertices, buckets);
+            generate(context, feature, projection, props, vertices, buckets);
         } finally {
             src.getFeatureProvider().release(feature);
         }
@@ -150,7 +150,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
 
     private void generate(Street street, MeshProjection projection, BucketBuilder builder, Common common) {
-        Vec2d[] projected = projection.project(street.coordinates);
+        Vec2d[] projected = projection.toGlobal(street.coordinates);
         StreetProps props = new StreetProps(street, common.drivingOnTheRight);
 
         Vec2d thisPos = projected[0];
@@ -247,8 +247,8 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         double right = common.outline + common.lanewidth * street.lanesRight;
         double ext = (left + right) / 2.0;
 
-        Vec2f p1 = new Vec2f(Vec2d.mul(normal, right).add(pos));
-        Vec2f p2 = new Vec2f(Vec2d.mul(normal, -left).add(pos));
+        Vec2f p1 = common.projection.globalToTile(Vec2d.mul(normal, right).add(pos));
+        Vec2f p2 = common.projection.globalToTile(Vec2d.mul(normal, -left).add(pos));
 
         Vec3f l1 = new Vec3f(0.0f, (float)  ext, (float) ext);
         Vec3f l2 = new Vec3f(0.0f, (float) -ext, (float) ext);
@@ -274,13 +274,13 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         Vec3f l3 = new Vec3f(-(float) ext, 0.0f, (float) ext);
         Vec3f l4 = new Vec3f(-(float) ext, 0.0f, (float) ext);
 
-        Vertex v0 = new Vertex(new Vec2f(pos), street.layer, new Vec3f(0.0f, 0.0f, (float) ext));
-        Vertex v1 = new Vertex(new Vec2f(p1), street.layer, l1);
-        Vertex v2 = new Vertex(new Vec2f(p2), street.layer, l2);
-        Vertex v3 = new Vertex(new Vec2f(p3), street.layer, l1);
-        Vertex v4 = new Vertex(new Vec2f(p4), street.layer, l2);
-        Vertex v5 = new Vertex(new Vec2f(p3), street.layer, l3);
-        Vertex v6 = new Vertex(new Vec2f(p4), street.layer, l4);
+        Vertex v0 = new Vertex(common.projection.globalToTile(pos), street.layer, new Vec3f(0.0f, 0.0f, (float) ext));
+        Vertex v1 = new Vertex(common.projection.globalToTile(p1), street.layer, l1);
+        Vertex v2 = new Vertex(common.projection.globalToTile(p2), street.layer, l2);
+        Vertex v3 = new Vertex(common.projection.globalToTile(p3), street.layer, l1);
+        Vertex v4 = new Vertex(common.projection.globalToTile(p4), street.layer, l2);
+        Vertex v5 = new Vertex(common.projection.globalToTile(p3), street.layer, l3);
+        Vertex v6 = new Vertex(common.projection.globalToTile(p4), street.layer, l4);
 
         int i0 = builder.addVertex(v0);
         int i1 = builder.addVertex(v1);
@@ -323,13 +323,13 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         Vec3f l3 = new Vec3f((float) ext, 0.0f, (float) ext);
         Vec3f l4 = new Vec3f((float) ext, 0.0f, (float) ext);
 
-        Vertex v0 = new Vertex(new Vec2f(pos), street.layer, new Vec3f(0.0f, 0.0f, (float) ext));
-        Vertex v1 = new Vertex(new Vec2f(p1), street.layer, l1);
-        Vertex v2 = new Vertex(new Vec2f(p2), street.layer, l2);
-        Vertex v3 = new Vertex(new Vec2f(p3), street.layer, l1);
-        Vertex v4 = new Vertex(new Vec2f(p4), street.layer, l2);
-        Vertex v5 = new Vertex(new Vec2f(p3), street.layer, l3);
-        Vertex v6 = new Vertex(new Vec2f(p4), street.layer, l4);
+        Vertex v0 = new Vertex(common.projection.globalToTile(pos), street.layer, new Vec3f(0.0f, 0.0f, (float) ext));
+        Vertex v1 = new Vertex(common.projection.globalToTile(p1), street.layer, l1);
+        Vertex v2 = new Vertex(common.projection.globalToTile(p2), street.layer, l2);
+        Vertex v3 = new Vertex(common.projection.globalToTile(p3), street.layer, l1);
+        Vertex v4 = new Vertex(common.projection.globalToTile(p4), street.layer, l2);
+        Vertex v5 = new Vertex(common.projection.globalToTile(p3), street.layer, l3);
+        Vertex v6 = new Vertex(common.projection.globalToTile(p4), street.layer, l4);
 
         int i1 = builder.addVertex(v1);
         int i2 = builder.addVertex(v2);
@@ -372,10 +372,10 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         Vec3f l3 = new Vec3f(-(float) ext, (float)  ext, (float) ext);
         Vec3f l4 = new Vec3f(-(float) ext, (float) -ext, (float) ext);
 
-        builder.addIndex(builder.addVertex(new Vertex(new Vec2f(p3), street.layer, l3)));
-        builder.addIndex(builder.addVertex(new Vertex(new Vec2f(p4), street.layer, l4)));
-        builder.addIndex(builder.addVertex(new Vertex(new Vec2f(p1), street.layer, l1)));
-        builder.addIndex(builder.addVertex(new Vertex(new Vec2f(p2), street.layer, l2)));
+        builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(p3), street.layer, l3)));
+        builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(p4), street.layer, l4)));
+        builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(p1), street.layer, l1)));
+        builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(p2), street.layer, l2)));
     }
 
     private void genRoundCapEnd(BucketBuilder builder, Common common, Vec2d pos, Vec3d dir, StreetProps street) {
@@ -395,10 +395,10 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         Vec3f l3 = new Vec3f((float) ext, (float)  ext, (float) ext);
         Vec3f l4 = new Vec3f((float) ext, (float) -ext, (float) ext);
 
-        builder.addIndex(builder.addVertex(new Vertex(new Vec2f(p1), street.layer, l1)));
-        builder.addIndex(builder.addVertex(new Vertex(new Vec2f(p2), street.layer, l2)));
-        builder.addIndex(builder.addVertex(new Vertex(new Vec2f(p3), street.layer, l3)));
-        builder.addIndex(builder.addVertex(new Vertex(new Vec2f(p4), street.layer, l4)));
+        builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(p1), street.layer, l1)));
+        builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(p2), street.layer, l2)));
+        builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(p3), street.layer, l3)));
+        builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(p4), street.layer, l4)));
     }
 
 
@@ -447,13 +447,12 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             Vec2d pInner = Vec2d.mul(normalMed, innerext).add(pos);
             Vec2d pOuterA = Vec2d.mul(normalIn, outer).add(pos);
             Vec2d pOuterB = Vec2d.mul(normalOut, outer).add(pos);
-            Vec2f pCenter = new Vec2f(pos);
 
             if (curve > 0) {
-                int iInner = builder.addVertex(new Vertex(new Vec2f(pInner), street.layer, l1));
-                int iOuterA = builder.addVertex(new Vertex(new Vec2f(pOuterA), street.layer, l2));
-                int iOuterB = builder.addVertex(new Vertex(new Vec2f(pOuterB), street.layer, l2));
-                int iCenter = builder.addVertex(new Vertex(new Vec2f(pCenter), street.layer, l0));
+                int iInner  = builder.addVertex(new Vertex(common.projection.globalToTile(pInner),  street.layer, l1));
+                int iOuterA = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterA), street.layer, l2));
+                int iOuterB = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterB), street.layer, l2));
+                int iCenter = builder.addVertex(new Vertex(common.projection.globalToTile(pos),     street.layer, l0));
 
                 builder.addIndex(iInner);           // connector in
                 builder.addIndex(iOuterA);
@@ -465,27 +464,30 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 builder.restart();
                 if (!bevel) {                       // miter cap
                     Vec2d pOuter = Vec2d.mul(normalMed, -innerext).add(pos);
+                    int iOuter = builder.addVertex(new Vertex(common.projection.globalToTile(pOuter), street.layer, l2));
+
+                    // TODO: optimize
 
                     builder.addIndex(iCenter);
                     builder.addIndex(iOuterA);
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuter), street.layer, l2)));
+                    builder.addIndex(iOuter);
                     builder.restart();
                     builder.addIndex(iCenter);
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuter), street.layer, l2)));
+                    builder.addIndex(iOuter);
                     builder.addIndex(iOuterB);
                 } else {                            // bevel cap
                     builder.addIndex(iCenter);
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuterA), street.layer, l3)));
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuterB), street.layer, l3)));
+                    builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(pOuterA), street.layer, l3)));
+                    builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(pOuterB), street.layer, l3)));
                 }
                 builder.restart();
                 builder.addIndex(iInner);           // connector out
                 builder.addIndex(iOuterB);
             } else {
-                int iInner = builder.addVertex(new Vertex(new Vec2f(pInner), street.layer, l2));
-                int iOuterA = builder.addVertex(new Vertex(new Vec2f(pOuterA), street.layer, l1));
-                int iOuterB = builder.addVertex(new Vertex(new Vec2f(pOuterB), street.layer, l1));
-                int iCenter = builder.addVertex(new Vertex(new Vec2f(pCenter), street.layer, l0));
+                int iInner  = builder.addVertex(new Vertex(common.projection.globalToTile(pInner),  street.layer, l2));
+                int iOuterA = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterA), street.layer, l1));
+                int iOuterB = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterB), street.layer, l1));
+                int iCenter = builder.addVertex(new Vertex(common.projection.globalToTile(pos),     street.layer, l0));
 
                 builder.addIndex(iOuterA);          // connector in
                 builder.addIndex(iInner);
@@ -497,18 +499,21 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 builder.restart();
                 if (!bevel) {                       // miter cap
                     Vec2d pOuter = Vec2d.mul(normalMed, -innerext).add(pos);
+                    int iOuter = builder.addVertex(new Vertex(common.projection.globalToTile(pOuter), street.layer, l1));
+
+                    // TODO: optimize
 
                     builder.addIndex(iCenter);
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuter), street.layer, l1)));
+                    builder.addIndex(iOuter);
                     builder.addIndex(iOuterA);
                     builder.restart();
                     builder.addIndex(iCenter);
                     builder.addIndex(iOuterB);
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuter), street.layer, l1)));
+                    builder.addIndex(iOuter);
                 } else {                            // bevel cap
                     builder.addIndex(iCenter);
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuterB), street.layer, l3)));
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuterA), street.layer, l3)));
+                    builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(pOuterB), street.layer, l3)));
+                    builder.addIndex(builder.addVertex(new Vertex(common.projection.globalToTile(pOuterA), street.layer, l3)));
                 }
                 builder.restart();
                 builder.addIndex(iOuterB);          // connector out
@@ -516,11 +521,11 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             }
 
         } else {
-            Vec2f pRightA = new Vec2f(Vec2d.mul(normalIn, right).add(pos));
-            Vec2f pLeftA  = new Vec2f(Vec2d.mul(normalIn, -left).add(pos));
-            Vec2f pRightB = new Vec2f(Vec2d.mul(normalOut, right).add(pos));
-            Vec2f pLeftB  = new Vec2f(Vec2d.mul(normalOut, -left).add(pos));
-            Vec2f pCenter = new Vec2f(pos);
+            Vec2f pRightA = common.projection.globalToTile(Vec2d.mul(normalIn, right).add(pos));
+            Vec2f pLeftA  = common.projection.globalToTile(Vec2d.mul(normalIn, -left).add(pos));
+            Vec2f pRightB = common.projection.globalToTile(Vec2d.mul(normalOut, right).add(pos));
+            Vec2f pLeftB  = common.projection.globalToTile(Vec2d.mul(normalOut, -left).add(pos));
+            Vec2f pCenter = common.projection.globalToTile(pos);
 
             int iRightA = builder.addVertex(new Vertex(pRightA, street.layer, l1));
             int iLeftA  = builder.addVertex(new Vertex(pLeftA, street.layer, l2));
@@ -537,13 +542,16 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             if (curve > 0) {
                 if (!bevel) {                       // miter cap
                     Vec2d pOuter = Vec2d.mul(normalMed, -innerext).add(pos);
+                    int iOuter = builder.addVertex(new Vertex(common.projection.globalToTile(pOuter), street.layer, l2));
+
+                    // TODO: optimize
 
                     builder.addIndex(iCenter);
                     builder.addIndex(iLeftA);
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuter), street.layer, l2)));
+                    builder.addIndex(iOuter);
                     builder.restart();
                     builder.addIndex(iCenter);
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuter), street.layer, l2)));
+                    builder.addIndex(iOuter);
                     builder.addIndex(iLeftB);
                 } else {                            // bevel cap
                     builder.addIndex(builder.addVertex(new Vertex(pLeftA, street.layer, l3)));
@@ -553,14 +561,17 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             } else {
                 if (!bevel) {                       // miter cap
                     Vec2d pOuter = Vec2d.mul(normalMed, -innerext).add(pos);
+                    int iOuter = builder.addVertex(new Vertex(common.projection.globalToTile(pOuter), street.layer, l1));
+
+                    // TODO: optimize
 
                     builder.addIndex(iCenter);
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuter), street.layer, l1)));
+                    builder.addIndex(iOuter);
                     builder.addIndex(iRightA);
                     builder.restart();
                     builder.addIndex(iCenter);
                     builder.addIndex(iRightB);
-                    builder.addIndex(builder.addVertex(new Vertex(new Vec2f(pOuter), street.layer, l1)));
+                    builder.addIndex(iOuter);
                 } else {                            // bevel cap
                     builder.addIndex(builder.addVertex(new Vertex(pRightB, street.layer, l3)));
                     builder.addIndex(builder.addVertex(new Vertex(pRightA, street.layer, l3)));
@@ -612,15 +623,14 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             Vec2d pInner = Vec2d.mul(normalMed, innerext).add(pos);
             Vec2d pOuterA = Vec2d.mul(normalIn, outer).add(pos);
             Vec2d pOuterB = Vec2d.mul(normalOut, outer).add(pos);
-            Vec2f pCenter = new Vec2f(pos);
 
             if (curve > 0) {
-                int iInner = builder.addVertex(new Vertex(new Vec2f(pInner), street.layer, l1));
-                int iOuterA = builder.addVertex(new Vertex(new Vec2f(pOuterA), street.layer, l2));
-                int iOuterB = builder.addVertex(new Vertex(new Vec2f(pOuterB), street.layer, l2));
-                int iCenter = builder.addVertex(new Vertex(new Vec2f(pCenter), street.layer, l0));
-                int iOuterAC = builder.addVertex(new Vertex(new Vec2f(pOuterA), street.layer, l3));
-                int iOuterBC = builder.addVertex(new Vertex(new Vec2f(pOuterB), street.layer, l3));
+                int iInner   = builder.addVertex(new Vertex(common.projection.globalToTile(pInner),  street.layer, l1));
+                int iOuterA  = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterA), street.layer, l2));
+                int iOuterB  = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterB), street.layer, l2));
+                int iCenter  = builder.addVertex(new Vertex(common.projection.globalToTile(pos),     street.layer, l0));
+                int iOuterAC = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterA), street.layer, l3));
+                int iOuterBC = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterB), street.layer, l3));
 
                 builder.addIndex(iInner);       // connector in
                 builder.addIndex(iOuterA);
@@ -637,12 +647,12 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 builder.addIndex(iInner);       // connector out
                 builder.addIndex(iOuterB);
             } else {
-                int iInner = builder.addVertex(new Vertex(new Vec2f(pInner), street.layer, l2));
-                int iOuterA = builder.addVertex(new Vertex(new Vec2f(pOuterA), street.layer, l1));
-                int iOuterB = builder.addVertex(new Vertex(new Vec2f(pOuterB), street.layer, l1));
-                int iCenter = builder.addVertex(new Vertex(new Vec2f(pCenter), street.layer, l0));
-                int iOuterAC = builder.addVertex(new Vertex(new Vec2f(pOuterA), street.layer, l3));
-                int iOuterBC = builder.addVertex(new Vertex(new Vec2f(pOuterB), street.layer, l3));
+                int iInner   = builder.addVertex(new Vertex(common.projection.globalToTile(pInner),  street.layer, l2));
+                int iOuterA  = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterA), street.layer, l1));
+                int iOuterB  = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterB), street.layer, l1));
+                int iCenter  = builder.addVertex(new Vertex(common.projection.globalToTile(pos),     street.layer, l0));
+                int iOuterAC = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterA), street.layer, l3));
+                int iOuterBC = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterB), street.layer, l3));
 
                 builder.addIndex(iOuterA);      // connector in
                 builder.addIndex(iInner);
@@ -661,16 +671,17 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             }
 
         } else {
-            Vec2f pRightA = new Vec2f(Vec2d.mul(normalIn, right).add(pos));
-            Vec2f pLeftA  = new Vec2f(Vec2d.mul(normalIn, -left).add(pos));
-            Vec2f pRightB = new Vec2f(Vec2d.mul(normalOut, right).add(pos));
-            Vec2f pLeftB  = new Vec2f(Vec2d.mul(normalOut, -left).add(pos));
-            Vec2f pCenter = new Vec2f(pos);
+            Vec2f pRightA = common.projection.globalToTile(Vec2d.mul(normalIn, right).add(pos));
+            Vec2f pLeftA  = common.projection.globalToTile(Vec2d.mul(normalIn, -left).add(pos));
+            Vec2f pRightB = common.projection.globalToTile(Vec2d.mul(normalOut, right).add(pos));
+            Vec2f pLeftB  = common.projection.globalToTile(Vec2d.mul(normalOut, -left).add(pos));
+            Vec2f pCenter = common.projection.globalToTile(pos);
 
             int iRightA = builder.addVertex(new Vertex(pRightA, street.layer, l1));
-            int iLeftA  = builder.addVertex(new Vertex(pLeftA, street.layer, l2));
+            int iLeftA  = builder.addVertex(new Vertex(pLeftA,  street.layer, l2));
             int iRightB = builder.addVertex(new Vertex(pRightB, street.layer, l1));
-            int iLeftB  = builder.addVertex(new Vertex(pLeftB, street.layer, l2));
+            int iLeftB  = builder.addVertex(new Vertex(pLeftB,  street.layer, l2));
+            int iCenter = builder.addVertex(new Vertex(pCenter, street.layer, l0));
 
             // connector in
             builder.addIndex(iRightA);
@@ -681,11 +692,11 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             if (curve > 0) {
                 builder.addIndex(builder.addVertex(new Vertex(pLeftA,  street.layer, l3)));
                 builder.addIndex(builder.addVertex(new Vertex(pLeftB,  street.layer, l3)));
-                builder.addIndex(builder.addVertex(new Vertex(pCenter, street.layer, l0)));
+                builder.addIndex(iCenter);
             } else {
                 builder.addIndex(builder.addVertex(new Vertex(pRightB, street.layer, l3)));
                 builder.addIndex(builder.addVertex(new Vertex(pRightA, street.layer, l3)));
-                builder.addIndex(builder.addVertex(new Vertex(pCenter, street.layer, l0)));
+                builder.addIndex(iCenter);
             }
             builder.restart();
 
@@ -734,13 +745,12 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             Vec2d pInner = Vec2d.mul(normalMed, innerext).add(pos);
             Vec2d pOuterA = Vec2d.mul(normalIn, outer).add(pos);
             Vec2d pOuterB = Vec2d.mul(normalOut, outer).add(pos);
-            Vec2f pCenter = new Vec2f(pos);
 
             if (curve > 0) {
-                int iInner = builder.addVertex(new Vertex(new Vec2f(pInner), street.layer, l1));
-                int iOuterA = builder.addVertex(new Vertex(new Vec2f(pOuterA), street.layer, l2));
-                int iOuterB = builder.addVertex(new Vertex(new Vec2f(pOuterB), street.layer, l2));
-                int iCenter = builder.addVertex(new Vertex(new Vec2f(pCenter), street.layer, l0));
+                int iInner  = builder.addVertex(new Vertex(common.projection.globalToTile(pInner), street.layer, l1));
+                int iOuterA = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterA), street.layer, l2));
+                int iOuterB = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterB), street.layer, l2));
+                int iCenter = builder.addVertex(new Vertex(common.projection.globalToTile(pos), street.layer, l0));
 
                 builder.addIndex(iInner);       // connector in
                 builder.addIndex(iOuterA);
@@ -751,7 +761,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 builder.addIndex(iOuterB);
                 builder.restart();
                 if (miter) {                    // miter cage for rounded corner
-                    Vec2f pOuter = new Vec2f(Vec2d.mul(normalMed, -innerext).add(pos));
+                    Vec2f pOuter = common.projection.globalToTile(Vec2d.mul(normalMed, -innerext).add(pos));
                     Vec3f lx = new Vec3f((float) (sin * -innerext), (float) (-ext * curve), (float) ext);
                     int iOuter = builder.addVertex(new Vertex(pOuter, street.layer, lx));
 
@@ -763,9 +773,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                     Vec3f lOuter = new Vec3f((float) (1.5 * ext * cos), (float) (-1.5 * ext * sin), (float) ext);
                     Vec3f lOuterX = new Vec3f((float) (ext), (float) (-ext * curve), (float) ext);
 
-                    Vec2f pOuter  = new Vec2f(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pos));
-                    Vec2f pOuterAC = new Vec2f(Vec2d.mul(normalIn, outer).add(dirIn.xy().mul(ext)).add(pos));
-                    Vec2f pOuterBC = new Vec2f(Vec2d.mul(normalOut, outer).sub(dirOut.xy().mul(ext)).add(pos));
+                    Vec2f pOuter   = common.projection.globalToTile(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pos));
+                    Vec2f pOuterAC = common.projection.globalToTile(Vec2d.mul(normalIn, outer).add(dirIn.xy().mul(ext)).add(pos));
+                    Vec2f pOuterBC = common.projection.globalToTile(Vec2d.mul(normalOut, outer).sub(dirOut.xy().mul(ext)).add(pos));
 
                     int iOuter = builder.addVertex(new Vertex(pOuter,  street.layer, lOuter));
                     int iOuterAC = builder.addVertex(new Vertex(pOuterAC, street.layer, lOuterX));
@@ -785,10 +795,10 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 builder.addIndex(iInner);       // connector out
                 builder.addIndex(iOuterB);
             } else {
-                int iInner = builder.addVertex(new Vertex(new Vec2f(pInner), street.layer, l2));
-                int iOuterA = builder.addVertex(new Vertex(new Vec2f(pOuterA), street.layer, l1));
-                int iOuterB = builder.addVertex(new Vertex(new Vec2f(pOuterB), street.layer, l1));
-                int iCenter = builder.addVertex(new Vertex(new Vec2f(pCenter), street.layer, l0));
+                int iInner  = builder.addVertex(new Vertex(common.projection.globalToTile(pInner), street.layer, l2));
+                int iOuterA = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterA), street.layer, l1));
+                int iOuterB = builder.addVertex(new Vertex(common.projection.globalToTile(pOuterB), street.layer, l1));
+                int iCenter = builder.addVertex(new Vertex(common.projection.globalToTile(pos), street.layer, l0));
 
                 builder.addIndex(iOuterA);      // connector in
                 builder.addIndex(iInner);
@@ -799,7 +809,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 builder.addIndex(iOuterB);
                 builder.restart();
                 if (miter) {                    // miter cage for rounded corner
-                    Vec2f pOuter = new Vec2f(Vec2d.mul(normalMed, -innerext).add(pos));
+                    Vec2f pOuter = common.projection.globalToTile(Vec2d.mul(normalMed, -innerext).add(pos));
                     Vec3f lx = new Vec3f((float) (sin * -innerext), (float) (-ext * curve), (float) ext);
                     int iOuter = builder.addVertex(new Vertex(pOuter, street.layer, lx));
 
@@ -811,9 +821,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                     Vec3f lOuter = new Vec3f((float) (1.5 * ext * cos), (float) (-1.5 * ext * sin), (float) ext);
                     Vec3f lOuterX = new Vec3f((float) (ext), (float) (-ext * curve), (float) ext);
 
-                    Vec2f pOuter  = new Vec2f(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pos));
-                    Vec2f pOuterAC = new Vec2f(Vec2d.mul(normalIn, outer).add(dirIn.xy().mul(ext)).add(pos));
-                    Vec2f pOuterBC = new Vec2f(Vec2d.mul(normalOut, outer).sub(dirOut.xy().mul(ext)).add(pos));
+                    Vec2f pOuter   = common.projection.globalToTile(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pos));
+                    Vec2f pOuterAC = common.projection.globalToTile(Vec2d.mul(normalIn, outer).add(dirIn.xy().mul(ext)).add(pos));
+                    Vec2f pOuterBC = common.projection.globalToTile(Vec2d.mul(normalOut, outer).sub(dirOut.xy().mul(ext)).add(pos));
 
                     int iOuter = builder.addVertex(new Vertex(pOuter,  street.layer, lOuter));
                     int iOuterAC = builder.addVertex(new Vertex(pOuterAC, street.layer, lOuterX));
@@ -835,11 +845,11 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             }
 
         } else {
-            Vec2f pRightA = new Vec2f(Vec2d.mul(normalIn, right).add(pos));
-            Vec2f pLeftA  = new Vec2f(Vec2d.mul(normalIn, -left).add(pos));
-            Vec2f pRightB = new Vec2f(Vec2d.mul(normalOut, right).add(pos));
-            Vec2f pLeftB  = new Vec2f(Vec2d.mul(normalOut, -left).add(pos));
-            Vec2f pCenter = new Vec2f(pos);
+            Vec2f pRightA = common.projection.globalToTile(Vec2d.mul(normalIn, right).add(pos));
+            Vec2f pLeftA  = common.projection.globalToTile(Vec2d.mul(normalIn, -left).add(pos));
+            Vec2f pRightB = common.projection.globalToTile(Vec2d.mul(normalOut, right).add(pos));
+            Vec2f pLeftB  = common.projection.globalToTile(Vec2d.mul(normalOut, -left).add(pos));
+            Vec2f pCenter = common.projection.globalToTile(pos);
 
             int iRightA = builder.addVertex(new Vertex(pRightA, street.layer, l1));
             int iLeftA  = builder.addVertex(new Vertex(pLeftA, street.layer, l2));
@@ -853,7 +863,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             builder.restart();
 
             if (miter) {    // miter cage for rounded corner
-                Vec2f pOuter = new Vec2f(Vec2d.mul(normalMed, -innerext).add(pos));
+                Vec2f pOuter = common.projection.globalToTile(Vec2d.mul(normalMed, -innerext).add(pos));
                 Vec3f lx = new Vec3f((float) (sin * -innerext), (float) (-ext * curve), (float) ext);
                 int iOuter = builder.addVertex(new Vertex(pOuter, street.layer, lx));
 
@@ -873,9 +883,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 Vec3f lOuter = new Vec3f((float) (1.5 * ext * cos), (float) (-1.5 * ext * sin), (float) ext);
                 Vec3f lOuterX = new Vec3f((float) (ext), (float) (-ext * curve), (float) ext);
 
-                Vec2f pOuter  = new Vec2f(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pos));
-                Vec2f pOuterA = new Vec2f(Vec2d.mul(normalIn, outer).add(dirIn.xy().mul(ext)).add(pos));
-                Vec2f pOuterB = new Vec2f(Vec2d.mul(normalOut, outer).sub(dirOut.xy().mul(ext)).add(pos));
+                Vec2f pOuter  = common.projection.globalToTile(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pos));
+                Vec2f pOuterA = common.projection.globalToTile(Vec2d.mul(normalIn, outer).add(dirIn.xy().mul(ext)).add(pos));
+                Vec2f pOuterB = common.projection.globalToTile(Vec2d.mul(normalOut, outer).sub(dirOut.xy().mul(ext)).add(pos));
 
                 int iOuter = builder.addVertex(new Vertex(pOuter,  street.layer, lOuter));
                 int iOuterA = builder.addVertex(new Vertex(pOuterA, street.layer, lOuterX));
@@ -919,8 +929,9 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         return new Vec3d(dir.normalize(), len);
     }
 
-    private static Common getCommonProps(Style style, boolean drivingOnTheRight) {
+    private static Common getCommonProps(MeshProjection projection, Style style, boolean drivingOnTheRight) {
         return new Common(
+                projection,
                 style.getProperty("lanewidth", 0.001f),
                 style.getProperty("outline", 0.0001f),
                 CapType.ROUND,                              // TODO
@@ -1032,27 +1043,20 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             this.to = to;
         }
 
-        /**
-         * Project the given {@code Coordinates} using this projection.
-         *
-         * @param coords the coordinate to project.
-         * @return the projected coordinates as vectors.
-         */
-        private Vec2d[] project(Coordinate[] coords) {
-            Vec2d[] projected = new Vec2d[coords.length];
+        private Vec2d[] toGlobal(Coordinate[] coords) {
+            return projection.project(coords);
+        }
 
-            for (int i = 0; i < coords.length; i++) {
-                Vec2d p = projection.project(coords[i]);
-                p.x = ((p.x - from.xmin) / (from.xmax - from.xmin)) * (to.xmax - to.xmin) + to.xmin;
-                p.y = ((p.y - from.ymin) / (from.ymax - from.ymin)) * (to.ymax - to.ymin) + to.ymin;
-                projected[i] = p;
-            }
-
-            return projected;
+        private Vec2f globalToTile(Vec2d p) {
+            return new Vec2f(
+                    (float) (((p.x - from.xmin) / (from.xmax - from.xmin)) * (to.xmax - to.xmin) + to.xmin),
+                    (float) (((p.y - from.ymin) / (from.ymax - from.ymin)) * (to.ymax - to.ymin) + to.ymin)
+            );
         }
     }
 
     private static class Common {
+        MeshProjection projection;
         float lanewidth;
         float outline;
         CapType cap;
@@ -1060,7 +1064,10 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         float miterAngleLimit;          // as cos of the median direction vector
         boolean drivingOnTheRight;
 
-        Common(float lanewidth, float outline, CapType cap, JoinType join, float miterAngleLimit, boolean drivingOnTheRight) {
+        Common(MeshProjection projection, float lanewidth, float outline, CapType cap, JoinType join,
+               float miterAngleLimit, boolean drivingOnTheRight)
+        {
+            this.projection = projection;
             this.lanewidth = lanewidth;
             this.outline = outline;
             this.cap = cap;
