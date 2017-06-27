@@ -7,7 +7,6 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 
 /**
  * A light style-sheet for the MapViewer.
- * TODO: adapt to new system
  *
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */

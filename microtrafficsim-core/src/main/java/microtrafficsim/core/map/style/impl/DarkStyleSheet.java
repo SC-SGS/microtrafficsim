@@ -10,7 +10,6 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 
 /**
  * A dark style-sheet for the MapViewer. It uses the colors defined in {@link LightStyleSheet} inverted.
- * TODO: adapt to new system
  *
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */

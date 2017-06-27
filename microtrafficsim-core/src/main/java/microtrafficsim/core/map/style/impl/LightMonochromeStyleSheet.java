@@ -16,6 +16,7 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 public class LightMonochromeStyleSheet extends BasicStyleSheet {
     private static final EasyMarkableLogger logger = new EasyMarkableLogger(LightMonochromeStyleSheet.class);
 
+
     @Override
     public Color getBackgroundColor() {
         return Color.fromRGB(0xF8F8F8);
