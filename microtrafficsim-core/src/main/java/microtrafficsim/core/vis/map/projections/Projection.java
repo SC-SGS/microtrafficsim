@@ -44,6 +44,34 @@ public interface Projection {
     Coordinate unproject(Vec2d v);
 
     /**
+     * Project the array of coordinates using this projection.
+     *
+     * @param coords the coordinates to project.
+     * @return the projected coordinates.
+     */
+    default Vec2d[] project(Coordinate[] coords) {
+        Vec2d[] projected = new Vec2d[coords.length];
+        for (int i = 0; i < coords.length; i++) {
+            projected[i] = project(coords[i]);
+        }
+        return projected;
+    }
+
+    /**
+     * Un-project the array of coordinates using this projection.
+     *
+     * @param coords the coordinates to un-project.
+     * @return the un-projected coordinates.
+     */
+    default Coordinate[] project(Vec2d[] coords) {
+        Coordinate[] projected = new Coordinate[coords.length];
+        for (int i = 0; i < coords.length; i++) {
+            projected[i] = unproject(coords[i]);
+        }
+        return projected;
+    }
+
+    /**
      * Projected the given bounds.
      *
      * @param b the bounds to project.

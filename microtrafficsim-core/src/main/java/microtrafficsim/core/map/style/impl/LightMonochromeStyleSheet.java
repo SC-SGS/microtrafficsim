@@ -16,15 +16,6 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 public class LightMonochromeStyleSheet extends BasicStyleSheet {
     private static final EasyMarkableLogger logger = new EasyMarkableLogger(LightMonochromeStyleSheet.class);
 
-    private final static LineWidthBaseFunction LINE_WIDTH_BASE_FUNCTION = (offset, base, exp1, exp2, zoom) -> {
-        if (zoom >= 12)
-            return offset + base * (float) Math.pow(exp1, (19 - zoom));
-        else if (zoom >= 10)
-            return offset + base * (float) Math.pow(exp1, (19 - 12)) + base * (float) Math.pow(exp2, 12 - zoom);
-        else
-            return offset + base * (float) Math.pow(exp1, (19 - 12)) - base * (float) Math.pow(exp2, 12 - 11);
-    };
-
 
     @Override
     public Color getBackgroundColor() {
@@ -79,41 +70,15 @@ public class LightMonochromeStyleSheet extends BasicStyleSheet {
 
     @Override
     protected float getStreetLaneWidth(String streetType, int zoom) {
-        float offset = 0;
-        float exp1 = 0;
+        final int z = Math.max(zoom, 11);
+        final double s = zoom > 11 ? 1 : Math.pow(1.95, 11 - zoom);
 
-        switch (streetType) {
-            case "motorway":
-            case "trunk":
-                offset = 45.0f;
-                exp1   = 1.32f;
-                break;
-            case "primary":
-            case "secondary":
-            case "tertiary":
-                offset = 42.5f;
-                exp1   = 1.22f;
-                break;
-            case "unclassified":
-            case "residential":
-            case "road":
-                offset = 40.0f;
-                exp1   = 1.17f;
-                break;
-            case "living_street":
-                offset = 37.5f;
-                exp1   = 1.12f;
-                break;
-            default:
-                logger.info("The lane width of " + streetType + " is not defined.");
-        }
-
-        return LINE_WIDTH_BASE_FUNCTION.get(offset * 12, 20.f, exp1, 0.3f, zoom);
+        return (float) ((30.0 + 5.0 * Math.pow(1.75, (19 - z))) * s);
     }
 
     @Override
     protected float getStreetOutlineWidth(String streetType, int zoom) {
-        return LINE_WIDTH_BASE_FUNCTION.get(20.f, 22.5f, 1.5f, 0.3f, zoom);
+        return (float) (1.0 * Math.pow(1.75, 19 - zoom));
     }
 
 

@@ -4,7 +4,7 @@
 
 #version 150
 
-uniform float u_lineblur = 25.0000;
+uniform float u_lineblur = 2.5;
 uniform float u_viewscale;
 
 in vec4 vertex_color;

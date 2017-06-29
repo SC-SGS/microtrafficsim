@@ -23,6 +23,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     private final long         revision;
     private final float   lanewidth;
     private final float   outline;
+    private final boolean useJoinsWhenPossible;
     private final boolean drivingOnTheRight;
 
     /**
@@ -47,6 +48,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                          long                revision,
                          float               lanewidth,
                          float               outline,
+                         boolean             useJoinsWhenPossible,
                          boolean             drivingOnTheRight) {
         this.context    = context;
         this.tiles      = tiles;
@@ -57,6 +59,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
         this.revision   = revision;
         this.lanewidth  = lanewidth;
         this.outline    = outline;
+        this.useJoinsWhenPossible = useJoinsWhenPossible;
         this.drivingOnTheRight = drivingOnTheRight;
     }
 
@@ -75,6 +78,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                 && this.revision == other.revision
                 && this.lanewidth == other.lanewidth
                 && this.outline == other.outline
+                && this.useJoinsWhenPossible == other.useJoinsWhenPossible
                 && this.drivingOnTheRight == other.drivingOnTheRight;
     }
 
@@ -89,6 +93,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                 .add(revision)
                 .add(lanewidth)
                 .add(outline)
+                .add(useJoinsWhenPossible)
                 .add(drivingOnTheRight)
                 .getHash();
     }

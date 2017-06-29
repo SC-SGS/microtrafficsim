@@ -7,7 +7,6 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 
 /**
  * A light style-sheet for the MapViewer.
- * TODO: adapt to new system
  *
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
@@ -74,35 +73,14 @@ public class LightStyleSheet extends BasicStyleSheet {
 
     @Override
     protected float getStreetLaneWidth(String streetType, int zoom) {
-        if (zoom >= 16) {
-            switch (streetType) {
-                case "motorway":
-                    return 48.f;
-                case "trunk":
-                    return 48.f;
-                case "primary":
-                    return 40.f;
-                case "secondary":
-                    return 40.f;
-                case "tertiary":
-                    return 40.f;
-                case "unclassified":
-                    return 30.f;
-                case "residential":
-                    return 30.f;
-                case "road":
-                    if (zoom >= 17)
-                        return 30.f;
-                case "living_street":
-                    return 24.f;
-            }
-        }
-        logger.info("The inline line width of " + streetType + " is not defined.");
-        return 0;
+        final int z = Math.max(zoom, 11);
+        final double s = zoom > 11 ? 1 : Math.pow(1.95, 11 - zoom);
+
+        return (float) ((30.0 + 5.0 * Math.pow(1.75, (19 - z))) * s);
     }
 
     @Override
     protected float getStreetOutlineWidth(String streetType, int zoom) {
-        return 10.0f;
+        return (float) (2.0 * Math.pow(1.95, 19 - zoom));
     }
 }
