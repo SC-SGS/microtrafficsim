@@ -69,16 +69,30 @@ public class LightMonochromeStyleSheet extends BasicStyleSheet {
     }
 
     @Override
-    public double getStreetLaneWidth(int zoom) {
-        final int z = Math.max(zoom, 11);
-        final double s = zoom > 11 ? 1.0 : Math.pow(1.95, 11 - zoom);
-
-        return (30.0 + 5.0 * Math.pow(1.75, (19 - z))) * s;
+    protected Color getStreetCenterLineColor(String streetType) {
+        return getStreetLaneLineColor(streetType);
     }
 
     @Override
-    protected double getStreetOutlineWidth(String streetType, int zoom) {
-        return 1.0 * Math.pow(1.75, 19 - zoom);
+    protected Color getStreetLaneLineColor(String streetType) {
+        switch (streetType) {
+            case "motorway":
+            case "trunk":
+            case "primary":
+            case "secondary":
+            case "tertiary":
+                return Color.fromRGB(0x000000);
+            case "unclassified":
+            case "residential":
+                return Color.fromRGB(0x505050);
+            case "road":
+                return Color.fromRGB(0x909090);
+            case "living_street":
+                return Color.fromRGB(0x707070);
+            default: // should be never reached
+                logger.info("The inline color of " + streetType + " is not defined.");
+                return getBackgroundColor();
+        }
     }
 
 
@@ -87,10 +101,5 @@ public class LightMonochromeStyleSheet extends BasicStyleSheet {
         Color[] colors = VehicleColorSchemes.RED_TO_GREEN;
         int v = MathUtils.clamp(vehicle.getVelocity(), 0, colors.length - 1);
         return colors[v];
-    }
-
-
-    public interface LineWidthBaseFunction {
-        float get(float offset, float base, float exp1, float exp2, int zoom);
     }
 }
