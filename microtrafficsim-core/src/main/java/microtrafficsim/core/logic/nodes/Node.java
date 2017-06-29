@@ -553,7 +553,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
     }
 
 
-    public int findOutermostTurningLaneIndex(DirectedEdge incoming, DirectedEdge leaving) {
+    public synchronized int findOutermostTurningLaneIndex(DirectedEdge incoming, DirectedEdge leaving) {
         for (DirectedEdge.Lane lane : incoming)
             if (isLaneCorrect(lane, leaving))
                 return lane.getIndex();
@@ -561,11 +561,11 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
         return -1;
     }
 
-    public boolean isLaneCorrect(DirectedEdge.Lane incomingLane, DirectedEdge leavingEdge) {
+    public synchronized boolean isLaneCorrect(DirectedEdge.Lane incomingLane, DirectedEdge leavingEdge) {
         return getLeavingLane(incomingLane, leavingEdge) != null;
     }
 
-    public DirectedEdge.Lane getLeavingLane(DirectedEdge.Lane incomingLane, DirectedEdge leavingEdge) {
+    public synchronized DirectedEdge.Lane getLeavingLane(DirectedEdge.Lane incomingLane, DirectedEdge leavingEdge) {
         TreeMap<DirectedEdge, DirectedEdge.Lane> leaving = connectors.get(incomingLane);
         if (leaving == null)
             return null;
@@ -583,7 +583,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
      * @return All leaving edges depending on the incoming edge.
      */
     @Override
-    public Set<DirectedEdge> getLeavingEdges(DirectedEdge incomingEdge) {
+    public synchronized Set<DirectedEdge> getLeavingEdges(DirectedEdge incomingEdge) {
         // TODO: maybe pre-compute leaving edges?
 
         // return everything if incoming edge is null
@@ -600,12 +600,12 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
         return result;
     }
 
-    public Set<DirectedEdge> getLeavingEdges() {
+    public synchronized Set<DirectedEdge> getLeavingEdges() {
         return getLeavingEdges(null);
     }
 
     @Override
-    public Set<DirectedEdge> getIncomingEdges(DirectedEdge leavingEdge) {
+    public synchronized Set<DirectedEdge> getIncomingEdges(DirectedEdge leavingEdge) {
         // TODO: maybe pre-compute incoming edges?
 
         // return everything if leaving edge is null
@@ -626,7 +626,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
         return result;
     }
 
-    public Set<DirectedEdge> getIncomingEdges() {
+    public synchronized Set<DirectedEdge> getIncomingEdges() {
         return getIncomingEdges(null);
     }
 

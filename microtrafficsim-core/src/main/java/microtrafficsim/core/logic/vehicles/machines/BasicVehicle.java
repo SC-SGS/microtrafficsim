@@ -180,7 +180,7 @@ public abstract class BasicVehicle implements Vehicle {
             int distance = front.getCellPosition() - cellPosition;
 
             if (distance < getMaxVelocity()) {
-                if (velocity > front.getVelocity())
+                if (velocity > front.getVelocity() || front.getVelocity() == 0)
                     checkChangeToInnerLane();
             } else {
                 tendToOutermostLane();
@@ -248,20 +248,6 @@ public abstract class BasicVehicle implements Vehicle {
         lane.insertVehicle(this, cellPosition);
     }
 
-
-    /**
-     * @return true, if there is a front vehicle
-     */
-    private boolean tryBrakingForFrontVehicle() {
-        Vehicle vehicleInFront = lane.getVehicleInFront(this);
-        if (vehicleInFront != null) {
-            int distance = vehicleInFront.getCellPosition() - cellPosition;
-            velocity = Math.min(velocity, distance - 1);
-            return true;
-        }
-
-        return false;
-    }
 
     /*
     |=============|
@@ -363,34 +349,77 @@ public abstract class BasicVehicle implements Vehicle {
 
     @Override
     public void brake() {
-        Vehicle vehicleInFront = lane.getVehicleInFront(this);
+        /* variables needed */
+        Vehicle vehicleInFront;
+        int distance;
+        Boolean laneIsCorrect = null;
+        boolean isBraking = true;
+        boolean shouldCheckForCorrection = true;
+
+
+        /* determine case and prepare variables */
+        vehicleInFront = lane.getVehicleInFront(this);
+
+
         if (vehicleInFront != null) {
             // brake for front vehicle
-            int distance = vehicleInFront.getCellPosition() - cellPosition;
-            velocity     = Math.min(velocity, distance - 1);
-        } else {    // this vehicle is first in lane
-            int distance = lane.getEdge().getLength() - cellPosition;
-            // Would cross node?
+            distance = vehicleInFront.getCellPosition() - cellPosition;
+            shouldCheckForCorrection = false;
+        } else {
+            // this vehicle is first in lane
+            distance = lane.getEdge().getLength() - cellPosition;
+            // would cross node?
             if (velocity >= distance) {
-                boolean brakeForEndOfRoad = true;
-
                 if (!driver.getRoute().isEmpty()) {
                     if (lane.getDestination().permissionToCross(this)) {
                         // if next road has vehicles => brake for this
                         // else => brake for end of next road
                         DirectedEdge.Lane nextLane = lane.getDestination().getLeavingLane(lane, driver.peekRoute());
-                        if (nextLane != null) { // not correct lane
+                        laneIsCorrect = nextLane != null;
+                        if (laneIsCorrect) {
+                            shouldCheckForCorrection = false;
+
                             int maxInsertionIndex = nextLane.getMaxInsertionIndex();
-                            velocity = Math.min(velocity, distance + maxInsertionIndex);
-                            brakeForEndOfRoad = false;
+                            if (maxInsertionIndex == nextLane.getLength() - 1)
+                                maxInsertionIndex--;
+                            distance += maxInsertionIndex + 1;
                         }
                     }
+                } else {
+                    shouldCheckForCorrection = false;
                 }
-
-                if (brakeForEndOfRoad)
-                    velocity = Math.min(velocity, distance - 1);
+            } else {
+                isBraking = false;
+                shouldCheckForCorrection = !driver.getRoute().isEmpty();
             }
         }
+
+
+        /* execute case */
+        if (isBraking) {
+            // brake for front vehicle
+            // OR brake for end of road
+            // OR brake for first vehicle or end of next road
+            velocity = Math.min(velocity, distance - 1);
+        }
+
+        if (shouldCheckForCorrection && velocity > 0) {
+            // if vehicle reaches last cell of current lane
+            if (cellPosition + velocity == lane.getLength() - 1) {
+                // performance-expensive tie breaker: outermost vehicle
+                if (!lane.isOutermostVehicle(this)) {
+                    // performance-expensive tie breaker: lane check
+                    if (laneIsCorrect == null) {
+                        // route is always not empty because laneIsCorrect would be not null otherwise
+                        laneIsCorrect = lane.getDestination().isLaneCorrect(lane, driver.peekRoute());
+                    }
+
+                    if (!laneIsCorrect)
+                        velocity--;
+                }
+            }
+        }
+
 
         assert velocity >= 0 : "Velocity < 0 in braking. Actual = " + velocity;
     }

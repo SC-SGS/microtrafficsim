@@ -327,9 +327,9 @@ public class DirectedEdge
          * vehicle has no vehicles right to it
          */
         public boolean isOutermostVehicle(Vehicle vehicle) {
-            for (int i = index - 1; i >= 0; i++) {
+            for (int i = index - 1; i >= 0; i--) {
                 edge.lanes.lockLane(i);
-                boolean isOutermostVehicle = edge.lanes.get(i, vehicle.getCellPosition()) == null;
+                boolean isOutermostVehicle = edge.lanes.isEmpty(i);
                 edge.lanes.unlockLane(i);
 
                 if (!isOutermostVehicle)
