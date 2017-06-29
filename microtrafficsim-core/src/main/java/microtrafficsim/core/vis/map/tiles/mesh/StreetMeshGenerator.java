@@ -16,7 +16,9 @@ import microtrafficsim.core.vis.mesh.impl.DualFloatAttributeIndexedMesh;
 import microtrafficsim.core.vis.mesh.style.Style;
 import microtrafficsim.core.vis.mesh.utils.VertexSet;
 import microtrafficsim.core.vis.utils.LaneOffset;
-import microtrafficsim.math.*;
+import microtrafficsim.math.Rect2d;
+import microtrafficsim.math.Vec3d;
+import microtrafficsim.math.Vec3f;
 import microtrafficsim.utils.collections.HashListMultiMap;
 
 import java.nio.FloatBuffer;
@@ -45,7 +47,11 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 source.getTilingScheme(),
                 source.getRevision(),
                 style.lanewidth,
-                style.outline,
+                style.linewidth,
+                style.cap,
+                style.join,
+                style.type,
+                style.miterAngleLimit,
                 style.useJoinsWhenPossible,
                 style.drivingOnTheRight
         );
@@ -131,12 +137,6 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                           HashListMultiMap<Coordinate, Street> intersections) {
         Vec3d[] projected = projection.toGlobal(street.coordinates, street.layer);
 
-        double linewidth = style.lanewidth * (street.numLanesFwd + street.numLanesBwd) + 2.0 * style.outline;
-        double offset = LaneOffset.getCenterOffset(style.lanewidth, street, style.drivingOnTheRight);
-
-        LineMeshBuilder.Style linestyle = new LineMeshBuilder.Style(style.cap, style.join, linewidth, offset,
-                style.miterAngleLimit);
-
         Vec3d in = null;
         Vec3d out = null;
         if (intersections != null) {
@@ -154,7 +154,38 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             }
         }
 
-        builder.add(projected, linestyle, in, out);
+        if (style.type == LineType.BASE) {
+            double linewidth = style.lanewidth * (street.numLanesFwd + street.numLanesBwd) + 2.0 * style.linewidth;
+            double offset = LaneOffset.getCenterOffset(style.lanewidth, street, style.drivingOnTheRight);
+
+            LineMeshBuilder.Style linestyle = new LineMeshBuilder.Style(
+                    style.cap, style.join, linewidth, offset, style.miterAngleLimit);
+
+            builder.add(projected, linestyle, in, out);
+
+        } else if (style.type == LineType.LINES_CENTER) {
+            if (street.numLanesFwd > 0 && street.numLanesBwd > 0) {
+                double offset = LaneOffset.getOffsetToCenterLine(style.lanewidth, street, style.drivingOnTheRight);
+
+                LineMeshBuilder.Style linestyle = new LineMeshBuilder.Style(
+                        style.cap, style.join, style.linewidth, offset, style.miterAngleLimit);
+
+                builder.add(projected, linestyle, in, out);
+            }
+        } else {
+            LineMeshBuilder.Style linestyle = new LineMeshBuilder.Style(
+                    style.cap, style.join, style.linewidth, 0.0, style.miterAngleLimit);
+
+            for (int i = 1; i < street.numLanesFwd; i++) {
+                linestyle.offset = LaneOffset.getOffsetToLaneEdge(style.lanewidth, street, i, true, style.drivingOnTheRight);
+                builder.add(projected, linestyle, in, out);
+            }
+
+            for (int i = 1; i < street.numLanesBwd; i++) {
+                linestyle.offset = LaneOffset.getOffsetToLaneEdge(style.lanewidth, street, i, false, style.drivingOnTheRight);
+                builder.add(projected, linestyle, in, out);
+            }
+        }
     }
 
     /**
@@ -234,43 +265,49 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
     }
 
 
+    public enum LineType { BASE, LINES_CENTER, LINES_OUTER }
+
     private static class StreetStyle {
         double lanewidth;
-        double outline;
-        LineMeshBuilder.CapType cap;
+        double linewidth;
+        LineMeshBuilder.CapType  cap;
         LineMeshBuilder.JoinType join;
-        double miterAngleLimit;
+        LineType                 type;
+        double  miterAngleLimit;
         boolean useJoinsWhenPossible;
         boolean drivingOnTheRight;
 
+        public static StreetStyle from(Style style) {
+            return new StreetStyle(
+                    style.getProperty("lanewidth", 35.0),
+                    style.getProperty("linewidth",  5.0),
+                    style.getProperty("cap", LineMeshBuilder.CapType.ROUND),
+                    style.getProperty("join", LineMeshBuilder.JoinType.ROUND),
+                    style.getProperty("type", LineType.BASE),
+                    style.getProperty("miter-angle-limit", 0.5),
+                    true,                                       // TODO
+                    true                                        // TODO
+            );
+        }
+
         public StreetStyle(
                 double lanewidth,
-                double outline,
+                double linewidth,
                 LineMeshBuilder.CapType cap,
                 LineMeshBuilder.JoinType join,
+                LineType type,
                 double miterAngleLimit,
                 boolean useJoinsWhenPossible,
                 boolean drivingOnTheRight
         ) {
             this.lanewidth = lanewidth;
-            this.outline = outline;
+            this.linewidth = linewidth;
             this.cap = cap;
             this.join = join;
+            this.type = type;
             this.miterAngleLimit = miterAngleLimit;
             this.useJoinsWhenPossible = useJoinsWhenPossible;
             this.drivingOnTheRight = drivingOnTheRight;
-        }
-
-        public static StreetStyle from(Style style) {
-            return new StreetStyle(
-                    style.getProperty("lanewidth", 20.0),
-                    style.getProperty("outline", 5.0),
-                    LineMeshBuilder.CapType.ROUND,              // TODO
-                    LineMeshBuilder.JoinType.ROUND,             // TODO
-                    0.5f,                                       // TODO
-                    true,                                       // TODO
-                    true                                        // TODO
-            );
         }
     }
 

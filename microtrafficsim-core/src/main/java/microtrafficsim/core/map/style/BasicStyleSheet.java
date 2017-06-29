@@ -11,6 +11,8 @@ import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.parser.features.MapFeatureGenerator;
 import microtrafficsim.core.parser.features.streets.StreetFeatureGenerator;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
+import microtrafficsim.core.vis.map.tiles.mesh.StreetMeshGenerator;
+import microtrafficsim.core.vis.mesh.builder.LineMeshBuilder;
 import microtrafficsim.core.vis.mesh.style.Style;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.utils.Color;
@@ -34,7 +36,7 @@ import java.util.function.Predicate;
 public abstract class BasicStyleSheet implements StyleSheet {
     private final EasyMarkableLogger logger = new EasyMarkableLogger(BasicStyleSheet.class);
 
-    public static final double SCALE_MAXLEVEL = 1.0 / (2 << 19);
+    private static final double SCALE_MAXLEVEL = 1.0 / (2 << 19);
 
     protected ArrayList<MapFeatureDefinition<?>> features = new ArrayList<>();
     protected ArrayList<LayerDefinition>         layers = new ArrayList<>();
@@ -81,7 +83,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
                 String featureName = "streets:" + streetType;
 
                 if (isStreetOutlineActive(streetType, zoom)) {
-                    Style style = genStreetStyle(
+                    Style style = genStreetBaseStyle(
                             shader,
                             getStreetOutlineColor(streetType),
                             getStreetLaneWidth(zoom),
@@ -96,13 +98,40 @@ public abstract class BasicStyleSheet implements StyleSheet {
                 String featureName = "streets:" + streetType;
 
                 if (isStreetInlineActive(streetType, zoom)) {
-                    Style style = genStreetStyle(
+                    Style style = genStreetBaseStyle(
                             shader,
                             getStreetInlineColor(streetType),
                             getStreetLaneWidth(zoom),
                             0.0f,
                             SCALE_MAXLEVEL);
                     layers.add(genLayer(featureName + ":inline:" + zoom, layers.size(), zoom, zoom, featureName, style));
+                }
+            }
+
+            for (StreetBasePredicate street : streets) {        // TODO: selectors, color, line-width
+                String streetType = street.getType();
+                String featureName = "streets:" + streetType;
+
+                if (isStreetInlineActive(streetType, zoom)) {
+                    Style style = genStreetLinesStyle(
+                            shader,
+                            Color.fromRGB(0x000000),
+                            getStreetLaneWidth(zoom),
+                            5.0f,
+                            SCALE_MAXLEVEL,
+                            true);
+                    layers.add(genLayer(featureName + ":lines-center:" + zoom, layers.size(), zoom, zoom, featureName, style));
+                }
+
+                if (isStreetInlineActive(streetType, zoom)) {
+                    Style style = genStreetLinesStyle(
+                            shader,
+                            Color.fromRGB(0x000000),
+                            getStreetLaneWidth(zoom),
+                            4.0f,
+                            SCALE_MAXLEVEL,
+                            false);
+                    layers.add(genLayer(featureName + ":lines-outer:" + zoom, layers.size(), zoom, zoom, featureName, style));
                 }
             }
         }
@@ -254,7 +283,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
     }
 
     /**
-     * Generate a style for streets based on the specific properties.
+     * Generate a style for the base-lines of streets based on the specific properties.
      *
      * @param shader    the shader to be used in the generated style.
      * @param color     the color to be used in generated style.
@@ -263,11 +292,41 @@ public abstract class BasicStyleSheet implements StyleSheet {
      * @param scalenorm the scale-normal of the generated style.
      * @return the generated style.
      */
-    protected Style genStreetStyle(ShaderProgramSource shader, Color color, double lanewidth, double outline, double scalenorm) {
+    protected Style genStreetBaseStyle(ShaderProgramSource shader, Color color, double lanewidth, double outline,
+                                       double scalenorm)
+    {
         Style style = new Style(shader);
         style.setUniformSupplier("u_color", color::toVec4f);
         style.setProperty("lanewidth", lanewidth * scalenorm);
-        style.setProperty("outline", outline * scalenorm);
+        style.setProperty("linewidth", outline * scalenorm);
+        style.setProperty("cap", LineMeshBuilder.CapType.ROUND);
+        style.setProperty("join", LineMeshBuilder.JoinType.ROUND);
+        style.setProperty("type", StreetMeshGenerator.LineType.BASE);
+        style.setProperty("miter-angle-limit", 0.5);
+        return style;
+    }
+
+    /**
+     * Generate a style for streets based on the specific properties.
+     *
+     * @param shader    the shader to be used in the generated style.
+     * @param color     the color to be used in generated style.
+     * @param lanewidth the width of a single lane of the generated style.
+     * @param linewidth the width of the lines of the generated style.
+     * @param scalenorm the scale-normal of the generated style.
+     * @return the generated style.
+     */
+    protected Style genStreetLinesStyle(ShaderProgramSource shader, Color color, double lanewidth, double linewidth,
+                                       double scalenorm, boolean center)
+    {
+        Style style = new Style(shader);
+        style.setUniformSupplier("u_color", color::toVec4f);
+        style.setProperty("lanewidth", lanewidth * scalenorm);
+        style.setProperty("linewidth", linewidth * scalenorm);
+        style.setProperty("cap", LineMeshBuilder.CapType.SQUARE);
+        style.setProperty("join", LineMeshBuilder.JoinType.MITER);
+        style.setProperty("type", center ? StreetMeshGenerator.LineType.LINES_CENTER : StreetMeshGenerator.LineType.LINES_OUTER);
+        style.setProperty("miter-angle-limit", 0.5);
         return style;
     }
 
