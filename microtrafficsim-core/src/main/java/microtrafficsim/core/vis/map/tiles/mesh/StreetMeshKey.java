@@ -21,8 +21,8 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     private final String feature;
     private final TilingScheme scheme;
     private final long         revision;
-    private final float   lanewidth;
-    private final float   outline;
+    private final double  lanewidth;
+    private final double  outline;
     private final boolean useJoinsWhenPossible;
     private final boolean drivingOnTheRight;
 
@@ -46,8 +46,8 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                          String              feature,
                          TilingScheme        scheme,
                          long                revision,
-                         float               lanewidth,
-                         float               outline,
+                         double              lanewidth,
+                         double              outline,
                          boolean             useJoinsWhenPossible,
                          boolean             drivingOnTheRight) {
         this.context    = context;

@@ -75,16 +75,16 @@ public class DarkStyleSheet extends BasicStyleSheet {
     }
 
     @Override
-    protected float getStreetLaneWidth(String streetType, int zoom) {
+    public double getStreetLaneWidth(int zoom) {
         final int z = Math.max(zoom, 11);
-        final double s = zoom > 11 ? 1 : Math.pow(1.95, 11 - zoom);
+        final double s = zoom > 11 ? 1.0 : Math.pow(1.95, 11 - zoom);
 
-        return (float) ((30.0 + 5.0 * Math.pow(1.75, (19 - z))) * s);
+        return (30.0 + 5.0 * Math.pow(1.75, (19 - z))) * s;
     }
 
     @Override
-    protected float getStreetOutlineWidth(String streetType, int zoom) {
-        return (float) (2.0 * Math.pow(1.95, 19 - zoom));
+    protected double getStreetOutlineWidth(String streetType, int zoom) {
+        return 2.0 * Math.pow(1.95, 19 - zoom);
     }
 
 

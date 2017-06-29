@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 
 // TODO: proper line rendering for area outline
+// TODO: reslove fp issues
 
 // TODO: pre-load shaders?
 // TODO: re-use batches?

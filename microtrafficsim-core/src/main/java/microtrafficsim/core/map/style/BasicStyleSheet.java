@@ -4,8 +4,8 @@ import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.map.layers.LayerDefinition;
 import microtrafficsim.core.map.style.impl.DarkMonochromeStyleSheet;
-import microtrafficsim.core.map.style.predicates.MajorStreetBasePredicate;
 import microtrafficsim.core.map.style.predicates.BasicStreetBasePredicate;
+import microtrafficsim.core.map.style.predicates.MajorStreetBasePredicate;
 import microtrafficsim.core.map.style.predicates.StreetBasePredicate;
 import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.parser.features.MapFeatureGenerator;
@@ -34,7 +34,7 @@ import java.util.function.Predicate;
 public abstract class BasicStyleSheet implements StyleSheet {
     private final EasyMarkableLogger logger = new EasyMarkableLogger(BasicStyleSheet.class);
 
-    public static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
+    public static final double SCALE_MAXLEVEL = 1.0 / (2 << 19);
 
     protected ArrayList<MapFeatureDefinition<?>> features = new ArrayList<>();
     protected ArrayList<LayerDefinition>         layers = new ArrayList<>();
@@ -84,7 +84,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
                     Style style = genStreetStyle(
                             shader,
                             getStreetOutlineColor(streetType),
-                            getStreetLaneWidth(streetType, zoom),
+                            getStreetLaneWidth(zoom),
                             getStreetOutlineWidth(streetType, zoom),
                             SCALE_MAXLEVEL);
                     layers.add(genLayer(featureName + ":outline:" + zoom, layers.size(), zoom, zoom, featureName, style));
@@ -99,7 +99,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
                     Style style = genStreetStyle(
                             shader,
                             getStreetInlineColor(streetType),
-                            getStreetLaneWidth(streetType, zoom),
+                            getStreetLaneWidth(zoom),
                             0.0f,
                             SCALE_MAXLEVEL);
                     layers.add(genLayer(featureName + ":inline:" + zoom, layers.size(), zoom, zoom, featureName, style));
@@ -207,24 +207,17 @@ public abstract class BasicStyleSheet implements StyleSheet {
     protected abstract Color getStreetInlineColor(String streetType);
 
     /**
-     * Return the width of one lane for the specified street-type and zoom-level.
-     *
-     * @param streetType the type of the street as specified in the StreetBasePredicate.
-     * @param zoom the zoom-level for which this property should be queried.
-     * @return the width of one lane for the specified arguments. The complete width of a street is calculated as:
-     * {@code (lanesForward + lanesBackward) * laneWidth} for the inline, and
-     * {@code (lanesForward + lanesBackward) * laneWidth + 2 * outlineWidth} for the outline.
-     */
-    protected abstract float getStreetLaneWidth(String streetType, int zoom);
-
-    /**
      * Return the width-offset to be added to each side of the street (i.e. the outline)
      * @param streetType the type of the street as specified in the StreetBasePredicate.
      * @param zoom the zoom-level for which this property should be queried.
      * @return the width of the outline of a street for the specified properties.
      */
-    protected abstract float getStreetOutlineWidth(String streetType, int zoom);
+    protected abstract double getStreetOutlineWidth(String streetType, int zoom);
 
+    @Override
+    public double getScaleNorm() {
+        return SCALE_MAXLEVEL;
+    }
 
     /**
      * Generates a basic street-feature definition.
@@ -270,7 +263,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
      * @param scalenorm the scale-normal of the generated style.
      * @return the generated style.
      */
-    protected Style genStreetStyle(ShaderProgramSource shader, Color color, float lanewidth, float outline, float scalenorm) {
+    protected Style genStreetStyle(ShaderProgramSource shader, Color color, double lanewidth, double outline, double scalenorm) {
         Style style = new Style(shader);
         style.setUniformSupplier("u_color", color::toVec4f);
         style.setProperty("lanewidth", lanewidth * scalenorm);

@@ -1,7 +1,6 @@
 package microtrafficsim.debug.overlay;
 
 import com.jogamp.opengl.GL3;
-import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
@@ -19,6 +18,7 @@ import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec4f;
 import microtrafficsim.core.vis.opengl.utils.Color;
+import microtrafficsim.core.vis.utils.LaneOffset;
 import microtrafficsim.core.vis.view.OrthographicView;
 import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.resources.PackagedResource;
@@ -39,8 +39,6 @@ public class ConnectorOverlay implements Overlay {
 
     private static final Color COLOR = Color.fromRGBA(0xFF000040);
 
-    private static final double SCALE_NORM         = 1.0 / (1 << 18);
-    private static final double LANE_OFFSET_SCALE  = 12.0 * SCALE_NORM;
     private static final double ARROW_LEN = 2.5;
 
     private Projection projection;
@@ -158,13 +156,13 @@ public class ConnectorOverlay implements Overlay {
 
     private Mesh generateConnectorMesh(Graph graph) {
         int restart = context.PrimitiveRestart.getIndex();
-        int laneOffsetSign = config.crossingLogic.drivingOnTheRight ? 1 : -1;
+        double lanewidth = config.visualization.style.getNormalizedStreetLaneWidth(19);
 
         ArrayList<Vec2d> vertices = new ArrayList<>();
         ArrayList<Integer> indices = new ArrayList<>();
 
         for (Node node : graph.getNodes()) {
-            addConnectors(vertices, indices, restart, laneOffsetSign, node);
+            addConnectors(vertices, indices, restart, config.crossingLogic.drivingOnTheRight, node, lanewidth);
         }
 
         FloatBuffer vb = FloatBuffer.allocate(vertices.size() * 2);
@@ -185,31 +183,33 @@ public class ConnectorOverlay implements Overlay {
         return SingleFloatAttributeIndexedMesh.newPos2Mesh(usage, mode, vb, ib);
     }
 
-    private void addConnectors(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart, int laneOffsetSign,
-                               Node node)
+    private void addConnectors(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart,
+                               boolean drivingOnTheRight, Node node, double lanewidth)
     {
         for (Map.Entry<Lane, ArrayList<Lane>> connector : node.getConnectors().entrySet()) {
             Lane from = connector.getKey();
 
             for (Lane to : connector.getValue()) {
-                addConnector(vertices, indices, restart, laneOffsetSign,
+                addConnector(vertices, indices, restart, drivingOnTheRight,
                         from.getAssociatedEdge(), from.getIndex(),
-                        to.getAssociatedEdge(), to.getIndex());
+                        to.getAssociatedEdge(), to.getIndex(), lanewidth);
             }
         }
     }
 
-    private void addConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart, int laneOffsetSign,
-                              DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge, int toLane) {
+    private void addConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart,
+                              boolean drivingOnTheRight, DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge,
+                              int toLane, double lanewidth) {
         if (fromEdge.getEntity() == toEdge.getEntity()) {
-            addUTurnConnector(vertices, indices, restart, laneOffsetSign, fromEdge, fromLane, toEdge, toLane);
+            addUTurnConnector(vertices, indices, restart, drivingOnTheRight, fromEdge, fromLane, toEdge, toLane, lanewidth);
         } else {
-            addStandardConnector(vertices, indices, restart, laneOffsetSign, fromEdge, fromLane, toEdge, toLane);
+            addStandardConnector(vertices, indices, restart, drivingOnTheRight, fromEdge, fromLane, toEdge, toLane, lanewidth);
         }
     }
 
-    private void addStandardConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart, int laneOffsetSign,
-                                      DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge, int toLane)
+    private void addStandardConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart,
+                                      boolean drivingOnTheRight, DirectedEdge fromEdge, int fromLane,
+                                      DirectedEdge toEdge, int toLane, double lanewidth)
     {
         // TODO: cyclic SNAFU?
 
@@ -240,26 +240,26 @@ public class ConnectorOverlay implements Overlay {
         Vec2d dirFrom90 = new Vec2d(-dirFrom.y, dirFrom.x);
         Vec2d dirTo90   = new Vec2d(-dirTo.y,   dirTo.x);
 
-        double laneOffsetFrom = getLaneOffset(fromEdge, fromLane) * laneOffsetSign;
-        double laneOffsetTo   = getLaneOffset(toEdge,   toLane)   * laneOffsetSign * -1.0;
+        double laneOffsetFrom = LaneOffset.getLaneOffset(lanewidth, fromEdge, fromLane, drivingOnTheRight);
+        double laneOffsetTo   = LaneOffset.getLaneOffset(lanewidth, toEdge,   toLane,   drivingOnTheRight) * -1.0;
 
-        Vec2d posFrom = Vec2d.mul(dirFrom, LANE_OFFSET_SCALE * ARROW_LEN).add(pos).add(Vec2d.mul(dirFrom90, laneOffsetFrom));
-        Vec2d posTo   = Vec2d.mul(dirTo,   LANE_OFFSET_SCALE * ARROW_LEN).add(pos).add(Vec2d.mul(dirTo90,   laneOffsetTo));
+        Vec2d posFrom = Vec2d.mul(dirFrom, lanewidth * ARROW_LEN).add(pos).add(Vec2d.mul(dirFrom90, laneOffsetFrom));
+        Vec2d posTo   = Vec2d.mul(dirTo,   lanewidth * ARROW_LEN).add(pos).add(Vec2d.mul(dirTo90,   laneOffsetTo));
 
-        Vec2d posArrowHead = Vec2d.mul(dirTo, LANE_OFFSET_SCALE * -0.75).add(posTo);
-        Vec2d posArrowHeadLeft  = Vec2d.mul(dirTo90, LANE_OFFSET_SCALE * -0.33).add(posArrowHead);
-        Vec2d posArrowHeadRight = Vec2d.mul(dirTo90, LANE_OFFSET_SCALE * +0.33).add(posArrowHead);
+        Vec2d posArrowHead = Vec2d.mul(dirTo, lanewidth * -0.75).add(posTo);
+        Vec2d posArrowHeadLeft  = Vec2d.mul(dirTo90, lanewidth * -0.33).add(posArrowHead);
+        Vec2d posArrowHeadRight = Vec2d.mul(dirTo90, lanewidth * +0.33).add(posArrowHead);
 
         double sf = Vec2d.dot(dirFrom, dirFrom90);
         sf = sf != 0.0 ? 1.0 / sf : Double.MAX_VALUE;
-        sf = Math.min(sf * laneOffsetFrom, LANE_OFFSET_SCALE * ARROW_LEN);
+        sf = Math.min(sf * laneOffsetFrom, lanewidth * ARROW_LEN);
 
         double st = Vec2d.dot(dirTo, dirTo90);
         st = st != 0.0 ? 1.0 / st : Double.MAX_VALUE;
-        st = Math.min(st * laneOffsetTo, LANE_OFFSET_SCALE * ARROW_LEN);
+        st = Math.min(st * laneOffsetTo, lanewidth * ARROW_LEN);
 
         Vec2d posVia = intersect(posFrom, Vec2d.add(posFrom, dirFrom), posTo, Vec2d.add(posTo, dirTo));
-        if (posVia == null || Vec2d.sub(pos, posVia).len() > LANE_OFFSET_SCALE * 2)
+        if (posVia == null || Vec2d.sub(pos, posVia).len() > lanewidth * 2)
             posVia = Vec2d.mul(dirFrom90, laneOffsetFrom).add(pos);
 
         int idx = vertices.size();
@@ -278,8 +278,9 @@ public class ConnectorOverlay implements Overlay {
         indices.add(restart);
     }
 
-    private void addUTurnConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart, int laneOffsetSign,
-                                   DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge, int toLane)
+    private void addUTurnConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart,
+                                   boolean drivingOnTheRight, DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge,
+                                   int toLane, double lanewidth)
     {
         Vec2d pos;
         Vec2d dir;
@@ -296,18 +297,18 @@ public class ConnectorOverlay implements Overlay {
 
         Vec2d dir90 = new Vec2d(-dir.y, dir.x);
 
-        double laneOffsetFrom = getLaneOffset(fromEdge, fromLane) * laneOffsetSign;
-        double laneOffsetTo   = getLaneOffset(toEdge,   toLane)   * laneOffsetSign * -1.0;
+        double laneOffsetFrom = LaneOffset.getLaneOffset(lanewidth, fromEdge, fromLane, drivingOnTheRight);
+        double laneOffsetTo   = LaneOffset.getLaneOffset(lanewidth, toEdge,   toLane,   drivingOnTheRight) * -1.0;
 
         Vec2d posFromX = Vec2d.mul(dir90, laneOffsetFrom).add(pos);
         Vec2d posToX   = Vec2d.mul(dir90, laneOffsetTo).add(pos);
 
-        Vec2d posFrom = Vec2d.mul(dir, LANE_OFFSET_SCALE * ARROW_LEN).add(posFromX);
-        Vec2d posTo   = Vec2d.mul(dir, LANE_OFFSET_SCALE * ARROW_LEN).add(posToX);
+        Vec2d posFrom = Vec2d.mul(dir, lanewidth * ARROW_LEN).add(posFromX);
+        Vec2d posTo   = Vec2d.mul(dir, lanewidth * ARROW_LEN).add(posToX);
 
-        Vec2d posArrowHead = Vec2d.mul(dir, LANE_OFFSET_SCALE * -0.75).add(posTo);
-        Vec2d posArrowHeadLeft  = Vec2d.mul(dir90, LANE_OFFSET_SCALE * -0.33).add(posArrowHead);
-        Vec2d posArrowHeadRight = Vec2d.mul(dir90, LANE_OFFSET_SCALE * +0.33).add(posArrowHead);
+        Vec2d posArrowHead = Vec2d.mul(dir, lanewidth * -0.75).add(posTo);
+        Vec2d posArrowHeadLeft  = Vec2d.mul(dir90, lanewidth * -0.33).add(posArrowHead);
+        Vec2d posArrowHeadRight = Vec2d.mul(dir90, lanewidth * +0.33).add(posArrowHead);
 
         int idx = vertices.size();
         vertices.add(posFrom);
@@ -325,20 +326,6 @@ public class ConnectorOverlay implements Overlay {
         indices.add(idx + 5);       // arrow-head right
         indices.add(idx + 3);       // to
         indices.add(restart);
-    }
-
-
-    private static double getLaneOffset(DirectedEdge edge, int lane) {
-        StreetEntity street = edge.getEntity();
-
-        double offset = 0.0;
-        if (street.getForwardEdge() != null && street.getBackwardEdge() != null) {
-            offset = edge.getLanes().size() - lane - 0.5;
-        } else {
-            offset = (edge.getLanes().size() - 1.0) / 2.0 - lane;
-        }
-
-        return offset * LANE_OFFSET_SCALE;
     }
 
     private static Vec2d intersect(Vec2d aa, Vec2d ab, Vec2d ba, Vec2d bb) {
