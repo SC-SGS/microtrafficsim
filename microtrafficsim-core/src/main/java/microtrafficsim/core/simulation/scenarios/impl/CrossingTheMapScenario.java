@@ -222,7 +222,8 @@ public class CrossingTheMapScenario extends AreaScenario {
                 destination = getAreaNodeContainer().getRdmNode(getDestinationArea(lonOrientation, latOrientation));
             else
                 destination = getAreaNodeContainer().getRdmNode(getDestinationArea(latOrientation, lonOrientation));
-            getRoutes().add(new MetaRoute(origin, destination));
+            if (destination != null)
+                getRoutes().add(new MetaRoute(origin, destination));
         }
     }
 
