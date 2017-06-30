@@ -21,13 +21,11 @@ import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
 import microtrafficsim.core.vis.opengl.shader.uniforms.Uniform1f;
+import microtrafficsim.core.vis.opengl.shader.uniforms.UniformMat4f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformVec2f;
 import microtrafficsim.core.vis.utils.LaneOffset;
 import microtrafficsim.core.vis.view.OrthographicView;
-import microtrafficsim.math.Vec2d;
-import microtrafficsim.math.Vec2f;
-import microtrafficsim.math.Vec2i;
-import microtrafficsim.math.Vec3d;
+import microtrafficsim.math.*;
 import microtrafficsim.utils.resources.PackagedResource;
 
 import java.io.IOException;
@@ -79,6 +77,9 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
 
     private boolean enabled;
 
+    private UniformMat4f uView;
+    private UniformMat4f uProjection;
+
 
     /**
      * Creates a {@code ShaderBasedVehicleOverlay} with the given projection and default vehicle color.
@@ -125,6 +126,9 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
 
         uVehicleSize  = (UniformVec2f) prog.getUniform("u_vehicle_size");
         uVehicleScale = (Uniform1f) prog.getUniform("u_vehicle_scale");
+
+        uView = (UniformMat4f) context.getUniformManager().getGlobalUniform("u_view");
+        uProjection = (UniformMat4f) context.getUniformManager().getGlobalUniform("u_projection");
 
         uVehicleScale.set(1.0f);
 
@@ -209,6 +213,9 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
         double bottom = viewpos.y - vy;
         double top    = viewpos.y + vy;
 
+        Rect2d viewrect = view.getViewportBounds();
+        Rect2d ndcrect = new Rect2d(-1.0, -1.0, 1.0, 1.0);
+
         // update vehicle list
         Collection<? extends LogicVehicleEntity>
                 vehicles = new ArrayList<>(simulation.getScenario().getVehicleContainer().getSpawnedVehicles());
@@ -245,6 +252,8 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
             // continue if out of bounds
             if (pos.x < left || pos.x > right || pos.y < bottom || pos.y > top) continue;
 
+            pos = Rect2d.project(viewrect, ndcrect, pos);
+
             buffer.putFloat((float) pos.x);
             buffer.putFloat((float) pos.y);
             buffer.putFloat((float) dir.x);
@@ -257,11 +266,20 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
         gl.glBindBuffer(vbo.target, 0);
 
         // draw
+        Mat4f viewBefore = new Mat4f(uView.get());
+        Mat4f projBefore = new Mat4f(uProjection.get());
+
+        uView.set(Mat4f.identity());
+        uProjection.set(Mat4f.identity());
+
         prog.bind(gl);
         gl.glBindVertexArray(vao);
         gl.glDrawArrays(GL3.GL_POINTS, 0, vehicleCount);
         gl.glBindVertexArray(0);
         prog.unbind(gl);
+
+        uView.set(viewBefore);
+        uProjection.set(projBefore);
     }
 
 

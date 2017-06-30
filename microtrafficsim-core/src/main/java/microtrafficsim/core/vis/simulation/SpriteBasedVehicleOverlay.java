@@ -75,8 +75,8 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
     private boolean enabled;
 
-    UniformMat4f uView;
-    UniformMat4f uProjection;
+    private UniformMat4f uView;
+    private UniformMat4f uProjection;
 
 
     /**
