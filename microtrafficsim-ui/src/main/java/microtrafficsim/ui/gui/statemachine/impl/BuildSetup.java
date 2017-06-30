@@ -8,6 +8,7 @@ import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
+import microtrafficsim.core.simulation.scenarios.impl.CrossingTheMapScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
@@ -46,6 +47,9 @@ public class BuildSetup {
         config.scenario.supportedClasses.put(EndOfTheWorldScenario.class, new Descriptor<>(
                 EndOfTheWorldScenario.class,
                 "everywhere -> border"));
+        config.scenario.supportedClasses.put(CrossingTheMapScenario.class, new Descriptor<>(
+                CrossingTheMapScenario.class,
+                "diagonally opposite"));
         config.scenario.supportedClasses.put(RandomRouteScenario.class, new Descriptor<>(
                 RandomRouteScenario.class,
                 "everywhere -> everywhere"));
