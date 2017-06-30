@@ -4,3 +4,8 @@
 .idea
 build
 out
+
+.classpath
+.project
+local
+maps
