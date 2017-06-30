@@ -4,7 +4,6 @@ package microtrafficsim.core.serialization;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.serializers.ClosureSerializer;
 import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.base.TileGridInfo;
 import microtrafficsim.core.exfmt.ecs.components.*;
@@ -12,10 +11,7 @@ import microtrafficsim.core.exfmt.ecs.entities.LineEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PointEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PolygonEntity;
 import microtrafficsim.core.logic.streetgraph.GraphGUID;
-import microtrafficsim.core.map.Bounds;
-import microtrafficsim.core.map.Coordinate;
-import microtrafficsim.core.map.FeatureDescriptor;
-import microtrafficsim.core.map.StreetType;
+import microtrafficsim.core.map.*;
 import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.map.tiles.TileRect;
@@ -109,6 +105,7 @@ public class ExchangeFormatSerializer {
         kryo.register(GraphEdgeComponent.class, new GraphEdgeComponentSerializer());
 
         // map stuff
+        kryo.register(MapProperties.class, new MapPropertiesSerializer());
         kryo.register(GraphGUID.class, new GraphGUIDSerializer());
 
         kryo.register(FeatureDescriptor.class, new FeatureDescriptorSerializer());
