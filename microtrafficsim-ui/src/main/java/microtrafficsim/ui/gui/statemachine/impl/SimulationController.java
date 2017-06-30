@@ -262,7 +262,7 @@ public class SimulationController implements GUIController {
     }
 
     private void shutdown() {
-        boolean yes = UserInteractionUtils.askUserForDecision(
+        boolean yes = UserInteractionUtils.askUserForOk(
                 "Do you really want to exit?",
                 "Close Program",
                 frame);
@@ -389,7 +389,7 @@ public class SimulationController implements GUIController {
     private void transitionLoadMap(File file) {
         // try to interrupt parsing if already running
         if (parsingExecutor.tryStartingInterruptionThread(() -> {
-            boolean yes = UserInteractionUtils.askUserForDecision(
+            boolean yes = UserInteractionUtils.askUserForOk(
                     "Are you sure to cancel the parsing?",
                     "Cancel parsing?",
                     frame);
@@ -471,7 +471,7 @@ public class SimulationController implements GUIController {
     private void transitionNewScenario() {
         // try to interrupt scenario building if already running
         if (scenarioBuildExecutor.tryStartingInterruptionThread(() -> {
-            boolean yes = UserInteractionUtils.askUserForDecision(
+            boolean yes = UserInteractionUtils.askUserForOk(
                     "Are you sure to cancel the scenario building?",
                     "Cancel scenario building?",
                     frame);
@@ -713,7 +713,19 @@ public class SimulationController implements GUIController {
      * @return true, if loading was successful; false otherwise
      */
     private boolean loadMapAndUpdate(File file) throws InterruptedException {
-        Tuple<Graph, MapProvider> result = exfmtStorage.loadMap(file);
+        boolean priorityToTheRight = true;
+        if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
+            priorityToTheRight = UserInteractionUtils.askUserForDecision(
+                    "For visualization purpose:\n" +
+                            "Is the road network built for driving on the right?\n" +
+                            "The answer to this does not influence the logic,\n" +
+                            "but the visualization.\n" +
+                            "To make them coherent, we need to consider it now.",
+                    "Optical issue",
+                    frame
+            );
+        }
+        Tuple<Graph, MapProvider> result = exfmtStorage.loadMap(file, priorityToTheRight);
         if (result != null) {
             if (result.obj0 != null) {
                 mapviewer.setMap(result.obj1);
@@ -872,7 +884,7 @@ public class SimulationController implements GUIController {
 //
 //        /* prepare exfmt config */
 //        AreaScenarioExtractor.Config asecfg = new AreaScenarioExtractor.Config();
-//        asecfg.loadRoutes = UserInteractionUtils.askUserForDecision(
+//        asecfg.loadRoutes = UserInteractionUtils.askUserForOk(
 //                "Do you like to load the routes as well?",
 //                "Route storing",
 //                frame);
@@ -910,7 +922,7 @@ public class SimulationController implements GUIController {
 //            // if not issue warning due to possible incompatibility
 //            // and prompt to cancel
 //            if (!streetgraph.getGUID().equals(scmeta.getGraphGUID())) {
-//                stillLoadScenario = UserInteractionUtils.askUserForDecision(
+//                stillLoadScenario = UserInteractionUtils.askUserForOk(
 //                        "The graph used in the scenario is different to the current one.\n" +
 //                                "Do you want to continue?",
 //                        "Inconsistent scenario meta information",
@@ -967,7 +979,7 @@ public class SimulationController implements GUIController {
 //
 //        AreaScenario scenario = (AreaScenario) simulation.getScenario();
 //        AreaScenarioInjector.Config asicfg = new AreaScenarioInjector.Config();
-//        asicfg.storeRoutes = UserInteractionUtils.askUserForDecision(
+//        asicfg.storeRoutes = UserInteractionUtils.askUserForOk(
 //                "Do you like to store the routes as well?\n" +
 //                        "\n" +
 //                        "Attention! The routes would be stored\n" +

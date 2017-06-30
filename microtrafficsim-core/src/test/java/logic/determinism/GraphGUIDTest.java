@@ -58,7 +58,7 @@ public class GraphGUIDTest {
             File file = new PackagedResource(
                     GraphGUIDTest.class,
                     ResourceClassLinks.BACKNANG_MAP_PATH).asTemporaryFile();
-            streetgraph = exfmtStorage.loadMap(file).obj0;
+            streetgraph = exfmtStorage.loadMap(file, true).obj0;
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

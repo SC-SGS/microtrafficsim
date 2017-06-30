@@ -87,8 +87,10 @@ public class ExfmtStorage {
     */
     /**
      * Loads the given file depending on its map type (OSM or MTSM)
+     *
+     * @param priorityToTheRight Needed for visualization purpose; doesn't matter if no osm file
      */
-    public Tuple<Graph, MapProvider> loadMap(File file) throws InterruptedException {
+    public Tuple<Graph, MapProvider> loadMap(File file, boolean priorityToTheRight) throws InterruptedException {
         try {
             if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
                 OSMParser.Result result = parser.parse(file);
