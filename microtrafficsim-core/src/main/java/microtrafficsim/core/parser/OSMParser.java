@@ -3,6 +3,7 @@ package microtrafficsim.core.parser;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Feature;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.parser.features.streetgraph.StreetGraphFeatureDefinition;
@@ -122,7 +123,7 @@ public class OSMParser {
      * @throws InterruptedException if the parsing thread has been interrupted.
      * @throws Exception            if any other exception occurred during processing.
      */
-    public Result parse(File file) throws Exception {
+    public Result parse(File file, MapProperties properties) throws Exception {
         parser.parse(file);
 
         // get feature set
@@ -138,7 +139,7 @@ public class OSMParser {
                     .getGenerator()
                     .getStreetGraph();
 
-        return new Result(new MapSegment(extractor.bounds, featureset), streetgraph);
+        return new Result(new MapSegment(properties, extractor.bounds, featureset), streetgraph);
     }
 
     /**

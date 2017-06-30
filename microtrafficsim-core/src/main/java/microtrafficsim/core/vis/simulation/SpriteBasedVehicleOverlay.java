@@ -3,6 +3,7 @@ package microtrafficsim.core.vis.simulation;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -69,6 +70,8 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
     private ShaderProgram prog;
 
+    private MapProperties map;
+
     private boolean enabled;
 
     UniformMat4f uView;
@@ -105,6 +108,11 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
     @Override
     public void setView(OrthographicView view) {
         this.view = view;
+    }
+
+    @Override
+    public void setMapProperties(MapProperties properties) {
+        this.map = properties;
     }
 
 

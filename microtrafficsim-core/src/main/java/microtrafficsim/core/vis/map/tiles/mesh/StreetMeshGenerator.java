@@ -37,7 +37,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
 
     @Override
     public FeatureMeshKey getKey(RenderContext context, FeatureTileLayerSource source, TileId tile, Rect2d target) {
-        StreetStyle style = StreetStyle.from(source.getStyle());
+        StreetStyle style = StreetStyle.from(source.getStyle(), source.getFeatureProvider().getProperties().drivingOnTheRight);
         return new StreetMeshKey(
                 context,
                 getFeatureBounds(source, tile),
@@ -72,7 +72,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         Rect2d bounds = scheme.getBounds(getFeatureBounds(src, tile));
         MeshProjection projection = new MeshProjection(scheme.getProjection(), bounds, target);
 
-        StreetStyle style = StreetStyle.from(src.getStyle());
+        StreetStyle style = StreetStyle.from(src.getStyle(), src.getFeatureProvider().getProperties().drivingOnTheRight);
 
         // generate mesh
         VertexSet<LineMeshBuilder.Vertex> vertices = new VertexSet<>();
@@ -277,7 +277,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         boolean useJoinsWhenPossible;
         boolean drivingOnTheRight;
 
-        public static StreetStyle from(Style style) {
+        public static StreetStyle from(Style style, boolean drivingOnTheRight) {
             return new StreetStyle(
                     style.getProperty("lanewidth", 35.0),
                     style.getProperty("linewidth",  5.0),
@@ -286,7 +286,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                     style.getProperty("type", LineType.BASE),
                     style.getProperty("miter-angle-limit", 0.5),
                     true,                                       // TODO
-                    true                                        // TODO
+                    drivingOnTheRight
             );
         }
 

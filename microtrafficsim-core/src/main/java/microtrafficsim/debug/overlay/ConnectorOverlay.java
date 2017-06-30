@@ -51,6 +51,7 @@ public class ConnectorOverlay implements Overlay {
     private ShaderProgram shader = null;
     private UniformVec4f uColor = null;
 
+    private boolean drivingOnTheRight = true;
     private Mesh mesh = null;
     private VertexArrayObject vao = null;
 
@@ -134,13 +135,15 @@ public class ConnectorOverlay implements Overlay {
     }
 
 
-    public void update(Graph graph) {
+    public void update(Graph graph, boolean drivingOnTheRight) {
         Mesh mesh = generateConnectorMesh(graph);
 
         context.addTask(c -> {
             update(c, mesh);
             return null;
         });
+
+        this.drivingOnTheRight = drivingOnTheRight;
     }
 
     private void update(RenderContext ctx, Mesh mesh) {
@@ -162,7 +165,7 @@ public class ConnectorOverlay implements Overlay {
         ArrayList<Integer> indices = new ArrayList<>();
 
         for (Node node : graph.getNodes()) {
-            addConnectors(vertices, indices, restart, config.crossingLogic.drivingOnTheRight, node, lanewidth);
+            addConnectors(vertices, indices, restart, drivingOnTheRight, node, lanewidth);
         }
 
         FloatBuffer vb = FloatBuffer.allocate(vertices.size() * 2);

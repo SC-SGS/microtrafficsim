@@ -3,6 +3,7 @@ package microtrafficsim.core.vis.simulation;
 import com.jogamp.opengl.GL3;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -73,6 +74,8 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
     private UniformVec2f  uVehicleSize;
     private Uniform1f     uVehicleScale;
 
+    private MapProperties map;
+
     private boolean enabled;
 
 
@@ -105,6 +108,11 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
     @Override
     public void setView(OrthographicView view) {
         this.view = view;
+    }
+
+    @Override
+    public void setMapProperties(MapProperties properties) {
+        this.map = properties;
     }
 
 
