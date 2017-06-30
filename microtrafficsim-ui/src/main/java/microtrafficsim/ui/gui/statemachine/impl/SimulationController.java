@@ -729,6 +729,7 @@ public class SimulationController implements GUIController {
         if (result != null) {
             if (result.obj0 != null) {
                 mapviewer.setMap(result.obj1);
+                overlay.setMapProperties(result.obj1.getProperties());
                 streetgraph = result.obj0;
                 connectorOverlay.update(streetgraph);
 

@@ -13,6 +13,7 @@ import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.impl.LightMonochromeStyleSheet;
@@ -416,7 +417,7 @@ public class SimulationExample {
                     QuadTreeTiledMapSegment.Generator tiler = new QuadTreeTiledMapSegment.Generator();
                     TilingScheme scheme = viewer.getPreferredTilingScheme();
 
-                    OSMParser.Result result = parser.parse(file);
+                    OSMParser.Result result = parser.parse(file, new MapProperties(true));
                     segment = tiler.generate(result.segment, scheme, viewer.getPreferredTileGridLevel());
                     graph = result.streetgraph;
 
@@ -450,7 +451,7 @@ public class SimulationExample {
             this.file = file.getPath();
             viewer.setMap(segment);
 
-            debugOverlay.update(graph);
+            debugOverlay.update(graph, segment.getProperties().drivingOnTheRight);
 
             /* create simulation */
             SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle() + " - [Initializing Simulation]"));

@@ -4,6 +4,7 @@ import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.base.GeometryEntitySet;
 import microtrafficsim.core.exfmt.base.FeatureInfo;
+import microtrafficsim.core.exfmt.base.MapInfo;
 import microtrafficsim.core.exfmt.ecs.Entity;
 import microtrafficsim.core.exfmt.ecs.FeatureManager;
 import microtrafficsim.core.exfmt.ecs.components.FeatureComponent;
@@ -11,10 +12,7 @@ import microtrafficsim.core.exfmt.ecs.entities.LineEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PointEntity;
 import microtrafficsim.core.exfmt.ecs.entities.PolygonEntity;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
-import microtrafficsim.core.map.Feature;
-import microtrafficsim.core.map.FeatureDescriptor;
-import microtrafficsim.core.map.FeaturePrimitive;
-import microtrafficsim.core.map.MapSegment;
+import microtrafficsim.core.map.*;
 
 import java.lang.reflect.Array;
 import java.util.HashMap;
@@ -51,7 +49,8 @@ public class MapSegmentExtractor implements ExchangeFormat.Extractor<MapSegment>
             process(fmt, ctx, src, entities, extractors, featureset, entity);
         }
 
-        return new MapSegment(entities.getBounds(), toFeatureSet(features, featureset));
+        MapProperties properties = src.get(MapInfo.class, MapInfo::getDefault).getProperties();
+        return new MapSegment(properties, entities.getBounds(), toFeatureSet(features, featureset));
     }
 
 

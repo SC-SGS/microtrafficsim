@@ -6,4 +6,5 @@ package microtrafficsim.core.map;
  * @author Dominic Parga Cacheiro
  */
 public interface MapProvider {
+    public MapProperties getProperties();
 }

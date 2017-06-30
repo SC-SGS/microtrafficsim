@@ -4,6 +4,7 @@ import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.base.GeometryEntitySet;
 import microtrafficsim.core.exfmt.base.FeatureInfo;
+import microtrafficsim.core.exfmt.base.MapInfo;
 import microtrafficsim.core.exfmt.base.TileGridInfo;
 import microtrafficsim.core.exfmt.ecs.Entity;
 import microtrafficsim.core.exfmt.ecs.FeatureManager;
@@ -15,6 +16,8 @@ import microtrafficsim.core.exfmt.ecs.entities.PolygonEntity;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.map.FeatureDescriptor;
 import microtrafficsim.core.map.FeaturePrimitive;
+import microtrafficsim.core.map.MapProperties;
+import microtrafficsim.core.map.Mappable;
 import microtrafficsim.core.map.tiles.FeatureGrid;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
@@ -73,7 +76,8 @@ public class QuadTreeTiledMapSegmentExtractor implements ExchangeFormat.Extracto
             process(fmt, ctx, src, entities, extractors, grid, featureset, entity);
         }
 
-        return new QuadTreeTiledMapSegment(grid.scheme, entities.getBounds(), grid.level, featureset);
+        MapProperties properties = src.get(MapInfo.class, MapInfo::getDefault).getProperties();
+        return new QuadTreeTiledMapSegment(properties, grid.scheme, entities.getBounds(), grid.level, featureset);
     }
 
 

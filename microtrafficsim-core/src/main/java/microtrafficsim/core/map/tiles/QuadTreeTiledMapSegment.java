@@ -22,6 +22,7 @@ import java.util.*;
  */
 public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeatureProvider {
 
+    private MapProperties properties;
     private TilingScheme scheme;
     private Bounds       bounds;
     private TileRect     leafs;
@@ -32,22 +33,30 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
     /**
      * Constructs a new {@code QuadTreeTiledMapSegment}.
      *
+     * @param properties the map-properties for this segment.
      * @param scheme     the tiling-scheme used for this segment.
      * @param bounds     the bounds of the segment contained in this map.
      * @param leafs      the rectangle describing the provided leaf tiles.
      * @param featureset the set of features provided by this tiled map-segment.
      */
     public QuadTreeTiledMapSegment(
+            MapProperties properties,
             TilingScheme scheme,
             Bounds bounds,
             TileRect leafs,
             Map<String, FeatureGrid<?>> featureset) {
+        this.properties       = properties;
         this.scheme           = scheme;
         this.bounds           = bounds;
         this.leafs            = leafs;
         this.featureset       = featureset;
         this.segmentListeners = new ArrayList<>();
         this.tileListeners    = new ArrayList<>();
+    }
+
+    @Override
+    public MapProperties getProperties() {
+        return properties;
     }
 
     @Override
@@ -274,7 +283,7 @@ public class QuadTreeTiledMapSegment implements TileFeatureProvider, SegmentFeat
                 featureset.put(entry.getKey(), createFeatureGrid(scheme, bounds, entry.getValue(), gridlevel));
 
             logger.debug("finished tiling process");
-            return new QuadTreeTiledMapSegment(scheme, segment.getBounds(), leafs, featureset);
+            return new QuadTreeTiledMapSegment(segment.getProperties(), scheme, segment.getBounds(), leafs, featureset);
         }
 
         /**

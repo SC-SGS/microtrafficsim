@@ -10,22 +10,30 @@ import java.util.*;
  */
 public class MapSegment implements SegmentFeatureProvider {
 
+    private MapProperties properties;
     private Bounds bounds;
     private Map<String, Feature<?>> featureset;
-    private transient List<FeatureChangeListener> listeners;
+    private List<FeatureChangeListener> listeners;
 
     /**
      * Constructs a new {@code MapSegment} from the given feature set.
      *
+     * @param properties the properties of the map provided by this segment.
      * @param bounds     the bounds of the provided map features.
      * @param featureset the features contained in this map segment.
      */
-    public MapSegment(Bounds bounds, Map<String, Feature<?>> featureset) {
+    public MapSegment(MapProperties properties, Bounds bounds, Map<String, Feature<?>> featureset) {
+        this.properties = properties;
         this.bounds     = bounds;
         this.featureset = featureset;
         this.listeners  = new ArrayList<>();
     }
 
+
+    @Override
+    public MapProperties getProperties() {
+        return properties;
+    }
 
     @Override
     public Bounds getBounds() {
