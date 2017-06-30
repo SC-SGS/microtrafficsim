@@ -1,16 +1,18 @@
 package microtrafficsim.core.simulation.core;
 
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
 import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * Monitors all vehicles implementing {@link MonitoringVehicle}
+ *
  * @author Dominic Parga Cacheiro
  */
 public class MonitoringVehicleSimulation extends VehicleSimulation {
-    private List<Long> stamps = new LinkedList<>();
-    private final int maxCollectionSize = 100;
+    private List<VehicleStamp> speedStamps = new LinkedList<>();
 
 
     @Override
@@ -29,43 +31,40 @@ public class MonitoringVehicleSimulation extends VehicleSimulation {
             vehicleStepExecutor.spawnAll(scenario);
             vehicleStepExecutor.updateNodes(scenario);
             incAge();
-            if (stamps.size() < maxCollectionSize)
-                stamps.add(System.nanoTime() - time);
-            else if (stamps.size() == maxCollectionSize)
-                System.out.println("Max collection size of " + maxCollectionSize + " reached.");
         }
 
         didRunOneStep();
     }
 
-    public long getSampleMeanOfTime() {
-        if (stamps.size() == 0)
-            return -1;
-        double dSize = stamps.size();
+    @Override
+    public void didRunOneStep() {
+        super.didRunOneStep();
 
-        double result = 0;
-        for (long l : stamps) {
-            result += l / dSize;
+        for (Vehicle vehicle : getScenario().getVehicleContainer()) {
+            if (vehicle instanceof MonitoringVehicle) {
+                VehicleStamp stamp = new VehicleStamp();
+                stamp.age = getAge();
+                stamp.vehicleId = vehicle.getId();
+                stamp.velocity = vehicle.getVelocity();
+                stamp.cellPosition = vehicle.getCellPosition();
+                stamp.edgeId = vehicle.getLane().getEdge().getId();
+            }
         }
-
-        return (long) result;
     }
 
-    public long getSampleVarianceOfTime() {
-        if (stamps.size() == 0)
-            return 0;
-        double dSize = stamps.size() - 1;
-        long sampleMean = getSampleMeanOfTime();
 
-        double result = 0;
-        for (long l : stamps) {
-            result += Math.pow(l - sampleMean, 2) / dSize;
-        }
+    /**
+     * Empty interface for classification purpose in {@link MonitoringVehicleSimulation}
+     */
+    public interface MonitoringVehicle extends Vehicle {
 
-        return (long) result;
     }
 
-    public void clearStamps() {
-        stamps.clear();
+    private static class VehicleStamp {
+        private int age;
+        private long vehicleId;
+        private int velocity;
+        private int cellPosition;
+        private long edgeId;
     }
 }
