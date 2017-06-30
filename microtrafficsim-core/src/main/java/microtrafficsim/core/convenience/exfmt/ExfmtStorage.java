@@ -90,7 +90,7 @@ public class ExfmtStorage {
     public Tuple<Graph, MapProvider> loadMap(File file, boolean priorityToTheRight) throws InterruptedException {
         try {
             if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
-                OSMParser.Result result = parser.parse(file, new MapProperties(true));
+                OSMParser.Result result = parser.parse(file, new MapProperties(priorityToTheRight));
                 return new Tuple<>(result.streetgraph, result.segment);
             } else if (MTSFileChooser.Filters.MAP_EXFMT.accept(file)) {
                 ExchangeFormat.Manipulator manipulator = exfmt.manipulator(serializer.read(file));

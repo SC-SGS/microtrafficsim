@@ -136,14 +136,13 @@ public class ConnectorOverlay implements Overlay {
 
 
     public void update(Graph graph, boolean drivingOnTheRight) {
+        this.drivingOnTheRight = drivingOnTheRight;
         Mesh mesh = generateConnectorMesh(graph);
 
         context.addTask(c -> {
             update(c, mesh);
             return null;
         });
-
-        this.drivingOnTheRight = drivingOnTheRight;
     }
 
     private void update(RenderContext ctx, Mesh mesh) {
@@ -165,7 +164,7 @@ public class ConnectorOverlay implements Overlay {
         ArrayList<Integer> indices = new ArrayList<>();
 
         for (Node node : graph.getNodes()) {
-            addConnectors(vertices, indices, restart, drivingOnTheRight, node, lanewidth);
+            addConnectors(vertices, indices, restart, node, lanewidth);
         }
 
         FloatBuffer vb = FloatBuffer.allocate(vertices.size() * 2);
@@ -187,13 +186,13 @@ public class ConnectorOverlay implements Overlay {
     }
 
     private void addConnectors(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart,
-                               boolean drivingOnTheRight, Node node, double lanewidth)
+                               Node node, double lanewidth)
     {
         for (Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> connector : node.getConnectors().entrySet()) {
             DirectedEdge.Lane from = connector.getKey();
 
             for (DirectedEdge.Lane to : connector.getValue().values()) {
-                addConnector(vertices, indices, restart, drivingOnTheRight,
+                addConnector(vertices, indices, restart,
                         from.getEdge(), from.getIndex(),
                         to.getEdge(), to.getIndex(), lanewidth);
             }
@@ -201,18 +200,18 @@ public class ConnectorOverlay implements Overlay {
     }
 
     private void addConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart,
-                              boolean drivingOnTheRight, DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge,
+                              DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge,
                               int toLane, double lanewidth) {
         if (fromEdge.getEntity() == toEdge.getEntity()) {
-            addUTurnConnector(vertices, indices, restart, drivingOnTheRight, fromEdge, fromLane, toEdge, toLane, lanewidth);
+            addUTurnConnector(vertices, indices, restart, fromEdge, fromLane, toEdge, toLane, lanewidth);
         } else {
-            addStandardConnector(vertices, indices, restart, drivingOnTheRight, fromEdge, fromLane, toEdge, toLane, lanewidth);
+            addStandardConnector(vertices, indices, restart, fromEdge, fromLane, toEdge, toLane, lanewidth);
         }
     }
 
     private void addStandardConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart,
-                                      boolean drivingOnTheRight, DirectedEdge fromEdge, int fromLane,
-                                      DirectedEdge toEdge, int toLane, double lanewidth)
+                                      DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge,
+                                      int toLane, double lanewidth)
     {
         // TODO: cyclic SNAFU?
 
@@ -282,7 +281,7 @@ public class ConnectorOverlay implements Overlay {
     }
 
     private void addUTurnConnector(ArrayList<Vec2d> vertices, ArrayList<Integer> indices, int restart,
-                                   boolean drivingOnTheRight, DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge,
+                                   DirectedEdge fromEdge, int fromLane, DirectedEdge toEdge,
                                    int toLane, double lanewidth)
     {
         Vec2d pos;

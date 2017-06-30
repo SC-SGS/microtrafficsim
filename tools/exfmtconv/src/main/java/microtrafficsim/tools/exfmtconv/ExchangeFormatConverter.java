@@ -7,6 +7,7 @@ import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Bounds;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.impl.LightMonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
@@ -98,7 +99,7 @@ public class ExchangeFormatConverter {
 
         QuadTreeTiledMapSegment.Generator tiler = new QuadTreeTiledMapSegment.Generator();
 
-        OSMParser.Result result = parser(config, clip, multilane).parse(file);
+        OSMParser.Result result = parser(config, clip, multilane).parse(file, new MapProperties(true));     // TODO
         QuadTreeTiledMapSegment segment = tiler.generate(result.segment, tilingScheme, tileGridLevel);
         Graph graph = result.streetgraph;
 
