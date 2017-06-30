@@ -241,6 +241,7 @@ public class PreferencesFrame extends JFrame implements PreferencesView {
 
             // Visualization
             case style:
+            case showConnectorOverlay:
                 visualizationPanel.setEnabledIfEditable(element, enabled);
 
             // concurrency

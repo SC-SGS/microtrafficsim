@@ -13,6 +13,7 @@ import microtrafficsim.core.map.style.impl.DarkMonochromeStyleSheet;
 public final class VisualizationConfig {
 
     public StyleSheet style;
+    public boolean showConnectorOverlay;
 
     /**
      * Just calls {@link #setup()}.
@@ -26,6 +27,7 @@ public final class VisualizationConfig {
      */
     public void setup() {
         style = new DarkMonochromeStyleSheet();
+        showConnectorOverlay = false;
     }
 
     /**
@@ -35,5 +37,6 @@ public final class VisualizationConfig {
      */
     public void update(VisualizationConfig config) {
         style = config.style;
+        showConnectorOverlay = config.showConnectorOverlay;
     }
 }

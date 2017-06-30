@@ -111,7 +111,7 @@ public class ConnectorOverlay implements Overlay {
 
     @Override
     public void display(RenderContext context, MapBuffer map) throws Exception {
-        if (mesh == null) return;
+        if (mesh == null || !isEnabled()) return;
 
         GL3 gl = context.getDrawable().getGL().getGL3();
 

@@ -216,10 +216,9 @@ public class SimulationController implements GUIController {
         mapviewer.addOverlay(1, scenarioAreaOverlay);
         mapviewer.addOverlay(2, vehicleOverlay);
 
-        if (microtrafficsim.build.BuildSetup.CONNECTOR_OVERLAY_ENABLED) {
-            connectorOverlay = new ConnectorOverlay(mapviewer.getProjection(), config);
-            mapviewer.addOverlay(0, connectorOverlay);
-        }
+        connectorOverlay = new ConnectorOverlay(mapviewer.getProjection(), config);
+        mapviewer.addOverlay(0, connectorOverlay);
+        connectorOverlay.setEnabled(false);
 
 
         /* setup JFrame */
@@ -719,8 +718,7 @@ public class SimulationController implements GUIController {
             if (result.obj0 != null) {
                 mapviewer.setMap(result.obj1);
                 streetgraph = result.obj0;
-                if (microtrafficsim.build.BuildSetup.CONNECTOR_OVERLAY_ENABLED)
-                    connectorOverlay.update(streetgraph);
+                connectorOverlay.update(streetgraph);
 
                 return true;
             }
@@ -1138,6 +1136,7 @@ public class SimulationController implements GUIController {
 
     private void updateScenario() {
         scenarioAreaOverlay.setEnabled(config.scenario.showAreasWhileSimulating, false, false);
+        connectorOverlay.setEnabled(config.visualization.showConnectorOverlay);
     }
 
     private void removeCurrentScenario() {
@@ -1218,6 +1217,7 @@ public class SimulationController implements GUIController {
 
         /* visualization */
         preferences.setEnabledIfEditable(SimulationConfig.Element.style, true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.showConnectorOverlay, true);
 
         /* concurrency */
         preferences.setEnabledIfEditable(SimulationConfig.Element.nThreads,            newSim);
