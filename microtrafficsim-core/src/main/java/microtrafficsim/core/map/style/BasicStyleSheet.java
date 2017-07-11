@@ -119,7 +119,8 @@ public abstract class BasicStyleSheet implements StyleSheet {
                             getStreetLaneWidth(zoom),
                             getStreetCenterLineWidth(streetType, zoom),
                             getScaleNorm(),
-                            true);
+                            true,
+                            getStreetCenterLineDashArray(streetType, zoom));
                     layers.add(genLayer(featureName + ":lines-center:" + zoom, layers.size(), zoom, zoom, featureName, style));
                 }
 
@@ -130,7 +131,8 @@ public abstract class BasicStyleSheet implements StyleSheet {
                             getStreetLaneWidth(zoom),
                             getStreetLaneLineWidth(streetType, zoom),
                             getScaleNorm(),
-                            false);
+                            false,
+                            getStreetLaneLineDashArray(streetType, zoom));
                     layers.add(genLayer(featureName + ":lines-outer:" + zoom, layers.size(), zoom, zoom, featureName, style));
                 }
             }
@@ -303,7 +305,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
      * @return the width of the center-lines for the specified street-type.
      */
     protected double getStreetCenterLineWidth(String streetType, int zoom) {
-        return 5.0 * Math.pow(1.75, 19 - zoom);
+        return 6.5 * Math.pow(1.75, 19 - zoom);
     }
 
     /**
@@ -314,7 +316,15 @@ public abstract class BasicStyleSheet implements StyleSheet {
      * @return the width of the lane-lines for the specified street-type.
      */
     protected double getStreetLaneLineWidth(String streetType, int zoom) {
-        return 4.0 * Math.pow(1.75, 19 - zoom);
+        return 6.0 * Math.pow(1.75, 19 - zoom);
+    }
+
+    protected double[] getStreetCenterLineDashArray(String streetType, int zoom) {
+        return new double[] { 50.0 * getScaleNorm(), 6 * getScaleNorm() };
+    }
+
+    protected double[] getStreetLaneLineDashArray(String streetType, int zoom) {
+        return new double[] { 40.0 * getScaleNorm() };
     }
 
     @Override
@@ -392,7 +402,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
      * @return the generated style.
      */
     protected Style genStreetLinesStyle(ShaderProgramSource shader, Color color, double lanewidth, double linewidth,
-                                       double scalenorm, boolean center)
+                                       double scalenorm, boolean center, double[] dasharray)
     {
         Style style = new Style(shader);
         style.setUniformSupplier("u_color", color::toVec4f);
@@ -402,6 +412,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
         style.setProperty("join", LineMeshBuilder.JoinType.MITER);
         style.setProperty("type", center ? StreetMeshGenerator.LineType.LINES_CENTER : StreetMeshGenerator.LineType.LINES_OUTER);
         style.setProperty("miter-angle-limit", 0.5);
+        style.setProperty("dasharray", dasharray);
         return style;
     }
 
