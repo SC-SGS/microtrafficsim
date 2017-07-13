@@ -14,7 +14,7 @@ public class UnprojectedAreas extends ArrayList<TypedPolygonArea> {
         ProjectedAreas areas = new ProjectedAreas();
 
         for (TypedPolygonArea area : this) {
-            areas.add(area.getProjectedArea(projection, area.getType()));
+            areas.add(area.getProjectedArea(projection, area));
         }
 
         return areas;

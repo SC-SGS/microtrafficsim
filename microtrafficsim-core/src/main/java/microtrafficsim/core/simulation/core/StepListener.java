@@ -7,7 +7,7 @@ package microtrafficsim.core.simulation.core;
  */
 public interface StepListener {
 
-    void willDoOneStep(Simulation simulation);
+    default void willDoOneStep(Simulation simulation) {}
 
     /**
      * @param simulation this simulation has finished its step

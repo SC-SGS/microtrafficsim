@@ -45,6 +45,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -601,6 +602,20 @@ public class SimulationController implements GUIController {
         });
     }
 
+    private void transitionLoadScenario() {
+        // todo
+        /* load map */
+        /* load config */
+        /* load routes */
+    }
+
+    private void transitionSaveScenario() {
+        // todo
+        /* save map */
+        /* save config */
+        /* save routes */
+    }
+
 
     /* preferences */
     private void transitionAcceptPreferences() {
@@ -703,6 +718,12 @@ public class SimulationController implements GUIController {
             }
         } catch (InterruptedException e) {
             logger.info("Loading map interrupted by user");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "The map could not be loaded\nbecause the file loader hasn't been set correctly.",
+                    "Map loading error",
+                    JOptionPane.ERROR_MESSAGE);
         }
 
         setNewFrameTitle.invoke();
@@ -713,7 +734,7 @@ public class SimulationController implements GUIController {
      *
      * @return true, if loading was successful; false otherwise
      */
-    private boolean loadMapAndUpdate(File file) throws InterruptedException {
+    private boolean loadMapAndUpdate(File file) throws InterruptedException, IOException {
         Tuple<Graph, MapProvider> result = exfmtStorage.loadMap(file);
         if (result != null) {
             if (result.obj0 != null) {
@@ -745,11 +766,20 @@ public class SimulationController implements GUIController {
         Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
 
 
-        boolean success = exfmtStorage.saveMap(file, new Tuple<>(streetgraph, mapviewer.getMap()));
-        if (success)
-            UserInteractionUtils.showSavingSuccess(frame);
-        else
-            UserInteractionUtils.showSavingFailure(file, frame);
+        try {
+            boolean success = exfmtStorage.saveMap(file, new Tuple<>(streetgraph, mapviewer.getMap()));
+
+            if (success)
+                UserInteractionUtils.showSavingSuccess(frame);
+            else
+                UserInteractionUtils.showSavingFailure(file, frame);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "The map could not be saved\nbecause the file loader hasn't been set correctly.",
+                    "Map saving error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
 
 
         setNewFrameTitle.invoke();
@@ -847,148 +877,6 @@ public class SimulationController implements GUIController {
             UserInteractionUtils.showSavingSuccess(frame);
         else
             UserInteractionUtils.showSavingFailure(file, frame);
-    }
-
-
-    /*
-    |====================|
-    | load/save scenario |
-    |====================|
-    */
-    @Deprecated // todo remove method
-    private void loadScenario(File file) {
-//        /* update frame title and remember old one */
-//        WrappedString cachedTitle = new WrappedString();
-//        rememberCurrentFrameTitleIn(cachedTitle);
-//        updateFrameTitle(FrameTitle.LOADING, file);
-//
-//        WrappedString tmpTitle = new WrappedString("Loading new scenario");
-//        updateFrameTitle(tmpTitle);
-//
-//
-//        /* update streetgraph */
-//        // mapviewer.createParser(config) is not needed because the mapviewer gets the final config-reference
-//        streetgraph.reset();
-//        streetgraph.setSeed(config.seed);
-//
-//
-//        /* prepare exfmt config */
-//        AreaScenarioExtractor.Config asecfg = new AreaScenarioExtractor.Config();
-//        asecfg.loadRoutes = UserInteractionUtils.askUserForDecision(
-//                "Do you like to load the routes as well?",
-//                "Route storing",
-//                frame);
-//        asecfg.graph = streetgraph;
-//        asecfg.config = config;
-//
-//        asecfg.scenarioBuilder = scenarioBuilder;
-//        asecfg.progressListener = currentInPercent -> {
-//            tmpTitle.set("Assigning vehicle routes " + currentInPercent + "%");
-//            updateFrameTitle(tmpTitle);
-//        };
-//        exfmt.getConfig().set(asecfg);
-//
-//
-//        /* load */
-//        ExchangeFormat.Manipulator manipulator = null;
-//        try {
-//            manipulator = exfmt.manipulator(serializer.read(file));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        ScenarioMetaInfo scmeta = null;
-//        if (manipulator != null) {
-//            try {
-//                scmeta = manipulator.extract(ScenarioMetaInfo.class);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        boolean stillLoadScenario = scmeta != null;
-//        if (stillLoadScenario) {
-//            // check if streetgraphGUID equals scmeta.getGUID()
-//            // if not issue warning due to possible incompatibility
-//            // and prompt to cancel
-//            if (!streetgraph.getGUID().equals(scmeta.getGraphGUID())) {
-//                stillLoadScenario = UserInteractionUtils.askUserForDecision(
-//                        "The graph used in the scenario is different to the current one.\n" +
-//                                "Do you want to continue?",
-//                        "Inconsistent scenario meta information",
-//                        frame);
-//            }
-//        }
-//
-//        if (stillLoadScenario) {
-//            AreaScenario newScenario = null;
-//            try {
-//                newScenario = manipulator.extract(AreaScenario.class);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//
-//
-//            if (newScenario != null) {
-//                /* create new scenario */
-//                tmpTitle.set("Assigning vehicle routes 0%");
-//                updateFrameTitle(tmpTitle);
-//
-//
-//                /* remove old scenario */
-//                simulation.removeCurrentScenario();
-//                scenarioAreaOverlay.setEventsEnabled(false);
-//                scenarioAreaOverlay.setPropertiesVisible(false);
-//
-//
-//                /* update area overlay */
-//                scenarioAreaOverlay.removeAllAreas();
-//                newScenario.getAreas().stream()
-//                        .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
-//                        .forEach(scenarioAreaOverlay::add);
-//
-//                /* initialize the scenario */
-//                simulation.setAndInitPreparedScenario(newScenario);
-//                simulation.runOneStep();
-//            }
-//        }
-//
-//
-//        /* finish creation */
-//        updateFrameTitle(cachedTitle);
-    }
-
-    @Deprecated // todo remove method
-    private void saveScenario(File file) {
-//        /* update frame title and remember old one */
-//        WrappedString cachedTitle = new WrappedString();
-//        rememberCurrentFrameTitleIn(cachedTitle);
-//        updateFrameTitle(FrameTitle.SAVING, file);
-//        Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
-//
-//
-//        AreaScenario scenario = (AreaScenario) simulation.getScenario();
-//        AreaScenarioInjector.Config asicfg = new AreaScenarioInjector.Config();
-//        asicfg.storeRoutes = UserInteractionUtils.askUserForDecision(
-//                "Do you like to store the routes as well?\n" +
-//                        "\n" +
-//                        "Attention! The routes would be stored\n" +
-//                        "in the current simulation state,\n" +
-//                        "not fresh calculated!",
-//                "Route storing",
-//                frame);
-//        exfmt.getConfig().set(asicfg);
-//        try {
-//            serializer.write(file, exfmt.manipulator().inject(scenario).getContainer());
-//
-//            UserInteractionUtils.showSavingSuccess(frame);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            UserInteractionUtils.showSavingFailure(file, frame);
-//        }
-//
-//
-//        setNewFrameTitle.invoke();
     }
 
 
@@ -1181,7 +1069,7 @@ public class SimulationController implements GUIController {
     private void clearAndUpdateAreaOverlay(Collection<TypedPolygonArea> areas) {
         scenarioAreaOverlay.removeAllAreas();
         for (TypedPolygonArea area : areas) {
-            scenarioAreaOverlay.add(area.getProjectedArea(mapviewer.getProjection(), area.getType()));
+            scenarioAreaOverlay.add(area.getProjectedArea(mapviewer.getProjection(), area));
         }
     }
 

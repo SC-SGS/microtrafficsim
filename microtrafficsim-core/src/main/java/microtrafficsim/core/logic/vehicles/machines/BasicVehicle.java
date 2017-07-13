@@ -179,13 +179,16 @@ public abstract class BasicVehicle implements Vehicle {
         if (front != null) {
             int distance = front.getCellPosition() - cellPosition;
 
-            if (distance < getMaxVelocity()) {
+            if (distance < getMaxVelocity()) { // probably unused
                 if (velocity > front.getVelocity() || front.getVelocity() == 0)
                     checkChangeToInnerLane();
             } else {
+                // check distance to outer front vehicle
+                // distance >= own velocity => change lane to outer lane
                 tendToOutermostLane();
             }
         } else {
+            // same as above
             tendToOutermostLane();
         }
     }

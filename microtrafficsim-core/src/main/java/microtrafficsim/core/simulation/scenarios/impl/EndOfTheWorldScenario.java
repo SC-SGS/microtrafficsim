@@ -2,6 +2,7 @@ package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.MetaRoute;
+import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
@@ -181,7 +182,10 @@ public class EndOfTheWorldScenario extends AreaScenario {
         // note: the directions used in this method's comments are referring to Europe (so the northern hemisphere)
 
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
-            Node origin = getAreaNodeContainer().getRdmOriginNode(getConfig().scenario.nodesAreWeightedUniformly);
+            MonitoredNode monitoredNode = getAreaNodeContainer()
+                    .getRdmOriginNode(getConfig().scenario.nodesAreWeightedUniformly);
+            Node origin = monitoredNode.getNode();
+            boolean isMonitored = monitoredNode.isMonitored();
 
             // get end node depending on start node's position
             Graph graph = getGraph();
@@ -217,12 +221,16 @@ public class EndOfTheWorldScenario extends AreaScenario {
 
             double latDistance = HaversineDistanceCalculator.getDistance(originCoord, latProjection);
             double lonDistance = HaversineDistanceCalculator.getDistance(originCoord, lonProjection);
-            Node destination;
             if (latDistance > lonDistance)
-                destination = getAreaNodeContainer().getRdmNode(getDestinationArea(lonOrientation, latOrientation));
+                monitoredNode = getAreaNodeContainer().getRdmNode(getDestinationArea(lonOrientation, latOrientation));
             else
-                destination = getAreaNodeContainer().getRdmNode(getDestinationArea(latOrientation, lonOrientation));
-            getRoutes().add(new MetaRoute(origin, destination));
+                monitoredNode = getAreaNodeContainer().getRdmNode(getDestinationArea(latOrientation, lonOrientation));
+            Node destination = monitoredNode.getNode();
+            isMonitored |= monitoredNode.isMonitored();
+
+            Route route = new MetaRoute(origin, destination);
+            route.setMonitored(isMonitored);
+            getRoutes().add(route);
         }
     }
 

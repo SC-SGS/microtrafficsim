@@ -41,6 +41,8 @@ public class AreaComponent extends Component {
 
     private static final Color FILL_COLOR_ORIGIN = Color.fromRGBA(0x48CF9430);
     private static final Color FILL_COLOR_DESTINATION = Color.fromRGBA(0xE03A5330);
+    private static final Color MONITORED_FILL_COLOR_ORIGIN = Color.fromRGBA(0xCFC84A30);
+    private static final Color MONITORED_FILL_COLOR_DESTINATION = Color.fromRGBA(0xAE38E030);
 
     private static final Color OUTLINE_COLOR = Colors.white();
     private static final float OUTLINE_LINE_WIDTH = 2.f;
@@ -237,6 +239,15 @@ public class AreaComponent extends Component {
 
     public void setType(Type type) {
         this.area.type = type;
+        redraw();
+    }
+
+    public boolean isMonitored() {
+        return area.isMonitored;
+    }
+
+    public void setMonitored(boolean isMonitored) {
+        this.area.isMonitored = isMonitored;
         redraw();
     }
 
@@ -476,8 +487,10 @@ public class AreaComponent extends Component {
 
         Color getColor(AreaComponent area) {
             switch (area.area.type) {
-                case ORIGIN:      return FILL_COLOR_ORIGIN;
-                case DESTINATION: return FILL_COLOR_DESTINATION;
+                case ORIGIN:
+                    return area.area.isMonitored ? MONITORED_FILL_COLOR_ORIGIN : FILL_COLOR_ORIGIN;
+                case DESTINATION:
+                    return area.area.isMonitored ? MONITORED_FILL_COLOR_DESTINATION : FILL_COLOR_DESTINATION;
             }
 
             return Colors.black();

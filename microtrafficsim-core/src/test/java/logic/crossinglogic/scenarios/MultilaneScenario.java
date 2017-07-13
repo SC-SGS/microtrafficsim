@@ -126,7 +126,9 @@ public class MultilaneScenario extends QueueScenarioSmall {
 
         @Override
         public MetaRoute clone() {
-            return new SlowRoute(getOrigin(), getDestination(), getSpawnDelay());
+            SlowRoute route = new SlowRoute(getOrigin(), getDestination(), getSpawnDelay());
+            route.setMonitored(isMonitored());
+            return route;
         }
     }
 }

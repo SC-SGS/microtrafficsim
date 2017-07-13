@@ -1,12 +1,12 @@
 package microtrafficsim.core.simulation.core;
 
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
-import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.core.stepexecutors.MultiThreadedVehicleStepExecutor;
 import microtrafficsim.core.simulation.core.stepexecutors.SingleThreadedVehicleStepExecutor;
+import microtrafficsim.core.simulation.core.stepexecutors.VehicleStepExecutor;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.utils.strings.StringUtils;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
+import microtrafficsim.utils.strings.StringUtils;
 import org.slf4j.Logger;
 
 import java.util.LinkedList;
@@ -32,7 +32,7 @@ public class VehicleSimulation implements Simulation {
     private boolean            paused;
     private Timer              timer;
     private TimerTask          timerTask;
-    private Lock               executionLock;
+    private final Lock         executionLock;
     private int                age;
     private List<StepListener> stepListeners;
 
@@ -177,14 +177,14 @@ public class VehicleSimulation implements Simulation {
     @Override
     public final void doRunOneStep() {
         executionLock.lock();
-        unsecureDoRunOneSteup();
+        unsecureDoRunOneStep();
         executionLock.unlock();
     }
 
     /**
      * Not thread safe!
      */
-    protected void unsecureDoRunOneSteup() {
+    protected void unsecureDoRunOneStep() {
         willRunOneStep();
 
         if (scenario.isPrepared()) {
@@ -275,8 +275,10 @@ public class VehicleSimulation implements Simulation {
     @Override
     public final void cancel() {
         if (timerTask != null) {
+            executionLock.lock();
             timerTask.cancel();
             timerTask = null;
+            executionLock.unlock();
         }
         paused = true;
     }

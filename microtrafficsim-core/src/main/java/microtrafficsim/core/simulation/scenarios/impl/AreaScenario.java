@@ -17,12 +17,12 @@ import microtrafficsim.math.random.distributions.WheelOfFortune;
 import microtrafficsim.math.random.distributions.impl.BasicWheelOfFortune;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.Resettable;
+import microtrafficsim.utils.collections.FastSortedArrayList;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -104,10 +104,12 @@ public class AreaScenario extends BasicRandomScenario {
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
             boolean weightedUniformly = getConfig().scenario.nodesAreWeightedUniformly;
 
-            Node origin      = areaNodeContainer.getRdmOriginNode(weightedUniformly);
-            Node destination = areaNodeContainer.getRdmDestNode(weightedUniformly);
+            MonitoredNode origin      = areaNodeContainer.getRdmOriginNode(weightedUniformly);
+            MonitoredNode destination = areaNodeContainer.getRdmDestNode(weightedUniformly);
 
-            routes.add(new MetaRoute(origin, destination));
+            Route route = new MetaRoute(origin.node, destination.node);
+            route.setMonitored(origin.isMonitored || destination.isMonitored);
+            routes.add(route);
         }
     }
 
@@ -128,9 +130,9 @@ public class AreaScenario extends BasicRandomScenario {
     public static class AreaNodeContainer implements Seeded, Resettable {
         private final UnprojectedAreas originAreas;
         private final UnprojectedAreas destinationAreas;
-        private final WheelOfFortune<Node> rdmOriginSupplier;
-        private final WheelOfFortune<Node> rdmDestinationSupplier;
-        private final HashMap<TypedPolygonArea, ArrayList<Node>> areaToNode;
+        private final WheelOfFortune<MonitoredNode> rdmOriginSupplier;
+        private final WheelOfFortune<MonitoredNode> rdmDestinationSupplier;
+        private final HashMap<TypedPolygonArea, FastSortedArrayList<MonitoredNode>> areaToNode;
         private final Random nodeRandom;
 
         private boolean isDirty = false;
@@ -177,9 +179,19 @@ public class AreaScenario extends BasicRandomScenario {
                 originAreas.add(area);
             else
                 destinationAreas.add(area);
-            areaToNode.computeIfAbsent(area, k -> new ArrayList<>());
+            areaToNode.computeIfAbsent(area, k -> new FastSortedArrayList<>());
             isDirty = true;
             return true;
+        }
+
+        public boolean addAreas(UnprojectedAreas areas) {
+            boolean changes = false;
+
+            for (TypedPolygonArea area : areas) {
+                changes |= addArea(area);
+            }
+
+            return changes;
         }
 
         /**
@@ -188,7 +200,7 @@ public class AreaScenario extends BasicRandomScenario {
          * @param area
          */
         public void removeArea(TypedPolygonArea area) {
-            ArrayList<Node> nodes = areaToNode.remove(area);
+            ArrayList<MonitoredNode> nodes = areaToNode.remove(area);
             if (nodes == null)
                 return;
 
@@ -200,16 +212,16 @@ public class AreaScenario extends BasicRandomScenario {
         }
 
 
-        public Node getRdmOriginNode(boolean weightedUniformly) {
+        public MonitoredNode getRdmOriginNode(boolean weightedUniformly) {
             return rdmOriginSupplier.nextObject(weightedUniformly);
         }
 
-        public Node getRdmDestNode(boolean weightedUniformly) {
+        public MonitoredNode getRdmDestNode(boolean weightedUniformly) {
             return rdmDestinationSupplier.nextObject(weightedUniformly);
         }
 
-        public Node getRdmNode(TypedPolygonArea area) {
-            ArrayList<Node> nodes = areaToNode.get(area);
+        public MonitoredNode getRdmNode(TypedPolygonArea area) {
+            ArrayList<MonitoredNode> nodes = areaToNode.get(area);
             return nodes.get(nodeRandom.nextInt(nodes.size()));
         }
 
@@ -227,17 +239,39 @@ public class AreaScenario extends BasicRandomScenario {
                     addArea(graph.total(Area.Type.DESTINATION));
 
                 for (Node node : graph.getNodes()) {
+                    MonitoredNode monitoredNode = new MonitoredNode(node, false);
+
+                    // origin areas
+                    int weight = 0;
+                    boolean added = false;
                     for (TypedPolygonArea area : originAreas) {
                         if (area.contains((node))) {
-                            areaToNode.get(area).add(node);
-                            rdmOriginSupplier.incWeight(node);
+                            weight++;
+                            added = true;
+                            monitoredNode.isMonitored |= area.isMonitored();
+                            areaToNode.get(area).add(monitoredNode);
                         }
                     }
+                    if (added) {
+                        rdmOriginSupplier.add(monitoredNode, weight);
+                        if (monitoredNode.isMonitored)
+                            System.err.println("##YEAH##");
+                    }
+
+
+                    // destination areas
+                    weight = 0;
+                    added = false;
                     for (TypedPolygonArea area : destinationAreas) {
                         if (area.contains((node))) {
-                            areaToNode.get(area).add(node);
-                            rdmDestinationSupplier.incWeight(node);
+                            weight++;
+                            added = true;
+                            monitoredNode.isMonitored |= area.isMonitored();
+                            areaToNode.get(area).add(monitoredNode);
                         }
+                    }
+                    if (added) {
+                        rdmDestinationSupplier.add(monitoredNode, weight);
                     }
                 }
             }
@@ -252,7 +286,6 @@ public class AreaScenario extends BasicRandomScenario {
 
         @Override
         public void reset() {
-
             nodeRandom.reset();
             rdmOriginSupplier.reset();
             rdmDestinationSupplier.reset();
@@ -268,6 +301,30 @@ public class AreaScenario extends BasicRandomScenario {
             nodeRandom.setSeed(seed);
             rdmOriginSupplier.setSeed(seed);
             rdmDestinationSupplier.setSeed(seed);
+        }
+    }
+
+
+    public static class MonitoredNode implements Comparable<MonitoredNode> {
+        private Node node;
+        private boolean isMonitored;
+
+        public MonitoredNode(Node node, boolean isMonitored) {
+            this.node = node;
+            this.isMonitored = isMonitored;
+        }
+
+        public Node getNode() {
+            return node;
+        }
+
+        public boolean isMonitored() {
+            return isMonitored;
+        }
+
+        @Override
+        public int compareTo(MonitoredNode o) {
+            return node.compareTo(o.node);
         }
     }
 }

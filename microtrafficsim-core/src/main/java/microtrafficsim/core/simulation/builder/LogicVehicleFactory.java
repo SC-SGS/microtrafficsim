@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.vehicles.driver.BasicDriver;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.logic.vehicles.machines.impl.Car;
+import microtrafficsim.core.logic.vehicles.machines.impl.MonitoredCar;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 
@@ -17,7 +18,12 @@ public interface LogicVehicleFactory {
     static Vehicle defaultCreation(long id, long seed, Scenario scenario, Route metaRoute) {
         SimulationConfig config = scenario.getConfig();
 
-        Vehicle vehicle = new Car(id, config.visualization.style);
+        Vehicle vehicle;
+        if (metaRoute.isMonitored()) {
+            vehicle = new MonitoredCar(id, config.visualization.style);
+        } else {
+            vehicle = new Car(id, config.visualization.style);
+        }
         Driver driver = new BasicDriver(seed, metaRoute.getSpawnDelay());
         driver.setRoute(metaRoute);
         driver.setVehicle(vehicle);

@@ -33,6 +33,7 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Should simplify loading/saving simulation files
@@ -47,36 +48,43 @@ public class ExfmtStorage {
     private ExchangeFormat exfmt;
     private ExchangeFormatSerializer serializer;
 
-
-    /**
-     * @param config This reference has to be stable.
-     * @param mapviewer
-     */
-    public ExfmtStorage(SimulationConfig config, TileBasedMapViewer mapviewer) {
-        parser = DefaultParserConfig.get(config).build();
+    private boolean mapLoadingHasBeenSet;
 
 
-        /* create exchange format and serializer */
+    public ExfmtStorage() {
         serializer = ExchangeFormatSerializer.create();
         exfmt = ExchangeFormat.getDefault();
 
-        exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(
-                mapviewer.getPreferredTilingScheme(), mapviewer.getPreferredTileGridLevel()));
-
-        exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
+        mapLoadingHasBeenSet = false;
     }
 
+
     public ExfmtStorage(SimulationConfig config, TilingScheme tilingScheme, int tileGridLevel) {
+        this();
+        setupMapLoading(config, tilingScheme, tileGridLevel);
+    }
+
+    /**
+     * @param config This reference has to be stable for parser
+     * @param viewer
+     */
+    public ExfmtStorage(SimulationConfig config, TileBasedMapViewer viewer) {
+        this();
+        setupMapLoading(config, viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel());
+    }
+
+
+    public void setupMapLoading(SimulationConfig config, TileBasedMapViewer viewer) {
+        setupMapLoading(config, viewer.getPreferredTilingScheme(), viewer.getPreferredTileGridLevel());
+    }
+
+    public void setupMapLoading(SimulationConfig config, TilingScheme tilingScheme, int tileGridLevel) {
         parser = DefaultParserConfig.get(config).build();
 
-
-        /* create exchange format and serializer */
-        serializer = ExchangeFormatSerializer.create();
-        exfmt = ExchangeFormat.getDefault();
-
         exfmt.getConfig().set(QuadTreeTiledMapSegmentExtractor.Config.getDefault(tilingScheme, tileGridLevel));
-
         exfmt.getConfig().set(new StreetGraphExtractor.Config(config));
+
+        mapLoadingHasBeenSet = true;
     }
 
 
@@ -88,7 +96,10 @@ public class ExfmtStorage {
     /**
      * Loads the given file depending on its map type (OSM or MTSM)
      */
-    public Tuple<Graph, MapProvider> loadMap(File file) throws InterruptedException {
+    public Tuple<Graph, MapProvider> loadMap(File file) throws InterruptedException, IOException {
+        if (!mapLoadingHasBeenSet)
+            throw new IOException("You have to setup some map loading attributes, e.g. the parser.");
+
         try {
             if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
                 OSMParser.Result result = parser.parse(file);
@@ -114,11 +125,14 @@ public class ExfmtStorage {
         return null;
     }
 
-    public boolean saveMap(File file, Tuple<Graph, MapProvider> tuple) {
+    public boolean saveMap(File file, Tuple<Graph, MapProvider> tuple) throws IOException {
         return saveMap(file, tuple.obj0, tuple.obj1);
     }
 
-    public boolean saveMap(File file, Graph graph, MapProvider provider) {
+    public boolean saveMap(File file, Graph graph, MapProvider provider) throws IOException {
+        if (!mapLoadingHasBeenSet)
+            throw new IOException("You have to setup some map loading attributes, e.g. the parser.");
+
         try {
             serializer.write(file, exfmt.manipulator()
                     .inject(provider)
@@ -140,7 +154,7 @@ public class ExfmtStorage {
     /**
      * @param file
      * @param draft see {@link SimulationConfigExtractor.Config#setConfig(SimulationConfig) Exfmt.Config.setConfig(...)}
-     * @return
+     * @return new config reference with attributes set to the values in the given file
      */
     public SimulationConfig loadConfig(File file, SimulationConfig draft) {
         /* prepare exfmt config */

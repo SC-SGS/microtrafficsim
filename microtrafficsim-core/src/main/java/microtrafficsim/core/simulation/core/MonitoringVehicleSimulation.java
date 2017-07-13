@@ -1,27 +1,31 @@
 package microtrafficsim.core.simulation.core;
 
+import microtrafficsim.core.logic.vehicles.machines.MonitoredVehicle;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.utils.Resettable;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Monitors all vehicles implementing {@link MonitoringVehicle}
+ * Monitors all vehicles implementing {@link MonitoredVehicle}
  *
  * @author Dominic Parga Cacheiro
  */
-public class MonitoringVehicleSimulation extends VehicleSimulation {
-    private List<VehicleStamp> speedStamps = new LinkedList<>();
+public class MonitoringVehicleSimulation extends VehicleSimulation implements Resettable {
+    private List<VehicleStamp> vehicleStamps = new LinkedList<>();
 
 
     @Override
-    protected void unsecureDoRunOneSteup() {
+    protected void unsecureDoRunOneStep() {
+        long time = System.nanoTime();
         willRunOneStep();
 
         Scenario scenario = getScenario();
         if (scenario.isPrepared()) {
-            long time = System.nanoTime();
             vehicleStepExecutor.accelerateAll(scenario);
             vehicleStepExecutor.willChangeLaneAll(scenario);
             vehicleStepExecutor.changeLaneAll(scenario);
@@ -34,6 +38,7 @@ public class MonitoringVehicleSimulation extends VehicleSimulation {
         }
 
         didRunOneStep();
+        time = System.nanoTime() - time;
     }
 
     @Override
@@ -41,30 +46,100 @@ public class MonitoringVehicleSimulation extends VehicleSimulation {
         super.didRunOneStep();
 
         for (Vehicle vehicle : getScenario().getVehicleContainer()) {
-            if (vehicle instanceof MonitoringVehicle) {
+            if (vehicle instanceof MonitoredVehicle) {
                 VehicleStamp stamp = new VehicleStamp();
-                stamp.age = getAge();
+                stamp.simStep = getAge();
                 stamp.vehicleId = vehicle.getId();
+                stamp.travellingTime = vehicle.getDriver().getTravellingTime();
                 stamp.velocity = vehicle.getVelocity();
                 stamp.cellPosition = vehicle.getCellPosition();
-                stamp.edgeId = vehicle.getLane().getEdge().getId();
+                if (vehicle.getLane() != null)
+                    stamp.edgeId = vehicle.getLane().getEdge().getId();
+                else
+                    stamp.edgeId = null;
+
+                vehicleStamps.add(stamp);
             }
         }
     }
 
+    public Iterator<String> getCSVIterator(CSVType type) {
+        Iterator<VehicleStamp> iter = vehicleStamps.iterator();
 
-    /**
-     * Empty interface for classification purpose in {@link MonitoringVehicleSimulation}
-     */
-    public interface MonitoringVehicle extends Vehicle {
+        return new Iterator<String>() {
+            boolean isFirst = true;
 
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public String next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return type.LEGEND;
+                } else {
+                    return ";" + type.getInfo(iter.next());
+                }
+            }
+        };
     }
 
+
+    @Override
+    public void reset() {
+        vehicleStamps.clear();
+    }
+
+
     private static class VehicleStamp {
-        private int age;
+        private int simStep;
         private long vehicleId;
+        private int travellingTime;
         private int velocity;
         private int cellPosition;
-        private long edgeId;
+        private Long edgeId;
+    }
+
+    public enum CSVType {
+        TRAVELLING_TIME("travellingTime"),
+        VELOCITY("velocity"),
+        CELL_POSITION("cellposition"),
+        EDGE_ID("edgeId");
+
+        private final String FILENAME;
+        private final String LEGEND;
+
+        CSVType(String filename) {
+            FILENAME = filename;
+            LEGEND = "simStep;vehicleId;" + filename;
+        }
+
+        public String getFilename() {
+            return FILENAME + ".csv";
+        }
+
+        public String getInfo(VehicleStamp stamp) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(stamp.simStep).append(";").append(stamp.vehicleId);
+
+            switch (this) {
+                case TRAVELLING_TIME:
+                    builder.append(";").append(stamp.travellingTime);
+                    break;
+                case VELOCITY:
+                    builder.append(";").append(stamp.velocity);
+                    break;
+                case CELL_POSITION:
+                    builder.append(";").append(stamp.cellPosition);
+                    break;
+                case EDGE_ID:
+                    builder.append(";").append(stamp.edgeId);
+                    break;
+            }
+
+            return builder.toString();
+        }
     }
 }
