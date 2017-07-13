@@ -73,7 +73,7 @@ public class TestRouteSerialization {
         try {
             File file = new PackagedResource(TestRouteSerialization.class,
                     ResourceClassLinks.BACKNANG_MAP_PATH).asTemporaryFile();
-            streetgraph = exfmtStorage.loadMap(file).obj0;
+            streetgraph = exfmtStorage.loadMap(file, true).obj0;
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

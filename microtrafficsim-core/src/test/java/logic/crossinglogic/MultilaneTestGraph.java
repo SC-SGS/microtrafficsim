@@ -226,7 +226,7 @@ public class MultilaneTestGraph {
         HashMap<String, Feature<?>> features = new HashMap<>();
         features.put("streets:tertiary", new Feature<>("streets:tertiary", Street.class, streets));
 
-        segment = new MapSegment(bounds, features);
+        segment = new MapSegment(new MapProperties(config.crossingLogic.drivingOnTheRight), bounds, features);
     }
 
 

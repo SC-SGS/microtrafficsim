@@ -15,6 +15,7 @@ import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
+import microtrafficsim.core.simulation.scenarios.impl.CrossingTheMapScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.core.simulation.utils.SortedRouteContainer;
@@ -217,10 +218,9 @@ public class SimulationController implements GUIController {
         mapviewer.addOverlay(1, scenarioAreaOverlay);
         mapviewer.addOverlay(2, vehicleOverlay);
 
-        if (microtrafficsim.build.BuildSetup.CONNECTOR_OVERLAY_ENABLED) {
-            connectorOverlay = new ConnectorOverlay(mapviewer.getProjection(), config);
-            mapviewer.addOverlay(0, connectorOverlay);
-        }
+        connectorOverlay = new ConnectorOverlay(mapviewer.getProjection(), config);
+        mapviewer.addOverlay(0, connectorOverlay);
+        connectorOverlay.setEnabled(false);
 
 
         /* setup JFrame */
@@ -264,7 +264,7 @@ public class SimulationController implements GUIController {
     }
 
     private void shutdown() {
-        boolean yes = UserInteractionUtils.askUserForDecision(
+        boolean yes = UserInteractionUtils.askUserForOk(
                 "Do you really want to exit?",
                 "Close Program",
                 frame);
@@ -391,7 +391,7 @@ public class SimulationController implements GUIController {
     private void transitionLoadMap(File file) {
         // try to interrupt parsing if already running
         if (parsingExecutor.tryStartingInterruptionThread(() -> {
-            boolean yes = UserInteractionUtils.askUserForDecision(
+            boolean yes = UserInteractionUtils.askUserForOk(
                     "Are you sure to cancel the parsing?",
                     "Cancel parsing?",
                     frame);
@@ -473,7 +473,7 @@ public class SimulationController implements GUIController {
     private void transitionNewScenario() {
         // try to interrupt scenario building if already running
         if (scenarioBuildExecutor.tryStartingInterruptionThread(() -> {
-            boolean yes = UserInteractionUtils.askUserForDecision(
+            boolean yes = UserInteractionUtils.askUserForOk(
                     "Are you sure to cancel the scenario building?",
                     "Cancel scenario building?",
                     frame);
@@ -735,13 +735,25 @@ public class SimulationController implements GUIController {
      * @return true, if loading was successful; false otherwise
      */
     private boolean loadMapAndUpdate(File file) throws InterruptedException, IOException {
-        Tuple<Graph, MapProvider> result = exfmtStorage.loadMap(file);
+        boolean priorityToTheRight = true;
+        if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
+            priorityToTheRight = UserInteractionUtils.askUserForDecision(
+                    "For visualization purpose:\n" +
+                            "Is the road network built for driving on the right?\n" +
+                            "The answer to this does not influence the logic,\n" +
+                            "but the visualization.\n" +
+                            "To make them coherent, we need to consider it now.",
+                    "Optical issue",
+                    frame
+            );
+        }
+        Tuple<Graph, MapProvider> result = exfmtStorage.loadMap(file, priorityToTheRight);
         if (result != null) {
             if (result.obj0 != null) {
                 mapviewer.setMap(result.obj1);
+                vehicleOverlay.setMapProperties(result.obj1.getProperties());
                 streetgraph = result.obj0;
-                if (microtrafficsim.build.BuildSetup.CONNECTOR_OVERLAY_ENABLED)
-                    connectorOverlay.update(streetgraph);
+                connectorOverlay.update(streetgraph, result.obj1.getProperties().drivingOnTheRight);
 
                 return true;
             }
@@ -881,6 +893,151 @@ public class SimulationController implements GUIController {
 
 
     /*
+<<<<<<< HEAD
+=======
+    |====================|
+    | load/save scenario |
+    |====================|
+    */
+    @Deprecated // todo remove method
+    private void loadScenario(File file) {
+//        /* update frame title and remember old one */
+//        WrappedString cachedTitle = new WrappedString();
+//        rememberCurrentFrameTitleIn(cachedTitle);
+//        updateFrameTitle(FrameTitle.LOADING, file);
+//
+//        WrappedString tmpTitle = new WrappedString("Loading new scenario");
+//        updateFrameTitle(tmpTitle);
+//
+//
+//        /* update streetgraph */
+//        // mapviewer.createParser(config) is not needed because the mapviewer gets the final config-reference
+//        streetgraph.reset();
+//        streetgraph.setSeed(config.seed);
+//
+//
+//        /* prepare exfmt config */
+//        AreaScenarioExtractor.Config asecfg = new AreaScenarioExtractor.Config();
+//        asecfg.loadRoutes = UserInteractionUtils.askUserForOk(
+//                "Do you like to load the routes as well?",
+//                "Route storing",
+//                frame);
+//        asecfg.graph = streetgraph;
+//        asecfg.config = config;
+//
+//        asecfg.scenarioBuilder = scenarioBuilder;
+//        asecfg.progressListener = currentInPercent -> {
+//            tmpTitle.set("Assigning vehicle routes " + currentInPercent + "%");
+//            updateFrameTitle(tmpTitle);
+//        };
+//        exfmt.getConfig().set(asecfg);
+//
+//
+//        /* load */
+//        ExchangeFormat.Manipulator manipulator = null;
+//        try {
+//            manipulator = exfmt.manipulator(serializer.read(file));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        ScenarioMetaInfo scmeta = null;
+//        if (manipulator != null) {
+//            try {
+//                scmeta = manipulator.extract(ScenarioMetaInfo.class);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        boolean stillLoadScenario = scmeta != null;
+//        if (stillLoadScenario) {
+//            // check if streetgraphGUID equals scmeta.getGUID()
+//            // if not issue warning due to possible incompatibility
+//            // and prompt to cancel
+//            if (!streetgraph.getGUID().equals(scmeta.getGraphGUID())) {
+//                stillLoadScenario = UserInteractionUtils.askUserForOk(
+//                        "The graph used in the scenario is different to the current one.\n" +
+//                                "Do you want to continue?",
+//                        "Inconsistent scenario meta information",
+//                        frame);
+//            }
+//        }
+//
+//        if (stillLoadScenario) {
+//            AreaScenario newScenario = null;
+//            try {
+//                newScenario = manipulator.extract(AreaScenario.class);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//
+//
+//            if (newScenario != null) {
+//                /* create new scenario */
+//                tmpTitle.set("Assigning vehicle routes 0%");
+//                updateFrameTitle(tmpTitle);
+//
+//
+//                /* remove old scenario */
+//                simulation.removeCurrentScenario();
+//                scenarioAreaOverlay.setEventsEnabled(false);
+//                scenarioAreaOverlay.setPropertiesVisible(false);
+//
+//
+//                /* update area overlay */
+//                scenarioAreaOverlay.removeAllAreas();
+//                newScenario.getAreas().stream()
+//                        .map(area -> area.getProjectedArea(mapviewer.getProjection(), area.getType()))
+//                        .forEach(scenarioAreaOverlay::add);
+//
+//                /* initialize the scenario */
+//                simulation.setAndInitPreparedScenario(newScenario);
+//                simulation.runOneStep();
+//            }
+//        }
+//
+//
+//        /* finish creation */
+//        updateFrameTitle(cachedTitle);
+    }
+
+    @Deprecated // todo remove method
+    private void saveScenario(File file) {
+//        /* update frame title and remember old one */
+//        WrappedString cachedTitle = new WrappedString();
+//        rememberCurrentFrameTitleIn(cachedTitle);
+//        updateFrameTitle(FrameTitle.SAVING, file);
+//        Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
+//
+//
+//        AreaScenario scenario = (AreaScenario) simulation.getScenario();
+//        AreaScenarioInjector.Config asicfg = new AreaScenarioInjector.Config();
+//        asicfg.storeRoutes = UserInteractionUtils.askUserForOk(
+//                "Do you like to store the routes as well?\n" +
+//                        "\n" +
+//                        "Attention! The routes would be stored\n" +
+//                        "in the current simulation state,\n" +
+//                        "not fresh calculated!",
+//                "Route storing",
+//                frame);
+//        exfmt.getConfig().set(asicfg);
+//        try {
+//            serializer.write(file, exfmt.manipulator().inject(scenario).getContainer());
+//
+//            UserInteractionUtils.showSavingSuccess(frame);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            UserInteractionUtils.showSavingFailure(file, frame);
+//        }
+//
+//
+//        setNewFrameTitle.invoke();
+    }
+
+
+    /*
+>>>>>>> master
     |========|
     | routes |
     |========|
@@ -990,6 +1147,8 @@ public class SimulationController implements GUIController {
             }
         } else if (config.scenario.selectedClass.getObj() == EndOfTheWorldScenario.class) {
             scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
+        } else if (config.scenario.selectedClass.getObj() == CrossingTheMapScenario.class) {
+            scenario = new CrossingTheMapScenario(config.seed, config, streetgraph);
         } else {
             if (config.scenario.selectedClass.getObj() != RandomRouteScenario.class)
                 logger.error(
@@ -1026,6 +1185,7 @@ public class SimulationController implements GUIController {
 
     private void updateScenario() {
         scenarioAreaOverlay.setEnabled(config.scenario.showAreasWhileSimulating, false, false);
+        connectorOverlay.setEnabled(config.visualization.showConnectorOverlay);
     }
 
     private void removeCurrentScenario() {
@@ -1106,6 +1266,7 @@ public class SimulationController implements GUIController {
 
         /* visualization */
         preferences.setEnabledIfEditable(SimulationConfig.Element.style, true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.showConnectorOverlay, true);
 
         /* concurrency */
         preferences.setEnabledIfEditable(SimulationConfig.Element.nThreads,            newSim);

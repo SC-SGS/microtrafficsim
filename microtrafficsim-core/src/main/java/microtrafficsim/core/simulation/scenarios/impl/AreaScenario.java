@@ -222,6 +222,10 @@ public class AreaScenario extends BasicRandomScenario {
 
         public MonitoredNode getRdmNode(TypedPolygonArea area) {
             ArrayList<MonitoredNode> nodes = areaToNode.get(area);
+            if (nodes.size() == 0) {
+                logger.warn("Empty area in class " + AreaScenario.class.getSimpleName());
+                return null;
+            }
             return nodes.get(nodeRandom.nextInt(nodes.size()));
         }
 

@@ -39,7 +39,7 @@ public class UserInteractionUtils {
         if (file == null)
             return false;
         if (file.exists()) {
-            return askUserForDecision(
+            return askUserForOk(
                     "The selected file already exists. Continue?",
                     "Save File",
                     parent);
@@ -49,13 +49,21 @@ public class UserInteractionUtils {
 
 
     public static boolean askUserForDecision(String msg, String title, Component parent) {
+        int status = JOptionPane.showConfirmDialog(parent, msg, title, JOptionPane.YES_NO_OPTION);
+
+        return status == JOptionPane.YES_OPTION;
+    }
+
+
+    public static boolean askUserForOk(String msg, String title, Component parent) {
         int status = JOptionPane.showConfirmDialog(parent, msg, title, JOptionPane.OK_CANCEL_OPTION);
 
         return status == JOptionPane.OK_OPTION;
     }
 
+
     public static boolean askUserToRemoveScenario(Component parent) {
-        return askUserForDecision(
+        return askUserForOk(
                 "To change the origin/destination areas, the currently running scenario has to be removed."
                         + System.lineSeparator()
                         + "Do you still like to change the areas?",
@@ -65,7 +73,7 @@ public class UserInteractionUtils {
     }
 
     public static boolean askUserToContinueRouteLoading(Component parent) {
-        return UserInteractionUtils.askUserForDecision(
+        return UserInteractionUtils.askUserForOk(
                 "The loaded routes have been created on another graph.\n" +
                         "Maybe not all routes could be found correctly.\n" +
                         "Do you still want to load the routes?",

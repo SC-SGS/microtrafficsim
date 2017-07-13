@@ -89,7 +89,7 @@ public class MultilaneLogicValidation {
             Graph graph = result.graph;
             try {
                 mapviewer.setMap(result.segment);
-                connectorOverlay.update(graph);
+                connectorOverlay.update(graph, config.crossingLogic.drivingOnTheRight);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Runtime.getRuntime().halt(1);

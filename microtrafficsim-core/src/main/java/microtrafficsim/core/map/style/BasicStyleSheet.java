@@ -11,6 +11,8 @@ import microtrafficsim.core.parser.features.MapFeatureDefinition;
 import microtrafficsim.core.parser.features.MapFeatureGenerator;
 import microtrafficsim.core.parser.features.streets.StreetFeatureGenerator;
 import microtrafficsim.core.vis.map.tiles.layers.FeatureTileLayerSource;
+import microtrafficsim.core.vis.map.tiles.mesh.StreetMeshGenerator;
+import microtrafficsim.core.vis.mesh.builder.LineMeshBuilder;
 import microtrafficsim.core.vis.mesh.style.Style;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.utils.Color;
@@ -34,7 +36,7 @@ import java.util.function.Predicate;
 public abstract class BasicStyleSheet implements StyleSheet {
     private final EasyMarkableLogger logger = new EasyMarkableLogger(BasicStyleSheet.class);
 
-    public static final float SCALE_MAXLEVEL = (float) (1.0 / Math.pow(2, 19));
+    private static final double SCALE_MAXLEVEL = 1.0 / (2 << 19);
 
     protected ArrayList<MapFeatureDefinition<?>> features = new ArrayList<>();
     protected ArrayList<LayerDefinition>         layers = new ArrayList<>();
@@ -81,12 +83,12 @@ public abstract class BasicStyleSheet implements StyleSheet {
                 String featureName = "streets:" + streetType;
 
                 if (isStreetOutlineActive(streetType, zoom)) {
-                    Style style = genStreetStyle(
+                    Style style = genStreetBaseStyle(
                             shader,
                             getStreetOutlineColor(streetType),
-                            getStreetLaneWidth(streetType, zoom),
+                            getStreetLaneWidth(zoom),
                             getStreetOutlineWidth(streetType, zoom),
-                            SCALE_MAXLEVEL);
+                            getScaleNorm());
                     layers.add(genLayer(featureName + ":outline:" + zoom, layers.size(), zoom, zoom, featureName, style));
                 }
             }
@@ -96,17 +98,45 @@ public abstract class BasicStyleSheet implements StyleSheet {
                 String featureName = "streets:" + streetType;
 
                 if (isStreetInlineActive(streetType, zoom)) {
-                    Style style = genStreetStyle(
+                    Style style = genStreetBaseStyle(
                             shader,
                             getStreetInlineColor(streetType),
-                            getStreetLaneWidth(streetType, zoom),
+                            getStreetLaneWidth(zoom),
                             0.0f,
-                            SCALE_MAXLEVEL);
+                            getScaleNorm());
                     layers.add(genLayer(featureName + ":inline:" + zoom, layers.size(), zoom, zoom, featureName, style));
+                }
+            }
+
+            for (StreetBasePredicate street : streets) {
+                String streetType = street.getType();
+                String featureName = "streets:" + streetType;
+
+                if (isStreetCenterLineActive(streetType, zoom)) {
+                    Style style = genStreetLinesStyle(
+                            shader,
+                            getStreetCenterLineColor(streetType),
+                            getStreetLaneWidth(zoom),
+                            getStreetCenterLineWidth(streetType, zoom),
+                            getScaleNorm(),
+                            true);
+                    layers.add(genLayer(featureName + ":lines-center:" + zoom, layers.size(), zoom, zoom, featureName, style));
+                }
+
+                if (areStreetLaneLinesActive(streetType, zoom)) {
+                    Style style = genStreetLinesStyle(
+                            shader,
+                            getStreetLaneLineColor(streetType),
+                            getStreetLaneWidth(zoom),
+                            getStreetLaneLineWidth(streetType, zoom),
+                            getScaleNorm(),
+                            false);
+                    layers.add(genLayer(featureName + ":lines-outer:" + zoom, layers.size(), zoom, zoom, featureName, style));
                 }
             }
         }
     }
+
 
     /**
      * Returns the predicates selecting the Streets displayed with this style-sheet.
@@ -128,6 +158,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
                 new MajorStreetBasePredicate("motorway"),
         };
     }
+
 
     /**
      * Returns if the specified street-type should be displayed with an outline at the specified zoom-level.
@@ -189,6 +220,28 @@ public abstract class BasicStyleSheet implements StyleSheet {
         }
     }
 
+    /**
+     * Returns if the specified street-type should be displayed with a center line separating forward and backward lanes.
+     *
+     * @param streetType the type of the street as specified in the StreetBasePredicate.
+     * @param zoom the zoom-level for which this property should be queried.
+     * @return {@code true} if a center-line should be rendered for the given street-type at the given zoom-level.
+     */
+    protected boolean isStreetCenterLineActive(String streetType, int zoom) {
+        return zoom >= 17;
+    }
+
+    /**
+     * Returns if the specified street-type should be displayed with lane-lines separating lanes of the same direction.
+     *
+     * @param streetType the type of the street as specified in the StreetBasePredicate.
+     * @param zoom the zoom-level for which this property should be queried.
+     * @return {@code true} if lane-lines should be rendered for the given street-type at the given zoom-level.
+     */
+    protected boolean areStreetLaneLinesActive(String streetType, int zoom) {
+        return zoom >= 18;
+    }
+
 
     /**
      * Return the outline-color for the specified street-type.
@@ -207,23 +260,67 @@ public abstract class BasicStyleSheet implements StyleSheet {
     protected abstract Color getStreetInlineColor(String streetType);
 
     /**
-     * Return the width of one lane for the specified street-type and zoom-level.
+     * Return the color for the center-line separating forward and backward lanes.
      *
      * @param streetType the type of the street as specified in the StreetBasePredicate.
-     * @param zoom the zoom-level for which this property should be queried.
-     * @return the width of one lane for the specified arguments. The complete width of a street is calculated as:
-     * {@code (lanesForward + lanesBackward) * laneWidth} for the inline, and
-     * {@code (lanesForward + lanesBackward) * laneWidth + 2 * outlineWidth} for the outline.
+     * @return the {@code Color} of the center-line of the specified street-type.
      */
-    protected abstract float getStreetLaneWidth(String streetType, int zoom);
+    protected abstract Color getStreetCenterLineColor(String streetType);
+
+    /**
+     * Return the color for the lane-lines separating different lanes of the same direction.
+     *
+     * @param streetType the type of the street as specified in the StreetBasePredicate.
+     * @return the {@code Color} of the lane-lines of the specified street-type.
+     */
+    protected abstract Color getStreetLaneLineColor(String streetType);
+
+
+    @Override
+    public double getStreetLaneWidth(int zoom) {
+        final int z = Math.max(zoom, 11);
+        final double s = zoom > 11 ? 1.0 : Math.pow(1.95, 11 - zoom);
+
+        return (30.0 + 5.0 * Math.pow(1.75, (19 - z))) * s;
+    }
 
     /**
      * Return the width-offset to be added to each side of the street (i.e. the outline)
+     *
      * @param streetType the type of the street as specified in the StreetBasePredicate.
      * @param zoom the zoom-level for which this property should be queried.
      * @return the width of the outline of a street for the specified properties.
      */
-    protected abstract float getStreetOutlineWidth(String streetType, int zoom);
+    protected double getStreetOutlineWidth(String streetType, int zoom) {
+        return 1.0 * Math.pow(1.75, 19 - zoom);
+    }
+
+    /**
+     * Returns the width with which the center-line separating forward and backward lanes should be displayed.
+     *
+     * @param streetType the type of the street as specified in the StreetBasePredicate.
+     * @param zoom the zoom-level for which this property should be queried.
+     * @return the width of the center-lines for the specified street-type.
+     */
+    protected double getStreetCenterLineWidth(String streetType, int zoom) {
+        return 5.0 * Math.pow(1.75, 19 - zoom);
+    }
+
+    /**
+     * Returns the width with which the lane-lines separating different lanes of the same direction should be displayed.
+     *
+     * @param streetType the type of the street as specified in the StreetBasePredicate.
+     * @param zoom the zoom-level for which this property should be queried.
+     * @return the width of the lane-lines for the specified street-type.
+     */
+    protected double getStreetLaneLineWidth(String streetType, int zoom) {
+        return 4.0 * Math.pow(1.75, 19 - zoom);
+    }
+
+    @Override
+    public double getScaleNorm() {
+        return SCALE_MAXLEVEL;
+    }
 
 
     /**
@@ -261,7 +358,7 @@ public abstract class BasicStyleSheet implements StyleSheet {
     }
 
     /**
-     * Generate a style for streets based on the specific properties.
+     * Generate a style for the base-lines of streets based on the specific properties.
      *
      * @param shader    the shader to be used in the generated style.
      * @param color     the color to be used in generated style.
@@ -270,11 +367,41 @@ public abstract class BasicStyleSheet implements StyleSheet {
      * @param scalenorm the scale-normal of the generated style.
      * @return the generated style.
      */
-    protected Style genStreetStyle(ShaderProgramSource shader, Color color, float lanewidth, float outline, float scalenorm) {
+    protected Style genStreetBaseStyle(ShaderProgramSource shader, Color color, double lanewidth, double outline,
+                                       double scalenorm)
+    {
         Style style = new Style(shader);
         style.setUniformSupplier("u_color", color::toVec4f);
         style.setProperty("lanewidth", lanewidth * scalenorm);
-        style.setProperty("outline", outline * scalenorm);
+        style.setProperty("linewidth", outline * scalenorm);
+        style.setProperty("cap", LineMeshBuilder.CapType.ROUND);
+        style.setProperty("join", LineMeshBuilder.JoinType.ROUND);
+        style.setProperty("type", StreetMeshGenerator.LineType.BASE);
+        style.setProperty("miter-angle-limit", 0.5);
+        return style;
+    }
+
+    /**
+     * Generate a style for streets based on the specific properties.
+     *
+     * @param shader    the shader to be used in the generated style.
+     * @param color     the color to be used in generated style.
+     * @param lanewidth the width of a single lane of the generated style.
+     * @param linewidth the width of the lines of the generated style.
+     * @param scalenorm the scale-normal of the generated style.
+     * @return the generated style.
+     */
+    protected Style genStreetLinesStyle(ShaderProgramSource shader, Color color, double lanewidth, double linewidth,
+                                       double scalenorm, boolean center)
+    {
+        Style style = new Style(shader);
+        style.setUniformSupplier("u_color", color::toVec4f);
+        style.setProperty("lanewidth", lanewidth * scalenorm);
+        style.setProperty("linewidth", linewidth * scalenorm);
+        style.setProperty("cap", LineMeshBuilder.CapType.SQUARE);
+        style.setProperty("join", LineMeshBuilder.JoinType.MITER);
+        style.setProperty("type", center ? StreetMeshGenerator.LineType.LINES_CENTER : StreetMeshGenerator.LineType.LINES_OUTER);
+        style.setProperty("miter-angle-limit", 0.5);
         return style;
     }
 

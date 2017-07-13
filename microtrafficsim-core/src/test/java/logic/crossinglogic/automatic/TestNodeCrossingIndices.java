@@ -13,6 +13,7 @@ import microtrafficsim.core.logic.streets.information.Orientation;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.StreetType;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -59,7 +60,7 @@ public class TestNodeCrossingIndices {
             File file = new PackagedResource(UIValidation.class, "/logic/validation/plus_crossroad.osm")
                     .asTemporaryFile();
             OSMParser parser = DefaultParserConfig.get(config).build();
-            Graph     graph  = parser.parse(file).streetgraph;
+            Graph     graph  = parser.parse(file, new MapProperties(true)).streetgraph;
 
             logger.debug("\n" + graph);
 

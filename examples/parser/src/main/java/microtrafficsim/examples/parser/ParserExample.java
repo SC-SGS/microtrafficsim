@@ -1,6 +1,7 @@
 package microtrafficsim.examples.parser;
 
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.parser.*;
@@ -52,7 +53,7 @@ public class ParserExample {
 
 
         // create parser and parse
-        OSMParser.Result result = createParser().parse(file);
+        OSMParser.Result result = createParser().parse(file, new MapProperties(true)); // todo read in map properties?
 
         // do stuff with parsed data
         MapSegment  segment     = result.segment;

@@ -8,6 +8,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -48,7 +49,7 @@ public class StreetGraphExchangeFormatTest {
     }
 
     private static Graph loadGraphOsm(File file) throws Exception {
-        return DefaultParserConfig.get(getConfig()).build().parse(file).streetgraph;
+        return DefaultParserConfig.get(getConfig()).build().parse(file, new MapProperties(true)).streetgraph;
     }
 
     private static SimulationConfig getConfig() {

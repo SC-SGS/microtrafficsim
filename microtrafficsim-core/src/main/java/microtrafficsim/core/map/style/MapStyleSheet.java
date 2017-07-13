@@ -76,6 +76,36 @@ public interface MapStyleSheet {
 
 
     /**
+     * Return the width of one lane for the specified street-type and zoom-level.
+     *
+     * @param zoom the zoom-level for which this property should be queried.
+     * @return the width of one lane for the specified arguments. The complete width of a street is calculated as:
+     * {@code (lanesForward + lanesBackward) * laneWidth} for the inline, and
+     * {@code (lanesForward + lanesBackward) * laneWidth + 2 * outlineWidth} for the outline.
+     */
+    double getStreetLaneWidth(int zoom);
+
+    /**
+     * Return the normalized width of one lane for the specified street-type and zoom-level.
+     *
+     * @param zoom the zoom-level for which this property should be queried.
+     * @return the width of one lane for the specified arguments. The complete width of a street is calculated as:
+     * {@code (lanesForward + lanesBackward) * laneWidth} for the inline, and
+     * {@code (lanesForward + lanesBackward) * laneWidth + 2 * outlineWidth} for the outline.
+     */
+    default double getNormalizedStreetLaneWidth(int zoom) {
+        return getScaleNorm() * getStreetLaneWidth(zoom);
+    }
+
+    /**
+     * Returns the scale normalization factor, used to calculate the real lane width (amongst other).
+     *
+     * @return the scale normalization factor, used to calculate the real lane width (amongst other).
+     */
+    double getScaleNorm();
+
+
+    /**
      * Replace the placeholder-{@code FeatureDefinition}s of this {@code StyleSheet} with the specified
      * {@code FeatureDefinition}s.
      *

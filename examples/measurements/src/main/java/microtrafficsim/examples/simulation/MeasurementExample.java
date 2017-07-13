@@ -106,7 +106,7 @@ public abstract class MeasurementExample {
                 }
 
                 // load and set graph
-                Tuple<Graph, MapProvider> mapResult = storage.loadMap(files.mtsmap);
+                Tuple<Graph, MapProvider> mapResult = storage.loadMap(files.mtsmap, config.crossingLogic.drivingOnTheRight);
                 graph = mapResult.obj0;
                 if (VISUALIZED)
                     viewer.setMap(mapResult.obj1);

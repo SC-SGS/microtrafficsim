@@ -4,6 +4,7 @@ import microtrafficsim.core.map.TileFeatureProvider;
 import microtrafficsim.core.map.tiles.TileRect;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.vis.context.RenderContext;
+import microtrafficsim.core.vis.mesh.builder.LineMeshBuilder;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
@@ -20,9 +21,13 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     private final TileFeatureProvider provider;
     private final String feature;
     private final TilingScheme scheme;
-    private final long         revision;
-    private final float   lanewidth;
-    private final float   outline;
+    private final long revision;
+    private final double lanewidth;
+    private final double outline;
+    private final LineMeshBuilder.CapType cap;
+    private final LineMeshBuilder.JoinType join;
+    private final StreetMeshGenerator.LineType type;
+    private final double miterAngleLimit;
     private final boolean useJoinsWhenPossible;
     private final boolean drivingOnTheRight;
 
@@ -46,8 +51,12 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                          String              feature,
                          TilingScheme        scheme,
                          long                revision,
-                         float               lanewidth,
-                         float               outline,
+                         double              lanewidth,
+                         double              outline,
+                         LineMeshBuilder.CapType      cap,
+                         LineMeshBuilder.JoinType     join,
+                         StreetMeshGenerator.LineType type,
+                         double              miterAngleLimit,
                          boolean             useJoinsWhenPossible,
                          boolean             drivingOnTheRight) {
         this.context    = context;
@@ -59,6 +68,10 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
         this.revision   = revision;
         this.lanewidth  = lanewidth;
         this.outline    = outline;
+        this.cap = cap;
+        this.join = join;
+        this.type = type;
+        this.miterAngleLimit = miterAngleLimit;
         this.useJoinsWhenPossible = useJoinsWhenPossible;
         this.drivingOnTheRight = drivingOnTheRight;
     }
@@ -78,6 +91,10 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                 && this.revision == other.revision
                 && this.lanewidth == other.lanewidth
                 && this.outline == other.outline
+                && this.cap == other.cap
+                && this.join == other.join
+                && this.type == other.type
+                && this.miterAngleLimit == other.miterAngleLimit
                 && this.useJoinsWhenPossible == other.useJoinsWhenPossible
                 && this.drivingOnTheRight == other.drivingOnTheRight;
     }
@@ -93,6 +110,10 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                 .add(revision)
                 .add(lanewidth)
                 .add(outline)
+                .add(cap)
+                .add(join)
+                .add(type)
+                .add(miterAngleLimit)
                 .add(useJoinsWhenPossible)
                 .add(drivingOnTheRight)
                 .getHash();

@@ -7,6 +7,7 @@ import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Bounds;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.impl.LightMonochromeStyleSheet;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
@@ -93,12 +94,14 @@ public class ExchangeFormatConverter {
     }
 
 
-    public Tuple<SegmentFeatureProvider, Graph> load(File file, Bounds clip, boolean multilane) throws Exception {
+    public Tuple<SegmentFeatureProvider, Graph> load(File file, Bounds clip, boolean multilane, boolean drivingOnTheRight)
+            throws Exception
+    {
         logger.info("Loading map: " + file.getName());
 
         QuadTreeTiledMapSegment.Generator tiler = new QuadTreeTiledMapSegment.Generator();
 
-        OSMParser.Result result = parser(config, clip, multilane).parse(file);
+        OSMParser.Result result = parser(config, clip, multilane).parse(file, new MapProperties(drivingOnTheRight));
         QuadTreeTiledMapSegment segment = tiler.generate(result.segment, tilingScheme, tileGridLevel);
         Graph graph = result.streetgraph;
 
@@ -117,8 +120,8 @@ public class ExchangeFormatConverter {
     }
 
 
-    public void convert(File in, File out, Bounds clip, boolean multilane) throws Exception {
-        Tuple<SegmentFeatureProvider, Graph> result = load(in, clip, multilane);
+    public void convert(File in, File out, Bounds clip, boolean multilane, boolean drivingOnTheRight) throws Exception {
+        Tuple<SegmentFeatureProvider, Graph> result = load(in, clip, multilane, drivingOnTheRight);
         store(result.obj0, result.obj1, out);
     }
 
@@ -165,12 +168,20 @@ public class ExchangeFormatConverter {
                 .builder("m")
                 .longOpt("multilane")
                 .hasArg()
-                .type(Boolean.class)
                 .argName("MULTILANE")
                 .desc("Enable or disable multi-lane output (defaults to true)")
                 .build());
 
+        options.addOption(Option
+                .builder("r")
+                .longOpt("driving-right")
+                .hasArg()
+                .argName("DRIVING_RIGHT")
+                .desc("Position of vehicles in relation to vehicle direction, relative to the street (defaults to true)")
+                .build());
+
         boolean multilane = true;
+        boolean drivingOnTheRight = true;
         try {
             CommandLine line = new DefaultParser().parse(options, args);
 
@@ -207,6 +218,10 @@ public class ExchangeFormatConverter {
                 multilane = Boolean.parseBoolean(line.getOptionValue("multilane"));
             }
 
+            if (line.hasOption("driving-right")) {
+                drivingOnTheRight = Boolean.parseBoolean(line.getOptionValue("driving-right"));
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             System.err.flush();
@@ -216,7 +231,7 @@ public class ExchangeFormatConverter {
         }
 
         try {
-            new ExchangeFormatConverter().convert(in, out, clip, multilane);
+            new ExchangeFormatConverter().convert(in, out, clip, multilane, drivingOnTheRight);
         } catch (Exception e) {
             System.err.flush();
             System.err.println("\nError: Failed to convert files:");

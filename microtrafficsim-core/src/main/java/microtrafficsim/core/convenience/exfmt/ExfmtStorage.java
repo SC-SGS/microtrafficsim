@@ -16,10 +16,7 @@ import microtrafficsim.core.exfmt.injector.simulation.SimulationConfigInjector;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
-import microtrafficsim.core.map.MapProvider;
-import microtrafficsim.core.map.MapSegment;
-import microtrafficsim.core.map.ProjectedAreas;
-import microtrafficsim.core.map.UnprojectedAreas;
+import microtrafficsim.core.map.*;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.TilingScheme;
 import microtrafficsim.core.parser.OSMParser;
@@ -93,16 +90,22 @@ public class ExfmtStorage {
     | map |
     |=====|
     */
+    public Tuple<Graph, MapProvider> loadMap(File file) throws IOException, InterruptedException {
+        return loadMap(file, true);
+    }
+
     /**
      * Loads the given file depending on its map type (OSM or MTSM)
+     *
+     * @param priorityToTheRight Needed for visualization purpose; doesn't matter if no osm file
      */
-    public Tuple<Graph, MapProvider> loadMap(File file) throws InterruptedException, IOException {
+    public Tuple<Graph, MapProvider> loadMap(File file, boolean priorityToTheRight) throws InterruptedException, IOException {
         if (!mapLoadingHasBeenSet)
             throw new IOException("You have to setup some map loading attributes, e.g. the parser.");
 
         try {
             if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
-                OSMParser.Result result = parser.parse(file);
+                OSMParser.Result result = parser.parse(file, new MapProperties(priorityToTheRight));
                 return new Tuple<>(result.streetgraph, result.segment);
             } else if (MTSFileChooser.Filters.MAP_EXFMT.accept(file)) {
                 ExchangeFormat.Manipulator manipulator = exfmt.manipulator(serializer.read(file));

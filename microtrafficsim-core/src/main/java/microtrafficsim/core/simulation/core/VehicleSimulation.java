@@ -30,7 +30,6 @@ public class VehicleSimulation implements Simulation {
 
     // simulation steps
     private boolean            paused;
-    private Timer              timer;
     private TimerTask          timerTask;
     private final Lock         executionLock;
     private int                age;
@@ -44,7 +43,6 @@ public class VehicleSimulation implements Simulation {
      */
     public VehicleSimulation() {
         paused = true;
-        timer = new Timer();
         executionLock = new ReentrantLock();
         this.stepListeners = new LinkedList<>();
     }
@@ -146,7 +144,7 @@ public class VehicleSimulation implements Simulation {
                     doRunOneStep();
                 }
             };
-            timer.schedule(timerTask, 0, Math.max(1, 1000 / scenario.getConfig().speedup));
+            new Timer().schedule(timerTask, 0, Math.max(1, 1000 / scenario.getConfig().speedup));
             paused = false;
         }
     }

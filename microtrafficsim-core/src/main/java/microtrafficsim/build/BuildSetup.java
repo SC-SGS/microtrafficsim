@@ -9,11 +9,6 @@ package microtrafficsim.build;
 public abstract class BuildSetup {
 
     /**
-     * Enable/disable connector overlay.
-     */
-    public static final boolean CONNECTOR_OVERLAY_ENABLED = false;
-
-    /**
      * Enable/disable debug instructions for the visualization.
      */
     public static final boolean DEBUG_CORE_VIS = true;

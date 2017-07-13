@@ -72,15 +72,17 @@ public class LightStyleSheet extends BasicStyleSheet {
     }
 
     @Override
-    protected float getStreetLaneWidth(String streetType, int zoom) {
-        final int z = Math.max(zoom, 11);
-        final double s = zoom > 11 ? 1 : Math.pow(1.95, 11 - zoom);
-
-        return (float) ((30.0 + 5.0 * Math.pow(1.75, (19 - z))) * s);
+    protected Color getStreetCenterLineColor(String streetType) {
+        return getStreetOutlineColor(streetType);
     }
 
     @Override
-    protected float getStreetOutlineWidth(String streetType, int zoom) {
-        return (float) (2.0 * Math.pow(1.95, 19 - zoom));
+    protected Color getStreetLaneLineColor(String streetType) {
+        return getStreetOutlineColor(streetType);
+    }
+
+    @Override
+    protected double getStreetOutlineWidth(String streetType, int zoom) {
+        return 2.0 * Math.pow(1.95, 19 - zoom);
     }
 }

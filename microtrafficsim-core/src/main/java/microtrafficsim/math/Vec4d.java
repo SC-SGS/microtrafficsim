@@ -42,6 +42,17 @@ public class Vec4d {
      * @param z the {@code z}-component.
      * @param w the {@code w}-component.
      */
+    public Vec4d(Vec2d xy, double z, double w) {
+        this(xy.x, xy.y, z, w);
+    }
+
+    /**
+     * Constructs a new vector with the given values.
+     *
+     * @param xy the {@code x}-and {@code z}-components.
+     * @param z the {@code z}-component.
+     * @param w the {@code w}-component.
+     */
     public Vec4d(Vec2f xy, double z, double w) {
         this(xy.x, xy.y, z, w);
     }

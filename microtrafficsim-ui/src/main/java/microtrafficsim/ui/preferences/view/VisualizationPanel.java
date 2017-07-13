@@ -15,6 +15,7 @@ public class VisualizationPanel extends PreferencesPanel {
 
     private final VisualizationModel model;
     private final JComboBox<String> cbStyle;
+    private final JCheckBox cbShowConnectorOverlay;
 
     /**
      * You should call {@link #create()} before you use this frame.
@@ -24,6 +25,7 @@ public class VisualizationPanel extends PreferencesPanel {
         model = new VisualizationModel();
 
         cbStyle = new JComboBox<>();
+        cbShowConnectorOverlay = new JCheckBox("show connectors");
 
         create();
     }
@@ -42,6 +44,16 @@ public class VisualizationPanel extends PreferencesPanel {
         constraints.weightx            = 0;
         constraints.anchor             = GridBagConstraints.WEST;
         add(cbStyle, constraints);
+
+
+        cbShowConnectorOverlay.setFont(PreferencesFrame.TEXT_FONT);
+
+        constraints = new GridBagConstraints();
+        constraints.gridx              = 1;
+        constraints.gridy              = 0;
+        constraints.weightx            = 0;
+        constraints.anchor             = GridBagConstraints.WEST;
+        add(cbShowConnectorOverlay, constraints);
 
 
         /* gap panel */
@@ -64,8 +76,16 @@ public class VisualizationPanel extends PreferencesPanel {
 
     @Override
     public void setSettings(boolean indeed, SimulationConfig config) {
-        if (indeed || model.getEnableLexicon().isEnabled(Element.style))
+        if (indeed) {
             cbStyle.setSelectedItem(config.visualization.style.getClass().getSimpleName());
+            cbShowConnectorOverlay.setSelected(config.visualization.showConnectorOverlay);
+        } else {
+            if (model.getEnableLexicon().isEnabled(Element.style))
+                cbStyle.setSelectedItem(config.visualization.style.getClass().getSimpleName());
+
+            if (model.getEnableLexicon().isEnabled(Element.showConnectorOverlay))
+                cbShowConnectorOverlay.setSelected(config.visualization.showConnectorOverlay);
+        }
     }
 
     @Override
@@ -73,6 +93,7 @@ public class VisualizationPanel extends PreferencesPanel {
 
         SimulationConfig config = new SimulationConfig();
         config.visualization.style = model.instantiate(cbStyle.getSelectedIndex());
+        config.visualization.showConnectorOverlay = cbShowConnectorOverlay.isSelected();
         return config;
     }
 
@@ -82,6 +103,7 @@ public class VisualizationPanel extends PreferencesPanel {
 
         switch (element) {
             case style: cbStyle.setEnabled(enabled); break;
+            case showConnectorOverlay: cbShowConnectorOverlay.setEnabled(enabled); break;
         }
 
         return enabled;
