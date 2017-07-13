@@ -8,6 +8,8 @@ import microtrafficsim.core.vis.mesh.builder.LineMeshBuilder;
 import microtrafficsim.math.Rect2d;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
+import java.util.Arrays;
+
 
 /**
  * Key for {@code StreetMesh}es.
@@ -27,6 +29,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
     private final LineMeshBuilder.CapType cap;
     private final LineMeshBuilder.JoinType join;
     private final StreetMeshGenerator.LineType type;
+    private final double[] dasharray;
     private final double miterAngleLimit;
     private final boolean useJoinsWhenPossible;
     private final boolean drivingOnTheRight;
@@ -56,6 +59,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                          LineMeshBuilder.CapType      cap,
                          LineMeshBuilder.JoinType     join,
                          StreetMeshGenerator.LineType type,
+                         double[]            dasharray,
                          double              miterAngleLimit,
                          boolean             useJoinsWhenPossible,
                          boolean             drivingOnTheRight) {
@@ -71,6 +75,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
         this.cap = cap;
         this.join = join;
         this.type = type;
+        this.dasharray = dasharray;
         this.miterAngleLimit = miterAngleLimit;
         this.useJoinsWhenPossible = useJoinsWhenPossible;
         this.drivingOnTheRight = drivingOnTheRight;
@@ -94,6 +99,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                 && this.cap == other.cap
                 && this.join == other.join
                 && this.type == other.type
+                && Arrays.equals(this.dasharray, other.dasharray)
                 && this.miterAngleLimit == other.miterAngleLimit
                 && this.useJoinsWhenPossible == other.useJoinsWhenPossible
                 && this.drivingOnTheRight == other.drivingOnTheRight;
@@ -113,6 +119,7 @@ public class StreetMeshKey implements FeatureMeshGenerator.FeatureMeshKey {
                 .add(cap)
                 .add(join)
                 .add(type)
+                .add(dasharray)
                 .add(miterAngleLimit)
                 .add(useJoinsWhenPossible)
                 .add(drivingOnTheRight)

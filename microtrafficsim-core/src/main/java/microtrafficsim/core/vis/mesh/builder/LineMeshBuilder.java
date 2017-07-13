@@ -4,6 +4,9 @@ import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.Vec3d;
 import microtrafficsim.utils.hashing.FNVHashBuilder;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 
 // TODO: simplify cpu code by rendering caps/joins with shader
 // (see "Shader-Based Antialiased, Dashed, Stroked Polylines")
@@ -19,13 +22,15 @@ public class LineMeshBuilder {
         public double   linewidth;
         public double   offset;
         public double   miterAngleLimit;
+        public double[] dasharray;
 
-        public Style(CapType cap, JoinType join, double linewidth, double offset, double miterAngleLimit) {
+        public Style(CapType cap, JoinType join, double linewidth, double offset, double miterAngleLimit, double[] dasharray) {
             this.cap = cap;
             this.join = join;
             this.linewidth = linewidth;
             this.offset = offset;
             this.miterAngleLimit = miterAngleLimit;
+            this.dasharray = dasharray;
         }
 
         @Override
@@ -38,7 +43,9 @@ public class LineMeshBuilder {
                     && this.join == other.join
                     && this.linewidth == other.linewidth
                     && this.offset == other.offset
-                    && this.miterAngleLimit == other.miterAngleLimit;
+                    && this.miterAngleLimit == other.miterAngleLimit
+                    && Arrays.equals(this.dasharray, other.dasharray);
+
         }
 
         @Override
@@ -49,6 +56,7 @@ public class LineMeshBuilder {
                     .add(linewidth)
                     .add(offset)
                     .add(miterAngleLimit)
+                    .add(dasharray)
                     .getHash();
         }
     }
@@ -110,6 +118,16 @@ public class LineMeshBuilder {
     }
 
     public void add(Vec3d[] line, Style style, Vec3d dirAdjBegin, Vec3d dirAdjEnd) {
+        Vec3d[] l = offset(line, style.offset, dirAdjBegin, dirAdjEnd);
+
+        if (style.dasharray == null)
+            solid(l, style, dirAdjBegin, dirAdjEnd);
+        else
+            dashed(l, style, dirAdjBegin, dirAdjEnd);
+    }
+
+
+    private void solid(Vec3d[] line, Style style, Vec3d dirAdjBegin, Vec3d dirAdjEnd) {
         Vec3d thisPos = line[0];
         Vec3d nextPos = line[1];
 
@@ -138,6 +156,163 @@ public class LineMeshBuilder {
         }
 
         emitter.next();
+    }
+
+    private void dashed(Vec3d[] line, Style style, Vec3d dirAdjBegin, Vec3d dirAdjEnd) {
+        Vec3d from = line[0];
+        Vec3d to   = line[1];
+
+        Vec3d thisDir = dirvec2d(from, to);
+
+        if (dirAdjBegin == null) {
+            emitCapBegin(from, thisDir, style);
+        } else {
+            emitHalfJoinBegin(from, dirAdjBegin, thisDir, style);
+        }
+
+        double capLen = style.cap != CapType.BUTT ? style.linewidth / 2.0 : 0.0;
+        double onDashMin = 2 * capLen;
+        double onDashCapAdjust = capLen;
+
+        int dashIdx = 0;
+        double dashCurrent = Math.max(style.dasharray[dashIdx] - onDashCapAdjust, onDashMin);
+        double dashAcc = 0.0;
+        boolean on = true;
+
+        int lineIdx = 2;
+        while (true) {
+            dashAcc += thisDir.z;
+
+            if (on && lineIdx == line.length && thisDir.z < capLen) {
+                break;      // if we would end the dash on the last segment shortly before the line cap, do not end it
+            }
+
+            if (dashAcc > dashCurrent) {
+                // get point on current segment
+                double overflow = dashAcc - dashCurrent;
+                double dirlen = thisDir.z - overflow;
+                Vec3d point = new Vec3d(from.xy().add(thisDir.xy().mul(dirlen)), from.z);
+
+                // emit cap
+                if (on) {
+                    emitCapEnd(point, new Vec3d(thisDir.xy(), dirlen), style);
+                    emitter.next();
+                } else {
+                    emitCapBegin(point, new Vec3d(thisDir.xy(), overflow), style);
+                }
+                on = !on;
+
+                // update
+                from = point;
+                thisDir = dirvec2d(from, to);
+
+                // get next dash
+                dashAcc = 0.0;
+
+                if (++dashIdx == style.dasharray.length)
+                    dashIdx = 0;
+
+                if (on) {
+                    dashCurrent = Math.max(style.dasharray[dashIdx] - 2.0 * onDashCapAdjust, onDashMin);
+                } else {
+                    dashCurrent = Math.max(style.dasharray[dashIdx] + 2.0 * onDashCapAdjust, 0.0);
+                }
+
+            } else {
+                // get next segment
+                if (lineIdx == line.length) {
+                    break;
+                }
+
+                from = to;
+                to = line[lineIdx];
+
+                Vec3d lastDir = thisDir;
+                thisDir = dirvec2d(from, to);
+
+                if (on) {
+                    emitJoin(from, lastDir, thisDir, style);
+                }
+
+                lineIdx++;
+            }
+        }
+
+        // last segment must be "on"
+        if (!on) {
+            emitCapBegin(to, thisDir, style);
+        }
+
+        if (dirAdjEnd == null) {
+            emitCapEnd(to, thisDir, style);
+        } else {
+            emitHalfJoinEnd(to, thisDir, dirAdjEnd, style);
+        }
+
+        emitter.next();
+    }
+
+    private Vec3d[] offset(Vec3d[] line, double offset, Vec3d dirAdjBegin, Vec3d dirAdjEnd) {
+        if (offset == 0.0)
+            return line;
+
+        ArrayList<Vec3d> result = new ArrayList<>();
+
+        // first point
+        if (dirAdjBegin != null) {
+            Vec3d pos = line[0];
+
+            Vec2d dirIn = dirAdjBegin.xy();
+            Vec2d dirOut = dirvec(pos, line[1]);
+            Vec2d dir = Vec2d.add(dirIn, dirOut).mul(0.5);
+            Vec2d norm = new Vec2d(-dir.y, dir.x);
+
+            double cos = dirIn.dot(dir);
+
+            result.add(new Vec3d(pos.xy().add(Vec2d.mul(norm, offset / Math.max(cos, 0.00001))), pos.z));
+        } else {
+            Vec3d pos = line[0];
+            Vec2d dir = dirvec(pos, line[1]);
+            Vec2d norm = new Vec2d(-dir.y, dir.x);
+
+            result.add(new Vec3d(pos.xy().add(norm.mul(offset)), pos.z));
+        }
+
+        // center
+        for (int i = 0, j = 1, k = 2; k < line.length; i = j, j = k, k++) {
+            Vec3d pos = line[j];
+
+            Vec2d dirIn = dirvec(line[i], pos);
+            Vec2d dirOut = dirvec(pos, line[k]);
+            Vec2d dir = Vec2d.add(dirIn, dirOut).mul(0.5);
+            Vec2d norm = new Vec2d(-dir.y, dir.x);
+
+            double cos = dirIn.dot(dir);
+
+            result.add(new Vec3d(pos.xy().add(Vec2d.mul(norm, offset / Math.max(cos, 0.00001))), pos.z));
+        }
+
+        // last point
+        if (dirAdjEnd != null) {
+            Vec3d pos = line[line.length - 1];
+
+            Vec2d dirIn = dirvec(line[line.length - 2], pos);
+            Vec2d dirOut = dirAdjEnd.xy();
+            Vec2d dir = Vec2d.add(dirIn, dirOut).mul(0.5);
+            Vec2d norm = new Vec2d(-dir.y, dir.x);
+
+            double cos = dirIn.dot(dir);
+
+            result.add(new Vec3d(pos.xy().add(Vec2d.mul(norm, offset / Math.max(cos, 0.00001))), pos.z));
+        } else {
+            Vec3d pos = line[line.length - 1];
+            Vec2d dir = dirvec(line[line.length - 2], pos);
+            Vec2d norm = new Vec2d(-dir.y, dir.x);
+
+            result.add(new Vec3d(pos.xy().add(norm.mul(offset)), pos.z));
+        }
+
+        return result.toArray(new Vec3d[result.size()]);
     }
 
 
@@ -273,8 +448,8 @@ public class LineMeshBuilder {
         final Vec2d normal = normal(dir);
         final double ext = style.linewidth / 2.0;
 
-        final Vec3d p1 = new Vec3d(Vec2d.mul(normal, style.offset + ext).add(pos.xy()), pos.z);
-        final Vec3d p2 = new Vec3d(Vec2d.mul(normal, style.offset - ext).add(pos.xy()), pos.z);
+        final Vec3d p1 = new Vec3d(Vec2d.mul(normal,  ext).add(pos.xy()), pos.z);
+        final Vec3d p2 = new Vec3d(Vec2d.mul(normal, -ext).add(pos.xy()), pos.z);
 
         final Vec3d l1 = new Vec3d(0.0,  ext, ext);
         final Vec3d l2 = new Vec3d(0.0, -ext, ext);
@@ -287,9 +462,9 @@ public class LineMeshBuilder {
         Vec2d normal = new Vec2d(-dir.y, dir.x);
         double ext = style.linewidth / 2.0;
 
-        Vec2d p0 = Vec2d.mul(normal,       style.offset).add(pos.xy());
-        Vec2d p1 = Vec2d.mul(normal, style.offset + ext).add(pos.xy());
-        Vec2d p2 = Vec2d.mul(normal, style.offset - ext).add(pos.xy());
+        Vec2d p0 = pos.xy();
+        Vec2d p1 = Vec2d.mul(normal,  ext).add(pos.xy());
+        Vec2d p2 = Vec2d.mul(normal, -ext).add(pos.xy());
         Vec2d p3 = dir.xy().mul(-ext).add(p1);
         Vec2d p4 = dir.xy().mul(-ext).add(p2);
 
@@ -335,9 +510,9 @@ public class LineMeshBuilder {
         Vec2d normal = new Vec2d(-dir.y, dir.x);
         double ext = style.linewidth / 2.0;
 
-        Vec2d p0 = Vec2d.mul(normal,       style.offset).add(pos.xy());
-        Vec2d p1 = Vec2d.mul(normal, style.offset + ext).add(pos.xy());
-        Vec2d p2 = Vec2d.mul(normal, style.offset - ext).add(pos.xy());
+        Vec2d p0 = pos.xy();
+        Vec2d p1 = Vec2d.mul(normal,  ext).add(pos.xy());
+        Vec2d p2 = Vec2d.mul(normal, -ext).add(pos.xy());
         Vec2d p3 = dir.xy().mul(ext).add(p1);
         Vec2d p4 = dir.xy().mul(ext).add(p2);
 
@@ -383,8 +558,8 @@ public class LineMeshBuilder {
         Vec2d normal = new Vec2d(-dir.y, dir.x);
         double ext = style.linewidth / 2.0;
 
-        Vec2d p1 = Vec2d.mul(normal, style.offset + ext).add(pos.xy());
-        Vec2d p2 = Vec2d.mul(normal, style.offset - ext).add(pos.xy());
+        Vec2d p1 = Vec2d.mul(normal,  ext).add(pos.xy());
+        Vec2d p2 = Vec2d.mul(normal, -ext).add(pos.xy());
         Vec2d p3 = dir.xy().mul(-ext).add(p1);
         Vec2d p4 = dir.xy().mul(-ext).add(p2);
 
@@ -403,8 +578,8 @@ public class LineMeshBuilder {
         Vec2d normal = new Vec2d(-dir.y, dir.x);
         double ext = style.linewidth / 2.0;
 
-        Vec2d p1 = Vec2d.mul(normal, style.offset + ext).add(pos.xy());
-        Vec2d p2 = Vec2d.mul(normal, style.offset - ext).add(pos.xy());
+        Vec2d p1 = Vec2d.mul(normal,  ext).add(pos.xy());
+        Vec2d p2 = Vec2d.mul(normal, -ext).add(pos.xy());
         Vec2d p3 = dir.xy().mul(ext).add(p1);
         Vec2d p4 = dir.xy().mul(ext).add(p2);
 
@@ -448,20 +623,19 @@ public class LineMeshBuilder {
         Vec3d li = new Vec3d(0.0,  ext * curve, ext);
         Vec3d lo = new Vec3d(0.0, -ext * curve, ext);
 
-        Vec3d pCenter = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, style.offset / Math.max(cos, 0.00001))), pos.z);
-        Vec3d pInner = new Vec3d(pCenter.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
+        Vec3d pInner = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
 
-        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pCenter.xy()), pos.z);
-        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pCenter.xy()), pos.z);
+        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pos.xy()), pos.z);
+        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pos.xy()), pos.z);
+        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pos.xy()), pos.z);
+        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pos.xy()), pos.z);
 
         int iRightA = emitter.add(new Vertex(pRightA, l1));
         int iLeftA  = emitter.add(new Vertex(pLeftA,  l2));
         int iRightB = emitter.add(new Vertex(pRightB, l1));
         int iLeftB  = emitter.add(new Vertex(pLeftB,  l2));
         int iInner  = emitter.add(new Vertex(pInner,  li));
-        int iCenter = emitter.add(new Vertex(pCenter, l0));
+        int iCenter = emitter.add(new Vertex(pos, l0));
 
         if (intersects) {
             if (curve > 0) {
@@ -496,7 +670,7 @@ public class LineMeshBuilder {
         }
 
         if (!bevel) {                           // miter cap
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pos.xy()), pos.z);
             int iOuter = emitter.add(new Vertex(pOuter, lo));
 
             if (curve > 0) {
@@ -564,28 +738,25 @@ public class LineMeshBuilder {
                 && (innerext * innerext) <= (dirIn.z  * dirIn.z  + ext * ext)
                 && (innerext * innerext) <= (dirOut.z * dirOut.z + ext * ext);
 
-        boolean bevel = cos < style.miterAngleLimit;
-
         Vec3d l0 = new Vec3d(0.0,          0.0, ext);
         Vec3d l1 = new Vec3d(0.0,          ext, ext);
         Vec3d l2 = new Vec3d(0.0,         -ext, ext);
         Vec3d li = new Vec3d(0.0,  ext * curve, ext);
         Vec3d lo = new Vec3d(0.0, -ext * curve, ext);
 
-        Vec3d pCenter = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, style.offset / Math.max(cos, 0.00001))), pos.z);
-        Vec3d pInner = new Vec3d(pCenter.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
+        Vec3d pInner = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
 
-        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pCenter.xy()), pos.z);
-        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pCenter.xy()), pos.z);
+        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pos.xy()), pos.z);
+        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pos.xy()), pos.z);
+        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pos.xy()), pos.z);
+        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pos.xy()), pos.z);
 
         int iRightA = emitter.add(new Vertex(pRightA, l1));
         int iLeftA  = emitter.add(new Vertex(pLeftA,  l2));
         int iRightB = emitter.add(new Vertex(pRightB, l1));
         int iLeftB  = emitter.add(new Vertex(pLeftB,  l2));
         int iInner  = emitter.add(new Vertex(pInner,  li));
-        int iCenter = emitter.add(new Vertex(pCenter, l0));
+        int iCenter = emitter.add(new Vertex(pos, l0));
 
         if (intersects) {
             if (curve > 0) {
@@ -674,20 +845,19 @@ public class LineMeshBuilder {
         Vec3d l2 = new Vec3d(0.0,         -ext, ext);
         Vec3d li = new Vec3d(0.0,  ext * curve, ext);
 
-        Vec3d pCenter = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, style.offset / Math.max(cos, 0.00001))), pos.z);
-        Vec3d pInner = new Vec3d(pCenter.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
+        Vec3d pInner = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
 
-        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pCenter.xy()), pos.z);
-        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pCenter.xy()), pos.z);
+        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pos.xy()), pos.z);
+        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pos.xy()), pos.z);
+        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pos.xy()), pos.z);
+        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pos.xy()), pos.z);
 
         int iRightA = emitter.add(new Vertex(pRightA, l1));
         int iLeftA  = emitter.add(new Vertex(pLeftA,  l2));
         int iRightB = emitter.add(new Vertex(pRightB, l1));
         int iLeftB  = emitter.add(new Vertex(pLeftB,  l2));
         int iInner  = emitter.add(new Vertex(pInner,  li));
-        int iCenter = emitter.add(new Vertex(pCenter, l0));
+        int iCenter = emitter.add(new Vertex(pos, l0));
 
         if (intersects) {
             if (curve > 0) {
@@ -722,7 +892,7 @@ public class LineMeshBuilder {
         }
 
         if (miter) {                            // miter cage
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pos.xy()), pos.z);
             Vec3d lx = new Vec3d((float) (sin * -innerext), (float) (-ext * curve), (float) ext);
             int iOuter = emitter.add(new Vertex(pOuter, lx));
 
@@ -741,9 +911,9 @@ public class LineMeshBuilder {
             Vec3d lo = new Vec3d(1.5 * cos * ext, -1.5 * sin * ext, ext);
             Vec3d lx = new Vec3d(            ext,     -curve * ext, ext);
 
-            Vec3d pOuter   = new Vec3d(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pCenter.xy()), pos.z);
-            Vec3d pOuterAC = new Vec3d(Vec2d.mul(normalIn,  -curve * ext).add( dirIn.xy().mul(ext)).add(pCenter.xy()), pos.z);
-            Vec3d pOuterBC = new Vec3d(Vec2d.mul(normalOut, -curve * ext).sub(dirOut.xy().mul(ext)).add(pCenter.xy()), pos.z);
+            Vec3d pOuter   = new Vec3d(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pos.xy()), pos.z);
+            Vec3d pOuterAC = new Vec3d(Vec2d.mul(normalIn,  -curve * ext).add( dirIn.xy().mul(ext)).add(pos.xy()), pos.z);
+            Vec3d pOuterBC = new Vec3d(Vec2d.mul(normalOut, -curve * ext).sub(dirOut.xy().mul(ext)).add(pos.xy()), pos.z);
 
             int iOuter   = emitter.add(new Vertex(pOuter,   lo));
             int iOuterAC = emitter.add(new Vertex(pOuterAC, lx));
@@ -811,16 +981,15 @@ public class LineMeshBuilder {
         Vec3d li = new Vec3d(0.0,  ext * curve, ext);
         Vec3d lo = new Vec3d(0.0, -ext * curve, ext);
 
-        Vec3d pCenter = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, style.offset / Math.max(cos, 0.00001))), pos.z);
-        Vec3d pInner = new Vec3d(pCenter.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
+        Vec3d pInner = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
 
-        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pCenter.xy()), pos.z);
+        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pos.xy()), pos.z);
+        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pos.xy()), pos.z);
 
         int iRightB = emitter.add(new Vertex(pRightB, l1));
         int iLeftB  = emitter.add(new Vertex(pLeftB,  l2));
         int iInner  = emitter.add(new Vertex(pInner,  li));
-        int iCenter = emitter.add(new Vertex(pCenter, l0));
+        int iCenter = emitter.add(new Vertex(pos, l0));
 
         if (intersects) {                       // filler
             if (curve > 0) {
@@ -836,7 +1005,7 @@ public class LineMeshBuilder {
         }
 
         if (!bevel) {                           // miter cap
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pos.xy()), pos.z);
             int iOuter = emitter.add(new Vertex(pOuter, lo));
 
             if (curve > 0) {
@@ -853,7 +1022,7 @@ public class LineMeshBuilder {
                 emitter.emit(iRightBC);
             }
         } else {                                // bevel cap
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -curve * ext * cos).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -curve * ext * cos).add(pos.xy()), pos.z);
             int iOuter = emitter.add(new Vertex(pOuter, lo));
 
             if (curve > 0) {
@@ -909,18 +1078,17 @@ public class LineMeshBuilder {
         Vec3d li = new Vec3d(0.0,  ext * curve, ext);
         Vec3d lo = new Vec3d(0.0, -ext * curve, ext);
 
-        Vec3d pCenter = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, style.offset / Math.max(cos, 0.00001))), pos.z);
-        Vec3d pInner = new Vec3d(pCenter.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
+        Vec3d pInner = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
 
-        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pCenter.xy()), pos.z);
-        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pCenter.xy()), pos.z);
+        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pos.xy()), pos.z);
+        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pos.xy()), pos.z);
+        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pos.xy()), pos.z);
+        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pos.xy()), pos.z);
 
         int iRightA = emitter.add(new Vertex(pRightA, l1));
         int iLeftA  = emitter.add(new Vertex(pLeftA,  l2));
         int iInner  = emitter.add(new Vertex(pInner,  li));
-        int iCenter = emitter.add(new Vertex(pCenter, l0));
+        int iCenter = emitter.add(new Vertex(pos, l0));
 
         if (intersects) {
             if (curve > 0) {
@@ -953,7 +1121,7 @@ public class LineMeshBuilder {
         }
 
         if (!bevel) {                           // miter cap
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pos.xy()), pos.z);
             int iOuter = emitter.add(new Vertex(pOuter, lo));
 
             if (curve > 0) {
@@ -970,7 +1138,7 @@ public class LineMeshBuilder {
                 emitter.emit(iOuter);
             }
         } else {                                // bevel cap
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -curve * ext * cos).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -curve * ext * cos).add(pos.xy()), pos.z);
             int iOuter = emitter.add(new Vertex(pOuter, lo));
 
             if (curve > 0) {
@@ -1012,16 +1180,15 @@ public class LineMeshBuilder {
         Vec3d li = new Vec3d(0.0,  ext * curve, ext);
         Vec3d lo = new Vec3d(0.0, -ext * curve, ext);
 
-        Vec3d pCenter = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, style.offset / Math.max(cos, 0.00001))), pos.z);
-        Vec3d pInner = new Vec3d(pCenter.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
+        Vec3d pInner = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
 
-        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pCenter.xy()), pos.z);
+        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pos.xy()), pos.z);
+        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pos.xy()), pos.z);
 
         int iRightB = emitter.add(new Vertex(pRightB, l1));
         int iLeftB  = emitter.add(new Vertex(pLeftB,  l2));
         int iInner  = emitter.add(new Vertex(pInner,  li));
-        int iCenter = emitter.add(new Vertex(pCenter, l0));
+        int iCenter = emitter.add(new Vertex(pos, l0));
 
         if (intersects) {                       // filler
             if (curve > 0) {
@@ -1037,7 +1204,7 @@ public class LineMeshBuilder {
         }
 
         if (!bevel) {                           // miter cap
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pos.xy()), pos.z);
             int iOuter = emitter.add(new Vertex(pOuter, lo));
 
             if (curve > 0) {
@@ -1054,7 +1221,7 @@ public class LineMeshBuilder {
                 emitter.emit(iRightBC);
             }
         } else {                                // bevel cap
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -curve * ext * cos).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -curve * ext * cos).add(pos.xy()), pos.z);
             int iOuter = emitter.add(new Vertex(pOuter, lo));
 
             if (curve > 0) {
@@ -1110,18 +1277,17 @@ public class LineMeshBuilder {
         Vec3d li = new Vec3d(0.0,  ext * curve, ext);
         Vec3d lo = new Vec3d(0.0, -ext * curve, ext);
 
-        Vec3d pCenter = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, style.offset / Math.max(cos, 0.00001))), pos.z);
-        Vec3d pInner = new Vec3d(pCenter.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
+        Vec3d pInner = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
 
-        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pCenter.xy()), pos.z);
-        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pCenter.xy()), pos.z);
+        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pos.xy()), pos.z);
+        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pos.xy()), pos.z);
+        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pos.xy()), pos.z);
+        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pos.xy()), pos.z);
 
         int iRightA = emitter.add(new Vertex(pRightA, l1));
         int iLeftA  = emitter.add(new Vertex(pLeftA,  l2));
         int iInner  = emitter.add(new Vertex(pInner,  li));
-        int iCenter = emitter.add(new Vertex(pCenter, l0));
+        int iCenter = emitter.add(new Vertex(pos, l0));
 
         if (intersects) {
             if (curve > 0) {
@@ -1154,7 +1320,7 @@ public class LineMeshBuilder {
         }
 
         if (!bevel) {                           // miter cap
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pos.xy()), pos.z);
             int iOuter = emitter.add(new Vertex(pOuter, lo));
 
             if (curve > 0) {
@@ -1171,7 +1337,7 @@ public class LineMeshBuilder {
                 emitter.emit(iOuter);
             }
         } else {                                // bevel cap
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -curve * ext * cos).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -curve * ext * cos).add(pos.xy()), pos.z);
             int iOuter = emitter.add(new Vertex(pOuter, lo));
 
             if (curve > 0) {
@@ -1213,16 +1379,15 @@ public class LineMeshBuilder {
         Vec3d l2 = new Vec3d(0.0,         -ext, ext);
         Vec3d li = new Vec3d(0.0,  ext * curve, ext);
 
-        Vec3d pCenter = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, style.offset / Math.max(cos, 0.00001))), pos.z);
-        Vec3d pInner = new Vec3d(pCenter.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
+        Vec3d pInner = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
 
-        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pCenter.xy()), pos.z);
+        Vec3d pRightB = new Vec3d(Vec2d.mul(normalOut,  ext).add(pos.xy()), pos.z);
+        Vec3d pLeftB  = new Vec3d(Vec2d.mul(normalOut, -ext).add(pos.xy()), pos.z);
 
         int iRightB = emitter.add(new Vertex(pRightB, l1));
         int iLeftB  = emitter.add(new Vertex(pLeftB,  l2));
         int iInner  = emitter.add(new Vertex(pInner,  li));
-        int iCenter = emitter.add(new Vertex(pCenter, l0));
+        int iCenter = emitter.add(new Vertex(pos, l0));
 
         if (intersects) {                       // filler
             if (curve > 0) {
@@ -1238,7 +1403,7 @@ public class LineMeshBuilder {
         }
 
         if (miter) {                            // miter cage
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pos.xy()), pos.z);
             Vec3d lx = new Vec3d((float) (sin * -innerext), (float) (-ext * curve), (float) ext);
             int iOuter = emitter.add(new Vertex(pOuter, lx));
 
@@ -1255,8 +1420,8 @@ public class LineMeshBuilder {
             Vec3d lo = new Vec3d(1.5 * cos * ext, -1.5 * sin * ext, ext);
             Vec3d lx = new Vec3d(            ext,     -curve * ext, ext);
 
-            Vec3d pOuter   = new Vec3d(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pCenter.xy()), pos.z);
-            Vec3d pOuterBC = new Vec3d(Vec2d.mul(normalOut, -curve * ext).sub(dirOut.xy().mul(ext)).add(pCenter.xy()), pos.z);
+            Vec3d pOuter   = new Vec3d(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pos.xy()), pos.z);
+            Vec3d pOuterBC = new Vec3d(Vec2d.mul(normalOut, -curve * ext).sub(dirOut.xy().mul(ext)).add(pos.xy()), pos.z);
 
             int iOuter   = emitter.add(new Vertex(pOuter,   lo));
             int iOuterBC = emitter.add(new Vertex(pOuterBC, lx));
@@ -1312,16 +1477,15 @@ public class LineMeshBuilder {
         Vec3d l2 = new Vec3d(0.0,         -ext, ext);
         Vec3d li = new Vec3d(0.0,  ext * curve, ext);
 
-        Vec3d pCenter = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, style.offset / Math.max(cos, 0.00001))), pos.z);
-        Vec3d pInner = new Vec3d(pCenter.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
+        Vec3d pInner = new Vec3d(pos.xy().add(Vec2d.mul(normalMed, innerext)), pos.z);
 
-        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pCenter.xy()), pos.z);
-        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pCenter.xy()), pos.z);
+        Vec3d pRightA = new Vec3d(Vec2d.mul(normalIn,   ext).add(pos.xy()), pos.z);
+        Vec3d pLeftA  = new Vec3d(Vec2d.mul(normalIn,  -ext).add(pos.xy()), pos.z);
 
         int iRightA = emitter.add(new Vertex(pRightA, l1));
         int iLeftA  = emitter.add(new Vertex(pLeftA,  l2));
         int iInner  = emitter.add(new Vertex(pInner,  li));
-        int iCenter = emitter.add(new Vertex(pCenter, l0));
+        int iCenter = emitter.add(new Vertex(pos, l0));
 
         if (intersects) {
             if (curve > 0) {
@@ -1354,7 +1518,7 @@ public class LineMeshBuilder {
         }
 
         if (miter) {                            // miter cage
-            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pCenter.xy()), pos.z);
+            Vec3d pOuter = new Vec3d(Vec2d.mul(normalMed, -innerext).add(pos.xy()), pos.z);
             Vec3d lx = new Vec3d((float) (sin * -innerext), (float) (-ext * curve), (float) ext);
             int iOuter = emitter.add(new Vertex(pOuter, lx));
 
@@ -1371,8 +1535,8 @@ public class LineMeshBuilder {
             Vec3d lo = new Vec3d(1.5 * cos * ext, -1.5 * sin * ext, ext);
             Vec3d lx = new Vec3d(            ext,     -curve * ext, ext);
 
-            Vec3d pOuter   = new Vec3d(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pCenter.xy()), pos.z);
-            Vec3d pOuterAC = new Vec3d(Vec2d.mul(normalIn,  -curve * ext).add( dirIn.xy().mul(ext)).add(pCenter.xy()), pos.z);
+            Vec3d pOuter   = new Vec3d(Vec2d.mul(normalMed, -ext * 1.5 * curve).add(pos.xy()), pos.z);
+            Vec3d pOuterAC = new Vec3d(Vec2d.mul(normalIn,  -curve * ext).add( dirIn.xy().mul(ext)).add(pos.xy()), pos.z);
 
             int iOuter   = emitter.add(new Vertex(pOuter,   lo));
             int iOuterAC = emitter.add(new Vertex(pOuterAC, lx));
@@ -1410,5 +1574,13 @@ public class LineMeshBuilder {
         double len = Math.hypot(x, y);
 
         return new Vec3d(x/len, y/len, len);
+    }
+
+    public static Vec2d dirvec(Vec3d a, Vec3d b) {
+        double x = b.x - a.x;
+        double y = b.y - a.y;
+        double len = Math.hypot(x, y);
+
+        return new Vec2d(x/len, y/len);
     }
 }

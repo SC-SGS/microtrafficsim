@@ -33,6 +33,143 @@ public interface HashBuilder extends Resettable {
     HashBuilder add(Object obj);
 
     /**
+     * Add an array of objects as influence to the generated hash.
+     *
+     * @param obj the array of objects to add.
+     * @return {@code this}.
+     */
+    default <T> HashBuilder add(T[] obj) {
+        if (obj == null) {
+            add((Object) null);
+        } else {
+            for (T e : obj) {
+                add(e);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Add an array of booleans as influence to the generated hash.
+     *
+     * @param obj the array of booleans to add.
+     * @return {@code this}.
+     */
+    default HashBuilder add(boolean[] obj) {
+        if (obj == null) {
+            add((Object) null);
+        } else {
+            for (boolean e : obj) {
+                add(e);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Add an array of bytes as influence to the generated hash.
+     *
+     * @param obj the array of bytes to add.
+     * @return {@code this}.
+     */
+    default HashBuilder add(byte[] obj) {
+        if (obj == null) {
+            add((Object) null);
+        } else {
+            for (byte e : obj) {
+                add(e);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Add an array of shorts as influence to the generated hash.
+     *
+     * @param obj the array of shorts to add.
+     * @return {@code this}.
+     */
+    default HashBuilder add(short[] obj) {
+        if (obj == null) {
+            add((Object) null);
+        } else {
+            for (short e : obj) {
+                add(e);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Add an array of ints as influence to the generated hash.
+     *
+     * @param obj the array of ints to add.
+     * @return {@code this}.
+     */
+    default HashBuilder add(int[] obj) {
+        if (obj == null) {
+            add((Object) null);
+        } else {
+            for (int e : obj) {
+                add(e);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Add an array of longs as influence to the generated hash.
+     *
+     * @param obj the array of longs to add.
+     * @return {@code this}.
+     */
+    default HashBuilder add(long[] obj) {
+        if (obj == null) {
+            add((Object) null);
+        } else {
+            for (long e : obj) {
+                add(e);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Add an array of floats as influence to the generated hash.
+     *
+     * @param obj the array of floats to add.
+     * @return {@code this}.
+     */
+    default HashBuilder add(float[] obj) {
+        if (obj == null) {
+            add((Object) null);
+        } else {
+            for (float e : obj) {
+                add(e);
+            }
+        }
+        return this;
+    }
+
+    /**
+     * Add an array of doubles as influence to the generated hash.
+     *
+     * @param obj the array of doubles to add.
+     * @return {@code this}.
+     */
+    default HashBuilder add(double[] obj) {
+        if (obj == null) {
+            add((Object) null);
+        } else {
+            for (double e : obj) {
+                add(e);
+            }
+        }
+
+        return this;
+    }
+
+    /**
      * Add a byte as influence to the generated hash.
      *
      * @param obj the byte to add.
