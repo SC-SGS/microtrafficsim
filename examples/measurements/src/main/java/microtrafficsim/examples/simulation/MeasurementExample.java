@@ -50,8 +50,8 @@ public abstract class MeasurementExample {
 
 
     private static final int MAX_AGE = 3000;
-//    public static final String DEFAULT_OUTPUT_PATH = "";
-    public final static String DEFAULT_OUTPUT_PATH = "/Users/Dominic/Documents/Studium/Bachelor_of_Disaster/microtrafficsim/simulation_files/measurements";
+    public static final String DEFAULT_OUTPUT_PATH = "";
+//    public final static String DEFAULT_OUTPUT_PATH = "/Users/Dominic/Documents/Studium/Bachelor_of_Disaster/microtrafficsim/simulation_files/measurements";
 
     private static final boolean SHUFFLE_ROUTES_ENABLED = true;
     private static final boolean VISUALIZED = true;
