@@ -1,5 +1,6 @@
 package logic.crossinglogic.scenarios;
 
+import com.sun.org.apache.xml.internal.security.Init;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.MetaRoute;
 import microtrafficsim.core.logic.streetgraph.Graph;
@@ -36,7 +37,11 @@ public class MotorwaySlipRoadScenario extends QueueScenarioSmall {
                 config.seed,
                 (id, seed, scenario, metaRoute) -> {
                     Vehicle vehicle = new Car(id, 1, scenario.getConfig().visualization.style);
-                    Driver driver = new BasicDriver(seed, 0, metaRoute.getSpawnDelay());
+
+                    BasicDriver.InitSetup setup = new BasicDriver.InitSetup(seed);
+                    setup.dawdleFactor = 0;
+                    setup.spawnDelay = metaRoute.getSpawnDelay();
+                    Driver driver = new BasicDriver(setup);
                     driver.setRoute(metaRoute);
                     driver.setVehicle(vehicle);
                     vehicle.setDriver(driver);

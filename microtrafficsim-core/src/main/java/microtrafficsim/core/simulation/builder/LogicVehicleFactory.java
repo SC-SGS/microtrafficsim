@@ -24,7 +24,9 @@ public interface LogicVehicleFactory {
         } else {
             vehicle = new Car(id, config.visualization.style);
         }
-        Driver driver = new BasicDriver(seed, metaRoute.getSpawnDelay());
+        BasicDriver.InitSetup setup = new BasicDriver.InitSetup(seed);
+        setup.spawnDelay = metaRoute.getSpawnDelay();
+        Driver driver = new BasicDriver(setup);
         driver.setRoute(metaRoute);
         driver.setVehicle(vehicle);
         vehicle.setDriver(driver);

@@ -34,41 +34,30 @@ public class BasicDriver implements Driver {
     private float dawdleFactor;
 
     /**
-     * Calls {@link #BasicDriver(long, int) BasicDriver(seed, 0)}
+     * seed         seed for {@link Random}, e.g. used for dawdling
+     * dawdleFactor probability to dawdle (after Nagel-Schreckenberg-model)
+     * spawnDelay   after this number of simulation steps, this driver starts travelling
      */
-    public BasicDriver(long seed) {
-        this(seed, 0);
+    public static class InitSetup {
+        public final long seed;
+        public int spawnDelay = 0;
+        public float dawdleFactor = 0.2f;
+
+        public InitSetup(long seed) {
+            this.seed = seed;
+        }
     }
 
-    /**
-     * Calls {@link #BasicDriver(long, float, int) BasicDriver(seed, 0.2f, spawnDelay)}
-     */
-    public BasicDriver(long seed, int spawnDelay) {
-        this(seed, 0.2f, spawnDelay);
-    }
-
-    /**
-     * Calls {@link #BasicDriver(long, float, int) BasicDriver(seed, dawdleFactor, 0)}
-     */
-    public BasicDriver(long seed, float dawdleFactor) {
-        this(seed, dawdleFactor, 0);
-    }
-
-    /**
-     * @param seed         seed for {@link Random}, e.g. used for dawdling
-     * @param dawdleFactor probability to dawdle (after Nagel-Schreckenberg-model)
-     * @param spawnDelay   after this number of simulation steps, this driver starts travelling
-     */
-    public BasicDriver(long seed, float dawdleFactor, int spawnDelay) {
+    public BasicDriver(InitSetup setup) {
         /* general */
         lock_priorityCounter = new ReentrantLock(true);
-        random               = new Random(seed);
+        random               = new Random(setup.seed);
 
         /* variable information */
         route = null;
 
         /* dynamic information */
-        this.travellingTime = -spawnDelay;
+        this.travellingTime = -setup.spawnDelay;
         resetPriorityCounter();
         maxAnger   = Integer.MAX_VALUE;
         anger      = 0;
@@ -77,14 +66,14 @@ public class BasicDriver implements Driver {
         /* fix information */
         vehicle         = null;
         String errorMsg = null;
-        if (dawdleFactor > 1) {
+        if (setup.dawdleFactor > 1) {
             this.dawdleFactor = 1;
-            errorMsg = "It must hold: 0 <= dawdleFactor <= 1\nCurrent: " + dawdleFactor + "\nValue set to 1.";
-        } else if (dawdleFactor < 0) {
+            errorMsg = "It must hold: 0 <= dawdleFactor <= 1\nCurrent: " + setup.dawdleFactor + "\nValue set to 1.";
+        } else if (setup.dawdleFactor < 0) {
             this.dawdleFactor = 0;
-            errorMsg = "It must hold: 0 <= dawdleFactor <= 1\nCurrent: " + dawdleFactor + "\nValue set to 0.";
+            errorMsg = "It must hold: 0 <= dawdleFactor <= 1\nCurrent: " + setup.dawdleFactor + "\nValue set to 0.";
         } else
-            this.dawdleFactor = dawdleFactor;
+            this.dawdleFactor = setup.dawdleFactor;
 
         if (errorMsg != null)
             try {
