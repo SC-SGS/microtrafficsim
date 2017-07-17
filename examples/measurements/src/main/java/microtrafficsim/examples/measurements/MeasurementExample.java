@@ -48,9 +48,6 @@ public abstract class MeasurementExample {
     public static final Logger logger = new EasyMarkableLogger(MeasurementExample.class);
 
 
-    private static final int MAX_AGE = 3000;
-    public static final String DEFAULT_OUTPUT_PATH = "";
-
     private static final boolean VISUALIZED = true;
     private static boolean shouldShutdown = false;
     private static Thread dataThread;
@@ -180,7 +177,7 @@ public abstract class MeasurementExample {
                 /* simulate */
                 simulation.addStepListener(sim -> {
                     if (shouldShutdown
-                            || sim.getAge() >= MAX_AGE
+                            || sim.getAge() >= files.maxAge
                             || sim.getScenario().getVehicleContainer().isEmpty())
                     {
                         sim.cancel();
@@ -276,7 +273,6 @@ public abstract class MeasurementExample {
 
     private static Files readInputArgs(String[] args) {
         Files files = new Files();
-        files.outputPath = DEFAULT_OUTPUT_PATH;
 
 
         Options options = new Options();
@@ -315,7 +311,15 @@ public abstract class MeasurementExample {
                 .longOpt("output")
                 .hasArg()
                 .argName("PATH_TO_CSV_FILES")
-                .desc("Path to output csv file")
+                .desc("Path to output csv file; default is current directory")
+                .build());
+
+        options.addOption(Option
+                .builder()
+                .longOpt("maxAge")
+                .hasArg()
+                .argName("INTEGER_VALUE")
+                .desc("max age when simulation should stop (optional; default is 3,000)")
                 .build());
 
         options.addOption(Option
@@ -323,7 +327,8 @@ public abstract class MeasurementExample {
                 .longOpt("maxVehicleCount")
                 .hasArg()
                 .argName("INTEGER_VALUE")
-                .desc("max vehicle count overwriting the given ." + MTSFileChooser.Filters.CONFIG_POSTFIX + " file")
+                .desc("max vehicle count overwriting the given ."
+                        + MTSFileChooser.Filters.CONFIG_POSTFIX + " file (optional)")
                 .build());
 
         options.addOption(Option
@@ -331,7 +336,7 @@ public abstract class MeasurementExample {
                 .longOpt("dawdleFactor")
                 .hasArg()
                 .argName("FLOAT_VALUE")
-                .desc("vehicles' dawdle factor")
+                .desc("vehicles' dawdle factor (optional)")
                 .build());
 
         options.addOption(Option
@@ -339,7 +344,7 @@ public abstract class MeasurementExample {
                 .longOpt("laneChangeFactor")
                 .hasArg()
                 .argName("FLOAT_VALUE")
-                .desc("vehicles' lane change factor")
+                .desc("vehicles' lane change factor (optional)")
                 .build());
 
         try {
@@ -428,7 +433,9 @@ public abstract class MeasurementExample {
         private File mtscfg;
         private File mtsmap;
         private File mtsroutes;
-        private String outputPath;
+        private String outputPath = "";
+
+        private int maxAge = 3000;
 
         private Integer maxVehicleCount = null;
         private Float dawdleFactor = null;
