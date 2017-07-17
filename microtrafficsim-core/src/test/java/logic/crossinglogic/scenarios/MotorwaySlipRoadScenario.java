@@ -1,6 +1,5 @@
 package logic.crossinglogic.scenarios;
 
-import com.sun.org.apache.xml.internal.security.Init;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.MetaRoute;
 import microtrafficsim.core.logic.streetgraph.Graph;

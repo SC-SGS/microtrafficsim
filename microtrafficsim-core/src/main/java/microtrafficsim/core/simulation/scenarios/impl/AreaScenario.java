@@ -73,34 +73,13 @@ public class AreaScenario extends BasicRandomScenario {
 
 
     @Override
-    public final void redefineMetaRoutes() {
-        redefineMetaRoutes(null);
-    }
-
-    /**
-     * @param newRoutes ignores {@link SimulationConfig#maxVehicleCount config.maxVehicleCount}
-     */
-    @Override
-    public final void redefineMetaRoutes(RouteContainer newRoutes) {
+    public void redefineMetaRoutes() {
         logger.info("DEFINING routes started");
 
         reset();
         areaNodeContainer.refillNodeLists(getGraph());
 
         routes.clear();
-        if (newRoutes == null)
-            defineRoutesAfterClearing();
-        else
-            routes.addAll(newRoutes);
-
-        logger.info("DEFINING routes finished");
-    }
-
-    /**
-     * Called in {@link #redefineMetaRoutes()} after all collections are cleared and all relevant attributes are
-     * reset calling {@link #reset()}.
-     */
-    protected void defineRoutesAfterClearing() {
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
             boolean weightedUniformly = getConfig().scenario.nodesAreWeightedUniformly;
 
@@ -111,6 +90,8 @@ public class AreaScenario extends BasicRandomScenario {
             route.setMonitored(origin.isMonitored || destination.isMonitored);
             routes.add(route);
         }
+
+        logger.info("DEFINING routes finished");
     }
 
 
@@ -213,14 +194,20 @@ public class AreaScenario extends BasicRandomScenario {
 
 
         public MonitoredNode getRdmOriginNode(boolean weightedUniformly) {
+            assert !isDirty : "Random nodes could not be chosen due to the collection is not updated yet.";
+
             return rdmOriginSupplier.nextObject(weightedUniformly);
         }
 
         public MonitoredNode getRdmDestNode(boolean weightedUniformly) {
+            assert !isDirty : "Random nodes could not be chosen due to the collection is not updated yet.";
+
             return rdmDestinationSupplier.nextObject(weightedUniformly);
         }
 
         public MonitoredNode getRdmNode(TypedPolygonArea area) {
+            assert !isDirty : "Random nodes could not be chosen due to the collection is not updated yet.";
+
             ArrayList<MonitoredNode> nodes = areaToNode.get(area);
             if (nodes.size() == 0) {
                 logger.warn("Empty area in class " + AreaScenario.class.getSimpleName());
@@ -256,11 +243,8 @@ public class AreaScenario extends BasicRandomScenario {
                             areaToNode.get(area).add(monitoredNode);
                         }
                     }
-                    if (added) {
+                    if (added)
                         rdmOriginSupplier.add(monitoredNode, weight);
-                        if (monitoredNode.isMonitored)
-                            System.err.println("##YEAH##");
-                    }
 
 
                     // destination areas
@@ -278,6 +262,8 @@ public class AreaScenario extends BasicRandomScenario {
                         rdmDestinationSupplier.add(monitoredNode, weight);
                     }
                 }
+
+                isDirty = false;
             }
         }
 

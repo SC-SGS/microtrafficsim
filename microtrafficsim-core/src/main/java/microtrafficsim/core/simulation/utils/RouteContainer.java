@@ -4,6 +4,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.MetaRoute;
 import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.math.random.distributions.impl.Random;
 
 import java.util.Collection;
 
@@ -42,4 +43,7 @@ public interface RouteContainer extends Collection<Route> {
     }
 
     void addAll(Scenario scenario);
+
+
+    Route getRdm(Random random);
 }

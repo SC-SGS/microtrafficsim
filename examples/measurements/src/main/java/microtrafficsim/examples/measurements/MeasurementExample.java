@@ -1,4 +1,4 @@
-package microtrafficsim.examples.simulation;
+package microtrafficsim.examples.measurements;
 
 import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
@@ -6,16 +6,17 @@ import microtrafficsim.core.convenience.mapviewer.MapViewer;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.GraphGUID;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.map.UnprojectedAreas;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
+import microtrafficsim.core.simulation.builder.LogicVehicleFactory;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.MonitoringVehicleSimulation;
 import microtrafficsim.core.simulation.core.MonitoringVehicleSimulation.CSVType;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.utils.RouteContainer;
-import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 import microtrafficsim.core.vis.map.projections.MercatorProjection;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
@@ -35,9 +36,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.Random;
 
 /**
  * The multithreading does work but the code is not a masterpiece, e.g. threads are waiting using
@@ -51,9 +50,7 @@ public abstract class MeasurementExample {
 
     private static final int MAX_AGE = 3000;
     public static final String DEFAULT_OUTPUT_PATH = "";
-//    public final static String DEFAULT_OUTPUT_PATH = "/Users/Dominic/Documents/Studium/Bachelor_of_Disaster/microtrafficsim/simulation_files/measurements";
 
-    private static final boolean SHUFFLE_ROUTES_ENABLED = true;
     private static final boolean VISUALIZED = true;
     private static boolean shouldShutdown = false;
     private static Thread dataThread;
@@ -89,6 +86,8 @@ public abstract class MeasurementExample {
                 // load and update config
                 config.update(storage.loadConfig(files.mtscfg, config));
                 config.speedup = Integer.MAX_VALUE;
+                if (files.maxVehicleCount != null)
+                    config.maxVehicleCount = files.maxVehicleCount;
 
 
 
@@ -119,16 +118,9 @@ public abstract class MeasurementExample {
 
 
                 /* setup scenario */
-                AreaScenario scenario = new AreaScenario(config.seed, config, graph);
-                scenario.getAreaNodeContainer().addAreas(areas);
-                if (SHUFFLE_ROUTES_ENABLED) {
-                    SortedRouteContainer copy = new SortedRouteContainer();
-                    copy.addAll(routes);
-
-                    Collections.shuffle(copy, new Random(config.seed));
-                    routes = copy;
-                }
-                scenario.redefineMetaRoutes(routes);
+                AreaScenario areaScenario = new AreaScenario(config.seed, config, graph);
+                areaScenario.getAreaNodeContainer().addAreas(areas);
+                areaScenario.setRoutes(routes);
 
 
 
@@ -138,6 +130,14 @@ public abstract class MeasurementExample {
 
 
                 VehicleScenarioBuilder scenarioBuilder;
+                LogicVehicleFactory logicVehicleFactory = (id, seed, scenario, metaRoute) -> {
+                    Vehicle vehicle = LogicVehicleFactory.defaultCreation(id, seed, scenario, metaRoute);
+                    if (files.dawdleFactor != null)
+                        vehicle.getDriver().setDawdleFactor(files.dawdleFactor);
+                    if (files.laneChangeFactor!= null)
+                        vehicle.getDriver().setLaneChangeFactor(files.laneChangeFactor);
+                    return vehicle;
+                };
                 /* setup overlays */
                 if (VISUALIZED) {
                     ScenarioAreaOverlay scenarioAreaOverlay = new ScenarioAreaOverlay();
@@ -154,16 +154,17 @@ public abstract class MeasurementExample {
 
                     scenarioBuilder = new VehicleScenarioBuilder(
                             config.seed,
+                            logicVehicleFactory,
                             vehicleOverlay.getVehicleFactory());
                 } else {
-                    scenarioBuilder = new VehicleScenarioBuilder(config.seed);
+                    scenarioBuilder = new VehicleScenarioBuilder(config.seed, logicVehicleFactory);
                 }
                 try {
-                    scenarioBuilder.prepare(scenario);
+                    scenarioBuilder.prepare(areaScenario);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                simulation.setAndInitPreparedScenario(scenario);
+                simulation.setAndInitPreparedScenario(areaScenario);
 
 
 
@@ -317,6 +318,30 @@ public abstract class MeasurementExample {
                 .desc("Path to output csv file")
                 .build());
 
+        options.addOption(Option
+                .builder()
+                .longOpt("maxVehicleCount")
+                .hasArg()
+                .argName("INTEGER_VALUE")
+                .desc("max vehicle count overwriting the given ." + MTSFileChooser.Filters.CONFIG_POSTFIX + " file")
+                .build());
+
+        options.addOption(Option
+                .builder()
+                .longOpt("dawdleFactor")
+                .hasArg()
+                .argName("FLOAT_VALUE")
+                .desc("vehicles' dawdle factor")
+                .build());
+
+        options.addOption(Option
+                .builder()
+                .longOpt("laneChangeFactor")
+                .hasArg()
+                .argName("FLOAT_VALUE")
+                .desc("vehicles' lane change factor")
+                .build());
+
         try {
             CommandLine line = new DefaultParser().parse(options, args);
 
@@ -347,6 +372,18 @@ public abstract class MeasurementExample {
 
             if (line.hasOption("output")) {
                 files.outputPath = line.getOptionValue("output");
+            }
+
+            if (line.hasOption("maxVehicleCount")) {
+                files.maxVehicleCount = Integer.parseInt(line.getOptionValue("maxVehicleCount"));
+            }
+
+            if (line.hasOption("dawdleFactor")) {
+                files.dawdleFactor = Float.parseFloat(line.getOptionValue("dawdleFactor"));
+            }
+
+            if (line.hasOption("laneChangeFactor")) {
+                files.laneChangeFactor = Float.parseFloat(line.getOptionValue("laneChangeFactor"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -392,5 +429,9 @@ public abstract class MeasurementExample {
         private File mtsmap;
         private File mtsroutes;
         private String outputPath;
+
+        private Integer maxVehicleCount = null;
+        private Float dawdleFactor = null;
+        private Float laneChangeFactor = null;
     }
 }

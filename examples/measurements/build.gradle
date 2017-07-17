@@ -21,9 +21,9 @@ run {
 }
 
 
-mainClassName = 'microtrafficsim.examples.simulation.MeasurementExample'
+mainClassName = 'microtrafficsim.examples.measurements.MeasurementExample'
 macAppBundle {
-    mainClassName = 'microtrafficsim.examples.simulation.MeasurementExample'
+    mainClassName = 'microtrafficsim.examples.measurements.MeasurementExample'
 }
 
 

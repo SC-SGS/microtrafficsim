@@ -13,6 +13,8 @@ import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehic
 import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
+import org.slf4j.Logger;
 
 /**
  * <p>
@@ -24,6 +26,8 @@ import microtrafficsim.math.random.distributions.impl.Random;
  * @author Dominic Parga Cacheiro
  */
 public class EndOfTheWorldScenario extends AreaScenario {
+    public static final Logger logger = new EasyMarkableLogger(EndOfTheWorldScenario.class);
+
 
     // matrix
     private final TypedPolygonArea[] destinationAreas;
@@ -178,9 +182,15 @@ public class EndOfTheWorldScenario extends AreaScenario {
      * &bull increase the route count for the found origin-destination-pair
      */
     @Override
-    protected void defineRoutesAfterClearing() {
+    public void redefineMetaRoutes() {
         // note: the directions used in this method's comments are referring to Europe (so the northern hemisphere)
 
+        logger.info("DEFINING routes started");
+
+        reset();
+        getAreaNodeContainer().refillNodeLists(getGraph());
+
+        getRoutes().clear();
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
             MonitoredNode monitoredNode = getAreaNodeContainer()
                     .getRdmOriginNode(getConfig().scenario.nodesAreWeightedUniformly);
@@ -232,6 +242,8 @@ public class EndOfTheWorldScenario extends AreaScenario {
             route.setMonitored(isMonitored);
             getRoutes().add(route);
         }
+
+        logger.info("DEFINING routes finished");
     }
 
 

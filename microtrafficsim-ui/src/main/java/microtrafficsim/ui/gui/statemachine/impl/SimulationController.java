@@ -1156,7 +1156,7 @@ public class SimulationController implements GUIController {
                                 RandomRouteScenario.class.getSimpleName() + " is used instead.");
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);
         }
-        scenario.redefineMetaRoutes(routes);
+        scenario.setRoutes(routes);
         clearAndUpdateAreaOverlay(scenario.getAreaNodeContainer().getAreas());
 
         try {
