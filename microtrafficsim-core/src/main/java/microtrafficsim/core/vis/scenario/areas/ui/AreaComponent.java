@@ -141,6 +141,21 @@ public class AreaComponent extends Component {
         redraw(true);
     }
 
+    public void scale(double s) {
+        Vec2d center = new Vec2d(0.0, 0.0);
+
+        for (Vec2d v : area.polygon.outline)
+            center.add(v);
+
+        center.mul(1.0 / vertices.size());
+
+        for (Vec2d v : area.polygon.outline)
+            v.sub(center).mul(s).add(center);
+
+        this.cached = null;
+        redraw(true);
+    }
+
     public void add(Vec2d vertex, boolean select) {
         insert(vertices.size(), vertex, select);
     }

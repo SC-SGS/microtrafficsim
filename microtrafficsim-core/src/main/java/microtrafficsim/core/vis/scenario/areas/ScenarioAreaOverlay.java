@@ -21,6 +21,7 @@ import microtrafficsim.math.geometry.polygons.Polygon;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -44,6 +45,8 @@ public class ScenarioAreaOverlay implements Overlay {
     private PropertyFrame properties = null;
     private SelectionRectangle rectangle = null;
     private AreaComponent construction = null;
+
+    private static final double SCROLL_FACTOR = 0.04;
 
 
     public ScenarioAreaOverlay() {
@@ -428,6 +431,27 @@ public class ScenarioAreaOverlay implements Overlay {
                     rectangle.update(pos);
                     return null;
                 });
+
+                e.setConsumed(true);
+            }
+        }
+
+        @Override
+        public void mouseWheelMoved(MouseEvent e) {
+            if (e.isControlDown()) {
+                double scroll = e.getBaseEvent().getRotationScale() * e.getBaseEvent().getRotation()[1] * SCROLL_FACTOR;
+                HashSet<AreaComponent> areas = new HashSet<>(selectedAreas);
+
+                if (!areas.isEmpty()) {
+                    ui.getContext().addTask(c -> {
+                        double factor = 1.0 + scroll;
+
+                        for (AreaComponent area : areas)
+                            area.scale(factor);
+
+                        return null;
+                    });
+                }
 
                 e.setConsumed(true);
             }
