@@ -10,6 +10,7 @@ import microtrafficsim.core.convenience.mapviewer.MapViewer;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
@@ -168,7 +169,7 @@ public class UIValidation {
             Graph graph = null;
             try {
                 /* parse file and create tiled provider */
-                OSMParser.Result result = parser.parse(file);
+                OSMParser.Result result = parser.parse(file, new MapProperties(true));
                 graph = result.streetgraph;
 
                 mapviewer.setMap(result.segment);

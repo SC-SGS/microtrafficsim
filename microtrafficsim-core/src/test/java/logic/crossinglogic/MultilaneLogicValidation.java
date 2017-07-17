@@ -5,6 +5,7 @@ import logic.crossinglogic.scenarios.MultilaneScenario;
 import microtrafficsim.core.convenience.mapviewer.MapViewer;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.core.VehicleSimulation;
@@ -89,7 +90,7 @@ public class MultilaneLogicValidation {
             Graph graph = result.graph;
             try {
                 mapviewer.setMap(result.segment);
-                connectorOverlay.update(graph);
+                connectorOverlay.update(graph, result.segment.getProperties().drivingOnTheRight);
             } catch (InterruptedException e) {
                 e.printStackTrace();
                 Runtime.getRuntime().halt(1);

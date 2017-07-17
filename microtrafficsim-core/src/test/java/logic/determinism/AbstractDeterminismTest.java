@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -110,7 +111,7 @@ public abstract class AbstractDeterminismTest {
                     AbstractDeterminismTest.class,
                     ResourceClassLinks.BACKNANG_MAP_PATH).asTemporaryFile();
             OSMParser parser = DefaultParserConfig.get(config).build();
-            graph = parser.parse(file).streetgraph;
+            graph = parser.parse(file, new MapProperties(true)).streetgraph;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

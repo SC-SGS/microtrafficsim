@@ -8,6 +8,7 @@ import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTiledMapSegment;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
@@ -59,7 +60,7 @@ public class LaneConnectorTest {
 
         config = config();
         if (map.getName().endsWith(".osm")) {
-            graph = DefaultParserConfig.get(config).build().parse(map).streetgraph;
+            graph = DefaultParserConfig.get(config).build().parse(map, new MapProperties(true)).streetgraph;
         } else {
             ExchangeFormatSerializer serializer = ExchangeFormatSerializer.create();
             ExchangeFormat exfmt = ExchangeFormat.getDefault();
