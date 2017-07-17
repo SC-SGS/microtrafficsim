@@ -1,6 +1,7 @@
 package microtrafficsim.examples.parser;
 
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.features.Street;
 import microtrafficsim.core.parser.*;
@@ -31,6 +32,7 @@ import java.util.function.Predicate;
  */
 public class ParserExample {
     private static final String DEFAULT_OSM_XML = "map.processing";
+    private static final MapProperties MAP_PROPERTIES = new MapProperties(true);
 
 
     public static void main(String[] args) throws Exception {
@@ -52,7 +54,7 @@ public class ParserExample {
 
 
         // create parser and parse
-        OSMParser.Result result = createParser().parse(file);
+        OSMParser.Result result = createParser().parse(file, MAP_PROPERTIES);
 
         // do stuff with parsed data
         MapSegment  segment     = result.segment;
