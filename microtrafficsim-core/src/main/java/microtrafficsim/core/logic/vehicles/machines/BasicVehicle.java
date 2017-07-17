@@ -330,10 +330,12 @@ public abstract class BasicVehicle implements Vehicle {
     public void willChangeLane() {
         laneChangeDirection = LaneChangeDirection.NONE;
 
-        if (shouldRegister()) {
-            tendToOutermostLane();
-        } else {
-            tendToOvertaking();
+        if (driver.tendToChangeLane()) {
+            if (shouldRegister()) {
+                tendToOutermostLane();
+            } else {
+                tendToOvertaking();
+            }
         }
     }
 
