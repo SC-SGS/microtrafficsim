@@ -44,12 +44,7 @@ macAppBundle {
 }
 
 distZip {
-    archiveName = "${baseName}"
-
-    doLast {
-        def name = "${baseName}_${distVersion}-${distRelease}_all.zip"
-        archivePath.renameTo(file("${->project.buildDir}/distributions/${name}"))
-    }
+    archiveName = "${baseName}_${distVersion}-${distRelease}_all.zip"
 }
 
 

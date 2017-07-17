@@ -89,15 +89,10 @@ task distDeb(type: Deb) {
 }
 
 distZip {
-    archiveName = "$distName"
+    archiveName = "${distName}_${distVersion}-${distRelease}_all.zip"
 
     into("${archiveName}/icon") {
         from "${rootProject.projectDir}/resources/icon/png"
-    }
-
-    doLast {
-        def name = "${distName}_${distVersion}-${distRelease}_all.zip"
-        archivePath.renameTo(file("${->project.buildDir}/distributions/${name}"))
     }
 }
 

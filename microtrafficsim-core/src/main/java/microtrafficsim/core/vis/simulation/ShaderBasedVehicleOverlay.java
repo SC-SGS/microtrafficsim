@@ -198,7 +198,14 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
         uVehicleSize.set(getVehicleSize(view.getZoomLevel(), view.getMaxZoomLevel()));
 
         // disable depth test
+        context.DepthTest.setMask(gl, false);
         context.DepthTest.disable(gl);
+
+        // enable blending
+        context.BlendMode.enable(gl);
+        context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
+        context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE,
+                GL3.GL_ONE_MINUS_SRC_ALPHA);
 
         // calculate bounding rectangle, assumes top-down (z-axis) orthographic view
         double invscale = 1.f / view.getScale();

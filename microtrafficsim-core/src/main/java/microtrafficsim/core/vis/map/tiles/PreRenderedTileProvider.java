@@ -610,6 +610,10 @@ public class PreRenderedTileProvider implements TileProvider {
                 // create render buffer
                 buffer = pool.require(context);
 
+                context.DepthTest.setMask(gl, true);
+                context.DepthTest.enable(gl);
+                context.DepthTest.setFunction(gl, GL3.GL_GEQUAL, true);
+
                 // render tile to FBO
                 try {   // TODO: TEMPORARY DEBUG TRY CATCH
                     gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, buffer.fbo);
@@ -627,9 +631,6 @@ public class PreRenderedTileProvider implements TileProvider {
                 context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
                 context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE,
                                              GL3.GL_ONE_MINUS_SRC_ALPHA);
-
-                context.DepthTest.enable(gl);
-                context.DepthTest.setFunction(gl, GL3.GL_GEQUAL, true);
 
                 uProjection.set(Mat4f.identity());
                 uViewScale.set((float) Math.pow(2.0, id.z));

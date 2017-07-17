@@ -32,6 +32,7 @@ import java.util.function.Predicate;
  */
 public class ParserExample {
     private static final String DEFAULT_OSM_XML = "map.processing";
+    private static final MapProperties MAP_PROPERTIES = new MapProperties(true); // todo read in map properties?
 
 
     public static void main(String[] args) throws Exception {
@@ -53,7 +54,7 @@ public class ParserExample {
 
 
         // create parser and parse
-        OSMParser.Result result = createParser().parse(file, new MapProperties(true)); // todo read in map properties?
+        OSMParser.Result result = createParser().parse(file, MAP_PROPERTIES);
 
         // do stuff with parsed data
         MapSegment  segment     = result.segment;

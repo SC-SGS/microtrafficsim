@@ -4,6 +4,8 @@ import com.jogamp.newt.event.KeyAdapter;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseListener;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.ProjectedAreas;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.context.RenderContext;
@@ -19,6 +21,7 @@ import microtrafficsim.math.geometry.polygons.Polygon;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -42,6 +45,8 @@ public class ScenarioAreaOverlay implements Overlay {
     private PropertyFrame properties = null;
     private SelectionRectangle rectangle = null;
     private AreaComponent construction = null;
+
+    private static final double SCROLL_FACTOR = 0.04;
 
 
     public ScenarioAreaOverlay() {
@@ -136,6 +141,14 @@ public class ScenarioAreaOverlay implements Overlay {
 
     @Override
     public void display(RenderContext context, MapBuffer map) throws Exception {
+        GL3 gl = context.getDrawable().getGL().getGL3();
+
+        // enable blending
+        context.BlendMode.enable(gl);
+        context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
+        context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE,
+                GL3.GL_ONE_MINUS_SRC_ALPHA);
+
         ui.display(context, map);
         rectangle.display(context);
     }
@@ -418,6 +431,27 @@ public class ScenarioAreaOverlay implements Overlay {
                     rectangle.update(pos);
                     return null;
                 });
+
+                e.setConsumed(true);
+            }
+        }
+
+        @Override
+        public void mouseWheelMoved(MouseEvent e) {
+            if (e.isControlDown()) {
+                double scroll = e.getBaseEvent().getRotationScale() * e.getBaseEvent().getRotation()[1] * SCROLL_FACTOR;
+                HashSet<AreaComponent> areas = new HashSet<>(selectedAreas);
+
+                if (!areas.isEmpty()) {
+                    ui.getContext().addTask(c -> {
+                        double factor = 1.0 + scroll;
+
+                        for (AreaComponent area : areas)
+                            area.scale(factor);
+
+                        return null;
+                    });
+                }
 
                 e.setConsumed(true);
             }
