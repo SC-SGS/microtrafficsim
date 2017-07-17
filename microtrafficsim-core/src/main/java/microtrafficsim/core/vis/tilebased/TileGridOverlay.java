@@ -111,8 +111,9 @@ public class TileGridOverlay implements Overlay {
     @Override
     public void display(RenderContext context, MapBuffer buffer) {
         GL3 gl = context.getDrawable().getGL().getGL3();
+
+        context.DepthTest.setMask(gl, false);
         context.DepthTest.disable(gl);
-        gl.glDepthMask(false);
 
         /* update tile grid */
         double zoom   = view.getZoomLevel();
@@ -165,8 +166,6 @@ public class TileGridOverlay implements Overlay {
         gl.glDrawArrays(GL3.GL_LINES, 0, nVertices);
         vao.unbind(gl);
         shader.unbind(gl);
-
-        gl.glDepthMask(true);
     }
 
 

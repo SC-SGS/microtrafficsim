@@ -223,6 +223,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         boolean drivingOnTheRight = config.crossingLogic.drivingOnTheRight;
 
         // disable depth test
+        context.DepthTest.setMask(gl, false);
         context.DepthTest.disable(gl);
 
         // enable blending

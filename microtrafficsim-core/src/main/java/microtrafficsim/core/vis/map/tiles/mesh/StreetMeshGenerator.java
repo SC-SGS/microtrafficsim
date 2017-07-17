@@ -51,6 +51,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 style.cap,
                 style.join,
                 style.type,
+                style.dasharray,
                 style.miterAngleLimit,
                 style.useJoinsWhenPossible,
                 style.drivingOnTheRight
@@ -159,7 +160,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             double offset = LaneOffset.getCenterOffset(style.lanewidth, street, style.drivingOnTheRight);
 
             LineMeshBuilder.Style linestyle = new LineMeshBuilder.Style(
-                    style.cap, style.join, linewidth, offset, style.miterAngleLimit);
+                    style.cap, style.join, linewidth, offset, style.miterAngleLimit, style.dasharray);
 
             builder.add(projected, linestyle, in, out);
 
@@ -168,13 +169,13 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 double offset = LaneOffset.getOffsetToCenterLine(style.lanewidth, street, style.drivingOnTheRight);
 
                 LineMeshBuilder.Style linestyle = new LineMeshBuilder.Style(
-                        style.cap, style.join, style.linewidth, offset, style.miterAngleLimit);
+                        style.cap, style.join, style.linewidth, offset, style.miterAngleLimit, style.dasharray);
 
                 builder.add(projected, linestyle, in, out);
             }
         } else {
             LineMeshBuilder.Style linestyle = new LineMeshBuilder.Style(
-                    style.cap, style.join, style.linewidth, 0.0, style.miterAngleLimit);
+                    style.cap, style.join, style.linewidth, 0.0, style.miterAngleLimit, style.dasharray);
 
             for (int i = 1; i < street.numLanesFwd; i++) {
                 linestyle.offset = LaneOffset.getOffsetToLaneEdge(style.lanewidth, street, i, true, style.drivingOnTheRight);
@@ -273,6 +274,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
         LineMeshBuilder.CapType  cap;
         LineMeshBuilder.JoinType join;
         LineType                 type;
+        double[] dasharray;
         double  miterAngleLimit;
         boolean useJoinsWhenPossible;
         boolean drivingOnTheRight;
@@ -284,6 +286,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                     style.getProperty("cap", LineMeshBuilder.CapType.ROUND),
                     style.getProperty("join", LineMeshBuilder.JoinType.ROUND),
                     style.getProperty("type", LineType.BASE),
+                    style.getProperty("dasharray", null),
                     style.getProperty("miter-angle-limit", 0.5),
                     true,                                       // TODO
                     drivingOnTheRight
@@ -296,6 +299,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
                 LineMeshBuilder.CapType cap,
                 LineMeshBuilder.JoinType join,
                 LineType type,
+                double[] dasharray,
                 double miterAngleLimit,
                 boolean useJoinsWhenPossible,
                 boolean drivingOnTheRight
@@ -305,6 +309,7 @@ public class StreetMeshGenerator implements FeatureMeshGenerator {
             this.cap = cap;
             this.join = join;
             this.type = type;
+            this.dasharray = dasharray;
             this.miterAngleLimit = miterAngleLimit;
             this.useJoinsWhenPossible = useJoinsWhenPossible;
             this.drivingOnTheRight = drivingOnTheRight;

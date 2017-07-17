@@ -10,6 +10,7 @@ import com.jogamp.opengl.GL;
  */
 public class DepthTest {
 
+    private boolean mask;
     private boolean enabled;
     private int     function;
 
@@ -17,8 +18,20 @@ public class DepthTest {
      * Constructs a new {@code DepthTest} state.
      */
     public DepthTest() {
+        this.mask = true;
         this.enabled  = false;
         this.function = -1;
+    }
+
+    public void setMask(GL gl, boolean enabled) {
+        if (this.mask == enabled) return;
+
+        gl.glDepthMask(enabled);
+        this.mask = enabled;
+    }
+
+    public boolean getMask() {
+        return mask;
     }
 
     /**

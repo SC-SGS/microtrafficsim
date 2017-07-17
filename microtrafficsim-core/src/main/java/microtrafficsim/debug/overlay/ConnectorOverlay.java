@@ -114,8 +114,15 @@ public class ConnectorOverlay implements Overlay {
 
         GL3 gl = context.getDrawable().getGL().getGL3();
 
+        context.DepthTest.setMask(gl, false);
         context.DepthTest.disable(gl);
-        gl.glDepthMask(false);
+
+        // enable blending
+        context.BlendMode.enable(gl);
+        context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
+        context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE,
+                GL3.GL_ONE_MINUS_SRC_ALPHA);
+
 
         uColor.set(COLOR);
 
@@ -130,8 +137,6 @@ public class ConnectorOverlay implements Overlay {
         shader.bind(gl);
         mesh.display(context, vao);
         shader.unbind(gl);
-
-        gl.glDepthMask(true);
     }
 
 
