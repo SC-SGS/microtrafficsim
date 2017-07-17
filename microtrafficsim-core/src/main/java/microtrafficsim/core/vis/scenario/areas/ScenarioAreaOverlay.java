@@ -4,6 +4,8 @@ import com.jogamp.newt.event.KeyAdapter;
 import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.KeyListener;
 import com.jogamp.newt.event.MouseListener;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL3;
 import microtrafficsim.core.map.ProjectedAreas;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.context.RenderContext;
@@ -136,6 +138,14 @@ public class ScenarioAreaOverlay implements Overlay {
 
     @Override
     public void display(RenderContext context, MapBuffer map) throws Exception {
+        GL3 gl = context.getDrawable().getGL().getGL3();
+
+        // enable blending
+        context.BlendMode.enable(gl);
+        context.BlendMode.setEquation(gl, GL3.GL_FUNC_ADD);
+        context.BlendMode.setFactors(gl, GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA, GL3.GL_ONE,
+                GL3.GL_ONE_MINUS_SRC_ALPHA);
+
         ui.display(context, map);
         rectangle.display(context);
     }

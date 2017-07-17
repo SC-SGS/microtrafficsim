@@ -77,6 +77,7 @@ public class DirectBatchUIOverlay extends UIManager implements Overlay {
         if (!enabled) return;
 
         // disable depth test
+        context.DepthTest.setMask(context.getDrawable().getGL(), false);
         context.DepthTest.disable(context.getDrawable().getGL());
 
         renderer.update(context);
