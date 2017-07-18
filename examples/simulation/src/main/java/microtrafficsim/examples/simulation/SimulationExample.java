@@ -451,7 +451,7 @@ public class SimulationExample {
             this.file = file.getPath();
             viewer.setMap(segment);
 
-            debugOverlay.update(graph, segment.getProperties().drivingOnTheRight);
+            debugOverlay.update(graph, segment.getProperties());
 
             /* create simulation */
             SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle() + " - [Initializing Simulation]"));

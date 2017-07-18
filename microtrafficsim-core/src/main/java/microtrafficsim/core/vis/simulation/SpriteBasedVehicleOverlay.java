@@ -220,7 +220,7 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         int zoom = (int) Math.ceil(view.getZoomLevel());
         double lanewidth = config.visualization.style.getNormalizedStreetLaneWidth(zoom);
         double scalenorm = config.visualization.style.getScaleNorm();
-        boolean drivingOnTheRight = config.crossingLogic.drivingOnTheRight;
+        boolean drivingOnTheRight = this.map.drivingOnTheRight;
 
         // disable depth test
         context.DepthTest.setMask(gl, false);

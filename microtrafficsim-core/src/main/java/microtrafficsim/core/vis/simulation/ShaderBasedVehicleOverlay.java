@@ -192,7 +192,7 @@ public class ShaderBasedVehicleOverlay implements VehicleOverlay {
         int zoom = (int) Math.ceil(view.getZoomLevel());
         double lanewidth = config.visualization.style.getNormalizedStreetLaneWidth(zoom);
         double scalenorm = config.visualization.style.getScaleNorm();
-        boolean drivingOnTheRight = config.crossingLogic.drivingOnTheRight;
+        boolean drivingOnTheRight = this.map.drivingOnTheRight;
 
         // NOTE: assumes z-axis top-down orthographic projection
         uVehicleSize.set(getVehicleSize(view.getZoomLevel(), view.getMaxZoomLevel()));

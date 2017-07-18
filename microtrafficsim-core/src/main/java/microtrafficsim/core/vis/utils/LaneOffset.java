@@ -26,30 +26,6 @@ public class LaneOffset {
     }
 
     /**
-     * Returns the offset to the center of the specified lane.
-     *
-     * @param lanewidth         the lane-width of one lane.
-     * @param edge              the edge on which the lane is.
-     * @param lane              the index of the lane.
-     * @param drivingOnTheRight whether the driving-priority is to the right or not.
-     * @return the (signed) offset to the center of the specified lane, taking the direction of the edge into account.
-     */
-    public static double getLaneOffset(double lanewidth, DirectedEdge edge, int lane, boolean drivingOnTheRight) {
-        Street street = edge.getEntity().getGeometry();
-
-        double fwd = street.numLanesBwd;
-        double bwd = street.numLanesBwd;
-
-        double center = (bwd - fwd) / 2.0;      // offset according to direction of edge
-
-        if (drivingOnTheRight) {
-            return lanewidth * (center + (edge.getNumberOfLanes() - lane - 1) + 0.5);
-        } else {
-            return lanewidth * (center - (edge.getNumberOfLanes() - lane - 1) - 0.5);
-        }
-    }
-
-    /**
      * Returns the offset to the center line of the street.
      *
      * @param lanewidth         the lane-width of one lane.
@@ -80,6 +56,30 @@ public class LaneOffset {
             return lanewidth * (lane - numLanes);
         } else {
             return lanewidth * (numLanes - lane);
+        }
+    }
+
+    /**
+     * Returns the offset to the center of the specified lane.
+     *
+     * @param lanewidth         the lane-width of one lane.
+     * @param edge              the edge on which the lane is.
+     * @param lane              the index of the lane.
+     * @param drivingOnTheRight whether the driving-priority is to the right or not.
+     * @return the (signed) offset to the center of the specified lane, taking the direction of the edge into account.
+     */
+    public static double getLaneOffset(double lanewidth, DirectedEdge edge, int lane, boolean drivingOnTheRight) {
+        Street street = edge.getEntity().getGeometry();
+
+        double fwd = street.numLanesBwd;
+        double bwd = street.numLanesBwd;
+
+        double center = (bwd - fwd) / 2.0;      // offset according to direction of edge
+
+        if (drivingOnTheRight) {
+            return lanewidth * (center + (edge.getNumberOfLanes() - lane - 1) + 0.5);
+        } else {
+            return lanewidth * (center - (edge.getNumberOfLanes() - lane - 1) - 0.5);
         }
     }
 }

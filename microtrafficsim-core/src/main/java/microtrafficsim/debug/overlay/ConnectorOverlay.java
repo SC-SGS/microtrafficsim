@@ -5,6 +5,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.vis.Overlay;
 import microtrafficsim.core.vis.context.RenderContext;
@@ -140,8 +141,8 @@ public class ConnectorOverlay implements Overlay {
     }
 
 
-    public void update(Graph graph, boolean drivingOnTheRight) {
-        this.drivingOnTheRight = drivingOnTheRight;
+    public void update(Graph graph, MapProperties properties) {
+        this.drivingOnTheRight = properties.drivingOnTheRight;
         Mesh mesh = generateConnectorMesh(graph);
 
         context.addTask(c -> {
