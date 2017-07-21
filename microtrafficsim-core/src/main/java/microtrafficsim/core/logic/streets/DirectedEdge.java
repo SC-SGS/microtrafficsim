@@ -269,6 +269,10 @@ public class DirectedEdge
             return getVehicleInFront(vehicle) != null;
         }
 
+        /**
+         * Uses the given vehicle's position to find the vehicle in front, so the given one is allowed to stand on
+         * another lane.
+         */
         public Vehicle getVehicleInFront(Vehicle vehicle) {
             edge.lanes.lockLane(index);
             Vehicle front = edge.lanes.getNextOf(index, vehicle.getCellPosition());
