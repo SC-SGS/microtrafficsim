@@ -43,7 +43,7 @@ public class VehicleSimulation implements Simulation {
      */
     public VehicleSimulation() {
         paused = true;
-        executionLock = new ReentrantLock(true);
+        executionLock = new ReentrantLock(true); // fairness is important for cancelling simulation
         this.stepListeners = new LinkedList<>();
     }
 
