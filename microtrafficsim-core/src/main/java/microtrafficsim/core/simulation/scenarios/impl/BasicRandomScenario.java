@@ -11,6 +11,8 @@ import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehic
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
+import org.slf4j.Logger;
 
 import java.util.function.Supplier;
 
@@ -20,6 +22,7 @@ import java.util.function.Supplier;
  * @author Dominic Parga Cacheiro
  */
 public abstract class BasicRandomScenario extends BasicScenario implements Seeded {
+    public static final Logger logger = new EasyMarkableLogger(BasicRandomScenario.class);
 
     /* scout factory */
     private final Random random;
@@ -62,7 +65,44 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
 
     public abstract void redefineMetaRoutes();
 
-    public abstract void redefineMetaRoutes(RouteContainer newRoutes);
+
+    /**
+     * <p>
+     * Let n be {@link SimulationConfig#maxVehicleCount config.maxVehicleCount} and <br>
+     * let m be {@link RouteContainer#size() routeLexicon.size()}.
+     *
+     * <p>
+     * If n >= m: All routes are added and (n-m) are chosen randomly <br>
+     * If n < m: n routes are chosen randomly<br>
+     * The randomness depends on the given {@link RouteContainer#getRdm(Random)}
+     */
+    public void setRoutes(RouteContainer routeLexicon) {
+        logger.info("SETTING routes started");
+
+        reset();
+
+        Random random = new Random(getSeed());
+        getRoutes().clear();
+        if (getConfig().maxVehicleCount >= routeLexicon.size())
+            getRoutes().addAll(routeLexicon);
+        while (routeLexicon.size() < getConfig().maxVehicleCount)
+            getRoutes().add(routeLexicon.getRdm(random));
+
+        logger.info("SETTING routes finished");
+    }
+
+    public void chooseRdmFromRoutes(RouteContainer routeLexicon) {
+        logger.info("CHOOSING RANDOM routes started");
+
+        reset();
+
+        Random random = new Random(getSeed());
+        getRoutes().clear();
+        for (int i = 0; i < getConfig().maxVehicleCount; i++)
+            getRoutes().add(routeLexicon.getRdm(random));
+
+        logger.info("CHOOSING RANDOM routes finished");
+    }
 
     /*
     |==============|

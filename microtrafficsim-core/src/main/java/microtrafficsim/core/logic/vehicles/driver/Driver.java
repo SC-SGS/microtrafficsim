@@ -82,6 +82,11 @@ public interface Driver extends Hulk, Resettable {
     int accelerate(int tmpV);
 
     /**
+     * @return true with a probability of (1 - {@link #getLaneChangeFactor() laneChangeFactor})
+     */
+    boolean tendToChangeLane();
+
+    /**
      *
      * @param tmpV temporary velocity
      * @return preferred velocity after dawdling
@@ -98,6 +103,10 @@ public interface Driver extends Hulk, Resettable {
     | variable information |
     |======================|
     */
+    float getLaneChangeFactor();
+
+    void setLaneChangeFactor(float laneChangeFactor);
+
     float getDawdleFactor();
 
     void setDawdleFactor(float dawdleFactor);

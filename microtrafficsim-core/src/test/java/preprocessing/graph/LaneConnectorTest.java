@@ -60,7 +60,9 @@ public class LaneConnectorTest {
 
         config = config();
         if (map.getName().endsWith(".osm")) {
-            graph = DefaultParserConfig.get(config).build().parse(map, new MapProperties(true)).streetgraph;
+            graph = DefaultParserConfig.get(config).build().parse(
+                    map,
+                    new MapProperties(config.crossingLogic.drivingOnTheRight)).streetgraph;
         } else {
             ExchangeFormatSerializer serializer = ExchangeFormatSerializer.create();
             ExchangeFormat exfmt = ExchangeFormat.getDefault();

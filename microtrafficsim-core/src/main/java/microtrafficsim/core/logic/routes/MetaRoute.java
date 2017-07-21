@@ -12,6 +12,7 @@ public class MetaRoute implements Route {
     private final Node origin;
     private final Node destination;
     private int spawnDelay;
+    private boolean isMonitored;
 
 
     public MetaRoute(Node origin, Node destination) {
@@ -22,6 +23,7 @@ public class MetaRoute implements Route {
         this.origin = origin;
         this.destination = destination;
         this.spawnDelay = spawndelay;
+        this.isMonitored = false;
     }
 
 
@@ -36,7 +38,9 @@ public class MetaRoute implements Route {
 
     @Override
     public MetaRoute clone() {
-        return new MetaRoute(origin, destination, spawnDelay);
+        MetaRoute route = new MetaRoute(origin, destination, spawnDelay);
+        route.isMonitored = isMonitored;
+        return route;
     }
 
     @Override
@@ -47,6 +51,16 @@ public class MetaRoute implements Route {
     @Override
     public int size() {
         return 0;
+    }
+
+    @Override
+    public boolean isMonitored() {
+        return isMonitored;
+    }
+
+    @Override
+    public void setMonitored(boolean isMonitored) {
+        this.isMonitored = isMonitored;
     }
 
     @Override

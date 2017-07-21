@@ -1,25 +1,31 @@
 package microtrafficsim.core.simulation.core;
 
+import microtrafficsim.core.logic.vehicles.machines.MonitoredVehicle;
+import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.utils.Resettable;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
+ * Monitors all vehicles implementing {@link MonitoredVehicle}
+ *
  * @author Dominic Parga Cacheiro
  */
-public class MonitoringVehicleSimulation extends VehicleSimulation {
-    private List<Long> stamps = new LinkedList<>();
-    private final int maxCollectionSize = 100;
+public class MonitoringVehicleSimulation extends VehicleSimulation implements Resettable {
+    private List<VehicleStamp> vehicleStamps = new LinkedList<>();
 
 
     @Override
-    protected void unsecureDoRunOneSteup() {
+    protected void unsecureDoRunOneStep() {
+        long time = System.nanoTime();
         willRunOneStep();
 
         Scenario scenario = getScenario();
         if (scenario.isPrepared()) {
-            long time = System.nanoTime();
             vehicleStepExecutor.accelerateAll(scenario);
             vehicleStepExecutor.willChangeLaneAll(scenario);
             vehicleStepExecutor.changeLaneAll(scenario);
@@ -29,43 +35,111 @@ public class MonitoringVehicleSimulation extends VehicleSimulation {
             vehicleStepExecutor.spawnAll(scenario);
             vehicleStepExecutor.updateNodes(scenario);
             incAge();
-            if (stamps.size() < maxCollectionSize)
-                stamps.add(System.nanoTime() - time);
-            else if (stamps.size() == maxCollectionSize)
-                System.out.println("Max collection size of " + maxCollectionSize + " reached.");
         }
 
         didRunOneStep();
+        time = System.nanoTime() - time;
     }
 
-    public long getSampleMeanOfTime() {
-        if (stamps.size() == 0)
-            return -1;
-        double dSize = stamps.size();
+    @Override
+    public void didRunOneStep() {
+        super.didRunOneStep();
 
-        double result = 0;
-        for (long l : stamps) {
-            result += l / dSize;
+        for (Vehicle vehicle : getScenario().getVehicleContainer()) {
+            if (vehicle instanceof MonitoredVehicle) {
+                VehicleStamp stamp = new VehicleStamp();
+                stamp.simStep = getAge();
+                stamp.vehicleId = vehicle.getId();
+                stamp.travellingTime = vehicle.getDriver().getTravellingTime();
+                stamp.velocity = vehicle.getVelocity();
+                stamp.cellPosition = vehicle.getCellPosition();
+                if (vehicle.getLane() != null)
+                    stamp.edgeId = vehicle.getLane().getEdge().getId();
+                else
+                    stamp.edgeId = null;
+
+                vehicleStamps.add(stamp);
+            }
+        }
+    }
+
+    public Iterator<String> getCSVIterator(CSVType type) {
+        Iterator<VehicleStamp> iter = vehicleStamps.iterator();
+
+        return new Iterator<String>() {
+            boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public String next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return type.LEGEND;
+                } else {
+                    return ";" + type.getInfo(iter.next());
+                }
+            }
+        };
+    }
+
+
+    @Override
+    public void reset() {
+        vehicleStamps.clear();
+    }
+
+
+    private static class VehicleStamp {
+        private int simStep;
+        private long vehicleId;
+        private int travellingTime;
+        private int velocity;
+        private int cellPosition;
+        private Long edgeId;
+    }
+
+    public enum CSVType {
+        TRAVELLING_TIME("travellingTime"),
+        VELOCITY("velocity"),
+        CELL_POSITION("cellposition"),
+        EDGE_ID("edgeId");
+
+        private final String FILENAME;
+        private final String LEGEND;
+
+        CSVType(String filename) {
+            FILENAME = filename;
+            LEGEND = "simStep;vehicleId;" + filename;
         }
 
-        return (long) result;
-    }
-
-    public long getSampleVarianceOfTime() {
-        if (stamps.size() == 0)
-            return 0;
-        double dSize = stamps.size() - 1;
-        long sampleMean = getSampleMeanOfTime();
-
-        double result = 0;
-        for (long l : stamps) {
-            result += Math.pow(l - sampleMean, 2) / dSize;
+        public String getFilename() {
+            return FILENAME + ".csv";
         }
 
-        return (long) result;
-    }
+        public String getInfo(VehicleStamp stamp) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(stamp.simStep).append(";").append(stamp.vehicleId);
 
-    public void clearStamps() {
-        stamps.clear();
+            switch (this) {
+                case TRAVELLING_TIME:
+                    builder.append(";").append(stamp.travellingTime);
+                    break;
+                case VELOCITY:
+                    builder.append(";").append(stamp.velocity);
+                    break;
+                case CELL_POSITION:
+                    builder.append(";").append(stamp.cellPosition);
+                    break;
+                case EDGE_ID:
+                    builder.append(";").append(stamp.edgeId);
+                    break;
+            }
+
+            return builder.toString();
+        }
     }
 }

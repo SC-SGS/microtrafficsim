@@ -11,6 +11,7 @@ import java.util.Stack;
  */
 public class StackRoute extends Stack<DirectedEdge> implements Route {
     private int spawnDelay;
+    private boolean isMonitored;
 
 
     public StackRoute() {
@@ -19,6 +20,7 @@ public class StackRoute extends Stack<DirectedEdge> implements Route {
 
     public StackRoute(int spawnDelay) {
         this.spawnDelay = spawnDelay;
+        isMonitored = false;
     }
 
 
@@ -47,8 +49,19 @@ public class StackRoute extends Stack<DirectedEdge> implements Route {
     @Override
     public synchronized StackRoute clone() {
         StackRoute copy = new StackRoute(spawnDelay);
+        copy.setMonitored(isMonitored);
         forEach(copy::push);
         return copy;
+    }
+
+    @Override
+    public boolean isMonitored() {
+        return isMonitored;
+    }
+
+    @Override
+    public void setMonitored(boolean isMonitored) {
+        this.isMonitored = isMonitored;
     }
 
     @Override

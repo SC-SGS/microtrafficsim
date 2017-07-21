@@ -2,6 +2,7 @@ package microtrafficsim.core.simulation.scenarios.impl;
 
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.routes.MetaRoute;
+import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.map.Bounds;
 import microtrafficsim.core.map.Coordinate;
@@ -12,6 +13,8 @@ import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehic
 import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.math.HaversineDistanceCalculator;
 import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
+import org.slf4j.Logger;
 
 /**
  * <p>
@@ -23,6 +26,8 @@ import microtrafficsim.math.random.distributions.impl.Random;
  * @author Dominic Parga Cacheiro
  */
 public class CrossingTheMapScenario extends AreaScenario {
+    public static final Logger logger = new EasyMarkableLogger(CrossingTheMapScenario.class);
+
 
     // matrix
     private final TypedPolygonArea[] destinationAreas;
@@ -177,11 +182,20 @@ public class CrossingTheMapScenario extends AreaScenario {
      * &bull increase the route count for the found origin-destination-pair
      */
     @Override
-    protected void defineRoutesAfterClearing() {
+    public void redefineMetaRoutes() {
         // note: the directions used in this method's comments are referring to Europe (so the northern hemisphere)
 
+        logger.info("DEFINING routes started");
+
+        reset();
+        getAreaNodeContainer().refillNodeLists(getGraph());
+
+        getRoutes().clear();
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
-            Node origin = getAreaNodeContainer().getRdmOriginNode(getConfig().scenario.nodesAreWeightedUniformly);
+            MonitoredNode monitoredNode = getAreaNodeContainer()
+                    .getRdmOriginNode(getConfig().scenario.nodesAreWeightedUniformly);
+            Node origin = monitoredNode.getNode();
+            boolean isMonitored = monitoredNode.isMonitored();
 
             // get end node depending on start node's position
             Graph graph = getGraph();
@@ -217,14 +231,19 @@ public class CrossingTheMapScenario extends AreaScenario {
 
             double latDistance = HaversineDistanceCalculator.getDistance(originCoord, latProjection);
             double lonDistance = HaversineDistanceCalculator.getDistance(originCoord, lonProjection);
-            Node destination;
             if (latDistance > lonDistance)
-                destination = getAreaNodeContainer().getRdmNode(getDestinationArea(lonOrientation, latOrientation));
+                monitoredNode = getAreaNodeContainer().getRdmNode(getDestinationArea(lonOrientation, latOrientation));
             else
-                destination = getAreaNodeContainer().getRdmNode(getDestinationArea(latOrientation, lonOrientation));
-            if (destination != null)
-                getRoutes().add(new MetaRoute(origin, destination));
+                monitoredNode = getAreaNodeContainer().getRdmNode(getDestinationArea(latOrientation, lonOrientation));
+            Node destination = monitoredNode.getNode();
+            isMonitored |= monitoredNode.isMonitored();
+
+            Route route = new MetaRoute(origin, destination);
+            route.setMonitored(isMonitored);
+            getRoutes().add(route);
         }
+
+        logger.info("DEFINING routes finished");
     }
 
 

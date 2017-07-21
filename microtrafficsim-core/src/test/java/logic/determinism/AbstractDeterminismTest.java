@@ -111,7 +111,7 @@ public abstract class AbstractDeterminismTest {
                     AbstractDeterminismTest.class,
                     ResourceClassLinks.BACKNANG_MAP_PATH).asTemporaryFile();
             OSMParser parser = DefaultParserConfig.get(config).build();
-            graph = parser.parse(file, new MapProperties(true)).streetgraph;
+            graph = parser.parse(file, new MapProperties(config.crossingLogic.drivingOnTheRight)).streetgraph;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

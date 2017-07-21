@@ -9,6 +9,8 @@ dependencies {
     // SLF4J
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.7'
+
+    compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 }
 
 // handle command line arguments via '-Dexec.args="..."'
@@ -19,9 +21,9 @@ run {
 }
 
 
-mainClassName = 'microtrafficsim.examples.simulation.MeasurementExample'
+mainClassName = 'microtrafficsim.examples.measurements.MeasurementExample'
 macAppBundle {
-    mainClassName = 'microtrafficsim.examples.mapviewer.MeasurementExample'
+    mainClassName = 'microtrafficsim.examples.measurements.MeasurementExample'
 }
 
 

@@ -41,6 +41,8 @@ public interface WheelOfFortune<T> extends Resettable, Seeded, Iterable<T> {
      */
     void update(T t, int weight);
 
+    int getWeight(T t);
+
     /**
      * Increments the weight for the given object. Does add the object if not contained.
      *

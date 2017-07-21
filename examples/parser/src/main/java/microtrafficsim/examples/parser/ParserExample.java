@@ -32,7 +32,7 @@ import java.util.function.Predicate;
  */
 public class ParserExample {
     private static final String DEFAULT_OSM_XML = "map.processing";
-    private static final MapProperties MAP_PROPERTIES = new MapProperties(true);
+    private static final MapProperties MAP_PROPERTIES = new MapProperties(true); // todo read in map properties?
 
 
     public static void main(String[] args) throws Exception {

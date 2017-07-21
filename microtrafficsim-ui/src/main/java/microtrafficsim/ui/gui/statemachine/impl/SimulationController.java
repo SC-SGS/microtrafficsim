@@ -46,6 +46,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -601,6 +602,20 @@ public class SimulationController implements GUIController {
         });
     }
 
+    private void transitionLoadScenario() {
+        // todo
+        /* load map */
+        /* load config */
+        /* load routes */
+    }
+
+    private void transitionSaveScenario() {
+        // todo
+        /* save map */
+        /* save config */
+        /* save routes */
+    }
+
 
     /* preferences */
     private void transitionAcceptPreferences() {
@@ -703,6 +718,12 @@ public class SimulationController implements GUIController {
             }
         } catch (InterruptedException e) {
             logger.info("Loading map interrupted by user");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "The map could not be loaded\nbecause the file loader hasn't been set correctly.",
+                    "Map loading error",
+                    JOptionPane.ERROR_MESSAGE);
         }
 
         setNewFrameTitle.invoke();
@@ -713,7 +734,7 @@ public class SimulationController implements GUIController {
      *
      * @return true, if loading was successful; false otherwise
      */
-    private boolean loadMapAndUpdate(File file) throws InterruptedException {
+    private boolean loadMapAndUpdate(File file) throws InterruptedException, IOException {
         boolean priorityToTheRight = true;
         if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
             priorityToTheRight = UserInteractionUtils.askUserForDecision(
@@ -757,11 +778,20 @@ public class SimulationController implements GUIController {
         Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
 
 
-        boolean success = exfmtStorage.saveMap(file, new Tuple<>(streetgraph, mapviewer.getMap()));
-        if (success)
-            UserInteractionUtils.showSavingSuccess(frame);
-        else
-            UserInteractionUtils.showSavingFailure(file, frame);
+        try {
+            boolean success = exfmtStorage.saveMap(file, new Tuple<>(streetgraph, mapviewer.getMap()));
+
+            if (success)
+                UserInteractionUtils.showSavingSuccess(frame);
+            else
+                UserInteractionUtils.showSavingFailure(file, frame);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "The map could not be saved\nbecause the file loader hasn't been set correctly.",
+                    "Map saving error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
 
 
         setNewFrameTitle.invoke();
@@ -863,6 +893,8 @@ public class SimulationController implements GUIController {
 
 
     /*
+<<<<<<< HEAD
+=======
     |====================|
     | load/save scenario |
     |====================|
@@ -1005,6 +1037,7 @@ public class SimulationController implements GUIController {
 
 
     /*
+>>>>>>> master
     |========|
     | routes |
     |========|
@@ -1123,7 +1156,10 @@ public class SimulationController implements GUIController {
                                 RandomRouteScenario.class.getSimpleName() + " is used instead.");
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);
         }
-        scenario.redefineMetaRoutes(routes);
+        if (routes == null)
+            scenario.redefineMetaRoutes();
+        else
+            scenario.setRoutes(routes);
         clearAndUpdateAreaOverlay(scenario.getAreaNodeContainer().getAreas());
 
         try {
@@ -1196,7 +1232,7 @@ public class SimulationController implements GUIController {
     private void clearAndUpdateAreaOverlay(Collection<TypedPolygonArea> areas) {
         scenarioAreaOverlay.removeAllAreas();
         for (TypedPolygonArea area : areas) {
-            scenarioAreaOverlay.add(area.getProjectedArea(mapviewer.getProjection(), area.getType()));
+            scenarioAreaOverlay.add(area.getProjectedArea(mapviewer.getProjection(), area));
         }
     }
 

@@ -6,6 +6,5 @@ import org.junit.Test;
 public class DefaultValuesTest {
     @Test
     public void areDefaultValuesNull() {
-
     }
 }

@@ -175,29 +175,51 @@ public abstract class BasicVehicle implements Vehicle {
 
 
     private void tendToOvertaking() {
+        boolean overtake = false;
+
         Vehicle front = lane.getVehicleInFront(this);
         if (front != null) {
             int distance = front.getCellPosition() - cellPosition;
+            assert distance > 0 : "Something is wrong with the data structure! " +
+                    "Vehicle, expected to be at the very front, is not.";
 
-            if (distance < getMaxVelocity()) {
+            if (distance < getMaxVelocity())
                 if (velocity > front.getVelocity() || front.getVelocity() == 0)
-                    checkChangeToInnerLane();
-            } else {
-                tendToOutermostLane();
-            }
-        } else {
-            tendToOutermostLane();
+                    overtake = true;
         }
+
+        if (overtake)
+            checkChangeToInnerLane();
+        else
+            tendToOutermostLane();
     }
 
     private void tendToOutermostLane() {
         if (lane.getIndex() > outermostTurningLaneIndex) {
-            checkChangeToOuterLane();
+            boolean tendsToOutermostLane = true;
+
+            // check for lane.isOutermost() is not necessary due to outermostTurningLaneIndex
+            Vehicle outerFront = lane.getOuterLane().getVehicleInFront(this);
+            if (outerFront != null) {
+                int distance = outerFront.getCellPosition() - cellPosition;
+                assert distance > 0 : "Something is wrong with the data structure! " +
+                        "Vehicle, expected to be at the very front, is not.";
+
+                if (distance < getMaxVelocity())
+                    if (velocity > outerFront.getVelocity() || outerFront.getVelocity() == 0)
+                        tendsToOutermostLane = false;
+            }
+
+            if (tendsToOutermostLane)
+                checkChangeToOuterLane();
         } else if (lane.getIndex() < outermostTurningLaneIndex) {
             checkChangeToInnerLane();
         }
     }
 
+    /**
+     * Executes the lane change if there is enough space (EXCLUDING the data structure operations).
+     */
     private void checkChangeToOuterLane() {
         laneChangeDirection = LaneChangeDirection.OUTER;
 
@@ -211,6 +233,9 @@ public abstract class BasicVehicle implements Vehicle {
         }
     }
 
+    /**
+     * Executes the lane change if there is space (EXCLUDING the data structure operations).
+     */
     private void checkChangeToInnerLane() {
         laneChangeDirection = LaneChangeDirection.INNER;
 
@@ -233,6 +258,10 @@ public abstract class BasicVehicle implements Vehicle {
         }
     }
 
+    /**
+     * Executes the change in the data structure. This method does not focus on traffic logic, but only on the
+     * underlying data structure.
+     */
     private void changeToOuterLane() {
         lane.removeVehicle(this);
         lane = lane.getOuterLane();
@@ -240,6 +269,10 @@ public abstract class BasicVehicle implements Vehicle {
         lane.insertVehicle(this, cellPosition);
     }
 
+    /**
+     * Executes the change in the data structure. This method does not focus on traffic logic, but only on the
+     * underlying data structure.
+     */
     private void changeToInnerLane() {
         int index = lane.getIndex();
         lane.removeVehicle(this);
@@ -327,10 +360,12 @@ public abstract class BasicVehicle implements Vehicle {
     public void willChangeLane() {
         laneChangeDirection = LaneChangeDirection.NONE;
 
-        if (shouldRegister()) {
-            tendToOutermostLane();
-        } else {
-            tendToOvertaking();
+        if (driver.tendToChangeLane()) {
+            if (shouldRegister()) {
+                tendToOutermostLane();
+            } else {
+                tendToOvertaking();
+            }
         }
     }
 
