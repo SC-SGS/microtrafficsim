@@ -165,7 +165,7 @@ public abstract class MeasurementExample {
 
 
                 /* setup frame */
-                JFrame frame = setUpFrame(viewer, files.visualized);
+                JFrame frame = setupFrame(viewer, files.visualized);
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
                 if (files.visualized)
@@ -428,7 +428,7 @@ public abstract class MeasurementExample {
         return files;
     }
 
-    private static JFrame setUpFrame(MapViewer viewer, boolean visualized) {
+    private static JFrame setupFrame(MapViewer viewer, boolean visualized) {
         /* create and initialize the JFrame */
         JFrame frame = new JFrame("MicroTrafficSim - Measurement Example");
         frame.setIconImage(new ImageIcon(MeasurementExample.class.getResource("/icon/128x128.png")).getImage());
