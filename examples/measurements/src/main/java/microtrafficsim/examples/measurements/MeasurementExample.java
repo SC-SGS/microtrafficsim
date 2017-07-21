@@ -48,7 +48,6 @@ public abstract class MeasurementExample {
     public static final Logger logger = new EasyMarkableLogger(MeasurementExample.class);
 
 
-    private static final boolean VISUALIZED = true;
     private static boolean shouldShutdown = false;
     private static Thread dataThread;
 
@@ -89,7 +88,7 @@ public abstract class MeasurementExample {
 
 
                 /* setup mapviewer */
-                if (VISUALIZED) {
+                if (files.visualized) {
                     viewer = new TileBasedMapViewer(config.visualization.style);
                     storage.setupMapLoading(config, viewer);
                     viewer.create(config);
@@ -104,7 +103,7 @@ public abstract class MeasurementExample {
                 // load and set graph
                 Tuple<Graph, MapProvider> mapResult = storage.loadMap(files.mtsmap, config.crossingLogic.drivingOnTheRight);
                 graph = mapResult.obj0;
-                if (VISUALIZED)
+                if (files.visualized)
                     viewer.setMap(mapResult.obj1);
 
                 // load and set routes
@@ -136,7 +135,7 @@ public abstract class MeasurementExample {
                     return vehicle;
                 };
                 /* setup overlays */
-                if (VISUALIZED) {
+                if (files.visualized) {
                     ScenarioAreaOverlay scenarioAreaOverlay = new ScenarioAreaOverlay();
                     SwingUtilities.invokeLater(() -> scenarioAreaOverlay.setEnabled(true, false, false));
                     viewer.addOverlay(1, scenarioAreaOverlay);
@@ -166,10 +165,10 @@ public abstract class MeasurementExample {
 
 
                 /* setup frame */
-                JFrame frame = setUpFrame(viewer);
+                JFrame frame = setUpFrame(viewer, files.visualized);
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
-                if (VISUALIZED)
+                if (files.visualized)
                     viewer.show();
 
 
@@ -223,7 +222,7 @@ public abstract class MeasurementExample {
                         }
                     }
 
-                    if (VISUALIZED) {
+                    if (files.visualized) {
                         JOptionPane.showMessageDialog(
                                 frame,
                                 "Saving data starts.\nThis could take a moment.",
@@ -250,7 +249,7 @@ public abstract class MeasurementExample {
                         }
                     }
                     logger.info("FINISHED saving data");
-                    if (VISUALIZED) {
+                    if (files.visualized) {
                         JOptionPane.showMessageDialog(
                                 frame,
                                 "Saving data finished.",
@@ -258,7 +257,7 @@ public abstract class MeasurementExample {
                                 JOptionPane.INFORMATION_MESSAGE);
                     }
 
-                    if (VISUALIZED)
+                    if (files.visualized)
                         finalViewer.destroy();
                     frame.dispose();
                     dataThread.interrupt();
@@ -347,6 +346,14 @@ public abstract class MeasurementExample {
                 .desc("vehicles' lane change factor (optional)")
                 .build());
 
+        options.addOption(Option
+                .builder("vis")
+                .longOpt("visualized")
+                .hasArg()
+                .argName("[true|false]")
+                .desc("whether the measurement should run the visualization (default is true)")
+                .build());
+
         try {
             CommandLine line = new DefaultParser().parse(options, args);
 
@@ -354,6 +361,10 @@ public abstract class MeasurementExample {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp("measurement", options);
                 System.exit(0);
+            }
+
+            if (line.hasOption("maxAge")) {
+                files.maxAge = Integer.parseInt(line.getOptionValue("maxAge"));
             }
 
             if (line.hasOption(MTSFileChooser.Filters.CONFIG_POSTFIX)) {
@@ -390,6 +401,22 @@ public abstract class MeasurementExample {
             if (line.hasOption("laneChangeFactor")) {
                 files.laneChangeFactor = Float.parseFloat(line.getOptionValue("laneChangeFactor"));
             }
+
+            if (line.hasOption("visualized")) {
+                String input = line.getOptionValue("visualized").toLowerCase();
+                if (input.equals("true")
+                        || input.equals("t")
+                        || input.equals("y")
+                        || input.equals("yes")
+                        || input.equals("1"))
+                    files.visualized = true;
+                if (input.equals("false")
+                        || input.equals("f")
+                        || input.equals("n")
+                        || input.equals("no")
+                        || input.equals("0"))
+                    files.visualized = false;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             System.err.flush();
@@ -401,11 +428,11 @@ public abstract class MeasurementExample {
         return files;
     }
 
-    private static JFrame setUpFrame(MapViewer viewer) {
+    private static JFrame setUpFrame(MapViewer viewer, boolean visualized) {
         /* create and initialize the JFrame */
-        JFrame frame = new JFrame("MicroTrafficSim - Simulation Example");
+        JFrame frame = new JFrame("MicroTrafficSim - Measurement Example");
         frame.setIconImage(new ImageIcon(MeasurementExample.class.getResource("/icon/128x128.png")).getImage());
-        if (VISUALIZED) {
+        if (visualized) {
             frame.setSize(viewer.getInitialWindowWidth(), viewer.getInitialWindowHeight());
             frame.add(viewer.getVisualizationPanel());
         }
@@ -435,6 +462,7 @@ public abstract class MeasurementExample {
         private File mtsroutes;
         private String outputPath = "";
 
+        private boolean visualized = true;
         private int maxAge = 3000;
 
         private Integer maxVehicleCount = null;

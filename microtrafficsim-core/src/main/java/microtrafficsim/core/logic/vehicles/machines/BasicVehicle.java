@@ -175,20 +175,24 @@ public abstract class BasicVehicle implements Vehicle {
 
 
     private void tendToOvertaking() {
+        boolean tendToOutermostLane = true;
+
         Vehicle front = lane.getVehicleInFront(this);
         if (front != null) {
             int distance = front.getCellPosition() - cellPosition;
 
             if (distance < getMaxVelocity()) { // probably unused
-                if (velocity > front.getVelocity() || front.getVelocity() == 0)
+                if (velocity > front.getVelocity() || front.getVelocity() == 0) {
                     checkChangeToInnerLane();
-            } else {
-                // check distance to outer front vehicle
-                // distance >= own velocity => change lane to outer lane
-                tendToOutermostLane();
+                    tendToOutermostLane = false;
+                }
             }
-        } else {
-            // same as above
+        }
+
+        if (tendToOutermostLane) {
+            // todo Dominic: implement comment below + "merge" routes
+            // check distance to outer front vehicle
+            // distance >= own velocity => change lane to outer lane
             tendToOutermostLane();
         }
     }
