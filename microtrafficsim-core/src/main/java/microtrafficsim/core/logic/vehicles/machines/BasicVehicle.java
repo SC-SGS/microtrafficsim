@@ -210,7 +210,7 @@ public abstract class BasicVehicle implements Vehicle {
                         tendsToOutermostLane = false;
             }
 
-            if (tendsToOutermostLane)g
+            if (tendsToOutermostLane)
                 checkChangeToOuterLane();
         } else if (lane.getIndex() < outermostTurningLaneIndex) {
             checkChangeToInnerLane();
