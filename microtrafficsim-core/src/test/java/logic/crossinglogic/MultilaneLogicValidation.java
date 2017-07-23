@@ -44,7 +44,7 @@ public class MultilaneLogicValidation {
         SwingUtilities.invokeLater(() -> {
             /* visualization */
             MapViewer mapviewer    = new TileBasedMapViewer(config.visualization.style);
-            VehicleOverlay overlay = new SpriteBasedVehicleOverlay(
+            VehicleOverlay vehicleOverlay = new SpriteBasedVehicleOverlay(
                     mapviewer.getProjection(),
                     config.visualization.style);
             try {
@@ -52,7 +52,7 @@ public class MultilaneLogicValidation {
             } catch (UnsupportedFeatureException e) {
                 e.printStackTrace();
             }
-            mapviewer.addOverlay(1, overlay);
+            mapviewer.addOverlay(1, vehicleOverlay);
 
             ConnectorOverlay connectorOverlay = new ConnectorOverlay(mapviewer.getProjection(), config);
             mapviewer.addOverlay(0, connectorOverlay);
@@ -90,6 +90,7 @@ public class MultilaneLogicValidation {
             Graph graph = result.graph;
             try {
                 mapviewer.setMap(result.segment);
+                vehicleOverlay.setMapProperties(result.segment.getProperties());
                 connectorOverlay.update(graph, result.segment.getProperties());
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -101,12 +102,12 @@ public class MultilaneLogicValidation {
 
 
             /* initialize the simulation */
-            QueueScenarioSmall scenario = new MultilaneScenario(config, graph, overlay.getVehicleFactory());
+            QueueScenarioSmall scenario = new MultilaneScenario(config, graph, vehicleOverlay.getVehicleFactory());
             scenario.setLooping(true);
 //            AreaScenario scenario = new RandomRouteScenario(config.seed, config, graph);
 //            scenario.redefineMetaRoutes();
             Simulation sim = new VehicleSimulation();
-            overlay.setSimulation(sim);
+            vehicleOverlay.setSimulation(sim);
 
 //            try {
 //                new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory()).prepare(scenario);

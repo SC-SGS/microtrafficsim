@@ -187,10 +187,9 @@ public class CrossingTheMapScenario extends AreaScenario {
 
         logger.info("DEFINING routes started");
 
-        reset();
+        resetAndClearRoutes();
         getAreaNodeContainer().refillNodeLists(getGraph());
 
-        getRoutes().clear();
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
             MonitoredNode monitoredNode = getAreaNodeContainer()
                     .getRdmOriginNode(getConfig().scenario.nodesAreWeightedUniformly);

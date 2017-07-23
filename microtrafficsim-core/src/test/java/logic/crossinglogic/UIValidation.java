@@ -173,6 +173,7 @@ public class UIValidation {
                 graph = result.streetgraph;
 
                 mapviewer.setMap(result.segment);
+                overlay.setMapProperties(result.segment.getProperties());
                 frame.setTitle(oldTitle);
             } catch (Exception e) {
                 frame.setTitle(oldTitle);

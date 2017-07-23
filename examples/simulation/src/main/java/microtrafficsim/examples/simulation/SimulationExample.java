@@ -451,6 +451,7 @@ public class SimulationExample {
             this.file = file.getPath();
             viewer.setMap(segment);
 
+            overlay.setMapProperties(segment.getProperties());
             debugOverlay.update(graph, segment.getProperties());
 
             /* create simulation */

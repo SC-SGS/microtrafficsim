@@ -76,10 +76,9 @@ public class AreaScenario extends BasicRandomScenario {
     public void redefineMetaRoutes() {
         logger.info("DEFINING routes started");
 
-        reset();
+        resetAndClearRoutes();
         areaNodeContainer.refillNodeLists(getGraph());
 
-        routes.clear();
         for (int i = 0; i < getConfig().maxVehicleCount; i++) {
             boolean weightedUniformly = getConfig().scenario.nodesAreWeightedUniformly;
 

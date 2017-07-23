@@ -67,6 +67,39 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
 
 
     /**
+     * @return {@link #getConfig() config}.{@link SimulationConfig#maxVehicleCount maxVehicleCount} minus {@code route
+     * count}
+     */
+    public int getFreeRouteStorage() {
+        return getConfig().maxVehicleCount - getRoutes().size();
+    }
+
+    public boolean hasFreeRouteStorage() {
+        return getFreeRouteStorage() > 0;
+    }
+
+    public void resetAndClearRoutes() {
+        logger.info("RESETTING AND CLEARING routes started");
+        reset();
+        getRoutes().clear();
+        logger.info("RESETTING AND CLEARING routes finished");
+    }
+
+    public void addRoutes(RouteContainer routes) {
+        logger.info("ADDING routes started");
+        if (getFreeRouteStorage() >= routes.size())
+            getRoutes().addAll(routes);
+        logger.info("ADDING routes finished");
+    }
+
+    public void fillRdmWithRoutes(RouteContainer routeLexicon) {
+        logger.info("FILLING random routes started");
+        while (hasFreeRouteStorage())
+            getRoutes().add(routeLexicon.getRdm(random));
+        logger.info("FILLING random routes finished");
+    }
+
+    /**
      * <p>
      * Let n be {@link SimulationConfig#maxVehicleCount config.maxVehicleCount} and <br>
      * let m be {@link RouteContainer#size() routeLexicon.size()}.
@@ -79,29 +112,20 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
     public void setRoutes(RouteContainer routeLexicon) {
         logger.info("SETTING routes started");
 
-        reset();
-
-        Random random = new Random(getSeed());
-        getRoutes().clear();
-        if (getConfig().maxVehicleCount >= routeLexicon.size())
-            getRoutes().addAll(routeLexicon);
-        while (routeLexicon.size() < getConfig().maxVehicleCount)
-            getRoutes().add(routeLexicon.getRdm(random));
+        resetAndClearRoutes();
+        addRoutes(routeLexicon);
+        fillRdmWithRoutes(routeLexicon);
 
         logger.info("SETTING routes finished");
     }
 
-    public void chooseRdmFromRoutes(RouteContainer routeLexicon) {
-        logger.info("CHOOSING RANDOM routes started");
+    public void setRdmRoutes(RouteContainer routeLexicon) {
+        logger.info("SETTING RANDOM routes started");
 
-        reset();
+        resetAndClearRoutes();
+        fillRdmWithRoutes(routeLexicon);
 
-        Random random = new Random(getSeed());
-        getRoutes().clear();
-        for (int i = 0; i < getConfig().maxVehicleCount; i++)
-            getRoutes().add(routeLexicon.getRdm(random));
-
-        logger.info("CHOOSING RANDOM routes finished");
+        logger.info("SETTING RANDOM routes finished");
     }
 
     /*

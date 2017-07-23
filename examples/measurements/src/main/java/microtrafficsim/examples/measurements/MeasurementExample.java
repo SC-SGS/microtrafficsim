@@ -9,6 +9,7 @@ import microtrafficsim.core.logic.streetgraph.GraphGUID;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.map.MapProvider;
 import microtrafficsim.core.map.UnprojectedAreas;
+import microtrafficsim.core.map.area.polygons.TypedPolygonArea;
 import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.simulation.builder.LogicVehicleFactory;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
@@ -36,7 +37,9 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * The multithreading does work but the code is not a masterpiece, e.g. threads are waiting using
@@ -48,8 +51,8 @@ public abstract class MeasurementExample {
     public static final Logger logger = new EasyMarkableLogger(MeasurementExample.class);
 
 
+    private static boolean hasCollected = false;
     private static boolean shouldShutdown = false;
-    private static Thread dataThread;
 
 
     public static void main(String[] args) throws Exception {
@@ -70,8 +73,6 @@ public abstract class MeasurementExample {
                 TileBasedMapViewer viewer = null;
                 ExfmtStorage storage;
                 Graph graph;
-                RouteContainer routes;
-                UnprojectedAreas areas;
 
 
 
@@ -82,6 +83,7 @@ public abstract class MeasurementExample {
                 // load and update config
                 config.update(storage.loadConfig(files.mtscfg, config));
                 config.speedup = Integer.MAX_VALUE;
+                config.scenario.showAreasWhileSimulating = true;
                 if (files.maxVehicleCount != null)
                     config.maxVehicleCount = files.maxVehicleCount;
 
@@ -106,17 +108,31 @@ public abstract class MeasurementExample {
                 if (files.visualized)
                     viewer.setMap(mapResult.obj1);
 
-                // load and set routes
-                Triple<GraphGUID, RouteContainer, UnprojectedAreas> routesResult = storage.loadRoutes(files.mtsroutes, graph);
-                routes = routesResult.obj1;
-                areas = routesResult.obj2;
-
 
 
                 /* setup scenario */
                 AreaScenario areaScenario = new AreaScenario(config.seed, config, graph);
-                areaScenario.getAreaNodeContainer().addAreas(areas);
-                areaScenario.setRoutes(routes);
+
+
+                /* load and set routes */
+                {
+                    areaScenario.resetAndClearRoutes();
+
+                    Iterator<File> routeFiles = files.mtsroutes.iterator();
+                    RouteContainer routes;
+                    UnprojectedAreas areas;
+                    do {
+                        Triple<GraphGUID, RouteContainer, UnprojectedAreas>
+                                routesResult = storage.loadRoutes(routeFiles.next(), graph);
+                        routes = routesResult.obj1;
+                        areas = routesResult.obj2;
+
+                        areaScenario.getAreaNodeContainer().addAreas(areas);
+                        areaScenario.addRoutes(routes);
+                    } while (routeFiles.hasNext());
+
+                    areaScenario.fillRdmWithRoutes(routes);
+                }
 
 
 
@@ -137,7 +153,10 @@ public abstract class MeasurementExample {
                 /* setup overlays */
                 if (files.visualized) {
                     ScenarioAreaOverlay scenarioAreaOverlay = new ScenarioAreaOverlay();
-                    SwingUtilities.invokeLater(() -> scenarioAreaOverlay.setEnabled(true, false, false));
+                    for (TypedPolygonArea area : areaScenario.getAreaNodeContainer().getAreas())
+                        scenarioAreaOverlay.add(area.getProjectedArea(viewer.getProjection(), area));
+                    SwingUtilities.invokeLater(() ->
+                            scenarioAreaOverlay.setEnabled(config.scenario.showAreasWhileSimulating, false, false));
                     viewer.addOverlay(1, scenarioAreaOverlay);
 
 
@@ -145,6 +164,7 @@ public abstract class MeasurementExample {
                             viewer.getProjection(),
                             config.visualization.style);
                     vehicleOverlay.setSimulation(simulation);
+                    vehicleOverlay.setMapProperties(viewer.getMap().getProperties());
                     viewer.addOverlay(2, vehicleOverlay);
 
 
@@ -190,34 +210,11 @@ public abstract class MeasurementExample {
 
 
                 /* store collected data */
-                dataThread = new Thread(() -> {
-                    while (true) {
-                        if (simulation.isPaused()) {
-                            shouldShutdown = true;
-                            break;
-                        }
-
-
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException e) {
-                            shouldShutdown = true;
-                            break;
-                        }
-                    }
-                });
-                dataThread.start();
-
-
-
-                /* shutdown */
-                TileBasedMapViewer finalViewer = viewer;
                 new Thread(() -> {
-                    while (!shouldShutdown) {
+                    while (!simulation.isPaused()) {
                         try {
                             Thread.sleep(500);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
                             break;
                         }
                     }
@@ -257,12 +254,28 @@ public abstract class MeasurementExample {
                                 JOptionPane.INFORMATION_MESSAGE);
                     }
 
+
+                    hasCollected = true;
+                }).start();
+
+
+
+                /* shutdown */
+                TileBasedMapViewer finalViewer = viewer;
+                new Thread(() -> {
+                    while (!(shouldShutdown && hasCollected)) {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            break;
+                        }
+                    }
+
                     if (files.visualized)
                         finalViewer.destroy();
                     frame.dispose();
-                    dataThread.interrupt();
                     System.exit(0);
-
                 }).start();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -298,11 +311,19 @@ public abstract class MeasurementExample {
                 .build());
 
         options.addOption(Option
-                .builder("r")
-                .longOpt(MTSFileChooser.Filters.ROUTE_POSTFIX)
+                .builder("r0")
+                .longOpt(MTSFileChooser.Filters.ROUTE_POSTFIX + "_0")
                 .hasArg()
                 .argName("ROUTE_FILE")
-                .desc("Route file")
+                .desc("First-used route file")
+                .build());
+
+        options.addOption(Option
+                .builder("r1")
+                .longOpt(MTSFileChooser.Filters.ROUTE_POSTFIX + "_1")
+                .hasArg()
+                .argName("ROUTE_FILE")
+                .desc("Second-used route file")
                 .build());
 
         options.addOption(Option
@@ -380,11 +401,18 @@ public abstract class MeasurementExample {
                         MTSFileChooser.Filters.MAP_OSM_XML_POSTFIX + "' is missing.");
             }
 
-            if (line.hasOption(MTSFileChooser.Filters.ROUTE_POSTFIX)) {
-                files.mtsroutes = new File(line.getOptionValue(MTSFileChooser.Filters.ROUTE_POSTFIX));
+
+            files.mtsroutes = new LinkedList<>();
+            if (line.hasOption(MTSFileChooser.Filters.ROUTE_POSTFIX + "_0")) {
+                files.mtsroutes.add(new File(line.getOptionValue(MTSFileChooser.Filters.ROUTE_POSTFIX + "_0")));
             } else {
                 throw new Exception("Route file '." + MTSFileChooser.Filters.ROUTE_POSTFIX + "' is missing.");
             }
+
+            if (line.hasOption(MTSFileChooser.Filters.ROUTE_POSTFIX + "_1")) {
+                files.mtsroutes.add(new File(line.getOptionValue(MTSFileChooser.Filters.ROUTE_POSTFIX + "_1")));
+            }
+
 
             if (line.hasOption("output")) {
                 files.outputPath = line.getOptionValue("output");
@@ -459,7 +487,7 @@ public abstract class MeasurementExample {
     private static class Files {
         private File mtscfg;
         private File mtsmap;
-        private File mtsroutes;
+        private LinkedList<File> mtsroutes;
         private String outputPath = "";
 
         private boolean visualized = true;
