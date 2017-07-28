@@ -223,13 +223,21 @@ public abstract class BasicVehicle implements Vehicle {
     private void checkChangeToOuterLane() {
         laneChangeDirection = LaneChangeDirection.OUTER;
 
-        if (lane.isOutermost())
+        if (lane.isOutermost()) {
             laneChangeDirection = LaneChangeDirection.NONE;
-        else {
-            Vehicle outerVehicle = lane.getOuterVehicle(this);
-            if (outerVehicle != null)
-                if (cellPosition - outerVehicle.getCellPosition() <= 0)
-                    laneChangeDirection = LaneChangeDirection.NONE;
+            return;
+        }
+
+        if (laneChangeDirection == LaneChangeDirection.NONE)
+            return;
+
+        Vehicle outerVehicle = lane.getOuterVehicle(this);
+        if (outerVehicle != null) {
+            int distance = cellPosition - outerVehicle.getCellPosition();
+            assert distance >= 0 : "Something is wrong with the data structure. Distance is " + distance + ", but " +
+                    "should be >= 0.";
+            if (distance == 0)
+                laneChangeDirection = LaneChangeDirection.NONE;
         }
     }
 
@@ -241,20 +249,32 @@ public abstract class BasicVehicle implements Vehicle {
 
         if (lane.isInnermost()) {
             laneChangeDirection = LaneChangeDirection.NONE;
-        } else {
-            // check for second inner vehicle
-            Vehicle innerVehicle = lane.getSecondInnerVehicle(this);
-            if (innerVehicle != null)
-                if (cellPosition - innerVehicle.getCellPosition() <= 0)
-                    laneChangeDirection = LaneChangeDirection.NONE;
+            return;
+        }
 
-            // check for inner vehicle
-            if (laneChangeDirection != LaneChangeDirection.NONE) {
-                innerVehicle = lane.getInnerVehicle(this);
-                if (innerVehicle != null)
-                    if (cellPosition - innerVehicle.getCellPosition() <= 0)
-                        laneChangeDirection = LaneChangeDirection.NONE;
+        if (laneChangeDirection == LaneChangeDirection.NONE)
+            return;
+
+        // check for second inner vehicle
+        Vehicle innerVehicle = lane.getSecondInnerVehicle(this);
+        if (innerVehicle != null) {
+            int distance = cellPosition - innerVehicle.getCellPosition();
+            assert distance >= 0 : "Something is wrong with the data structure. Distance is " + distance + ", but " +
+                    "should be >= 0.";
+            if (distance == 0) {
+                laneChangeDirection = LaneChangeDirection.NONE;
+                return;
             }
+        }
+
+        // check for inner vehicle
+        innerVehicle = lane.getInnerVehicle(this);
+        if (innerVehicle != null) {
+            int distance = cellPosition - innerVehicle.getCellPosition();
+            assert distance >= 0 : "Something is wrong with the data structure. Distance is " + distance + ", but " +
+                    "should be >= 0.";
+            if (distance == 0)
+                laneChangeDirection = LaneChangeDirection.NONE;
         }
     }
 
