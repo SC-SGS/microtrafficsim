@@ -200,6 +200,7 @@ public abstract class MeasurementExample {
                             || sim.getScenario().getVehicleContainer().isEmpty())
                     {
                         sim.cancel();
+                        shouldShutdown = files.automatic;
                     } else {
                         if (sim.getAge() % 50 == 0)
                             logger.info("Finished simulation steps: " + sim.getAge());
@@ -219,7 +220,7 @@ public abstract class MeasurementExample {
                         }
                     }
 
-                    if (files.visualized) {
+                    if (files.visualized && !files.automatic) {
                         JOptionPane.showMessageDialog(
                                 frame,
                                 "Saving data starts.\nThis could take a moment.",
@@ -246,7 +247,7 @@ public abstract class MeasurementExample {
                         }
                     }
                     logger.info("FINISHED saving data");
-                    if (files.visualized) {
+                    if (files.visualized && !files.automatic) {
                         JOptionPane.showMessageDialog(
                                 frame,
                                 "Saving data finished.",
@@ -336,10 +337,18 @@ public abstract class MeasurementExample {
 
         options.addOption(Option
                 .builder()
+                .longOpt("automatic")
+                .hasArg()
+                .argName("BOOLEAN_VALUE")
+                .desc("false if user input is needed to continue/exit (default is true)")
+                .build());
+
+        options.addOption(Option
+                .builder()
                 .longOpt("maxAge")
                 .hasArg()
                 .argName("INTEGER_VALUE")
-                .desc("max age when simulation should stop (optional; default is 3,000)")
+                .desc("max age when simulation should stop (default is 3,000)")
                 .build());
 
         options.addOption(Option
@@ -382,6 +391,10 @@ public abstract class MeasurementExample {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp("measurement", options);
                 System.exit(0);
+            }
+
+            if (line.hasOption("automatic")) {
+                files.automatic = parseBoolean(line.getOptionValue("maxAge"));
             }
 
             if (line.hasOption("maxAge")) {
@@ -431,19 +444,7 @@ public abstract class MeasurementExample {
             }
 
             if (line.hasOption("visualized")) {
-                String input = line.getOptionValue("visualized").toLowerCase();
-                if (input.equals("true")
-                        || input.equals("t")
-                        || input.equals("y")
-                        || input.equals("yes")
-                        || input.equals("1"))
-                    files.visualized = true;
-                if (input.equals("false")
-                        || input.equals("f")
-                        || input.equals("n")
-                        || input.equals("no")
-                        || input.equals("0"))
-                    files.visualized = false;
+                files.visualized = parseBoolean(line.getOptionValue("visualized").toLowerCase());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -454,6 +455,22 @@ public abstract class MeasurementExample {
         }
 
         return files;
+    }
+
+    private static boolean parseBoolean(String input) throws Exception {
+        if (input.equals("true")
+                || input.equals("t")
+                || input.equals("y")
+                || input.equals("yes")
+                || input.equals("1"))
+            return true;
+        if (input.equals("false")
+                || input.equals("f")
+                || input.equals("n")
+                || input.equals("no")
+                || input.equals("0"))
+            return false;
+        throw new Exception("Couldn't parse boolean input.");
     }
 
     private static JFrame setupFrame(MapViewer viewer, boolean visualized) {
@@ -490,6 +507,7 @@ public abstract class MeasurementExample {
         private LinkedList<File> mtsroutes;
         private String outputPath = "";
 
+        private boolean automatic = true;
         private boolean visualized = true;
         private int maxAge = 3000;
 

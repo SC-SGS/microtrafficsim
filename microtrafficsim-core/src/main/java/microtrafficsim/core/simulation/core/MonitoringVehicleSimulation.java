@@ -5,7 +5,6 @@ import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.utils.Resettable;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -80,7 +79,7 @@ public class MonitoringVehicleSimulation extends VehicleSimulation implements Re
                     isFirst = false;
                     return type.LEGEND;
                 } else {
-                    return ";" + type.getInfo(iter.next());
+                    return CSVType.LINE_SEPARATOR + type.getInfo(iter.next());
                 }
             }
         };
@@ -108,12 +107,15 @@ public class MonitoringVehicleSimulation extends VehicleSimulation implements Re
         CELL_POSITION("cellposition"),
         EDGE_ID("edgeId");
 
+        private static final String SEPARATOR = " ";
+        private static final String LINE_SEPARATOR = System.lineSeparator();
+
         private final String FILENAME;
         private final String LEGEND;
 
         CSVType(String filename) {
             FILENAME = filename;
-            LEGEND = "simStep;vehicleId;" + filename;
+            LEGEND = "simStep" + SEPARATOR + "vehicleId" + SEPARATOR + filename;
         }
 
         public String getFilename() {
@@ -122,20 +124,20 @@ public class MonitoringVehicleSimulation extends VehicleSimulation implements Re
 
         public String getInfo(VehicleStamp stamp) {
             StringBuilder builder = new StringBuilder();
-            builder.append(stamp.simStep).append(";").append(stamp.vehicleId);
+            builder.append(stamp.simStep).append(SEPARATOR).append(stamp.vehicleId);
 
             switch (this) {
                 case TRAVELLING_TIME:
-                    builder.append(";").append(stamp.travellingTime);
+                    builder.append(SEPARATOR).append(stamp.travellingTime);
                     break;
                 case VELOCITY:
-                    builder.append(";").append(stamp.velocity);
+                    builder.append(SEPARATOR).append(stamp.velocity);
                     break;
                 case CELL_POSITION:
-                    builder.append(";").append(stamp.cellPosition);
+                    builder.append(SEPARATOR).append(stamp.cellPosition);
                     break;
                 case EDGE_ID:
-                    builder.append(";").append(stamp.edgeId);
+                    builder.append(SEPARATOR).append(stamp.edgeId);
                     break;
             }
 
