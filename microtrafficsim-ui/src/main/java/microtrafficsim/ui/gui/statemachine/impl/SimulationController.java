@@ -893,8 +893,6 @@ public class SimulationController implements GUIController {
 
 
     /*
-<<<<<<< HEAD
-=======
     |====================|
     | load/save scenario |
     |====================|
@@ -1037,7 +1035,6 @@ public class SimulationController implements GUIController {
 
 
     /*
->>>>>>> master
     |========|
     | routes |
     |========|
