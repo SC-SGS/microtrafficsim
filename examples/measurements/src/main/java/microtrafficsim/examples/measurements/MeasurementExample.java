@@ -404,7 +404,7 @@ public abstract class MeasurementExample {
             }
 
             if (line.hasOption("automatic")) {
-                files.automatic = parseBoolean(line.getOptionValue("automatic"));
+                files.automatic = parseBoolean(line.getOptionValue("automatic").toLowerCase());
             }
 
             if (line.hasOption("seed")) {
