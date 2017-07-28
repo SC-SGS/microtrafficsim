@@ -404,7 +404,7 @@ public abstract class MeasurementExample {
             }
 
             if (line.hasOption("automatic")) {
-                files.automatic = parseBoolean(line.getOptionValue("maxAge"));
+                files.automatic = parseBoolean(line.getOptionValue("automatic"));
             }
 
             if (line.hasOption("seed")) {
