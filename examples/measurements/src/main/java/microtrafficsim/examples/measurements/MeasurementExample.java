@@ -84,6 +84,7 @@ public abstract class MeasurementExample {
                 logger.info("loaded seed = " + config.seed);
                 config.seed = files.seed;
                 logger.info("using seed " + config.seed);
+                config.multiThreading.nThreads = files.nthreads;
                 config.speedup = Integer.MAX_VALUE;
                 config.scenario.showAreasWhileSimulating = true;
                 if (files.maxVehicleCount != null)
@@ -347,6 +348,14 @@ public abstract class MeasurementExample {
 
         options.addOption(Option
                 .builder()
+                .longOpt("nthreads")
+                .hasArg()
+                .argName("INTEGER_VALUE")
+                .desc("number of threads running the simulation (default is 8)")
+                .build());
+
+        options.addOption(Option
+                .builder()
                 .longOpt("seed")
                 .hasArg()
                 .argName("LONG_VALUE")
@@ -405,6 +414,10 @@ public abstract class MeasurementExample {
 
             if (line.hasOption("automatic")) {
                 files.automatic = parseBoolean(line.getOptionValue("automatic").toLowerCase());
+            }
+
+            if (line.hasOption("nthreads")) {
+                files.nthreads = Integer.parseInt(line.getOptionValue("nthreads"));
             }
 
             if (line.hasOption("seed")) {
@@ -522,6 +535,7 @@ public abstract class MeasurementExample {
         private String outputPath = "";
 
         private boolean automatic = true;
+        private int nthreads = 8;
         private long seed = 42;
         private boolean visualized = true;
         private int maxAge = 3000;
