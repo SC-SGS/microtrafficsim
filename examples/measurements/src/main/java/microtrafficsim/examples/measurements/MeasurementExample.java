@@ -37,7 +37,6 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 
@@ -82,6 +81,9 @@ public abstract class MeasurementExample {
 
                 // load and update config
                 config.update(storage.loadConfig(files.mtscfg, config));
+                logger.info("loaded seed = " + config.seed);
+                config.seed = files.seed;
+                logger.info("using seed " + config.seed);
                 config.speedup = Integer.MAX_VALUE;
                 config.scenario.showAreasWhileSimulating = true;
                 if (files.maxVehicleCount != null)
@@ -345,6 +347,14 @@ public abstract class MeasurementExample {
 
         options.addOption(Option
                 .builder()
+                .longOpt("seed")
+                .hasArg()
+                .argName("LONG_VALUE")
+                .desc("seed for config file (default is 42)")
+                .build());
+
+        options.addOption(Option
+                .builder()
                 .longOpt("maxAge")
                 .hasArg()
                 .argName("INTEGER_VALUE")
@@ -395,6 +405,10 @@ public abstract class MeasurementExample {
 
             if (line.hasOption("automatic")) {
                 files.automatic = parseBoolean(line.getOptionValue("maxAge"));
+            }
+
+            if (line.hasOption("seed")) {
+                files.seed = Long.parseLong(line.getOptionValue("seed"));
             }
 
             if (line.hasOption("maxAge")) {
@@ -508,6 +522,7 @@ public abstract class MeasurementExample {
         private String outputPath = "";
 
         private boolean automatic = true;
+        private long seed = 42;
         private boolean visualized = true;
         private int maxAge = 3000;
 
