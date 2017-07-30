@@ -174,21 +174,23 @@ public abstract class BasicVehicle implements Vehicle {
     }
 
 
-    private void tendToOvertaking() {
-        boolean overtake = false;
-
-        Vehicle front = lane.getVehicleInFront(this);
-        if (front != null) {
-            int distance = front.getCellPosition() - cellPosition;
+    private boolean wantsToOvertake(Vehicle other) {
+        if (other != null) {
+            int distance = other.getCellPosition() - cellPosition;
             assert distance > 0 : "Something is wrong with the data structure! " +
                     "Vehicle, expected to be at the very front, is not.";
 
             if (distance < getMaxVelocity())
-                if (velocity > front.getVelocity() || front.getVelocity() == 0)
-                    overtake = true;
+                if (velocity > other.getVelocity() || other.getVelocity() == 0)
+                    return true;
         }
+        return false;
+    }
 
-        if (overtake)
+    private void tendToOvertaking() {
+        Vehicle front = lane.getVehicleInFront(this);
+
+        if (wantsToOvertake(front))
             checkChangeToInnerLane();
         else
             tendToOutermostLane();
@@ -196,21 +198,10 @@ public abstract class BasicVehicle implements Vehicle {
 
     private void tendToOutermostLane() {
         if (lane.getIndex() > outermostTurningLaneIndex) {
-            boolean tendsToOutermostLane = true;
-
             // check for lane.isOutermost() is not necessary due to outermostTurningLaneIndex
             Vehicle outerFront = lane.getOuterLane().getVehicleInFront(this);
-            if (outerFront != null) {
-                int distance = outerFront.getCellPosition() - cellPosition;
-                assert distance > 0 : "Something is wrong with the data structure! " +
-                        "Vehicle, expected to be at the very front, is not.";
 
-                if (distance < getMaxVelocity())
-                    if (velocity > outerFront.getVelocity() || outerFront.getVelocity() == 0)
-                        tendsToOutermostLane = false;
-            }
-
-            if (tendsToOutermostLane)
+            if (!wantsToOvertake(outerFront))
                 checkChangeToOuterLane();
         } else if (lane.getIndex() < outermostTurningLaneIndex) {
             checkChangeToInnerLane();
