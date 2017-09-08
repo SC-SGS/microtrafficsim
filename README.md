@@ -12,8 +12,8 @@ happens deterministically according to our test cases and is helpful
 for the bachelor thesis. Maybe, the serialized file type changes a
 little due to style improvements.
 
-Multilane logic and its visualization is implemented as well as the
-bachelor thesis, which will be linked soon.
+Multilane logic and its visualization is implemented and the
+bachelor thesis has finished, which will be linked here soon.
 
 
 ## Demonstration and Examples
