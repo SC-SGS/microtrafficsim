@@ -12,8 +12,8 @@ happens deterministically according to our test cases and is helpful
 for the bachelor thesis. Maybe, the serialized file type changes a
 little due to style improvements.
 
-Our next task is developing multilane logic and its visualization. This
-will be used in a bachelor thesis for traffic jam cause research.
+Multilane logic and its visualization is implemented as well as the
+bachelor thesis, which will be linked soon.
 
 
 ## Demonstration and Examples
