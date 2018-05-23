@@ -1,5 +1,17 @@
+### Custom ###
 
-# Created by https://www.gitignore.io/api/java,macos,python,gradle,eclipse,intellij+all,visualstudiocode
+custom/
+
+
+
+# Created by https://www.gitignore.io/api/code,eclipse,gradle,intellij+all,java,macos,python
+
+### Code ###
+# Visual Studio Code - https://code.visualstudio.com/
+.settings/
+.vscode/
+tsconfig.json
+jsconfig.json
 
 ### Eclipse ###
 
@@ -11,7 +23,6 @@ tmp/
 *.swp
 *~.nib
 local.properties
-.settings/
 .loadpath
 .recommenders
 
@@ -54,11 +65,14 @@ local.properties
 .worksheet
 
 ### Eclipse Patch ###
-# Eclipse Core		
+# Eclipse Core
 .project
 
-# JDT-specific (Eclipse Java Development Tools)		
+# JDT-specific (Eclipse Java Development Tools)
 .classpath
+
+# Annotation Processing
+.apt_generated
 
 ### Intellij+all ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
@@ -115,10 +129,17 @@ crashlytics-build.properties
 fabric.properties
 
 ### Intellij+all Patch ###
-# Ignores the whole idea folder
+# Ignores the whole .idea folder and all .iml files
 # See https://github.com/joeblau/gitignore.io/issues/186 and https://github.com/joeblau/gitignore.io/issues/360
 
 .idea/
+
+# Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-249601023
+
+*.iml
+modules.xml
+.idea/misc.xml
+*.ipr
 
 ### Java ###
 # Compiled class file
@@ -271,14 +292,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-### VisualStudioCode ###
-.vscode/*
-# !.vscode/settings.json
-# !.vscode/tasks.json
-# !.vscode/launch.json
-# !.vscode/extensions.json
-.history
-
 ### Gradle ###
 .gradle
 **/build/
@@ -296,4 +309,4 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 
 
-# End of https://www.gitignore.io/api/java,macos,python,gradle,eclipse,intellij+all,visualstudiocode
+# End of https://www.gitignore.io/api/code,eclipse,gradle,intellij+all,java,macos,python
