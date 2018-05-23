@@ -4,7 +4,8 @@ with OpenStreetMap data.
 ![Teaser: New York](resources/teaser.png "Teaser: New York")
 
 ## News
-The bachelor thesis about Uncertainty Quantification and multilane traffic simulation is finally linked below.
+The bachelor thesis about Uncertainty Quantification and multilane traffic simulation is finally linked [in the wiki](https://github.com/sgs-us/microtrafficsim/wiki/papers#quantifizierung-von-unsicherheiten-in-mikroskopischer-verkehrssimulation).
+A new release containing the multilane logic is in progress.
 
 The next few months will be attended to maintenance.
 In general, the project should be prepared for workers other than project's initiators.
