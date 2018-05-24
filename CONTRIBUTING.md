@@ -13,8 +13,6 @@ Feel free to propose changes to this document in a pull request.
 [Styleguides](#styleguides)
    * [Git Commit Messages](#git-commit-messages)
    * [Gitflow Workflow](#gitflow-workflow)
-       * [Used branches](#gitflow-workflow)
-       * [Kind of Cheat Sheet](#kind-of-cheat-sheet)
    * [Semantic Versioning](#semantic-versioning)
 
 ---
