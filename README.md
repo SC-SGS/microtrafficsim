@@ -1,9 +1,12 @@
 # Microscopic Traffic Simulation
+
 with OpenStreetMap data.
 
 ![Teaser: New York](resources/teaser.png "Teaser: New York")
 
+
 ## News
+
 The bachelor thesis about Uncertainty Quantification and multilane traffic simulation is finally linked [in the wiki](https://github.com/sgs-us/microtrafficsim/wiki/papers#quantifizierung-von-unsicherheiten-in-mikroskopischer-verkehrssimulation).
 A new release containing the multilane logic is in progress.
 
@@ -35,14 +38,22 @@ Therefore, for the moment, the traffic simulation code will still be written in 
 
 
 ## Usage
+
 Demonstrations and examples can be executed using `gradle`.
 This project contains a `gradle wrapper` file, so you don't need to install it.
 A (somewhat) stable demonstration can be executed from the `master`-branch.
 For the execution commands and helpful information, please refer [to our wiki](https://github.com/sgs-us/microtrafficsim/wiki/Usage#setup-demonstration-and-examples).
 
 
+## Contribution
+
+For contributing the project, please refer [to our contribution section](CONTRIBUTING.md).
+
+
 ## Supported features
+
 #### Traffic attributes
+
 * different vehicle types (inclusive different max velocities,
 acceleration functions etc.)
 * static routing: fastest vs. shortest route
@@ -51,7 +62,9 @@ acceleration functions etc.)
 * driver behaviour (e.g. in acceleration) limited by the vehicles
 "physical" behaviour
 
+
 #### Crossing logic
+
 All following attributes can be en-/disabled.
 * street priorities
 * right-before-left XOR left-before-right XOR random
@@ -61,7 +74,9 @@ intersecting eachother's ways
 it relinquishes its right of way for an other vehicle that has not to
 wait.
 
+
 #### Main UI features
+
 * parse any map file in OSM MAP format
 * start and end areas can be chosen using the shortcuts described
 [in our wiki](https://github.com/sgs-us/microtrafficsim/wiki/Usage#controls)
@@ -74,4 +89,5 @@ anger of its driver or the vehicle's velocity)
 
 
 ## Please Note
+
 This software is still in an experimental state.
