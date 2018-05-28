@@ -32,8 +32,8 @@ public class VisualizationModel extends PreferencesModel {
 
     public StyleSheet instantiate(int selectedIndex) {
         try {
-            return styleSheets.get(selectedIndex).newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
+            return styleSheets.get(selectedIndex).getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
