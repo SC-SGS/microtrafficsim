@@ -81,6 +81,14 @@ public class DirectedEdge
         return new Lane(this, laneNo);
     }
 
+    public int getVehicleCount() {
+        int count = 0;
+        for (Lane lane : this) {
+            count += lane.getVehicleCount();
+        }
+        return count;
+    }
+
 
 
     public Key key() {
@@ -244,6 +252,13 @@ public class DirectedEdge
 
         public int getLength() {
             return edge.getLength();
+        }
+
+        public int getVehicleCount() {
+            edge.lanes.lockLane(index);
+            int count = edge.lanes.getVehicleCount(index);
+            edge.lanes.unlockLane(index);
+            return count;
         }
 
         public int getMaxVelocity() {

@@ -9,6 +9,8 @@ public interface LaneContainer {
 
     boolean isEmpty(int laneNo);
 
+    int getVehicleCount(int laneNo);
+
     /**
      * @return The first vehicle in the lane. 'First' means the vehicle being on the street for the longest time
      * <=> the vehicle on the lane that entered it at first.

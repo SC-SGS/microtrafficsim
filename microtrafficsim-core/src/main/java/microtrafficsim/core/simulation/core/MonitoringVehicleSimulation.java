@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.MonitoredVehicle;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.Scenario;
@@ -48,14 +49,13 @@ public class MonitoringVehicleSimulation extends VehicleSimulation implements Re
             if (vehicle instanceof MonitoredVehicle) {
                 VehicleStamp stamp = new VehicleStamp();
                 stamp.simStep = getAge();
-                stamp.vehicleId = vehicle.getId();
-                stamp.travellingTime = vehicle.getDriver().getTravellingTime();
+                stamp.spawnedVehicleCount = getScenario().getVehicleContainer().getSpawnedCount();
+
                 stamp.velocity = vehicle.getVelocity();
-                stamp.cellPosition = vehicle.getCellPosition();
-                if (vehicle.getLane() != null)
-                    stamp.edgeId = vehicle.getLane().getEdge().getId();
-                else
-                    stamp.edgeId = null;
+                if (vehicle.getLane() != null) {
+                    stamp.edgeStamp = new EdgeStamp();
+                    stamp.edgeStamp.setup(vehicle.getLane().getEdge());
+                }
 
                 vehicleStamps.add(stamp);
             }
@@ -77,7 +77,7 @@ public class MonitoringVehicleSimulation extends VehicleSimulation implements Re
             public String next() {
                 if (isFirst) {
                     isFirst = false;
-                    return type.LEGEND;
+                    return type.legend;
                 } else {
                     return CSVType.LINE_SEPARATOR + type.getInfo(iter.next());
                 }
@@ -94,50 +94,91 @@ public class MonitoringVehicleSimulation extends VehicleSimulation implements Re
 
     private static class VehicleStamp {
         private int simStep;
-        private long vehicleId;
-        private int travellingTime;
+        private int spawnedVehicleCount;
+
         private int velocity;
-        private int cellPosition;
-        private Long edgeId;
+
+        private EdgeStamp edgeStamp;
+    }
+
+    private static class EdgeStamp {
+        private long edgeId;
+        private int edgeVehicleCount;
+        private int edgeLaneCount;
+        private int edgeLength;
+
+        public void setup(DirectedEdge edge) {
+            edgeId = edge.getId();
+            edgeVehicleCount = edge.getVehicleCount();
+            edgeLaneCount = edge.getNumberOfLanes();
+            edgeLength = edge.getLength();
+        }
     }
 
     public enum CSVType {
-        TRAVELLING_TIME("travellingTime"),
-        VELOCITY("velocity"),
-        CELL_POSITION("cellposition"),
-        EDGE_ID("edgeId");
+        VELOCITY("velocity", "simStep", "cellsPerSecond"),
+        SPAWNED_VEHICLE_COUNT("spawnedVehicleCount", "simStep", "vehicleCount"),
+        EDGE_INFO("edgeInfo", "simStep", "edgeId", "lengthInCells", "laneCount"),
+        EDGE_VEHICLE_COUNT("edgeVehicleCount", "simStep", "edgeId", "vehicleCount");
 
         private static final String SEPARATOR = " ";
         private static final String LINE_SEPARATOR = System.lineSeparator();
 
-        private final String FILENAME;
-        private final String LEGEND;
+        private String filename;
+        private String legend;
 
-        CSVType(String filename) {
-            FILENAME = filename;
-            LEGEND = "simStep" + SEPARATOR + "vehicleId" + SEPARATOR + filename;
+        CSVType(String filename, String... legend) {
+            this.filename = filename;
+
+            if (legend.length > 0) {
+                this.legend = legend[0];
+
+                for (int i = 1; i < legend.length; i++) {
+                    this.legend += SEPARATOR + legend[i];
+                }
+            }
         }
 
         public String getFilename() {
-            return FILENAME + ".csv";
+            return filename + ".csv";
+        }
+
+        public boolean hasValidInfo(VehicleStamp stamp) {
+            switch(this) {
+                case VELOCITY:
+                case SPAWNED_VEHICLE_COUNT:
+                    return true;
+                case EDGE_INFO:
+                case EDGE_VEHICLE_COUNT:
+                    return stamp.edgeStamp != null;
+            }
+
+            assert false : "Should not reach this point.";
+            return false;
         }
 
         public String getInfo(VehicleStamp stamp) {
             StringBuilder builder = new StringBuilder();
-            builder.append(stamp.simStep).append(SEPARATOR).append(stamp.vehicleId);
 
             switch (this) {
-                case TRAVELLING_TIME:
-                    builder.append(SEPARATOR).append(stamp.travellingTime);
-                    break;
                 case VELOCITY:
-                    builder.append(SEPARATOR).append(stamp.velocity);
+                    builder.append(stamp.simStep).append(SEPARATOR)
+                           .append(stamp.velocity);
                     break;
-                case CELL_POSITION:
-                    builder.append(SEPARATOR).append(stamp.cellPosition);
+                case SPAWNED_VEHICLE_COUNT:
+                    builder.append(stamp.simStep).append(SEPARATOR)
+                           .append(stamp.spawnedVehicleCount);
                     break;
-                case EDGE_ID:
-                    builder.append(SEPARATOR).append(stamp.edgeId);
+                case EDGE_INFO:
+                    builder.append(stamp.simStep).append(SEPARATOR)
+                           .append(stamp.edgeStamp.edgeId).append(SEPARATOR)
+                           .append(stamp.edgeStamp.edgeLength).append(SEPARATOR)
+                           .append(stamp.edgeStamp.edgeLaneCount);
+                    break;
+                case EDGE_VEHICLE_COUNT:
+                    builder.append(stamp.simStep).append(SEPARATOR)
+                           .append(stamp.edgeStamp.edgeId).append(SEPARATOR)
+                           .append(stamp.edgeStamp.edgeVehicleCount);
                     break;
             }
 

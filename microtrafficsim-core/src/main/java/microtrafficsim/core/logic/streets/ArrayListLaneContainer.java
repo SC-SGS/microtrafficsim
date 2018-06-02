@@ -34,8 +34,13 @@ public class ArrayListLaneContainer implements LaneContainer {
 
     @Override
     public boolean isEmpty(int laneNo) {
-            return lanes.get(laneNo).isEmpty();
-        }
+        return lanes.get(laneNo).isEmpty();
+    }
+
+    @Override
+    public int getVehicleCount(int laneNo) {
+        return lanes.get(laneNo).size();
+    }
 
     @Override
     public Vehicle get(int laneNo, int cellNo) {

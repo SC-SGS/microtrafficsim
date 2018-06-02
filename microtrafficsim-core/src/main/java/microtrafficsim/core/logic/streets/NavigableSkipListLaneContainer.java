@@ -41,6 +41,11 @@ public class NavigableSkipListLaneContainer implements LaneContainer {
     }
 
     @Override
+    public int getVehicleCount(int laneNo) {
+        return lanes.get(laneNo).size();
+    }
+
+    @Override
     public Vehicle get(int laneNo, int cellNo) {
         return lanes.get(laneNo).get(cellNo);
     }
