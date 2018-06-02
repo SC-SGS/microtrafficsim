@@ -1,12 +1,12 @@
 package microtrafficsim.ui.preferences.model;
 
+import java.util.ArrayList;
+
 import microtrafficsim.core.map.style.StyleSheet;
+import microtrafficsim.core.map.style.impl.DarkMonochromeStyleSheet;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.map.style.impl.LightMonochromeStyleSheet;
 import microtrafficsim.core.map.style.impl.LightStyleSheet;
-import microtrafficsim.core.map.style.impl.DarkMonochromeStyleSheet;
-
-import java.util.ArrayList;
 
 /**
  * @author Dominic Parga Cacheiro

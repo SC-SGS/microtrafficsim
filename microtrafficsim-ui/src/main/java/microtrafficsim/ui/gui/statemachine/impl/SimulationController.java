@@ -1,9 +1,29 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+
+import org.slf4j.Logger;
+
 import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
 import microtrafficsim.core.convenience.filechoosing.FileFilterSet;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
-import microtrafficsim.core.convenience.filechoosing.impl.*;
+import microtrafficsim.core.convenience.filechoosing.impl.AreaFilterSet;
+import microtrafficsim.core.convenience.filechoosing.impl.ConfigFilterSet;
+import microtrafficsim.core.convenience.filechoosing.impl.MapFilterSet;
+import microtrafficsim.core.convenience.filechoosing.impl.RouteFilterSet;
+import microtrafficsim.core.convenience.filechoosing.impl.ScenarioFilterSet;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.GraphGUID;
@@ -39,15 +59,6 @@ import microtrafficsim.utils.functional.Procedure;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.progressable.ProgressListener;
 import microtrafficsim.utils.strings.WrappedString;
-import org.slf4j.Logger;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
 
 /**
  * <p>

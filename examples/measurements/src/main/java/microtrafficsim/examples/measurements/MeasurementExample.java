@@ -1,5 +1,24 @@
 package microtrafficsim.examples.measurements;
 
+import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.util.Iterator;
+import java.util.LinkedList;
+
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.slf4j.Logger;
+
 import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
 import microtrafficsim.core.convenience.mapviewer.MapViewer;
@@ -29,16 +48,6 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.logging.LoggingLevel;
 import microtrafficsim.utils.strings.builder.BasicStringBuilder;
 import microtrafficsim.utils.strings.builder.StringBuilder;
-import org.apache.commons.cli.*;
-import org.slf4j.Logger;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.util.Iterator;
-import java.util.LinkedList;
 
 /**
  * The multithreading does work but the code is not a masterpiece, e.g. threads are waiting using
@@ -81,9 +90,9 @@ public abstract class MeasurementExample {
 
                 // load and update config
                 config.update(storage.loadConfig(files.mtscfg, config));
-                logger.info("loaded seed = " + config.seed);
+                logger.info("old seed = " + config.seed);
                 config.seed = files.seed;
-                logger.info("using seed " + config.seed);
+                logger.info("new seed " + config.seed);
                 config.multiThreading.nThreads = files.nthreads;
                 config.speedup = Integer.MAX_VALUE;
                 config.scenario.showAreasWhileSimulating = true;
@@ -485,18 +494,26 @@ public abstract class MeasurementExample {
     }
 
     private static boolean parseBoolean(String input) throws Exception {
-        if (input.equals("true")
-                || input.equals("t")
-                || input.equals("y")
-                || input.equals("yes")
-                || input.equals("1"))
+        if (
+            input.equals("true")
+            || input.equals("t")
+            || input.equals("y")
+            || input.equals("yes")
+            || input.equals("1")
+        ) {
             return true;
-        if (input.equals("false")
-                || input.equals("f")
-                || input.equals("n")
-                || input.equals("no")
-                || input.equals("0"))
+        }
+
+        if (
+            input.equals("false")
+            || input.equals("f")
+            || input.equals("n")
+            || input.equals("no")
+            || input.equals("0")
+        ) {
             return false;
+        }
+
         throw new Exception("Couldn't parse boolean input.");
     }
 

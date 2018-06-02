@@ -1,5 +1,10 @@
 package microtrafficsim.core.logic.vehicles.machines;
 
+import java.util.LinkedList;
+import java.util.function.Function;
+
+import org.slf4j.Logger;
+
 import microtrafficsim.core.entities.vehicle.VehicleEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.VehicleState;
@@ -9,10 +14,6 @@ import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.math.MathUtils;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
-import org.slf4j.Logger;
-
-import java.util.LinkedList;
-import java.util.function.Function;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -34,7 +35,7 @@ public abstract class BasicVehicle implements Vehicle {
     private VehicleState state;
     private int          cellPosition;
     private int          velocity;
-    private boolean      lastVelocityWasZero;
+    private boolean      isLastVelocityZero;
 
     /* fix information */
     public final long                       id;
@@ -59,7 +60,7 @@ public abstract class BasicVehicle implements Vehicle {
         state               = VehicleState.NOT_SPAWNED;
         cellPosition        = -1;
         velocity            = 0;
-        lastVelocityWasZero = false;
+        setLastVelocityZero(false);
 
         /* fix information */
         this.id    = id;
@@ -71,6 +72,7 @@ public abstract class BasicVehicle implements Vehicle {
         /* logic vehicle entity */
         entity = null;
     }
+
 
     @Override
     public String toString() {
@@ -85,14 +87,16 @@ public abstract class BasicVehicle implements Vehicle {
                     .appendln("cell position = " + cellPosition)
                     .appendln("velocity v = " + velocity)
                     .appendln("maximum  v = " + getMaxVelocity())
-                    .appendln("last v was zero = " + lastVelocityWasZero);
+                    .appendln("last v was zero = " + isLastVelocityZero());
             if (driver != null)
                 strBuilder.appendln(driver);
             if (lane != null) {
                 strBuilder.appendln(lane);
                 strBuilder.appendln("");
                 strBuilder.appendln("-- infos from next node --");
-                strBuilder.appendln("permission = " + lane.getEdge().getDestination().permissionToCross(this));
+                strBuilder.appendln(
+                    "permission = " + lane.getEdge().getDestination().permissionToCross(this)
+                );
                 strBuilder.appendln("node.id = " + lane.getEdge().getDestination().getId());
             }
         }
@@ -102,6 +106,14 @@ public abstract class BasicVehicle implements Vehicle {
 
     public void setDriver(Driver driver) {
         this.driver = driver;
+    }
+
+    private boolean isLastVelocityZero() {
+        return isLastVelocityZero;
+    }
+
+    private void setLastVelocityZero(boolean wasZero) {
+        isLastVelocityZero = wasZero;
     }
 
     /*
@@ -119,11 +131,11 @@ public abstract class BasicVehicle implements Vehicle {
     private void didOneSimulationStep() {
         // anger
         if (velocity == 0) {
-            if (lastVelocityWasZero) driver.becomeMoreAngry();
-            lastVelocityWasZero = true;
+            if (isLastVelocityZero()) driver.becomeMoreAngry();
+            setLastVelocityZero(true);
         } else {
-            if (!lastVelocityWasZero) driver.calmDown();
-            lastVelocityWasZero = false;
+            if (!isLastVelocityZero()) driver.calmDown();
+            setLastVelocityZero(false);
         }
 
         // age

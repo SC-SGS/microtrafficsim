@@ -1,13 +1,13 @@
 package microtrafficsim.core.simulation.core;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
 import microtrafficsim.core.logic.vehicles.machines.MonitoredVehicle;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.utils.Resettable;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Monitors all vehicles implementing {@link MonitoredVehicle}

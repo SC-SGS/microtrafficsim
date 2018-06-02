@@ -1,10 +1,10 @@
 package microtrafficsim.core.logic.routes;
 
+import java.util.Stack;
+
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
-
-import java.util.Stack;
 
 /**
  * @author Dominic Parga Cacheiro
@@ -41,7 +41,7 @@ public class StackRoute extends Stack<DirectedEdge> implements Route {
                 strBuilder.appendln("size       = " + size());
             }
         }
-        strBuilder.decLevel().appendln("</" + getClass().getSimpleName() + ">");
+        strBuilder.decLevel().append("</" + getClass().getSimpleName() + ">");
         return strBuilder.toString();
     }
 
