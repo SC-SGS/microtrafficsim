@@ -211,6 +211,7 @@ public abstract class MeasurementExample {
                             || sim.getAge() >= files.maxAge
                             || sim.getScenario().getVehicleContainer().isEmpty())
                     {
+                        logger.info("CANCEL SIMULATION");
                         sim.cancel();
                         shouldShutdown = files.automatic;
                     } else {
@@ -218,6 +219,7 @@ public abstract class MeasurementExample {
                             logger.info("Finished simulation steps: " + sim.getAge());
                     }
                 });
+                logger.info("RUN SIMULATION");
                 simulation.run();
 
 
