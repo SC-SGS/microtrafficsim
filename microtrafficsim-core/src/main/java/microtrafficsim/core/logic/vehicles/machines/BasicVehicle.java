@@ -35,7 +35,7 @@ public abstract class BasicVehicle implements Vehicle {
     private VehicleState state;
     private int          cellPosition;
     private int          velocity;
-    private boolean      isLastVelocityZero;
+    private boolean      lastVelocityIsZero;
 
     /* fix information */
     public final long                       id;
@@ -109,11 +109,11 @@ public abstract class BasicVehicle implements Vehicle {
     }
 
     private boolean isLastVelocityZero() {
-        return isLastVelocityZero;
+        return lastVelocityIsZero;
     }
 
     private void setLastVelocityZero(boolean wasZero) {
-        isLastVelocityZero = wasZero;
+        lastVelocityIsZero = wasZero;
     }
 
     /*
