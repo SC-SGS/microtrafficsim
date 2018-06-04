@@ -79,7 +79,11 @@ public class MonitoringVehicleSimulation extends VehicleSimulation implements Re
                     isFirst = false;
                     return type.legend;
                 } else {
-                    return CSVType.LINE_SEPARATOR + type.getInfo(iter.next());
+                    VehicleStamp next = iter.next();
+                    if (type.hasValidInfo(next))
+                        return CSVType.LINE_SEPARATOR + type.getInfo(next);
+                    else
+                        return ""; // todo performance
                 }
             }
         };
