@@ -465,7 +465,7 @@ public abstract class BasicVehicle implements Vehicle {
             // if vehicle reaches last cell of current lane
             if (cellPosition + velocity == lane.getLength() - 1) {
                 // performance-expensive tie breaker: outermost vehicle
-                if (!lane.isOutermostVehicle(this)) {
+                if (!lane.containsOutermostVehicles()) {
                     // performance-expensive tie breaker: lane check
                     if (laneIsCorrect == null) {
                         // route is always not empty because laneIsCorrect would be not null otherwise

@@ -345,10 +345,20 @@ public class DirectedEdge
          * @return true if is the outermost vehicle. ; if traffic rule is right-before-left, the outermost
          * vehicle has no vehicles right to it
          */
-        public boolean isOutermostVehicle(Vehicle vehicle) {
+        public boolean containsOutermostVehicles() {
+            // check whether self is not empty
+            edge.lanes.lockLane(index);
+            boolean isOutermostVehicle = !edge.lanes.isEmpty(index);
+            edge.lanes.unlockLane(index);
+
+            if (!isOutermostVehicle)
+                return false;
+
+
+            // check whether outer lanes are empty
             for (int i = index - 1; i >= 0; i--) {
                 edge.lanes.lockLane(i);
-                boolean isOutermostVehicle = edge.lanes.isEmpty(i);
+                isOutermostVehicle = edge.lanes.isEmpty(i);
                 edge.lanes.unlockLane(i);
 
                 if (!isOutermostVehicle)
