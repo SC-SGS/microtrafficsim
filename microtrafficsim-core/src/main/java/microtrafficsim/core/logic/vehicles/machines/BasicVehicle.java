@@ -29,6 +29,7 @@ public abstract class BasicVehicle implements Vehicle {
     private Driver driver;
     private DirectedEdge.Lane lane;
     private int outermostTurningLaneIndex;
+    private boolean laneIsCorrect;
     private LaneChangeDirection laneChangeDirection;
 
     /* dynamic information */
@@ -92,6 +93,7 @@ public abstract class BasicVehicle implements Vehicle {
                 strBuilder.appendln(driver);
             if (lane != null) {
                 strBuilder.appendln(lane);
+                strBuilder.appendln("lane is correct = " + laneIsCorrect);
                 strBuilder.appendln("");
                 strBuilder.appendln("-- infos from next node --");
                 strBuilder.appendln(
@@ -108,12 +110,21 @@ public abstract class BasicVehicle implements Vehicle {
         this.driver = driver;
     }
 
-    private boolean isLastVelocityZero() {
+    @Override
+    public boolean isLastVelocityZero() {
         return lastVelocityIsZero;
     }
 
     private void setLastVelocityZero(boolean wasZero) {
         lastVelocityIsZero = wasZero;
+    }
+
+    public boolean isLaneCorrect() {
+        return laneIsCorrect;
+    }
+
+    public void setLaneIsCorrect(boolean laneIsCorrect) {
+        this.laneIsCorrect = laneIsCorrect;
     }
 
     /*
@@ -171,8 +182,10 @@ public abstract class BasicVehicle implements Vehicle {
         if (!driver.getRoute().isEmpty()) {
             nextEdge = driver.peekRoute();
             outermostTurningLaneIndex = lane.getDestination().findOutermostTurningLaneIndex(lane.getEdge(), nextEdge);
+            setLaneIsCorrect(lane.getDestination().isLaneCorrect(lane, driver.peekRoute()));
         } else {
             outermostTurningLaneIndex = 0;
+            setLaneIsCorrect(true);
         }
 
         assert outermostTurningLaneIndex >= 0 : "Outermost turning lane index = " + outermostTurningLaneIndex + " < 0";
@@ -384,7 +397,7 @@ public abstract class BasicVehicle implements Vehicle {
         laneChangeDirection = LaneChangeDirection.NONE;
 
         if (driver.tendToChangeLane()) {
-            if (shouldRegister()) {
+            if (shouldGetIntoCorrectLane()) {
                 tendToOutermostLane();
             } else {
                 tendToOvertaking();
@@ -397,11 +410,18 @@ public abstract class BasicVehicle implements Vehicle {
         if (laneChangeDirection != LaneChangeDirection.NONE) {
             if (laneChangeDirection == LaneChangeDirection.OUTER) {
                 changeToOuterLane();
-            } else if (laneChangeDirection == LaneChangeDirection.INNER) {
+            }
+            else if (laneChangeDirection == LaneChangeDirection.INNER) {
                 changeToInnerLane();
             }
 
             lane.getDestination().unregisterVehicle(this);
+            if (!driver.getRoute().isEmpty()) {
+                setLaneIsCorrect(lane.getDestination().isLaneCorrect(lane, driver.peekRoute()));
+        }
+            else {
+                setLaneIsCorrect(true);
+    }
         }
     }
 
@@ -410,7 +430,6 @@ public abstract class BasicVehicle implements Vehicle {
         /* variables needed */
         Vehicle vehicleInFront;
         int distance;
-        Boolean laneIsCorrect = null;
         boolean isBraking = true;
         boolean shouldCheckForCorrection = true;
 
@@ -429,20 +448,18 @@ public abstract class BasicVehicle implements Vehicle {
             // would cross node?
             if (velocity >= distance) {
                 if (!driver.getRoute().isEmpty()) {
-                    if (lane.getDestination().permissionToCross(this)) {
+                    if (isLaneCorrect() && lane.getDestination().permissionToCross(this)) {
                         // if next road has vehicles => brake for this
                         // else => brake for end of next road
-                        DirectedEdge.Lane nextLane = lane.getDestination().getLeavingLane(lane, driver.peekRoute());
-                        laneIsCorrect = nextLane != null;
-                        if (laneIsCorrect) {
                             shouldCheckForCorrection = false;
 
+                        DirectedEdge.Lane nextLane
+                            = lane.getDestination().getLeavingLane(lane, driver.peekRoute());
                             int maxInsertionIndex = nextLane.getMaxInsertionIndex();
                             if (maxInsertionIndex == nextLane.getLength() - 1)
                                 maxInsertionIndex--;
                             distance += maxInsertionIndex + 1;
                         }
-                    }
                 } else {
                     shouldCheckForCorrection = false;
                 }
@@ -463,17 +480,17 @@ public abstract class BasicVehicle implements Vehicle {
 
         if (shouldCheckForCorrection && velocity > 0) {
             // if vehicle reaches last cell of current lane
+            assert cellPosition + velocity <= lane.getLength() - 1
+                 : "Should brake for end of road if the following code should be executed.";
             if (cellPosition + velocity == lane.getLength() - 1) {
-                // performance-expensive tie breaker: outermost vehicle
-                if (!lane.containsOutermostVehicles()) {
-                    // performance-expensive tie breaker: lane check
-                    if (laneIsCorrect == null) {
-                        // route is always not empty because laneIsCorrect would be not null otherwise
-                        laneIsCorrect = lane.getDestination().isLaneCorrect(lane, driver.peekRoute());
-                    }
-
-                    if (!laneIsCorrect)
+                if (!isLaneCorrect()) {
+                    // if not: outermost vehicle and critical zone is empty
+                    // => deadlock danger if vehicle does not brake!
+                    if (
+                        !(lane.containsOutermostVehicles() && lane.getEdge().isCriticalZoneEmpty())
+                    ) {
                         velocity--;
+                    }
                 }
             }
         }
@@ -528,19 +545,32 @@ public abstract class BasicVehicle implements Vehicle {
             lane.getDestination().unregisterVehicle(this);
     }
 
-    private boolean shouldRegister() {
+    private boolean shouldGetIntoCorrectLane() {
         // the order of the if-statements is chosen by their runtime
         // check for:
         // - standing at the end of the road?
         // - Is route empty? If yes, vehicle doesn't have to register
-        // - Is vehicle on the correct lane? If not, it has to change lane before register
-        // - Does vehicle have front vehicles? If yes, it doesn't have to register.
         int distance = lane.getLength() - cellPosition;
         if (getMaxVelocity() >= distance)
             if (!driver.getRoute().isEmpty())
-                if (lane.getDestination().isLaneCorrect(lane, driver.peekRoute()))
-                    if (!lane.hasVehicleInFront(this))
+                return true;
+
+        return false;
+    }
+
+    private boolean shouldRegister() {
+        // the order of the if-statements is chosen by their runtime
+        // check for:
+        // - Is vehicle on the correct lane? If not, it has to change lane before register
+        // - Does vehicle have front vehicles? If yes, it doesn't have to register.
+        if (shouldGetIntoCorrectLane()) {
+            // if route is empty => isLaneCorrect is always true but shouldGetIntoCorrectLane() is false
+            if (isLaneCorrect()) {
+                if (!lane.hasVehicleInFront(this)) {
                         return true;
+                }
+            }
+        }
 
         return false;
     }

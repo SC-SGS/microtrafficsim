@@ -145,6 +145,19 @@ public class DirectedEdge
 
 
 
+    public boolean isCriticalZoneEmpty() {
+        for (int laneNo = 0; laneNo < getNumberOfLanes(); laneNo++) {
+            lanes.lockLane(laneNo);
+            boolean isEmpty = lanes.get(laneNo, getLength() - 1) == null;
+            lanes.unlockLane(laneNo);
+
+            if (!isEmpty)
+                return false;
+        }
+
+        return true;
+    }
+
     public int getNumberOfLanes() {
         return streetInfo.raw.nLanes;
     }
@@ -361,7 +374,7 @@ public class DirectedEdge
 
                 if (!isOutermostVehicle) {
                     return false;
-            }
+                }
             }
 
             return true;

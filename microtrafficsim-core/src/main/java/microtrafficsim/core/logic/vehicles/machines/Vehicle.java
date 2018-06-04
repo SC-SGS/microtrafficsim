@@ -24,6 +24,8 @@ public interface Vehicle extends LogicVehicleEntity {
 
     void setDriver(Driver driver);
 
+    public boolean isLastVelocityZero();
+
 
     /*
     |===========|
