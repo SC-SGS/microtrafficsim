@@ -1,5 +1,7 @@
 package microtrafficsim.core.logic.streets;
 
+import java.util.Iterator;
+
 import microtrafficsim.core.entities.street.LogicStreetEntity;
 import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.logic.nodes.Node;
@@ -14,11 +16,6 @@ import microtrafficsim.math.Vec2d;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.strings.builder.BasicStringBuilder;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -342,8 +339,8 @@ public class DirectedEdge
         }
 
         /**
-         * @return true if is the outermost vehicle. ; if traffic rule is right-before-left, the outermost
-         * vehicle has no vehicles right to it
+         * @return true if contains the outermost vehicles.
+         * If traffic rule is right-before-left, the outermost vehicle has no vehicles right to it.
          */
         public boolean containsOutermostVehicles() {
             // check whether self is not empty
@@ -351,8 +348,9 @@ public class DirectedEdge
             boolean isOutermostVehicle = !edge.lanes.isEmpty(index);
             edge.lanes.unlockLane(index);
 
-            if (!isOutermostVehicle)
+            if (!isOutermostVehicle) {
                 return false;
+            }
 
 
             // check whether outer lanes are empty
@@ -361,8 +359,9 @@ public class DirectedEdge
                 isOutermostVehicle = edge.lanes.isEmpty(i);
                 edge.lanes.unlockLane(i);
 
-                if (!isOutermostVehicle)
+                if (!isOutermostVehicle) {
                     return false;
+            }
             }
 
             return true;
