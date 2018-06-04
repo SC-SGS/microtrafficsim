@@ -205,9 +205,20 @@ public abstract class BasicVehicle implements Vehicle {
             assert distance > 0 : "Something is wrong with the data structure! " +
                     "Vehicle, expected to be at the very front, is not.";
 
-            if (distance < getMaxVelocity())
-                if (velocity > other.getVelocity() || other.getVelocity() == 0)
-                    return true;
+            // traffic jam inversion
+            if (
+                other.isLastVelocityZero()
+                || (distance < getMaxVelocity() && getVelocity() > other.getVelocity())
+            ) {
+                return true;
+            }
+
+            // // no traffic jam inversion
+            // if (distance < getMaxVelocity()) {
+            //     if (velocity > other.getVelocity() || other.getVelocity() == 0) {
+            //         return true;
+            //     }
+            // }
         }
         return false;
     }
@@ -418,10 +429,10 @@ public abstract class BasicVehicle implements Vehicle {
             lane.getDestination().unregisterVehicle(this);
             if (!driver.getRoute().isEmpty()) {
                 setLaneIsCorrect(lane.getDestination().isLaneCorrect(lane, driver.peekRoute()));
-        }
+            }
             else {
                 setLaneIsCorrect(true);
-    }
+            }
         }
     }
 
