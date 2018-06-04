@@ -61,6 +61,7 @@ public abstract class MeasurementExample {
 
     private static boolean hasCollected = false;
     private static boolean shouldShutdown = false;
+    private static boolean errorOccured = false;
 
 
     public static void main(String[] args) throws Exception {
@@ -94,6 +95,7 @@ public abstract class MeasurementExample {
                 config.seed = files.seed;
                 logger.info("new seed " + config.seed);
                 config.multiThreading.nThreads = files.nthreads;
+                logger.info("using " + config.multiThreading.nThreads + " threads");
                 config.speedup = Integer.MAX_VALUE;
                 config.scenario.showAreasWhileSimulating = true;
                 if (files.maxVehicleCount != null)
@@ -197,24 +199,29 @@ public abstract class MeasurementExample {
 
 
                 /* setup frame */
-                JFrame frame = setupFrame(viewer, files.visualized);
-                frame.setLocationRelativeTo(null);
-                frame.setVisible(true);
-                if (files.visualized)
+                JFrame frame = null;
+                if (files.visualized) {
+                    frame = setupFrame(viewer);
+                    frame.setLocationRelativeTo(null);
+                    frame.setVisible(true);
                     viewer.show();
+                }
 
 
 
                 /* simulate */
                 simulation.addStepListener(sim -> {
-                    if (shouldShutdown
+                    if (
+                        shouldShutdown
                             || sim.getAge() >= files.maxAge
-                            || sim.getScenario().getVehicleContainer().isEmpty())
-                    {
+                        || sim.getScenario().getVehicleContainer().isEmpty()
+                    ) {
                         logger.info("CANCEL SIMULATION");
                         sim.cancel();
-                        shouldShutdown = files.automatic;
-                    } else {
+                        errorOccured = sim.getAge() >= files.maxAge;
+                        shouldShutdown |= !files.visualized;
+                    }
+                    else {
                         if (sim.getAge() % 50 == 0)
                             logger.info("Finished simulation steps: " + sim.getAge());
                     }
@@ -225,6 +232,7 @@ public abstract class MeasurementExample {
 
 
                 /* store collected data */
+                JFrame finalFrame = frame;
                 new Thread(() -> {
                     while (!simulation.isPaused()) {
                         try {
@@ -234,41 +242,53 @@ public abstract class MeasurementExample {
                         }
                     }
 
-                    if (files.visualized && !files.automatic) {
-                        JOptionPane.showMessageDialog(
-                                frame,
+                    if (!errorOccured) {
+                        if (files.visualized) {
+                            JOptionPane.showMessageDialog(
+                                finalFrame,
                                 "Saving data starts.\nThis could take a moment.",
                                 "Data saving",
                                 JOptionPane.INFORMATION_MESSAGE);
-                    }
-                    logger.info("START saving data (this could take a moment)");
-                    FileManager fileManager = new FileManager(files.outputPath);
-                    for (CSVType type : CSVType.values()) {
-                        logger.info("WRITE " + type.getFilename());
-
-                        fileManager.writeDataToFile(type.getFilename(), "", true);
-                        Iterator<String> iter = simulation.getCSVIterator(type);
-
-                        while (iter.hasNext()) {
-                            StringBuilder builder = new BasicStringBuilder();
-                            for (int i = 0; i < 1000; i++)
-                                if (iter.hasNext())
-                                    builder.append(iter.next());
-                                else
-                                    break;
-
-                            fileManager.writeDataToFile(type.getFilename(), builder.toString(), false);
                         }
-                    }
-                    logger.info("FINISHED saving data");
-                    if (files.visualized && !files.automatic) {
-                        JOptionPane.showMessageDialog(
-                                frame,
+                        logger.info("START saving data (this could take a moment)");
+                        FileManager fileManager = new FileManager(files.outputPath);
+                        for (CSVType type : CSVType.values()) {
+                            logger.info("WRITE " + type.getFilename());
+
+                            fileManager.writeDataToFile(type.getFilename(), "", true);
+                            Iterator<String> iter = simulation.getCSVIterator(type);
+
+                            while (iter.hasNext()) {
+                                StringBuilder builder = new BasicStringBuilder();
+                                for (int i = 0; i < 1000; i++) {
+                                    if (iter.hasNext()) {
+                                        builder.append(iter.next());
+                                    } else {
+                                        break;
+                                    }
+                                }
+
+                                fileManager.writeDataToFile(type.getFilename(), builder.toString(), false);
+                            }
+                        }
+                        logger.info("FINISHED saving data");
+                        if (files.visualized) {
+                            JOptionPane.showMessageDialog(
+                                finalFrame,
                                 "Saving data finished.",
                                 "Data saving",
                                 JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    } else {
+                        String errorMsg = "Simulation has run out without reaching goal. No files saved.";
+                        logger.error(errorMsg);
+                        if (files.visualized)
+                            JOptionPane.showMessageDialog(
+                                    finalFrame,
+                                    errorMsg,
+                                    "Simulation unsuccessful",
+                                    JOptionPane.ERROR_MESSAGE);
                     }
-
 
                     hasCollected = true;
                 }).start();
@@ -287,9 +307,10 @@ public abstract class MeasurementExample {
                         }
                     }
 
-                    if (files.visualized)
+                    if (files.visualized) {
                         finalViewer.destroy();
-                    frame.dispose();
+                        finalFrame.dispose();
+                    }
                     System.exit(0);
                 }).start();
             } catch (Exception e) {
@@ -347,14 +368,6 @@ public abstract class MeasurementExample {
                 .hasArg()
                 .argName("PATH_TO_CSV_FILES")
                 .desc("Path to output csv file; default is current directory")
-                .build());
-
-        options.addOption(Option
-                .builder()
-                .longOpt("automatic")
-                .hasArg()
-                .argName("BOOLEAN_VALUE")
-                .desc("false if user input is needed to continue/exit (default is true)")
                 .build());
 
         options.addOption(Option
@@ -421,10 +434,6 @@ public abstract class MeasurementExample {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp("measurement", options);
                 System.exit(0);
-            }
-
-            if (line.hasOption("automatic")) {
-                files.automatic = parseBoolean(line.getOptionValue("automatic").toLowerCase());
             }
 
             if (line.hasOption("nthreads")) {
@@ -519,14 +528,13 @@ public abstract class MeasurementExample {
         throw new Exception("Couldn't parse boolean input.");
     }
 
-    private static JFrame setupFrame(MapViewer viewer, boolean visualized) {
+    private static JFrame setupFrame(MapViewer viewer) {
         /* create and initialize the JFrame */
         JFrame frame = new JFrame("MicroTrafficSim - Measurement Example");
-        frame.setIconImage(new ImageIcon(MeasurementExample.class.getResource("/icon/128x128.png")).getImage());
-        if (visualized) {
-            frame.setSize(viewer.getInitialWindowWidth(), viewer.getInitialWindowHeight());
-            frame.add(viewer.getVisualizationPanel());
-        }
+        ImageIcon icon = new ImageIcon(MeasurementExample.class.getResource("/icon/128x128.png"));
+        frame.setIconImage(icon.getImage());
+        frame.setSize(viewer.getInitialWindowWidth(), viewer.getInitialWindowHeight());
+        frame.add(viewer.getVisualizationPanel());
 
         /*
          * Note: JOGL automatically calls glViewport, we need to make sure that this
@@ -553,7 +561,6 @@ public abstract class MeasurementExample {
         private LinkedList<File> mtsroutes;
         private String outputPath = "";
 
-        private boolean automatic = true;
         private int nthreads = 8;
         private long seed = 42;
         private boolean visualized = true;
