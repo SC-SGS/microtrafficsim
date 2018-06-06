@@ -25,7 +25,7 @@ By participating, you are expected to uphold this code.
 
 ## Styleguides
 
-### Git Commit Messages
+### [Git Commit Messages][website_git_commit_messages]
 
 These points make committing easier and clearer.
 * Use the present tense ("Add feature" not "Added feature")
@@ -65,5 +65,6 @@ For more information, see [the original site][website_semantic_versioning].
 
 
 
+[website_git_commit_messages]: https://chris.beams.io/posts/git-commit
 [website_gitflow_workflow]: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
 [website_semantic_versioning]: https://semver.org
