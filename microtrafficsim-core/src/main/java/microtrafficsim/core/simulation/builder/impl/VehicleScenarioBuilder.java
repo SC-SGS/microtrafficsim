@@ -13,8 +13,6 @@ import microtrafficsim.core.simulation.builder.LogicVehicleFactory;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.Scenario;
-import microtrafficsim.core.simulation.utils.RouteContainer;
-import microtrafficsim.core.simulation.utils.SortedRouteContainer;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.utils.Resettable;
 import microtrafficsim.utils.concurrency.delegation.StaticThreadDelegator;
@@ -26,8 +24,6 @@ import microtrafficsim.utils.progressable.ProgressListener;
 import microtrafficsim.utils.strings.StringUtils;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -182,6 +178,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
                     Route metaRoute = vehicle.getDriver().getRoute();
                     if (metaRoute instanceof MetaRoute) {
                         StackRoute route = new StackRoute(metaRoute.getSpawnDelay());
+                        route.setMonitored(metaRoute.isMonitored());
 
                         ShortestPathAlgorithm<Node, DirectedEdge> scout = vehicleScouts.get(vehicle.getId());
                         scout.findShortestPath(metaRoute.getOrigin(), metaRoute.getDestination(), route);
@@ -208,6 +205,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
 
             if (metaRoute instanceof MetaRoute) {
                 StackRoute route = new StackRoute(metaRoute.getSpawnDelay());
+                route.setMonitored(metaRoute.isMonitored());
 
                 ShortestPathAlgorithm<Node, DirectedEdge> scout = scenario.getScoutFactory().get();
                 scout.findShortestPath(metaRoute.getOrigin(), metaRoute.getDestination(), route);
@@ -251,7 +249,7 @@ public class VehicleScenarioBuilder implements ScenarioBuilder, Seeded, Resettab
     */
     @Override
     public void reset() {
-        logger.debug("reset " + VehicleScenarioBuilder.class.getSimpleName());
+        logger.debug("reset " + getClass().getSimpleName());
         idGenerator.reset();
         seedGenerator.reset();
     }

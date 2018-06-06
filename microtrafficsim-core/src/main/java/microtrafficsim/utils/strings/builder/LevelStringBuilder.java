@@ -1,5 +1,7 @@
 package microtrafficsim.utils.strings.builder;
 
+import microtrafficsim.core.logic.nodes.Node;
+
 /**
  * @author Dominic Parga Cacheiro
  */
@@ -108,14 +110,13 @@ public class LevelStringBuilder implements StringBuilder {
      */
     @Override
     public LevelStringBuilder append(String str) {
-
         String[] lines;
         int lastIdx = -1;
         if (levelSeparator == null)
             lines = new String[]{str};
         else {
             lines = str.split(levelSeparator);
-            str.lastIndexOf(levelSeparator);
+            lastIdx = str.lastIndexOf(levelSeparator);
         }
 
         if (lines.length > 0) {

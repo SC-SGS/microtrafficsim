@@ -4,7 +4,6 @@ import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
 import microtrafficsim.core.logic.vehicles.VehicleState;
 import microtrafficsim.core.logic.vehicles.VehicleStateListener;
 import microtrafficsim.core.logic.vehicles.driver.Driver;
-import microtrafficsim.core.logic.NagelSchreckenbergException;
 
 /**
  * @see Driver
@@ -12,7 +11,6 @@ import microtrafficsim.core.logic.NagelSchreckenbergException;
  * @author Dominic Parga Cacheiro
  */
 public interface Vehicle extends LogicVehicleEntity {
-
     /*
     |============|
     | attributes |
@@ -26,9 +24,8 @@ public interface Vehicle extends LogicVehicleEntity {
 
     void setDriver(Driver driver);
 
-    void setVehicleInFront(Vehicle vehicleInFront);
+    public boolean isLastVelocityZero();
 
-    void setVehicleInBack(Vehicle vehicleInBack);
 
     /*
     |===========|
@@ -47,6 +44,7 @@ public interface Vehicle extends LogicVehicleEntity {
 
     void addStateListener(VehicleStateListener listener);
 
+
     /*
     |===========================|
     | Nagel-Schreckenberg-model |
@@ -54,7 +52,11 @@ public interface Vehicle extends LogicVehicleEntity {
     */
     void accelerate();
 
-    void brake() throws NagelSchreckenbergException;
+    void willChangeLane();
+
+    void changeLane();
+
+    void brake();
 
     void dawdle();
 
@@ -66,4 +68,10 @@ public interface Vehicle extends LogicVehicleEntity {
     int getVelocity();
 
     int getMaxVelocity();
+
+
+
+    enum LaneChangeDirection {
+        OUTER, INNER, NONE
+    }
 }

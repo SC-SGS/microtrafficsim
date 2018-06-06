@@ -42,6 +42,7 @@ public class TileIntersectors {
      * @return {@code true} if the projected line intersects with the given tile.
      */
     public static boolean intersect(MultiLine line, Rect2d tile, Projection projection) {
+        // TODO: verify and fix problem with horizontal and vertical lines
 
         Vec2d a = projection.project(line.coordinates[0]);
         for (int i = 1; i < line.coordinates.length; i++) {
@@ -58,13 +59,20 @@ public class TileIntersectors {
             double cyb = clamp(b.y, tile.ymin, tile.ymax);
 
             // transform the clamped coordinates to line coordinates
-            double sxa = (cxa - a.x) / (b.x - a.x);
+            double sxa = (cxa - a.x) / (b.x - a.x);         // FIXME: divisor may be zero
             double sxb = (cxb - a.x) / (b.x - a.x);
             double sya = (cya - a.y) / (b.y - a.y);
             double syb = (cyb - a.y) / (b.y - a.y);
 
+            // Note: if line is vertical or horizontal, the line is, at this point, guaranteed to be inside the
+            // respective x or y segment of the tile due to the out-of-bounds check above.
+
             // check if line-segments intersect
-            if (sxb >= sxa && syb >= sya) return true;
+            boolean x = !(Double.isFinite(sxa) && Double.isFinite(sxb)) || sxb >= sxa;
+            boolean y = !(Double.isFinite(sya) && Double.isFinite(syb)) || syb >= sya;
+
+
+            if (x && y) return true;
 
             a = b;
         }

@@ -54,4 +54,28 @@ public class FileManager {
             outputStream.close();
         } catch (IOException e) { System.err.println("Couldn't open/create file " + fileName); }
     }
+
+    /**
+     * Write the given String to a txt-file with name fileName.
+     *
+     * @param file      data file
+     * @param data      String of data
+     * @param overwrite YES, if the file with the given name already exists and shall
+     *                  be overwritten
+     */
+    public void writeDataToFile(File file, String data, boolean overwrite) {
+
+        File path = file.getParentFile();
+        if (path != null)
+            if (!path.exists())
+                path.mkdirs();
+
+        try {
+            PrintWriter outputStream = new PrintWriter(new FileOutputStream(file, !overwrite));
+
+            outputStream.print(data);
+
+            outputStream.close();
+        } catch (IOException e) { System.err.println("Couldn't open/create file " + file.getName()); }
+    }
 }

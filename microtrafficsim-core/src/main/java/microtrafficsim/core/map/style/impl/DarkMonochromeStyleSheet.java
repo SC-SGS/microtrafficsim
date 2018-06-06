@@ -14,16 +14,7 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public class DarkMonochromeStyleSheet extends BasicStyleSheet {
-    private final static EasyMarkableLogger logger = new EasyMarkableLogger(DarkMonochromeStyleSheet.class);
-
-    private final static LineWidthBaseFunction LINE_WIDTH_BASE_FUNCTION = (offset, base, exp1, exp2, zoom) -> {
-        if (zoom >= 12)
-            return offset + base * (float) Math.pow(exp1, (19 - zoom));
-        else if (zoom >= 10)
-            return offset + base * (float) Math.pow(exp1, (19 - 12)) + base * (float) Math.pow(exp2, 12 - zoom);
-        else
-            return offset + base * (float) Math.pow(exp1, (19 - 12)) - base * (float) Math.pow(exp2, 12 - 11);
-    };
+    private static final EasyMarkableLogger logger = new EasyMarkableLogger(DarkMonochromeStyleSheet.class);
 
 
     @Override
@@ -64,71 +55,13 @@ public class DarkMonochromeStyleSheet extends BasicStyleSheet {
     }
 
     @Override
-    protected float getStreetLineWidthOutline(String streetType, int zoom) {
-        float offset = 0;
-        float exp1 = 0;
-
-        switch (streetType) {
-            case "motorway":
-            case "trunk":
-                offset = 50.f;
-                exp1   = 1.30f;
-                break;
-            case "primary":
-            case "secondary":
-            case "tertiary":
-                offset = 40.f;
-                exp1   = 1.20f;
-                break;
-            case "unclassified":
-            case "residential":
-            case "road":
-                offset = 30.f;
-                exp1   = 1.15f;
-                break;
-            case "living_street":
-                offset = 25.f;
-                exp1   = 1.10f;
-                break;
-            default:
-                logger.info("The outline line width of " + streetType + " is not defined.");
-        }
-
-        return LINE_WIDTH_BASE_FUNCTION.get(offset, 20.f, exp1, 0.75f, zoom);
+    protected Color getStreetCenterLineColor(String streetType) {
+        return getStreetOutlineColor(streetType);
     }
 
     @Override
-    protected float getStreetLineWidthInline(String streetType, int zoom) {
-        float offset = 0;
-        float exp1 = 0;
-
-        switch (streetType) {
-            case "motorway":
-            case "trunk":
-                offset = 45.f;
-                exp1   = 1.32f;
-                break;
-            case "primary":
-            case "secondary":
-            case "tertiary":
-                offset = 35.f;
-                exp1   = 1.22f;
-                break;
-            case "unclassified":
-            case "residential":
-            case "road":
-                offset = 25.f;
-                exp1   = 1.17f;
-                break;
-            case "living_street":
-                offset = 20.f;
-                exp1   = 1.12f;
-                break;
-            default:
-                logger.info("The inline line width of " + streetType + " is not defined.");
-        }
-
-        return LINE_WIDTH_BASE_FUNCTION.get(offset, 20.f, exp1, 0.3f, zoom);
+    protected Color getStreetLaneLineColor(String streetType) {
+        return getStreetOutlineColor(streetType);
     }
 
     @Override
@@ -136,9 +69,5 @@ public class DarkMonochromeStyleSheet extends BasicStyleSheet {
         Color[] colors = VehicleColorSchemes.RED_TO_GREEN;
         int v = MathUtils.clamp(vehicle.getVelocity(), 0, colors.length - 1);
         return colors[v];
-    }
-
-    public interface LineWidthBaseFunction {
-        float get(float offset, float base, float exp1, float exp2, int zoom);
     }
 }

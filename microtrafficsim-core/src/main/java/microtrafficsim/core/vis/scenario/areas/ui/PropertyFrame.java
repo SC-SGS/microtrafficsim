@@ -14,10 +14,12 @@ public class PropertyFrame extends JFrame {
 
     private UIManager ui;
     private JComboBox<TypeComboBoxEntry> type;
+    private JCheckBox monitored;
     private JPanel panel;
 
     private Collection<AreaComponent> areas = null;
     private Area.Type lastSelectedType = Area.Type.ORIGIN;
+    private boolean lastSelectedMonitored = false;
 
 
     public PropertyFrame(UIManager ui) {
@@ -37,6 +39,8 @@ public class PropertyFrame extends JFrame {
         {
             JLabel typelabel = new JLabel("Type: ");
             GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 0;
+            gbc.gridy = 0;
             gbc.anchor = GridBagConstraints.CENTER;
             gbc.fill = GridBagConstraints.BOTH;
 
@@ -69,12 +73,44 @@ public class PropertyFrame extends JFrame {
             });
 
             GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 1;
+            gbc.gridy = 0;
             gbc.anchor = GridBagConstraints.CENTER;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1.0;
             gbc.weighty = 1.0;
 
             panel.add(type, gbc);
+        }
+
+        {
+            monitored = new JCheckBox("Is monitored?");
+            monitored.setSelected(false);
+
+            monitored.addActionListener(a -> {
+                if (areas.isEmpty()) return;
+
+                ui.getContext().addTask(c -> {
+                    ArrayList<AreaComponent> selected = new ArrayList<>(areas);
+                    boolean isMonitored = isSelectedMonitored();
+
+                    lastSelectedMonitored = isMonitored;
+                    for (AreaComponent area : selected)
+                        area.setMonitored(isMonitored);
+
+                    return null;
+                });
+            });
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.gridx = 1;
+            gbc.gridy = 1;
+            gbc.anchor = GridBagConstraints.CENTER;
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx = 1.0;
+            gbc.weighty = 1.0;
+
+            panel.add(monitored, gbc);
         }
 
         this.add(panel, BorderLayout.NORTH);
@@ -88,6 +124,8 @@ public class PropertyFrame extends JFrame {
         if (areas.isEmpty()) {
             type.setSelectedIndex(-1);
             type.setEnabled(false);
+            monitored.setSelected(false);
+            monitored.setEnabled(false);
 
         } else {
             Iterator<AreaComponent> iter = areas.iterator();
@@ -102,12 +140,17 @@ public class PropertyFrame extends JFrame {
             }
 
             type.setEnabled(true);
+            monitored.setEnabled(true);
 
             if (equal) {
                 lastSelectedType = a.getType();
                 type.setSelectedItem(new TypeComboBoxEntry(a.getType(), ""));
+
+                lastSelectedMonitored = a.isMonitored();
+                monitored.setSelected(a.isMonitored());
             } else {
                 type.setSelectedIndex(-1);
+                monitored.setSelected(false);
             }
         }
     }
@@ -123,6 +166,14 @@ public class PropertyFrame extends JFrame {
 
     public Area.Type getLastSelectedType() {
         return lastSelectedType;
+    }
+
+    public boolean isSelectedMonitored() {
+        return monitored.isSelected();
+    }
+
+    public boolean isLastSelectedMonitored() {
+        return lastSelectedMonitored;
     }
 
 

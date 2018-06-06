@@ -128,6 +128,8 @@ public class TileBasedVisualizer implements Visualizer {
         attributes.putDefaultAttributeBinding("a_texcoord", VertexAttributes.TEXCOORD2);
 
         attributes.putDefaultAttributeBinding("a_color", VertexAttributes.COLOR);
+
+        attributes.putDefaultAttributeBinding("a_line", VertexAttributes.LINE);
     }
 
 
@@ -342,6 +344,7 @@ public class TileBasedVisualizer implements Visualizer {
         int height = context.getDrawable().getSurfaceHeight();
         uViewport.set(width, height, 1.f / width, 1.f / height);
 
+        context.DepthTest.setMask(gl, true);
         context.DepthTest.enable(gl);
         context.DepthTest.setFunction(gl, GL3.GL_ALWAYS, true);
 

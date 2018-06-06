@@ -13,6 +13,7 @@ import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor
 import microtrafficsim.core.exfmt.extractor.streetgraph.StreetGraphExtractor;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.impl.LightMonochromeStyleSheet;
@@ -24,12 +25,13 @@ import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.core.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.vis.UnsupportedFeatureException;
 import microtrafficsim.core.vis.simulation.SpriteBasedVehicleOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
+import microtrafficsim.debug.overlay.ConnectorOverlay;
 import microtrafficsim.math.random.distributions.impl.Random;
 import microtrafficsim.utils.concurrency.interruptsafe.InterruptSafeFutureTask;
 import microtrafficsim.utils.logging.LoggingLevel;
@@ -62,6 +64,7 @@ public class SimulationExample {
     private SimulationConfig config;
     private TileBasedMapViewer viewer;
     private VehicleOverlay overlay;
+    private ConnectorOverlay debugOverlay;
 
     private String file = null;
     private SegmentFeatureProvider segment = null;
@@ -89,6 +92,9 @@ public class SimulationExample {
         /* Create and add vehicle-overlay */
         overlay = new SpriteBasedVehicleOverlay(viewer.getProjection(), config.visualization.style);
         viewer.addOverlay(0, overlay);
+
+        debugOverlay = new ConnectorOverlay(viewer.getProjection(), config);
+        viewer.addOverlay(1, debugOverlay);
 
         /* Create the window and display the visualization */
         frame = setUpFrame(viewer);
@@ -140,7 +146,7 @@ public class SimulationExample {
      */
     private JFrame setUpFrame(MapViewer viewer) {
         /* create and initialize the JFrame */
-        JFrame frame = new JFrame("MicroTrafficSim - Map Viewer Example");
+        JFrame frame = new JFrame("MicroTrafficSim - Simulation Example");
         frame.setIconImage(new ImageIcon(SimulationExample.class.getResource("/icon/128x128.png")).getImage());
         frame.setSize(viewer.getInitialWindowWidth(), viewer.getInitialWindowHeight());
         frame.add(viewer.getVisualizationPanel());
@@ -411,7 +417,7 @@ public class SimulationExample {
                     QuadTreeTiledMapSegment.Generator tiler = new QuadTreeTiledMapSegment.Generator();
                     TilingScheme scheme = viewer.getPreferredTilingScheme();
 
-                    OSMParser.Result result = parser.parse(file);
+                    OSMParser.Result result = parser.parse(file, new MapProperties(true));
                     segment = tiler.generate(result.segment, scheme, viewer.getPreferredTileGridLevel());
                     graph = result.streetgraph;
 
@@ -444,6 +450,9 @@ public class SimulationExample {
             this.graph = graph;
             this.file = file.getPath();
             viewer.setMap(segment);
+
+            overlay.setMapProperties(segment.getProperties());
+            debugOverlay.update(graph, segment.getProperties());
 
             /* create simulation */
             SwingUtilities.invokeLater(() -> frame.setTitle(getDefaultFrameTitle() + " - [Initializing Simulation]"));

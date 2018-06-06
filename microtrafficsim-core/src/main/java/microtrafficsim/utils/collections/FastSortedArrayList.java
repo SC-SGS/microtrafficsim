@@ -30,7 +30,7 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
 
     public FastSortedArrayList() {
         super();
-        comparator = null;
+        initComparator(null);
     }
 
     public FastSortedArrayList(Comparator<? super E> comparator) {
@@ -57,26 +57,10 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     }
 
     private void initComparator(Comparator<? super E> comparator) {
-        if (comparator != null) {
-            this.comparator = (o1, o2) -> {
-                int cmp = comparator.compare(o1, o2);
-
-                if (cmp == 0)
-                    cmp = Long.compare(o1.hashCode(), o2.hashCode());
-
-                return cmp;
-            };
-        } else {
-            this.comparator = (o1, o2) -> {
-                Comparable<? super E> e1 = (Comparable<? super E>) o1;
-                int cmp = e1.compareTo(o2);
-
-                if (cmp == 0)
-                    cmp = Long.compare(o1.hashCode(), o2.hashCode());
-
-                return cmp;
-            };
-        }
+        if (comparator != null)
+            this.comparator = comparator::compare;
+        else
+            this.comparator = (o1, o2) -> ((Comparable<? super E>) o1).compareTo(o2);
     }
 
 
@@ -251,6 +235,20 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
         return super.get(index);
     }
 
+    public E getFirst() {
+        if (isEmpty())
+            return null;
+        sort();
+        return get(0);
+    }
+
+    public E getLast() {
+        if (isEmpty())
+            return null;
+        sort();
+        return get(size() - 1);
+    }
+
     /**
      * Does not {@link #sort() sort}
      */
@@ -318,6 +316,7 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     public E element() {
         if (isEmpty())
             throw new NoSuchElementException(isEmptyMsg());
+        sort();
         return get(0);
     }
 
@@ -326,9 +325,7 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
      */
     @Override
     public E peek() {
-        if (isEmpty())
-            return null;
-        return get(0);
+        return getFirst();
     }
 
 
@@ -401,15 +398,7 @@ public class FastSortedArrayList<E> extends ArrayList<E> implements Queue<E> {
     /**
      * Does {@link #sort() sort}
      */
-    public Iterator<E> iteratorAsc() {
-        sort();
-        return new AscendingIterator();
-    }
-
-    /**
-     * Does {@link #sort() sort}
-     */
-    public Iterator<E> iteratorDesc() {
+    public Iterator<E> descendingIterator() {
         sort();
         return new DescendingIterator();
     }

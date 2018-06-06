@@ -89,15 +89,10 @@ task distDeb(type: Deb) {
 }
 
 distZip {
-    archiveName = "$distName"
+    archiveName = "${distName}_${distVersion}-${distRelease}_all.zip"
 
-    into("${archiveName}/icon") {
+    into("${distName}_${distVersion}-${distRelease}_all/icon") {
         from "${rootProject.projectDir}/resources/icon/png"
-    }
-
-    doLast {
-        def name = "${distName}_${distVersion}-${distRelease}_all.zip"
-        archivePath.renameTo(file("${->project.buildDir}/distributions/${name}"))
     }
 }
 
@@ -106,7 +101,8 @@ task writeArchPkgbuild() {
 
     doLast {
         def distZipName = "${distName}_${distVersion}-${distRelease}_all.zip"
-        def distZipNameVar = "\${pkgname}_\${pkgver}-\${pkgrel}_all.zip"
+        def distZipNameBase = "\${pkgname}_\${pkgver}-\${pkgrel}_all"
+        def distZipNameVar = "${distZipNameBase}.zip"
         def distTag = "v\${pkgver}"
         def distZipUrl = "https://github.com/sgs-us/microtrafficsim/releases/download/${distTag}/${distZipNameVar}"
         def distZipSha256 = HashUtil.sha256(file("${->project.buildDir}/distributions/${distZipName}")).asHexString()
@@ -129,7 +125,8 @@ task writeArchPkgbuild() {
         pkgbuild <<= "sha256sums=('${distZipSha256}')\n"
         pkgbuild <<= "\n"
         pkgbuild <<= "build() {\n"
-        pkgbuild <<= "    mv \"\${pkgname}/icon/512x512.png\" \${pkgname}.png\n"
+        pkgbuild <<= "    mv \"${distZipNameBase}\" \"\${pkgname}\"\n"
+        pkgbuild <<= "    mv \"\${pkgname}/icon/512x512.png\" \"\${pkgname}.png\"\n"
         pkgbuild <<= "    rm -r \"\${pkgname}/icon\"\n"
         pkgbuild <<= "    rm \"\${pkgname}/bin/\${pkgname}.bat\"\n"
         pkgbuild <<= "    gendesk -f -n --pkgname \"\${pkgname}\" --pkgdesc \"\${pkgdesc}\" --categories \"\${categories}\"\n"

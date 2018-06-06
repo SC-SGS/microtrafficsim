@@ -1,16 +1,17 @@
 package microtrafficsim.core.logic.routes;
 
+import java.util.Stack;
+
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
-
-import java.util.Stack;
 
 /**
  * @author Dominic Parga Cacheiro
  */
 public class StackRoute extends Stack<DirectedEdge> implements Route {
     private int spawnDelay;
+    private boolean isMonitored;
 
 
     public StackRoute() {
@@ -19,6 +20,7 @@ public class StackRoute extends Stack<DirectedEdge> implements Route {
 
     public StackRoute(int spawnDelay) {
         this.spawnDelay = spawnDelay;
+        isMonitored = false;
     }
 
 
@@ -39,7 +41,7 @@ public class StackRoute extends Stack<DirectedEdge> implements Route {
                 strBuilder.appendln("size       = " + size());
             }
         }
-        strBuilder.decLevel().appendln("</" + getClass().getSimpleName() + ">");
+        strBuilder.decLevel().append("</" + getClass().getSimpleName() + ">");
         return strBuilder.toString();
     }
 
@@ -47,8 +49,19 @@ public class StackRoute extends Stack<DirectedEdge> implements Route {
     @Override
     public synchronized StackRoute clone() {
         StackRoute copy = new StackRoute(spawnDelay);
+        copy.setMonitored(isMonitored);
         forEach(copy::push);
         return copy;
+    }
+
+    @Override
+    public boolean isMonitored() {
+        return isMonitored;
+    }
+
+    @Override
+    public void setMonitored(boolean isMonitored) {
+        this.isMonitored = isMonitored;
     }
 
     @Override

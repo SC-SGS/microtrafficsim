@@ -11,7 +11,7 @@ import microtrafficsim.utils.logging.EasyMarkableLogger;
  * @author Dominic Parga Cacheiro, Maximilian Luz
  */
 public class LightStyleSheet extends BasicStyleSheet {
-    private final static EasyMarkableLogger logger = new EasyMarkableLogger(LightStyleSheet.class);
+    private static final EasyMarkableLogger logger = new EasyMarkableLogger(LightStyleSheet.class);
 
 
     @Override
@@ -72,94 +72,17 @@ public class LightStyleSheet extends BasicStyleSheet {
     }
 
     @Override
-    protected float getStreetLineWidthOutline(String streetType, int zoom) {
-        switch (streetType) {
-            case "motorway":
-                if (zoom >= 16)
-                    return 60.f;
-                if (zoom >= 14)
-                    return 80.f;
-                return 95.f;
-            case "trunk":
-                if (zoom >= 16)
-                    return 60.f;
-                if (zoom >= 14)
-                    return 80.f;
-                return 95.f;
-            case "primary":
-                if (zoom >= 16)
-                    return 50.f;
-                if (zoom >= 14)
-                    return 70.f;
-                return 85.f;
-            case "secondary":
-                if (zoom >= 16)
-                    return 50.f;
-                if (zoom >= 14)
-                    return 70.f;
-                return 85.f;
-            case "tertiary":
-                if (zoom >= 16)
-                    return 50.f;
-                if (zoom >= 14)
-                    return 70.f;
-                return 85.f;
-            case "unclassified":
-                if (zoom >= 16)
-                    return 40.f;
-                if (zoom >= 14)
-                    return 60.f;
-                return 75.f;
-            case "residential":
-                if (zoom >= 16)
-                    return 40.f;
-                if (zoom >= 14)
-                    return 60.f;
-                return 75.f;
-            case "road":
-                if (zoom >= 17)
-                    return 40.f;
-                if (zoom >= 14)
-                    return 60.f;
-                return 75.f;
-            case "living_street":
-                if (zoom >= 16)
-                    return 32.f;
-                if (zoom >= 14)
-                    return 45.f;
-                return 60.f;
-            default: // should be never reached
-                logger.info("The outline line width of " + streetType + " is not defined.");
-                return 0;
-        }
+    protected Color getStreetCenterLineColor(String streetType) {
+        return getStreetOutlineColor(streetType);
     }
 
     @Override
-    protected float getStreetLineWidthInline(String streetType, int zoom) {
-        if (zoom >= 16) {
-            switch (streetType) {
-                case "motorway":
-                    return 48.f;
-                case "trunk":
-                    return 48.f;
-                case "primary":
-                    return 40.f;
-                case "secondary":
-                    return 40.f;
-                case "tertiary":
-                    return 40.f;
-                case "unclassified":
-                    return 30.f;
-                case "residential":
-                    return 30.f;
-                case "road":
-                    if (zoom >= 17)
-                        return 30.f;
-                case "living_street":
-                    return 24.f;
-            }
-        }
-        logger.info("The inline line width of " + streetType + " is not defined.");
-        return 0;
+    protected Color getStreetLaneLineColor(String streetType) {
+        return getStreetOutlineColor(streetType);
+    }
+
+    @Override
+    protected double getStreetOutlineWidth(String streetType, int zoom) {
+        return 2.0 * Math.pow(1.95, 19 - zoom);
     }
 }

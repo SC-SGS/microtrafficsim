@@ -21,4 +21,6 @@ public class VertexAttributes {
     public static final VertexAttribute TEXCOORD3 = new VertexAttribute(DataTypes.FLOAT_VEC3, 2);
 
     public static final VertexAttribute COLOR     = new VertexAttribute(DataTypes.FLOAT_VEC4, 3, true);
+
+    public static final VertexAttribute LINE      = new VertexAttribute(DataTypes.FLOAT_VEC3, 4);
 }

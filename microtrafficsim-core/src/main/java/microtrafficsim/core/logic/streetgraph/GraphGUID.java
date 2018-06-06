@@ -76,11 +76,11 @@ public class GraphGUID {
                 .setDefaultLevelSeparator()
                 .setDefaultLevelSubString();
 
-        builder.appendln("<" + GraphGUID.class.getSimpleName() + ">").incLevel(); {
+        builder.appendln("<" + getClass().getSimpleName() + ">").incLevel(); {
             builder.appendln(bounds);
             builder.appendln("node hash = " + nodeHash);
             builder.appendln("edge hash = " + edgeHash);
-        } builder.decLevel().append("<\\" + GraphGUID.class.getSimpleName() + ">");
+        } builder.decLevel().append("</" + getClass().getSimpleName() + ">");
 
         return builder.toString();
     }

@@ -2,6 +2,7 @@ package microtrafficsim.core.simulation.utils;
 
 import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.math.random.distributions.impl.Random;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -59,6 +60,14 @@ public class UnmodifiableRouteContainer implements RouteContainer {
     | unsupported |
     |=============|
     */
+    /**
+     * @throws UnsupportedOperationException
+     */
+    @Override
+    public Route getRdm(Random random) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * @throws UnsupportedOperationException
      */

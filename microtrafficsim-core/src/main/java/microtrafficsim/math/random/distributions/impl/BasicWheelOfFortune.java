@@ -75,6 +75,14 @@ public class BasicWheelOfFortune<T> implements WheelOfFortune<T> {
     }
 
     @Override
+    public int getWeight(T t) {
+        if (fields.containsKey(t))
+            return fields.get(t);
+        else
+            return 0;
+    }
+
+    @Override
     public void incWeight(T t) {
         Integer weight = fields.get(t);
         if (weight != null) {

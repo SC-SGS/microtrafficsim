@@ -25,7 +25,7 @@ public class ProjectedAreasInjector implements ExchangeFormat.Injector<Projected
             throws Exception {
         Config cfg = fmt.getConfig().get(Config.class);
         if (cfg == null) throw new ExchangeFormatException(
-                "Config for " + ProjectedAreasInjector.class.getSimpleName() + " missing");
+                "Config for " + getClass().getSimpleName() + " missing");
 
         TypedPolygonAreaSet areas = new TypedPolygonAreaSet();
         for (Area area : src) {

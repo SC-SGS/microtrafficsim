@@ -41,7 +41,8 @@ public class TileGridOverlay implements Overlay {
             new ShaderSource(GL3.GL_FRAGMENT_SHADER, new PackagedResource(TileGridOverlay.class, "/shaders/basic.fs"))
     );
 
-    private static final Color COLOR              = Color.fromRGB(0xFF0000);
+    private static final Color COLOR = Color.fromRGB(0xFF0000);
+
 
     private OrthographicView view;
 
@@ -110,8 +111,9 @@ public class TileGridOverlay implements Overlay {
     @Override
     public void display(RenderContext context, MapBuffer buffer) {
         GL3 gl = context.getDrawable().getGL().getGL3();
+
+        context.DepthTest.setMask(gl, false);
         context.DepthTest.disable(gl);
-        gl.glDepthMask(false);
 
         /* update tile grid */
         double zoom   = view.getZoomLevel();
@@ -164,8 +166,6 @@ public class TileGridOverlay implements Overlay {
         gl.glDrawArrays(GL3.GL_LINES, 0, nVertices);
         vao.unbind(gl);
         shader.unbind(gl);
-
-        gl.glDepthMask(true);
     }
 
 

@@ -60,7 +60,40 @@ public class PrioritySkipList<E> implements SkipList<E> {
     public PrioritySkipList(long seed, Comparator<? super E> comparator) {
         clear();
         random          = new Random(seed);
-        this.comparator = comparator;
+
+        /**
+         * <p>
+         * This method is used to compare two objects in this class. A subclass has access to {@code my protected final
+         * comparator}.
+         *
+         * <p>
+         * Default implementation compares in this order:<br>
+         * &bull if ({@code my comparator != null}) => cast objects to {@code E} and use the comparator<br>
+         * &bull else => cast objects to {@link Comparable Comparable<? super E>} and use
+         * {@link Comparable#compareTo(Object) compareTo(E e)}<br>
+         * &bull if ({@code cmp-result == 0}) => use
+         * {@link Long#compare(long, long) Long.compare(o1.hashCode(), o2.hashCode())}
+         */
+        if (comparator != null) {
+            this.comparator = (o1, o2) -> {
+                int cmp = comparator.compare(o1, o2);
+
+                if (cmp == 0)
+                    cmp = Long.compare(o1.hashCode(), o2.hashCode());
+
+                return cmp;
+            };
+        } else {
+            this.comparator = (o1, o2) -> {
+                Comparable<? super E> e1 = (Comparable<? super E>) o1;
+                int cmp = e1.compareTo(o2);
+
+                if (cmp == 0)
+                    cmp = Long.compare(o1.hashCode(), o2.hashCode());
+
+                return cmp;
+            };
+        }
     }
 
     @Override
@@ -170,7 +203,6 @@ public class PrioritySkipList<E> implements SkipList<E> {
 
     @Override
     public boolean remove(Object obj) {
-
         Skipnode<E> infimum = findInfimumOf(obj);
         if (infimum == head)
             return false;
@@ -295,7 +327,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
     | utils |
     |=======|
     */
-    private Skipnode<E> findInfimumOf(Object value) {
+    private Skipnode<E> findInfimumOf(Object obj) {
 
         int towerLevel = head.tower.getHeight();
         Skipnode<E> curNode = head;
@@ -309,7 +341,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
                 continue;
             }
 
-            int cmp = compare(nextNode.value, value);
+            int cmp = comparator.compare(nextNode.value, (E) obj);
             if (cmp > 0)
                 towerLevel--;
             else if (cmp == 0)
@@ -466,9 +498,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
      * a tower, this method does not work correctly.
      */
     private void createAndFillTower(Skipnode<E> infimum, Skipnode<E> node, Skipnode<E> supremum) {
-
         int towerHeight = throwCoinUntilFalse();
-//        int towerHeight = coinCount; // todo remove
         for (int towerLevel = 1; towerLevel <= towerHeight; towerLevel++) {
 
                 /* set infimum's pointer */
@@ -521,41 +551,8 @@ public class PrioritySkipList<E> implements SkipList<E> {
         System.out.println(skipList);
     }
 
-    /**
-     * <p>
-     * This method is used to compare two objects in this class. A subclass has access to {@code my protected final
-     * comparator}.
-     *
-     * <p>
-     * Default implementation compares in this order:<br>
-     * &bull if ({@code my comparator != null}) => cast objects to {@code E} and use the comparator<br>
-     * &bull else => cast objects to {@link Comparable Comparable<? super E>} and use
-     * {@link Comparable#compareTo(Object) compareTo(E e)}<br>
-     * &bull if ({@code cmp-result == 0}) => use
-     * {@link Long#compare(long, long) Long.compare(o1.hashCode(), o2.hashCode())}
-     */
-    @SuppressWarnings("unchecked")
-    protected int compare(Object o1, Object o2) {
-        int cmp;
-
-        if (comparator != null)
-            cmp = comparator.compare((E) o1, (E) o2);
-        else {
-            Comparable<? super E> e1 = (Comparable<? super E>) o1;
-            cmp = e1.compareTo((E) o2);
-        }
-
-        if (cmp == 0)
-            cmp = Long.compare(o1.hashCode(), o2.hashCode());
-
-        return cmp;
-    }
-
-    /**
-     * @return {@link #compare(Object, Object) compare(o1, o2)} == 0
-     */
     private boolean equal(Object o1, Object o2) {
-        return compare(o1, o2) == 0;
+        return comparator.compare((E) o1, (E) o2) == 0;
     }
 
     private int throwCoinUntilFalse() {
@@ -662,7 +659,6 @@ public class PrioritySkipList<E> implements SkipList<E> {
      * @author Dominic Parga Cacheiro
      */
     private class Tower<E> {
-
         private ArrayList<Skipnode<E>> skipnodes;
         private ArrayList<Integer>     linkLengths;
 
@@ -677,7 +673,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
         @Override
         public String toString() {
             LevelStringBuilder builder = new LevelStringBuilder();
-            builder.appendln("<tower>");
+            builder.appendln("<" + getClass().getSimpleName() + ">");
             builder.incLevel();
 
             for (int towerLevel = getHeight(); towerLevel >= 0; towerLevel--) {
@@ -685,7 +681,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
             }
 
             builder.decLevel();
-            builder.append("</tower>");
+            builder.appendln("</" + getClass().getSimpleName() + ">");
             return builder.toString();
         }
 
@@ -787,7 +783,6 @@ public class PrioritySkipList<E> implements SkipList<E> {
      * @author Dominic Parga Cacheiro
      */
     private class Skipnode<E> {
-
         public final E        value;
         public final Tower<E> tower;
 
@@ -801,7 +796,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
         @Override
         public String toString() {
             LevelStringBuilder builder = new LevelStringBuilder();
-            builder.appendln("<skipnode>");
+            builder.appendln("<" + getClass().getSimpleName() + ">");
             builder.incLevel();
 
             builder.appendln("value:");
@@ -809,7 +804,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
             builder.appendln(tower);
 
             builder.decLevel();
-            builder.append("</skipnode>");
+            builder.appendln("</" + getClass().getSimpleName() + ">");
             return builder.toString();
         }
 

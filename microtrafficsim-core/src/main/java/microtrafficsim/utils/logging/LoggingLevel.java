@@ -6,7 +6,6 @@ import ch.qos.logback.classic.Level;
  * @author Dominic Parga Cacheiro
  */
 public class LoggingLevel {
-
     /*
     |======================================|
     | setup level types for static control |

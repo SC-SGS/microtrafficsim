@@ -87,7 +87,7 @@ public interface Graph extends Seeded, Resettable, ShortestPathGraph {
      * Add the given {@code Node} to this graph. Consider calling {@link #setSeed(long)} afterwards.
      * <p>
      * Note: The specified node is expected to be set up completely, i.e. if a new edge has been created and added to
-     * either existing or new nodes, the edge indices of have to be updated by calling {@link Node#updateEdgeIndices()}
+     * either existing or new nodes, the edge indices of have to be updated by calling {@link Node#updateCrossingIndices()}
      * on both adjacent nodes.
      * <p>
      * Determinism: Please note that adding an edge will break determinism, even if the given seed is the same, thus
@@ -102,7 +102,7 @@ public interface Graph extends Seeded, Resettable, ShortestPathGraph {
      * call {@link #addNode(Node)}.
      * <p>
      * Note: The specified edge is expected to be set up completely, i.e. if a new edge has been created and added to
-     * either existing or new nodes, the edge indices of have to be updated by calling {@link Node#updateEdgeIndices()}
+     * either existing or new nodes, the edge indices of have to be updated by calling {@link Node#updateCrossingIndices()}
      * on both adjacent nodes.
      * <p>
      * Determinism: Please note that adding an edge will break determinism, even if the given seed is the same, thus

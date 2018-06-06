@@ -1,9 +1,29 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+
+import org.slf4j.Logger;
+
 import microtrafficsim.core.convenience.exfmt.ExfmtStorage;
 import microtrafficsim.core.convenience.filechoosing.FileFilterSet;
 import microtrafficsim.core.convenience.filechoosing.MTSFileChooser;
-import microtrafficsim.core.convenience.filechoosing.impl.*;
+import microtrafficsim.core.convenience.filechoosing.impl.AreaFilterSet;
+import microtrafficsim.core.convenience.filechoosing.impl.ConfigFilterSet;
+import microtrafficsim.core.convenience.filechoosing.impl.MapFilterSet;
+import microtrafficsim.core.convenience.filechoosing.impl.RouteFilterSet;
+import microtrafficsim.core.convenience.filechoosing.impl.ScenarioFilterSet;
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.GraphGUID;
@@ -14,6 +34,7 @@ import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
+import microtrafficsim.core.simulation.scenarios.impl.CrossingTheMapScenario;
 import microtrafficsim.core.simulation.scenarios.impl.EndOfTheWorldScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.simulation.utils.RouteContainer;
@@ -23,6 +44,7 @@ import microtrafficsim.core.vis.input.KeyCommand;
 import microtrafficsim.core.vis.scenario.areas.Area;
 import microtrafficsim.core.vis.scenario.areas.ScenarioAreaOverlay;
 import microtrafficsim.core.vis.simulation.VehicleOverlay;
+import microtrafficsim.debug.overlay.ConnectorOverlay;
 import microtrafficsim.ui.gui.menues.MTSMenuBar;
 import microtrafficsim.ui.gui.statemachine.GUIController;
 import microtrafficsim.ui.gui.statemachine.GUIEvent;
@@ -37,14 +59,6 @@ import microtrafficsim.utils.functional.Procedure;
 import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.progressable.ProgressListener;
 import microtrafficsim.utils.strings.WrappedString;
-import org.slf4j.Logger;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.util.Collection;
 
 /**
  * <p>
@@ -99,8 +113,9 @@ public class SimulationController implements GUIController {
 
     /* visualization and parsing */
     private final TileBasedMapViewer mapviewer; // has to be final for correct map update
-    private final VehicleOverlay     overlay;
+    private final VehicleOverlay     vehicleOverlay;
     private ScenarioAreaOverlay      scenarioAreaOverlay;
+    private ConnectorOverlay         connectorOverlay;
 
     private Graph streetgraph;
 
@@ -134,12 +149,12 @@ public class SimulationController implements GUIController {
 
         /* visualization and parsing */
         mapviewer = buildSetup.mapviewer;
-        overlay   = buildSetup.overlay;
+        vehicleOverlay = buildSetup.overlay;
 
         /* simulation */
         simulation      = buildSetup.simulation;
         scenarioBuilder = buildSetup.scenarioBuilder;
-        overlay.setSimulation(simulation);
+        vehicleOverlay.setSimulation(simulation);
 
         /* gui */
         frame = new JFrame(FrameTitle.DEFAULT.get());
@@ -211,8 +226,12 @@ public class SimulationController implements GUIController {
         /* overlays */
         scenarioAreaOverlay = new ScenarioAreaOverlay();
         SwingUtilities.invokeLater(() -> scenarioAreaOverlay.setEnabled(false, false, false));
-        mapviewer.addOverlay(0, scenarioAreaOverlay);
-        mapviewer.addOverlay(1, overlay);
+        mapviewer.addOverlay(1, scenarioAreaOverlay);
+        mapviewer.addOverlay(2, vehicleOverlay);
+
+        connectorOverlay = new ConnectorOverlay(mapviewer.getProjection(), config);
+        mapviewer.addOverlay(0, connectorOverlay);
+        connectorOverlay.setEnabled(false);
 
 
         /* setup JFrame */
@@ -256,7 +275,7 @@ public class SimulationController implements GUIController {
     }
 
     private void shutdown() {
-        boolean yes = UserInteractionUtils.askUserForDecision(
+        boolean yes = UserInteractionUtils.askUserForOk(
                 "Do you really want to exit?",
                 "Close Program",
                 frame);
@@ -383,7 +402,7 @@ public class SimulationController implements GUIController {
     private void transitionLoadMap(File file) {
         // try to interrupt parsing if already running
         if (parsingExecutor.tryStartingInterruptionThread(() -> {
-            boolean yes = UserInteractionUtils.askUserForDecision(
+            boolean yes = UserInteractionUtils.askUserForOk(
                     "Are you sure to cancel the parsing?",
                     "Cancel parsing?",
                     frame);
@@ -465,7 +484,7 @@ public class SimulationController implements GUIController {
     private void transitionNewScenario() {
         // try to interrupt scenario building if already running
         if (scenarioBuildExecutor.tryStartingInterruptionThread(() -> {
-            boolean yes = UserInteractionUtils.askUserForDecision(
+            boolean yes = UserInteractionUtils.askUserForOk(
                     "Are you sure to cancel the scenario building?",
                     "Cancel scenario building?",
                     frame);
@@ -594,6 +613,20 @@ public class SimulationController implements GUIController {
         });
     }
 
+    private void transitionLoadScenario() {
+        // todo
+        /* load map */
+        /* load config */
+        /* load routes */
+    }
+
+    private void transitionSaveScenario() {
+        // todo
+        /* save map */
+        /* save config */
+        /* save routes */
+    }
+
 
     /* preferences */
     private void transitionAcceptPreferences() {
@@ -681,7 +714,7 @@ public class SimulationController implements GUIController {
             /* show map */
             if (success) {
                 simulation.removeCurrentScenario();
-                overlay.setEnabled(true);
+                vehicleOverlay.setEnabled(true);
                 scenarioAreaOverlay.setEnabled(true, true, false);
 
                 setNewFrameTitle = () -> updateFrameTitle(FrameTitle.DEFAULT, file);
@@ -696,6 +729,12 @@ public class SimulationController implements GUIController {
             }
         } catch (InterruptedException e) {
             logger.info("Loading map interrupted by user");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "The map could not be loaded\nbecause the file loader hasn't been set correctly.",
+                    "Map loading error",
+                    JOptionPane.ERROR_MESSAGE);
         }
 
         setNewFrameTitle.invoke();
@@ -706,12 +745,26 @@ public class SimulationController implements GUIController {
      *
      * @return true, if loading was successful; false otherwise
      */
-    private boolean loadMapAndUpdate(File file) throws InterruptedException {
-        Tuple<Graph, MapProvider> result = exfmtStorage.loadMap(file);
+    private boolean loadMapAndUpdate(File file) throws InterruptedException, IOException {
+        boolean priorityToTheRight = true;
+        if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
+            priorityToTheRight = UserInteractionUtils.askUserForDecision(
+                    "For visualization purpose:\n" +
+                            "Is the road network built for driving on the right?\n" +
+                            "The answer to this does not influence the logic,\n" +
+                            "but the visualization.\n" +
+                            "To make them coherent, we need to consider it now.",
+                    "Optical issue",
+                    frame
+            );
+        }
+        Tuple<Graph, MapProvider> result = exfmtStorage.loadMap(file, priorityToTheRight);
         if (result != null) {
             if (result.obj0 != null) {
                 mapviewer.setMap(result.obj1);
+                vehicleOverlay.setMapProperties(result.obj1.getProperties());
                 streetgraph = result.obj0;
+                connectorOverlay.update(streetgraph, result.obj1.getProperties());
 
                 return true;
             }
@@ -736,11 +789,20 @@ public class SimulationController implements GUIController {
         Procedure setNewFrameTitle = () -> updateFrameTitle(cachedTitle);
 
 
-        boolean success = exfmtStorage.saveMap(file, new Tuple<>(streetgraph, mapviewer.getMap()));
-        if (success)
-            UserInteractionUtils.showSavingSuccess(frame);
-        else
-            UserInteractionUtils.showSavingFailure(file, frame);
+        try {
+            boolean success = exfmtStorage.saveMap(file, new Tuple<>(streetgraph, mapviewer.getMap()));
+
+            if (success)
+                UserInteractionUtils.showSavingSuccess(frame);
+            else
+                UserInteractionUtils.showSavingFailure(file, frame);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "The map could not be saved\nbecause the file loader hasn't been set correctly.",
+                    "Map saving error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
 
 
         setNewFrameTitle.invoke();
@@ -865,7 +927,7 @@ public class SimulationController implements GUIController {
 //
 //        /* prepare exfmt config */
 //        AreaScenarioExtractor.Config asecfg = new AreaScenarioExtractor.Config();
-//        asecfg.loadRoutes = UserInteractionUtils.askUserForDecision(
+//        asecfg.loadRoutes = UserInteractionUtils.askUserForOk(
 //                "Do you like to load the routes as well?",
 //                "Route storing",
 //                frame);
@@ -903,7 +965,7 @@ public class SimulationController implements GUIController {
 //            // if not issue warning due to possible incompatibility
 //            // and prompt to cancel
 //            if (!streetgraph.getGUID().equals(scmeta.getGraphGUID())) {
-//                stillLoadScenario = UserInteractionUtils.askUserForDecision(
+//                stillLoadScenario = UserInteractionUtils.askUserForOk(
 //                        "The graph used in the scenario is different to the current one.\n" +
 //                                "Do you want to continue?",
 //                        "Inconsistent scenario meta information",
@@ -960,7 +1022,7 @@ public class SimulationController implements GUIController {
 //
 //        AreaScenario scenario = (AreaScenario) simulation.getScenario();
 //        AreaScenarioInjector.Config asicfg = new AreaScenarioInjector.Config();
-//        asicfg.storeRoutes = UserInteractionUtils.askUserForDecision(
+//        asicfg.storeRoutes = UserInteractionUtils.askUserForOk(
 //                "Do you like to store the routes as well?\n" +
 //                        "\n" +
 //                        "Attention! The routes would be stored\n" +
@@ -1093,6 +1155,8 @@ public class SimulationController implements GUIController {
             }
         } else if (config.scenario.selectedClass.getObj() == EndOfTheWorldScenario.class) {
             scenario = new EndOfTheWorldScenario(config.seed, config, streetgraph);
+        } else if (config.scenario.selectedClass.getObj() == CrossingTheMapScenario.class) {
+            scenario = new CrossingTheMapScenario(config.seed, config, streetgraph);
         } else {
             if (config.scenario.selectedClass.getObj() != RandomRouteScenario.class)
                 logger.error(
@@ -1100,7 +1164,10 @@ public class SimulationController implements GUIController {
                                 RandomRouteScenario.class.getSimpleName() + " is used instead.");
             scenario = new RandomRouteScenario(config.seed, config, streetgraph);
         }
-        scenario.redefineMetaRoutes(routes);
+        if (routes == null)
+            scenario.redefineMetaRoutes();
+        else
+            scenario.setRoutes(routes);
         clearAndUpdateAreaOverlay(scenario.getAreaNodeContainer().getAreas());
 
         try {
@@ -1129,6 +1196,7 @@ public class SimulationController implements GUIController {
 
     private void updateScenario() {
         scenarioAreaOverlay.setEnabled(config.scenario.showAreasWhileSimulating, false, false);
+        connectorOverlay.setEnabled(config.visualization.showConnectorOverlay);
     }
 
     private void removeCurrentScenario() {
@@ -1172,7 +1240,7 @@ public class SimulationController implements GUIController {
     private void clearAndUpdateAreaOverlay(Collection<TypedPolygonArea> areas) {
         scenarioAreaOverlay.removeAllAreas();
         for (TypedPolygonArea area : areas) {
-            scenarioAreaOverlay.add(area.getProjectedArea(mapviewer.getProjection(), area.getType()));
+            scenarioAreaOverlay.add(area.getProjectedArea(mapviewer.getProjection(), area));
         }
     }
 
@@ -1209,6 +1277,7 @@ public class SimulationController implements GUIController {
 
         /* visualization */
         preferences.setEnabledIfEditable(SimulationConfig.Element.style, true);
+        preferences.setEnabledIfEditable(SimulationConfig.Element.showConnectorOverlay, true);
 
         /* concurrency */
         preferences.setEnabledIfEditable(SimulationConfig.Element.nThreads,            newSim);

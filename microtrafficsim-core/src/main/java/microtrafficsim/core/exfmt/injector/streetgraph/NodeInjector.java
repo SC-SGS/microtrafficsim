@@ -7,11 +7,11 @@ import microtrafficsim.core.exfmt.ecs.components.GraphNodeComponent;
 import microtrafficsim.core.exfmt.ecs.entities.PointEntity;
 import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.streets.Lane;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 
 public class NodeInjector implements ExchangeFormat.Injector<Node> {
@@ -35,13 +35,13 @@ public class NodeInjector implements ExchangeFormat.Injector<Node> {
             edges.add(edge.getId());
 
         // add connectors
-        for (Map.Entry<Lane, ArrayList<Lane>> connector : src.getConnectors().entrySet()) {
-            Lane fromLane = connector.getKey();
-            ArrayList<Lane> connected = connector.getValue();
-            DirectedEdge fromEdge = fromLane.getAssociatedEdge();
+        for (Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> connector : src.getConnectors().entrySet()) {
+            DirectedEdge.Lane fromLane = connector.getKey();
+            TreeMap<DirectedEdge, DirectedEdge.Lane> connected = connector.getValue();
+            DirectedEdge fromEdge = fromLane.getEdge();
 
-            for (Lane toLane : connected) {
-                DirectedEdge toEdge = toLane.getAssociatedEdge();
+            for (DirectedEdge.Lane toLane : connected.values()) {
+                DirectedEdge toEdge = toLane.getEdge();
 
                 connectors.add(new GraphNodeComponent.Connector(
                         fromEdge.getId(), fromEdge.getEntity().getForwardEdge() == fromEdge, fromLane.getIndex(),

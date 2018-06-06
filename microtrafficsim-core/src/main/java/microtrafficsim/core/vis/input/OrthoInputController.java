@@ -4,6 +4,8 @@ import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.newt.event.MouseListener;
 import microtrafficsim.core.vis.view.OrthographicView;
+import microtrafficsim.math.Rect2d;
+import microtrafficsim.math.Vec2d;
 import microtrafficsim.math.Vec3d;
 
 import java.util.HashMap;
@@ -85,10 +87,21 @@ public class OrthoInputController implements MouseListener, KeyController {
 
     @Override
     public void mouseWheelMoved(MouseEvent e) {
+        Vec2d screenAnchor = new Vec2d(e.getX() / (double) view.getSize().x, e.getY() / (double) view.getSize().y);
+        Vec2d worldAnchor = Rect2d.project(new Rect2d(1, 0, 0, 1), view.getViewportBounds(), screenAnchor);
+
+        // set zoom
         double zoom = view.getZoomLevel();
         zoom += e.getRotation()[0] * e.getRotationScale() * zoomFactor;
         zoom += e.getRotation()[1] * e.getRotationScale() * zoomFactor;
         view.setZoomLevel(zoom);
+
+        // update position
+        Vec2d worldAtAnchorNow = Rect2d.project(new Rect2d(1, 0, 0, 1), view.getViewportBounds(), screenAnchor);
+        Vec2d delta = Vec2d.sub(worldAtAnchorNow, worldAnchor);
+
+        Vec3d vpos = view.getPosition();
+        view.setPosition(vpos.x + delta.x, vpos.y + delta.y);
     }
 
 

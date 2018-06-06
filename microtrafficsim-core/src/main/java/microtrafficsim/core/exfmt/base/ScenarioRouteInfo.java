@@ -54,10 +54,12 @@ public class ScenarioRouteInfo extends Container.Entry {
                         nodeMap.get(sparseRoute.originKey),
                         nodeMap.get(sparseRoute.destinationKey),
                         sparseRoute.spawnDelay);
+                route.setMonitored(sparseRoute.isMonitored);
 
                 routeContainer.add(route);
             } else if (StackRoute.class == sparseRoute.routeClass) {
                 StackRoute route = new StackRoute(sparseRoute.spawnDelay);
+                route.setMonitored(sparseRoute.isMonitored);
                 for (DirectedEdge.Key key: sparseRoute.edgeKeys) {
                     route.add(edgeMap.get(key));
                 }
@@ -77,6 +79,7 @@ public class ScenarioRouteInfo extends Container.Entry {
         sparseRoute.originKey = route.getOrigin().key();
         sparseRoute.destinationKey = route.getDestination().key();
         sparseRoute.spawnDelay = route.getSpawnDelay();
+        sparseRoute.isMonitored = route.isMonitored();
         for (DirectedEdge edge : route) {
             sparseRoute.edgeKeys.add(edge.key());
         }
@@ -90,6 +93,7 @@ public class ScenarioRouteInfo extends Container.Entry {
         private Node.Key originKey;
         private Node.Key destinationKey;
         private int spawnDelay;
+        private boolean isMonitored;
         private ArrayList<DirectedEdge.Key> edgeKeys = new ArrayList<>();
     }
 }

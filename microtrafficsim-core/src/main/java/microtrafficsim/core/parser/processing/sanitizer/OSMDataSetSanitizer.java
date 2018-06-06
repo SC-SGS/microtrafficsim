@@ -1,5 +1,6 @@
 package microtrafficsim.core.parser.processing.sanitizer;
 
+import microtrafficsim.math.MathUtils;
 import microtrafficsim.osm.parser.Parser;
 import microtrafficsim.osm.parser.Processor;
 import microtrafficsim.osm.parser.base.DataSet;
@@ -173,12 +174,10 @@ public class OSMDataSetSanitizer implements Processor {
         sanitizeMaxspeedInfo(streetcomp.maxspeed, streetcomp.oneway, sancomp.highway);
         sanitizeLaneInfo(streetcomp.lanes, streetcomp.oneway, sancomp.highway);
 
-        /* TEMPORARY FOR RELEASE, UNTIL MULTI-LANE SUPPORT IS COMPLETED */
-        if (streetcomp.lanes.forward > 0)  streetcomp.lanes.forward = 1;
-        if (streetcomp.lanes.backward > 0) streetcomp.lanes.backward = 1;
-
-        streetcomp.lanes.sum = streetcomp.lanes.forward + streetcomp.lanes.backward;
-        /* END TEMPORARY */
+        if (!genprops.multilane) {
+            streetcomp.lanes.forward = MathUtils.clamp(streetcomp.lanes.forward, 0, 1);
+            streetcomp.lanes.backward = MathUtils.clamp(streetcomp.lanes.backward, 0, 1);
+        }
     }
 
     /**
@@ -233,9 +232,9 @@ public class OSMDataSetSanitizer implements Processor {
     private void sanitizeLaneInfo(LaneInfo laneinfo, OnewayInfo oneway, String highway) {
         // TODO: cleanup
 
-        int lanes    = laneinfo.sum;
-        int forward  = laneinfo.forward;
-        int backward = laneinfo.backward;
+        int lanes    = (laneinfo.sum >= 0 || laneinfo.sum == LaneInfo.UNGIVEN) ? laneinfo.sum : 0;
+        int forward  = (laneinfo.forward >= 0 || laneinfo.forward == LaneInfo.UNGIVEN) ? laneinfo.forward : 0;
+        int backward = (laneinfo.backward >= 0 || laneinfo.backward == LaneInfo.UNGIVEN) ? laneinfo.backward : 0;
 
         if (oneway == OnewayInfo.NO) {
             // none given: use defaults

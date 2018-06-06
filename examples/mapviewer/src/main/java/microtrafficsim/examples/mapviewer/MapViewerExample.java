@@ -10,6 +10,7 @@ import microtrafficsim.core.exfmt.Container;
 import microtrafficsim.core.exfmt.ExchangeFormat;
 import microtrafficsim.core.exfmt.exceptions.NotAvailableException;
 import microtrafficsim.core.exfmt.extractor.map.QuadTreeTiledMapSegmentExtractor;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.MapSegment;
 import microtrafficsim.core.map.SegmentFeatureProvider;
 import microtrafficsim.core.map.style.MapStyleSheet;
@@ -264,7 +265,7 @@ public class MapViewerExample {
                     QuadTreeTiledMapSegment.Generator tiler = new QuadTreeTiledMapSegment.Generator();
                     TilingScheme scheme = viewer.getPreferredTilingScheme();
 
-                    OSMParser.Result result = parser.parse(file);
+                    OSMParser.Result result = parser.parse(file, new MapProperties(true));
                     segment = tiler.generate(result.segment, scheme, viewer.getPreferredTileGridLevel());
                 } else {
                     ExchangeFormat.Manipulator xmp = exfmt.manipulator(serializer.read(file));

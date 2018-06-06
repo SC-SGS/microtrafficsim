@@ -11,7 +11,7 @@ import microtrafficsim.core.map.tiles.QuadTreeTilingScheme;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.core.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.impl.AreaScenario;
 import microtrafficsim.core.simulation.scenarios.impl.RandomRouteScenario;
 import microtrafficsim.core.simulation.utils.RouteContainer;
@@ -73,7 +73,7 @@ public class TestRouteSerialization {
         try {
             File file = new PackagedResource(TestRouteSerialization.class,
                     ResourceClassLinks.BACKNANG_MAP_PATH).asTemporaryFile();
-            streetgraph = exfmtStorage.loadMap(file).obj0;
+            streetgraph = exfmtStorage.loadMap(file, true).obj0;
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

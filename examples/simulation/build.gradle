@@ -21,7 +21,7 @@ run {
 
 mainClassName = 'microtrafficsim.examples.simulation.SimulationExample'
 macAppBundle {
-    mainClassName = 'microtrafficsim.examples.mapviewer.SimulationExample'
+    mainClassName = 'microtrafficsim.examples.simulation.SimulationExample'
 }
 
 

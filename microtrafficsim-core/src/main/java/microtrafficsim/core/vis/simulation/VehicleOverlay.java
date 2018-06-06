@@ -1,5 +1,6 @@
 package microtrafficsim.core.vis.simulation;
 
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.Overlay;
@@ -25,4 +26,6 @@ public interface VehicleOverlay extends Overlay {
      * @return the visualization-vehicle factory.
      */
     VisVehicleFactory getVehicleFactory();
+
+    void setMapProperties(MapProperties properties);
 }

@@ -20,7 +20,6 @@ import org.slf4j.Marker;
  * @author Dominic Parga Cacheiro
  */
 public class EasyMarkableLogger implements Logger {
-
     public Logger logger;
     public final LoggingLevel TRACE = LoggingLevel.createLevel(LoggingLevel.Type.TRACE);
     public final LoggingLevel DEBUG = LoggingLevel.createLevel(LoggingLevel.Type.DEBUG);

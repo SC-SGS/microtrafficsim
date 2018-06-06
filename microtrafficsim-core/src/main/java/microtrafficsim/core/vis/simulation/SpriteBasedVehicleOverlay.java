@@ -1,14 +1,13 @@
 package microtrafficsim.core.vis.simulation;
 
 import com.jogamp.opengl.GL3;
-import microtrafficsim.core.entities.street.StreetEntity;
 import microtrafficsim.core.entities.vehicle.LogicVehicleEntity;
-import microtrafficsim.core.entities.vehicle.VisualizationVehicleEntity;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.streets.Lane;
 import microtrafficsim.core.map.Coordinate;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.style.VehicleStyleSheet;
 import microtrafficsim.core.simulation.builder.impl.VisVehicleFactory;
+import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
 import microtrafficsim.core.vis.context.RenderContext;
 import microtrafficsim.core.vis.map.projections.Projection;
@@ -21,19 +20,18 @@ import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributePointer;
 import microtrafficsim.core.vis.opengl.shader.attributes.VertexAttributes;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderProgramSource;
 import microtrafficsim.core.vis.opengl.shader.resources.ShaderSource;
+import microtrafficsim.core.vis.opengl.shader.uniforms.UniformMat4f;
 import microtrafficsim.core.vis.opengl.shader.uniforms.UniformSampler2D;
 import microtrafficsim.core.vis.opengl.utils.TextureData2D;
+import microtrafficsim.core.vis.utils.LaneOffset;
 import microtrafficsim.core.vis.view.OrthographicView;
-import microtrafficsim.math.Vec2d;
-import microtrafficsim.math.Vec2i;
-import microtrafficsim.math.Vec3d;
+import microtrafficsim.math.*;
 import microtrafficsim.utils.resources.PackagedResource;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Supplier;
 
 
 /**
@@ -43,9 +41,7 @@ import java.util.function.Supplier;
  */
 public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
-    private static final float VEHICLE_SIZE               = 10.f;
-    private static final float VEHICLE_SCALE_NORM         = 1.f / (1 << 18);
-    private static final float VEHICLE_LANE_OFFSET_SCALE  = 12.f;
+    private static final float VEHICLE_SIZE               = 20.f;
     private static final int   VIEWPORT_CULLING_EXPANSION = 20;
 
     private static final int TEX_UNIT_SPRITE    = 0;
@@ -75,7 +71,12 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
     private ShaderProgram prog;
 
+    private MapProperties map;
+
     private boolean enabled;
+
+    private UniformMat4f uView;
+    private UniformMat4f uProjection;
 
 
     /**
@@ -99,12 +100,20 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         this.prog = null;
 
         this.enabled = true;
+
+        this.uView = null;
+        this.uProjection = null;
     }
 
 
     @Override
     public void setView(OrthographicView view) {
         this.view = view;
+    }
+
+    @Override
+    public void setMapProperties(MapProperties properties) {
+        this.map = properties;
     }
 
 
@@ -117,6 +126,9 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         // set samplers
         UniformSampler2D uSpriteSampler = (UniformSampler2D) prog.getUniform("u_sprite_sampler");
         UniformSampler2D uMapDepth      = (UniformSampler2D) prog.getUniform("u_map_depth");
+
+        uView = (UniformMat4f) context.getUniformManager().getGlobalUniform("u_view");
+        uProjection = (UniformMat4f) context.getUniformManager().getGlobalUniform("u_projection");
 
         if (uSpriteSampler != null) uSpriteSampler.set(TEX_UNIT_SPRITE);
         if (uMapDepth != null) uMapDepth.set(TEX_UNIT_MAP_DEPTH);
@@ -204,10 +216,14 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         if (simulation.getScenario() == null) return;
         GL3 gl = context.getDrawable().getGL().getGL3();
 
-        // get direction of lane offset
-        int laneOffsetSign = simulation.getScenario().getConfig().crossingLogic.drivingOnTheRight ? 1 : -1;
+        SimulationConfig config = simulation.getScenario().getConfig();
+        int zoom = (int) Math.ceil(view.getZoomLevel());
+        double lanewidth = config.visualization.style.getNormalizedStreetLaneWidth(zoom);
+        double scalenorm = config.visualization.style.getScaleNorm();
+        boolean drivingOnTheRight = this.map.drivingOnTheRight;
 
         // disable depth test
+        context.DepthTest.setMask(gl, false);
         context.DepthTest.disable(gl);
 
         // enable blending
@@ -217,11 +233,8 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
                                      GL3.GL_ONE_MINUS_SRC_ALPHA);
 
         // set point size and point sprite origin
-        float ptsize = (float) Math.pow(2, view.getScale() * VEHICLE_SCALE_NORM) * VEHICLE_SIZE;
-        if (ptsize < 1.f) ptsize = 1.f;
-
         context.Points.setPointSpriteCoordOrigin(gl, GL3.GL_LOWER_LEFT);
-        context.Points.setPointSize(gl, ptsize);
+        context.Points.setPointSize(gl, getVehicleSize(view.getZoomLevel(), view.getMaxZoomLevel()));
 
         // calculate bounding rectangle, assumes top-down (z-axis) orthographic view
         double invscale = 1.f / view.getScale();
@@ -235,6 +248,9 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         double right  = viewpos.x + vx;
         double bottom = viewpos.y - vy;
         double top    = viewpos.y + vy;
+
+        Rect2d viewrect = view.getViewportBounds();
+        Rect2d ndcrect = new Rect2d(-1.0, -1.0, 1.0, 1.0);
 
         // update vehicle list
         Collection<? extends LogicVehicleEntity>
@@ -261,22 +277,18 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
             Vec2d      dir     = projection.project(ctarget).sub(pos).normalize();
 
             // adjust position to lane
-            int lane = v.getIndexOfCurrentLane();
-            if (lane == -1) continue;
+            DirectedEdge edge = v.getCurrentEdge();
+            if (edge == null) continue;
 
-            double laneOffset;
-            if (v.isCurrentStreetBidirectional()) {
-                laneOffset = v.getNumberOfLanesOnCurrentEdge() - v.getIndexOfCurrentLane() - 0.5;
-            } else {
-                laneOffset = (v.getNumberOfLanesOnCurrentEdge() - 1.0) / 2.0 - v.getIndexOfCurrentLane();
-            }
-            laneOffset *= laneOffsetSign * VEHICLE_LANE_OFFSET_SCALE * VEHICLE_SCALE_NORM;
+            double laneOffset = LaneOffset.getLaneOffset(lanewidth, edge, v.getIndexOfCurrentLane(), drivingOnTheRight);
 
             pos.x += dir.y * laneOffset;
             pos.y -= dir.x * laneOffset;
 
             // continue if out of bounds
             if (pos.x < left || pos.x > right || pos.y < bottom || pos.y > top) continue;
+
+            pos = Rect2d.project(viewrect, ndcrect, pos);
 
             buffer.putFloat((float) pos.x);
             buffer.putFloat((float) pos.y);
@@ -298,11 +310,20 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
         gl.glBindTexture(GL3.GL_TEXTURE_2D, map.depth);
 
         // draw
+        Mat4f viewBefore = new Mat4f(uView.get());
+        Mat4f projBefore = new Mat4f(uProjection.get());
+
+        uView.set(Mat4f.identity());
+        uProjection.set(Mat4f.identity());
+
         prog.bind(gl);
         gl.glBindVertexArray(vao);
         gl.glDrawArrays(GL3.GL_POINTS, 0, vehicleCount);
         gl.glBindVertexArray(0);
         prog.unbind(gl);
+
+        uView.set(viewBefore);
+        uProjection.set(projBefore);
 
         // unbind texture
         gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
@@ -337,5 +358,15 @@ public class SpriteBasedVehicleOverlay implements VehicleOverlay {
 
     public VisVehicleFactory getVehicleFactory() {
         return vehicleFactory;
+    }
+
+
+    private float getVehicleSize(double zoom, double zoomMax) {
+        final double slowdecaylevel = 15.0;
+
+        final double z = Math.max(zoom, slowdecaylevel);
+        final double s = zoom > slowdecaylevel ? 1.0 : Math.pow(1.05, -(slowdecaylevel - zoom));
+
+        return Math.max(1.0f, (float) ((VEHICLE_SIZE * Math.pow(1.25, -(zoomMax - z))) * s));
     }
 }

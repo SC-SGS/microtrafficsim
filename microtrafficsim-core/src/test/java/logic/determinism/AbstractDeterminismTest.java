@@ -3,12 +3,14 @@ package logic.determinism;
 import microtrafficsim.core.convenience.parser.DefaultParserConfig;
 import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streetgraph.Graph;
+import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.parser.OSMParser;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.core.Simulation;
-import microtrafficsim.core.simulation.core.impl.VehicleSimulation;
+import microtrafficsim.core.simulation.core.VehicleSimulation;
 import microtrafficsim.core.simulation.scenarios.Scenario;
 import microtrafficsim.math.MathUtils;
 import microtrafficsim.math.random.distributions.impl.Random;
@@ -109,7 +111,7 @@ public abstract class AbstractDeterminismTest {
                     AbstractDeterminismTest.class,
                     ResourceClassLinks.BACKNANG_MAP_PATH).asTemporaryFile();
             OSMParser parser = DefaultParserConfig.get(config).build();
-            graph = parser.parse(file).streetgraph;
+            graph = parser.parse(file, new MapProperties(config.crossingLogic.drivingOnTheRight)).streetgraph;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -156,7 +158,7 @@ public abstract class AbstractDeterminismTest {
         for (Vehicle vehicle : simulation.getScenario().getVehicleContainer()) {
             VehicleStamp stamp = new VehicleStamp(
                     vehicle.getId(),
-                    vehicle.getDirectedEdge(),
+                    vehicle.getLane(),
                     vehicle.getCellPosition());
             stamps.put(vehicle.getId(), stamp);
         }

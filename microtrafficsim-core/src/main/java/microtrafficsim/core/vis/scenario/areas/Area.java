@@ -9,10 +9,16 @@ import microtrafficsim.math.geometry.polygons.Polygon;
 public class Area {
     public Polygon polygon;
     public Type type;
+    public boolean isMonitored;
 
     public Area(Polygon polygon, Type type) {
+        this(polygon, type, false);
+    }
+
+    public Area(Polygon polygon, Type type, boolean isMonitored) {
         this.polygon = polygon;
         this.type = type;
+        this.isMonitored = isMonitored;
     }
 
     public enum Type { ORIGIN, DESTINATION }
@@ -25,6 +31,6 @@ public class Area {
         for (int i = 0; i < coordinates.length; i++)
             coordinates[i] = projection.unproject(polygon.outline[i]);
 
-        return new TypedPolygonArea(coordinates, type);
+        return new TypedPolygonArea(coordinates, type, isMonitored);
     }
 }

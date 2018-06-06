@@ -129,6 +129,10 @@ public class OrthographicView implements View {
         return this.zoom;
     }
 
+    public double getMaxZoomLevel() {
+        return this.zoomMax;
+    }
+
     /**
      * Set the zoom-level. This will be capped by the minimum- and maximum-limit.
      *

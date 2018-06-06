@@ -3,6 +3,7 @@ package microtrafficsim.core.simulation.utils;
 import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.core.simulation.scenarios.Scenario;
+import microtrafficsim.math.random.distributions.impl.Random;
 
 import java.util.ArrayList;
 
@@ -17,5 +18,11 @@ public class SortedRouteContainer extends ArrayList<Route> implements RouteConta
             if (!route.isEmpty())
                 add(route);
         }
+    }
+
+
+    @Override
+    public Route getRdm(Random random) {
+        return get(random.nextInt(size()));
     }
 }

@@ -4,13 +4,15 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.shortestpath.ShortestPathAlgorithm;
-import microtrafficsim.core.shortestpath.astar.BidirectionalAStars;
+import microtrafficsim.core.shortestpath.astar.AStars;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
 import microtrafficsim.core.simulation.scenarios.containers.VehicleContainer;
 import microtrafficsim.core.simulation.scenarios.containers.impl.ConcurrentVehicleContainer;
 import microtrafficsim.core.simulation.utils.RouteContainer;
 import microtrafficsim.math.random.Seeded;
 import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
+import org.slf4j.Logger;
 
 import java.util.function.Supplier;
 
@@ -20,6 +22,7 @@ import java.util.function.Supplier;
  * @author Dominic Parga Cacheiro
  */
 public abstract class BasicRandomScenario extends BasicScenario implements Seeded {
+    public static final Logger logger = new EasyMarkableLogger(BasicRandomScenario.class);
 
     /* scout factory */
     private final Random random;
@@ -56,13 +59,74 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
         fastestWayProbability = 0.7f;
 
         /* scout factory */
-        fastestPathAlg = BidirectionalAStars.fastestPathAStar(config.metersPerCell, config.globalMaxVelocity);
-        shortestPathAlg = BidirectionalAStars.shortestPathAStar(config.metersPerCell);
+        fastestPathAlg = AStars.fastestPathAStar(config.metersPerCell, config.globalMaxVelocity);
+        shortestPathAlg = AStars.shortestPathAStar(config.metersPerCell);
     }
 
     public abstract void redefineMetaRoutes();
 
-    public abstract void redefineMetaRoutes(RouteContainer newRoutes);
+
+    /**
+     * @return {@link #getConfig() config}.{@link SimulationConfig#maxVehicleCount maxVehicleCount} minus {@code route
+     * count}
+     */
+    public int getFreeRouteStorage() {
+        return getConfig().maxVehicleCount - getRoutes().size();
+    }
+
+    public boolean hasFreeRouteStorage() {
+        return getFreeRouteStorage() > 0;
+    }
+
+    public void resetAndClearRoutes() {
+        logger.info("RESETTING AND CLEARING routes started");
+        reset();
+        getRoutes().clear();
+        logger.info("RESETTING AND CLEARING routes finished");
+    }
+
+    public void addRoutes(RouteContainer routes) {
+        logger.info("ADDING routes started");
+        if (getFreeRouteStorage() >= routes.size())
+            getRoutes().addAll(routes);
+        logger.info("ADDING routes finished");
+    }
+
+    public void fillRdmWithRoutes(RouteContainer routeLexicon) {
+        logger.info("FILLING random routes started");
+        while (hasFreeRouteStorage())
+            getRoutes().add(routeLexicon.getRdm(random));
+        logger.info("FILLING random routes finished");
+    }
+
+    /**
+     * <p>
+     * Let n be {@link SimulationConfig#maxVehicleCount config.maxVehicleCount} and <br>
+     * let m be {@link RouteContainer#size() routeLexicon.size()}.
+     *
+     * <p>
+     * If n >= m: All routes are added and (n-m) are chosen randomly <br>
+     * If n < m: n routes are chosen randomly<br>
+     * The randomness depends on the given {@link RouteContainer#getRdm(Random)}
+     */
+    public void setRoutes(RouteContainer routeLexicon) {
+        logger.info("SETTING routes started");
+
+        resetAndClearRoutes();
+        addRoutes(routeLexicon);
+        fillRdmWithRoutes(routeLexicon);
+
+        logger.info("SETTING routes finished");
+    }
+
+    public void setRdmRoutes(RouteContainer routeLexicon) {
+        logger.info("SETTING RANDOM routes started");
+
+        resetAndClearRoutes();
+        fillRdmWithRoutes(routeLexicon);
+
+        logger.info("SETTING RANDOM routes finished");
+    }
 
     /*
     |==============|

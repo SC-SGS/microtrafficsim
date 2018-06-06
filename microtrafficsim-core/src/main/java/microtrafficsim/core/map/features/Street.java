@@ -14,24 +14,32 @@ public class Street extends MultiLine {
     public final double   layer;
     public final double   length;
     public final double[] distances;
+    public final int      numLanesFwd;
+    public final int      numLanesBwd;
     private StreetEntity  entity;
 
     /**
      * Constructs a new {@code Street}.
      *
-     * @param id        the (unique) id of the street.
-     * @param nodes     the ordered set of coordinates describing the geometry of the street.
-     * @param layer     the layer on which the street is.
-     * @param length    the length of the street.
-     * @param distances the distances of the single line segments.
+     * @param id          the (unique) id of the street.
+     * @param nodes       the ordered set of coordinates describing the geometry of the street.
+     * @param layer       the layer on which the street is.
+     * @param length      the length of the street.
+     * @param distances   the distances of the single line segments.
+     * @param numLanesFwd number of lanes forward in direction of the coordinate array
+     * @param numLanesBwd number of lanes backward in direction of the coordinate array
      */
-    public Street(long id, Coordinate[] nodes, double layer, double length, double[] distances) {
+    public Street(long id, Coordinate[] nodes, double layer, double length, double[] distances, int numLanesFwd,
+                  int numLanesBwd)
+    {
         super(id, nodes);
 
-        this.entity    = null;
-        this.layer     = layer;
-        this.length    = length;
-        this.distances = distances;
+        this.entity        = null;
+        this.layer         = layer;
+        this.length        = length;
+        this.distances     = distances;
+        this.numLanesFwd = numLanesFwd;
+        this.numLanesBwd = numLanesBwd;
     }
 
     /**

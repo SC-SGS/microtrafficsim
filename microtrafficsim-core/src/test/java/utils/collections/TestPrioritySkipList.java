@@ -9,7 +9,6 @@ import microtrafficsim.utils.collections.SkipList;
  * @author Dominic Parga Cacheiro
  */
 public class TestPrioritySkipList extends AbstractTestQueueSet {
-
     public TestPrioritySkipList() {
         super(PrioritySkipList::new);
     }

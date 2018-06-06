@@ -8,6 +8,14 @@ import microtrafficsim.core.shortestpath.ShortestPathEdge;
  * @author Dominic Parga Cacheiro
  */
 public interface Route extends Iterable<DirectedEdge> {
+    default boolean isMonitored() {
+        return false;
+    }
+
+    default void setMonitored(boolean isMonitored) {
+
+    }
+
     int getSpawnDelay();
 
     void setSpawnDelay(int spawnDelay);

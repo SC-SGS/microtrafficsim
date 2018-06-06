@@ -23,7 +23,8 @@ public class StreetFeatureExtractor implements FeatureManager.Extractor<Street> 
         Street street = new Street(
                 entity.getId(),
                 ((LineEntity) entity).getCoordinates(),
-                sc.getLayer(), sc.getLength(), sc.getDistances()
+                sc.getLayer(), sc.getLength(), sc.getDistances(),
+                sc.getLanesFwd(), sc.getLanesBwd()
         );
 
         // add street to map for StreetEntity construction

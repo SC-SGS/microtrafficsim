@@ -8,7 +8,6 @@ import microtrafficsim.utils.emotions.Hulk;
  * @author Dominic Parga Cacheiro
  */
 public interface VehicleStyleSheet {
-
     /**
      * @return a default color for all vehicles. Default implementation returns {@code Color.fromRGBA(0xCC4C1AF0)}.
      *

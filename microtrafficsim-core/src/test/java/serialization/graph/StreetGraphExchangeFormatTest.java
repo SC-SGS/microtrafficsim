@@ -8,7 +8,7 @@ import microtrafficsim.core.logic.nodes.Node;
 import microtrafficsim.core.logic.streetgraph.Graph;
 import microtrafficsim.core.logic.streetgraph.StreetGraph;
 import microtrafficsim.core.logic.streets.DirectedEdge;
-import microtrafficsim.core.logic.streets.Lane;
+import microtrafficsim.core.map.MapProperties;
 import microtrafficsim.core.map.style.impl.DarkStyleSheet;
 import microtrafficsim.core.serialization.ExchangeFormatSerializer;
 import microtrafficsim.core.simulation.configs.SimulationConfig;
@@ -17,14 +17,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 
 public class StreetGraphExchangeFormatTest {
@@ -53,7 +49,7 @@ public class StreetGraphExchangeFormatTest {
     }
 
     private static Graph loadGraphOsm(File file) throws Exception {
-        return DefaultParserConfig.get(getConfig()).build().parse(file).streetgraph;
+        return DefaultParserConfig.get(getConfig()).build().parse(file, new MapProperties(true)).streetgraph;
     }
 
     private static SimulationConfig getConfig() {
@@ -123,8 +119,11 @@ public class StreetGraphExchangeFormatTest {
 
             // check connectors
             assertEquals(osmNode.getConnectors().size(), xfmNode.getConnectors().size());
-            for (Map.Entry<Lane, ArrayList<Lane>> osmConnector : osmNode.getConnectors().entrySet()) {
-                Map.Entry<Lane, ArrayList<Lane>> xfmConnector = connectorByIds(xfmNode.getConnectors().entrySet(), osmConnector);
+            for (Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> osmConnector
+                    : osmNode.getConnectors().entrySet())
+            {
+                Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> xfmConnector;
+                xfmConnector = connectorByIds(xfmNode.getConnectors().entrySet(), osmConnector);
                 assertNotNull(xfmConnector);
             }
         }
@@ -155,8 +154,11 @@ public class StreetGraphExchangeFormatTest {
         return null;
     }
 
-    private Map.Entry<Lane, ArrayList<Lane>> connectorByIds(Set<Map.Entry<Lane, ArrayList<Lane>>> connectors, Map.Entry<Lane, ArrayList<Lane>> query) {
-        for (Map.Entry<Lane, ArrayList<Lane>> connector : connectors) {
+    private Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> connectorByIds(
+            Set<Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>>> connectors,
+            Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> query)
+    {
+        for (Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> connector : connectors) {
             if (connectorEqualsById(connector, query))
                 return connector;
         }
@@ -171,15 +173,15 @@ public class StreetGraphExchangeFormatTest {
                 && a.getDestination().getId() == b.getDestination().getId();
     }
 
-    private boolean laneEqualsByIds(Lane a, Lane b) {
-        return edgeEqualsByIds(a.getAssociatedEdge(), b.getAssociatedEdge()) && a.getIndex() == b.getIndex();
+    private boolean laneEqualsByIds(DirectedEdge.Lane a, DirectedEdge.Lane b) {
+        return edgeEqualsByIds(a.getEdge(), b.getEdge()) && a.getIndex() == b.getIndex();
     }
 
-    private boolean lanesEqualsByIds(Collection<Lane> a, Collection<Lane> b) {
-        for (Lane la : a) {
+    private boolean lanesEqualsByIds(Collection<DirectedEdge.Lane> a, Collection<DirectedEdge.Lane> b) {
+        for (DirectedEdge.Lane la : a) {
             boolean found = false;
 
-            for (Lane lb : b) {
+            for (DirectedEdge.Lane lb : b) {
                 if (laneEqualsByIds(la, lb)) {
                     found = true;
                     break;
@@ -193,8 +195,9 @@ public class StreetGraphExchangeFormatTest {
         return true;
     }
 
-    private boolean connectorEqualsById(Map.Entry<Lane, ArrayList<Lane>> a, Map.Entry<Lane, ArrayList<Lane>> b) {
-        return laneEqualsByIds(a.getKey(), b.getKey()) && lanesEqualsByIds(a.getValue(), b.getValue());
+    private boolean connectorEqualsById(Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> a,
+                                        Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> b) {
+        return laneEqualsByIds(a.getKey(), b.getKey()) && lanesEqualsByIds(a.getValue().values(), b.getValue().values());
     }
 
 
@@ -229,9 +232,11 @@ public class StreetGraphExchangeFormatTest {
 
             // check connectors
             assertEquals(osmNode.getConnectors().size(), xfmNode.getConnectors().size());
-            for (Map.Entry<Lane, ArrayList<Lane>> osmConnector : osmNode.getConnectors().entrySet()) {
-                Map.Entry<Lane, ArrayList<Lane>> xfmConnector = connectorByKeys(xfmNode.getConnectors().entrySet(),
-                        osmConnector);
+            for (Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> osmConnector
+                    : osmNode.getConnectors().entrySet())
+            {
+                Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> xfmConnector
+                        = connectorByKeys(xfmNode.getConnectors().entrySet(), osmConnector);
                 assertNotNull(xfmConnector);
             }
         }
@@ -262,9 +267,11 @@ public class StreetGraphExchangeFormatTest {
         return null;
     }
 
-    private Map.Entry<Lane, ArrayList<Lane>> connectorByKeys(Set<Map.Entry<Lane, ArrayList<Lane>>> connectors, Map
-            .Entry<Lane, ArrayList<Lane>> query) {
-        for (Map.Entry<Lane, ArrayList<Lane>> connector : connectors) {
+    private Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> connectorByKeys(
+            Set<Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>>> connectors,
+            Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> query)
+    {
+        for (Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> connector : connectors) {
             if (connectorEqualsByKey(connector, query))
                 return connector;
         }
@@ -279,15 +286,15 @@ public class StreetGraphExchangeFormatTest {
                 && a.getDestination().key().equals(b.getDestination().key());
     }
 
-    private boolean laneEqualsByKeys(Lane a, Lane b) {
-        return edgeEqualsByKeys(a.getAssociatedEdge(), b.getAssociatedEdge()) && a.getIndex() == b.getIndex();
+    private boolean laneEqualsByKeys(DirectedEdge.Lane a, DirectedEdge.Lane b) {
+        return edgeEqualsByKeys(a.getEdge(), b.getEdge()) && a.getIndex() == b.getIndex();
     }
 
-    private boolean lanesEqualsByKeys(Collection<Lane> a, Collection<Lane> b) {
-        for (Lane la : a) {
+    private boolean lanesEqualsByKeys(Collection<DirectedEdge.Lane> a, Collection<DirectedEdge.Lane> b) {
+        for (DirectedEdge.Lane la : a) {
             boolean found = false;
 
-            for (Lane lb : b) {
+            for (DirectedEdge.Lane lb : b) {
                 if (laneEqualsByKeys(la, lb)) {
                     found = true;
                     break;
@@ -301,7 +308,10 @@ public class StreetGraphExchangeFormatTest {
         return true;
     }
 
-    private boolean connectorEqualsByKey(Map.Entry<Lane, ArrayList<Lane>> a, Map.Entry<Lane, ArrayList<Lane>> b) {
-        return laneEqualsByKeys(a.getKey(), b.getKey()) && lanesEqualsByKeys(a.getValue(), b.getValue());
+    private boolean connectorEqualsByKey(
+            Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> a,
+            Map.Entry<DirectedEdge.Lane, TreeMap<DirectedEdge, DirectedEdge.Lane>> b)
+    {
+        return laneEqualsByKeys(a.getKey(), b.getKey()) && lanesEqualsByKeys(a.getValue().values(), b.getValue().values());
     }
 }

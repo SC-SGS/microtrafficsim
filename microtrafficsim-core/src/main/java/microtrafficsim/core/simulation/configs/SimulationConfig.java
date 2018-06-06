@@ -181,6 +181,7 @@ public final class SimulationConfig {
         friendlyStandingInJam(true),
         // Visualization
         style(false),
+        showConnectorOverlay(true),
         // concurrency
         nThreads(true),
         vehiclesPerRunnable(true),

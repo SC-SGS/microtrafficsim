@@ -182,17 +182,6 @@ public class OSMProcessor implements Processor {
         setupGraphNodeComponents(dataset, streetgraph);
     }
 
-    /**
-     * Removes all GraphNodeComponents required for various processing steps.
-     *
-     * @param dataset the DataSet on which to execute this step on.
-     */
-    public static void removeGraphNodeComponents(DataSet dataset) {
-        for (NodeEntity node : dataset.nodes.values()) {
-            node.remove(GraphNodeComponent.class);
-        }
-    }
-
 
     /**
      * Sets up the GraphWayComponents including the Street-Connectors. This step
@@ -234,7 +223,7 @@ public class OSMProcessor implements Processor {
             GraphNodeComponent gnc = node.get(GraphNodeComponent.class);
             if (gnc == null) continue;
 
-            // multiple ways: add all connectors (including obj0-turns)
+            // multiple ways: add all connectors (including u-turns)
             if (gnc.ways.size() > 1) {
                 for (WayEntity from : gnc.ways) {
                     for (WayEntity to : gnc.ways) {
@@ -242,7 +231,7 @@ public class OSMProcessor implements Processor {
                     }
                 }
 
-            // single way: add obj0-turn connectors if node is at beginning or end of way
+            // single way: add u-turn connectors if node is at beginning or end of way
             } else if (gnc.ways.count() == 1) {
                 for (WayEntity way : gnc.ways) {
                     if ((way.nodes[0] == node.id) || (way.nodes[way.nodes.length - 1] == node.id)) {
@@ -411,7 +400,7 @@ public class OSMProcessor implements Processor {
 
         // unify: StreetGraph merge
         unifyMerge(dataset);
-        removeGraphNodeComponents(dataset);
+        updateGraphNodeComponents(dataset, streetgraph);
         logger.debug("dataset after unification:  " + dataset.nodes.size() + " nodes, " + dataset.ways.size()
                 + " ways");
     }

@@ -16,17 +16,21 @@ public class StreetComponentSerializer extends Serializer<StreetComponent> {
         kryo.writeObject(output, object.getLayer());
         kryo.writeObject(output, object.getLength());
         kryo.writeObject(output, object.getDistances());
+        kryo.writeObject(output, object.getLanesFwd());
+        kryo.writeObject(output, object.getLanesBwd());
     }
 
     @Override
     public StreetComponent read(Kryo kryo, Input input, Class<StreetComponent> type) {
-        StreetComponent component = new StreetComponent(null, 0, 0, null);
+        StreetComponent component = new StreetComponent(null, 0, 0, null, 0, 0);
         kryo.reference(component);
 
         component.setEntity((Entity) kryo.readClassAndObject(input));
         component.setLayer(kryo.readObject(input, Double.class));
         component.setLength(kryo.readObject(input, Double.class));
         component.setDistances(kryo.readObject(input, double[].class));
+        component.setLanesFwd(kryo.readObject(input, Integer.class));
+        component.setLanesBwd(kryo.readObject(input, Integer.class));
 
         return component;
     }

@@ -44,7 +44,7 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
     private BufferStorage     ibo;
     private VertexArrayObject vao;    // from OpenGL 3.1 upwards a VAO is always required for drawing
 
-    private VertexAttributePointer ptrPosition;
+    private VertexAttributePointer ptrAttrib;
 
     private List<Bucket> buckets;
 
@@ -152,7 +152,7 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
         ibo = BufferStorage.create(gl, GL2GL3.GL_ELEMENT_ARRAY_BUFFER);
         vao = VertexArrayObject.create(gl);
 
-        ptrPosition = VertexAttributePointer.create(attribute, datatype, vbo);
+        ptrAttrib = VertexAttributePointer.create(attribute, datatype, vbo);
 
         state = State.INITIALIZED;
         return true;
@@ -211,8 +211,8 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
         vbo.bind(gl);
         ibo.bind(gl);
 
-        ptrPosition.set(gl);
-        ptrPosition.enable(gl);
+        ptrAttrib.set(gl);
+        ptrAttrib.enable(gl);
 
         gl.glDrawElements(mode, indices.capacity(), GL2GL3.GL_UNSIGNED_INT, 0);
 
@@ -243,8 +243,8 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
         vbo.bind(gl);
         ibo.bind(gl);
 
-        ptrPosition.set(gl);
-        ptrPosition.enable(gl);
+        ptrAttrib.set(gl);
+        ptrAttrib.enable(gl);
 
         vao.unbind(gl);
 
@@ -310,8 +310,8 @@ public class SingleFloatAttributeIndexedMesh implements Mesh {
             vbo.bind(gl);
             ibo.bind(gl);
 
-            ptrPosition.set(gl);
-            ptrPosition.enable(gl);
+            ptrAttrib.set(gl);
+            ptrAttrib.enable(gl);
 
             gl.glDrawElements(mode, count, GL2GL3.GL_UNSIGNED_INT, offset * 4);
 

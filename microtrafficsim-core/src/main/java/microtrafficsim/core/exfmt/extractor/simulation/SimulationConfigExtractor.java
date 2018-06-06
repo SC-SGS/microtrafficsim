@@ -43,7 +43,7 @@ public class SimulationConfigExtractor implements ExchangeFormat.Extractor<Simul
         /**
          * Initializes a new {@link SimulationConfig config} setting all values to the given ones.
          *
-         * @param draft The new config gets its attributes set to the given ones.
+         * @param draft The new config gets its attributes set to this given ones.
          */
         public void setConfig(SimulationConfig draft) {
             this.config = new SimulationConfig(draft);

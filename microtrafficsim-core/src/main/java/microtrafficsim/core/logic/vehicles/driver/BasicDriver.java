@@ -4,7 +4,9 @@ import microtrafficsim.core.logic.routes.Route;
 import microtrafficsim.core.logic.streets.DirectedEdge;
 import microtrafficsim.core.logic.vehicles.machines.Vehicle;
 import microtrafficsim.math.random.distributions.impl.Random;
+import microtrafficsim.utils.logging.EasyMarkableLogger;
 import microtrafficsim.utils.strings.builder.LevelStringBuilder;
+import org.slf4j.Logger;
 
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -14,6 +16,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Dominic Parga Cacheiro
  */
 public class BasicDriver implements Driver {
+    public static final Logger logger = new EasyMarkableLogger(BasicDriver.class);
+
+
     /* general */
     private final ReentrantLock lock_priorityCounter;
     private final Random        random;
@@ -32,43 +37,34 @@ public class BasicDriver implements Driver {
     /* fix information */
     private Vehicle vehicle;
     private float dawdleFactor;
+    private float laneChangeFactor;
 
     /**
-     * Calls {@link #BasicDriver(long, int) BasicDriver(seed, 0)}
+     * seed         seed for {@link Random}, e.g. used for dawdling
+     * dawdleFactor probability to dawdle (after Nagel-Schreckenberg-model)
+     * spawnDelay   after this number of simulation steps, this driver starts travelling
      */
-    public BasicDriver(long seed) {
-        this(seed, 0);
+    public static class InitSetup {
+        public final long seed;
+        public int spawnDelay = 0;
+        public float dawdleFactor = 0.2f;
+        public float laneChangeFactor = 0.8f;
+
+        public InitSetup(long seed) {
+            this.seed = seed;
+        }
     }
 
-    /**
-     * Calls {@link #BasicDriver(long, float, int) BasicDriver(seed, 0.2f, spawnDelay)}
-     */
-    public BasicDriver(long seed, int spawnDelay) {
-        this(seed, 0.2f, spawnDelay);
-    }
-
-    /**
-     * Calls {@link #BasicDriver(long, float, int) BasicDriver(seed, dawdleFactor, 0)}
-     */
-    public BasicDriver(long seed, float dawdleFactor) {
-        this(seed, dawdleFactor, 0);
-    }
-
-    /**
-     * @param seed         seed for {@link Random}, e.g. used for dawdling
-     * @param dawdleFactor probability to dawdle (after Nagel-Schreckenberg-model)
-     * @param spawnDelay   after this number of simulation steps, this driver starts travelling
-     */
-    public BasicDriver(long seed, float dawdleFactor, int spawnDelay) {
+    public BasicDriver(InitSetup setup) {
         /* general */
         lock_priorityCounter = new ReentrantLock(true);
-        random               = new Random(seed);
+        random               = new Random(setup.seed);
 
         /* variable information */
         route = null;
 
         /* dynamic information */
-        this.travellingTime = -spawnDelay;
+        this.travellingTime = -setup.spawnDelay;
         resetPriorityCounter();
         maxAnger   = Integer.MAX_VALUE;
         anger      = 0;
@@ -76,36 +72,21 @@ public class BasicDriver implements Driver {
 
         /* fix information */
         vehicle         = null;
-        String errorMsg = null;
-        if (dawdleFactor > 1) {
-            this.dawdleFactor = 1;
-            errorMsg = "It must hold: 0 <= dawdleFactor <= 1\nCurrent: " + dawdleFactor + "\nValue set to 1.";
-        } else if (dawdleFactor < 0) {
-            this.dawdleFactor = 0;
-            errorMsg = "It must hold: 0 <= dawdleFactor <= 1\nCurrent: " + dawdleFactor + "\nValue set to 0.";
-        } else
-            this.dawdleFactor = dawdleFactor;
-
-        if (errorMsg != null)
-            try {
-                throw new Exception(errorMsg);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        setDawdleFactor(setup.dawdleFactor);
+        setLaneChangeFactor(setup.laneChangeFactor);
     }
 
     @Override
     public String toString() {
-        LevelStringBuilder strBuilder = new LevelStringBuilder();
-        strBuilder.appendln("<driver>");
-        strBuilder.incLevel();
+        LevelStringBuilder strBuilder = new LevelStringBuilder()
+                .setDefaultLevelSeparator()
+                .setDefaultLevelSubString();
+        strBuilder.appendln("<" + getClass().getSimpleName() + ">").incLevel(); {
+            strBuilder.appendln("seed  = " + random.getSeed());
+            strBuilder.appendln("priority counter = " + priorityCounter);
+            strBuilder.appendln(route);
+        } strBuilder.decLevel().appendln("</" + getClass().getSimpleName() + ">");
 
-        strBuilder.appendln("seed  = " + random.getSeed());
-        strBuilder.appendln("priority counter = " + priorityCounter);
-        strBuilder.append(route);
-
-        strBuilder.decLevel();
-        strBuilder.appendln("<\\driver>");
         return strBuilder.toString();
     }
 
@@ -120,6 +101,11 @@ public class BasicDriver implements Driver {
     }
 
     @Override
+    public boolean tendToChangeLane() {
+        return random.nextFloat() < laneChangeFactor;
+    }
+
+    @Override
     public int dawdle(int tmpV) {
         if (tmpV < 1)
             return 0;
@@ -131,11 +117,11 @@ public class BasicDriver implements Driver {
 
     @Override
     public int getMaxVelocity() {
-        DirectedEdge edge = vehicle.getDirectedEdge();
-        if (edge == null)
+        DirectedEdge.Lane lane = vehicle.getLane();
+        if (lane == null)
             return Integer.MAX_VALUE;
         else
-            return edge.getMaxVelocity();
+            return lane.getMaxVelocity();
     }
 
     @Override
@@ -154,13 +140,53 @@ public class BasicDriver implements Driver {
     }
 
     @Override
+    public float getLaneChangeFactor() {
+        return laneChangeFactor;
+    }
+
+    @Override
+    public void setLaneChangeFactor(float laneChangeFactor) {
+        String errorMsg = null;
+        if (laneChangeFactor> 1) {
+            this.laneChangeFactor = 1;
+            errorMsg = "It must hold: 0 <= laneChangeFactor <= 1\n" +
+                    "Current: " + laneChangeFactor + "\n" +
+                    "Value set to 1.";
+        } else if (laneChangeFactor < 0) {
+            this.laneChangeFactor = 0;
+            errorMsg = "It must hold: 0 <= laneChangeFactor <= 1\n" +
+                    "Current: " + laneChangeFactor + "\n" +
+                    "Value set to 0.";
+        } else
+            this.laneChangeFactor = laneChangeFactor;
+
+        if (errorMsg != null)
+            logger.error(errorMsg);
+    }
+
+    @Override
     public float getDawdleFactor() {
         return dawdleFactor;
     }
 
     @Override
     public void setDawdleFactor(float dawdleFactor) {
-        this.dawdleFactor = dawdleFactor;
+        String errorMsg = null;
+        if (dawdleFactor > 1) {
+            this.dawdleFactor = 1;
+            errorMsg = "It must hold: 0 <= dawdleFactor <= 1\n" +
+                    "Current: " + dawdleFactor + "\n" +
+                    "Value set to 1.";
+        } else if (dawdleFactor < 0) {
+            this.dawdleFactor = 0;
+            errorMsg = "It must hold: 0 <= dawdleFactor <= 1\n" +
+                    "Current: " + dawdleFactor + "\n" +
+                    "Value set to 0.";
+        } else
+            this.dawdleFactor = dawdleFactor;
+
+        if (errorMsg != null)
+            logger.error(errorMsg);
     }
 
     @Override
