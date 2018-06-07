@@ -11,9 +11,11 @@ Feel free to propose changes to this document in a pull request.
 [Code of Conduct](#code-of-conduct)
 
 [Styleguides](#styleguides)
-   * [Git Commit Messages](#git-commit-messages)
-   * [Gitflow Workflow](#gitflow-workflow)
-   * [Semantic Versioning](#semantic-versioning)
+  * [Git Commit Messages](#git-commit-messages)
+  * [Gitflow Workflow](#gitflow-workflow)
+  * [Releases](#releases)
+    * [Release Checklist](#release-checklist)
+    * [Semantic Versioning](#semantic-versioning)
 
 ---
 
@@ -91,7 +93,54 @@ This means we are using the following branches:
 * `fix/<name>`: branches for bug fixes branched off `develop`
 
 
-### [Semantic Versioning][website_semantic_versioning]
+### Releases
+
+You can copy and use the following template for new releases.
+In general, needed information should be optained from commit messages.
+```
+## Downloads
+
+[Download for Windows](download_link_windows)
+[Download as App for macOS](download_link_macOS)
+[Download as executable jar](download_link_jar)
+Download for Linux and others: see below
+
+
+## General info
+
+<optional>
+
+
+## New features
+
+<Short and interesting description about new features of this release.>
+
+
+## Bug fixes
+
+<Detailed description about fixed bugs of this release.>
+
+
+[download_link_windows]: <download link>
+[download_link_macOS]: <download link>
+[download_link_jar]: <download link>
+
+```
+
+
+#### Release Checklist
+
+Please check the following points for a new release.
+* Is the distribution and release version correct in [build.gradle](build.gradle) files?
+* Are all tests passing?
+* Has `release` been merged into `master`?
+* Is a new teaser picture needed/recommended?
+* Are all distribution files added?
+    * `./gradlew :microtrafficsim-ui:distAll` creates the distribution files, which then can be found in `microtrafficsim-ui/build/distributions`.
+    * the `executable jar file` can be found in `microtrafficsim-ui/build/libs`
+
+
+#### [Semantic Versioning][website_semantic_versioning]
 
 "Given a version number `MAJOR.MINOR.PATCH`, increment the:
 * `MAJOR` version when you make incompatible API changes,
