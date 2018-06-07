@@ -27,16 +27,55 @@ By participating, you are expected to uphold this code.
 
 ### [Git Commit Messages][website_git_commit_messages]
 
-These points make committing easier and clearer.
-* Use the present tense ("Add feature" not "Added feature")
-* Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-* Limit the first line up to 72 characters
-* 2nd line is empty
-* Consider using following flags in your commit messages:
-    * `fix` when the commit contains bug fixes
-    * `doc` when writing documentation
-    * `test` when tests were changed/added
-    * `style` when code or format style changes occur in the commit
+Commit messages are a _hugely_ important part of working with git.
+They not only help other workers to understand your changes quickly, they also are the basement for new releases and their release notes.
+Thus, you really should account these following rules [cited from here][website_git_commit_messages] in your commits.
+
+First of all, commits should be `atomic`.
+One commit should contain only changes of a few lines of code (or one single feature).
+This method seems to be too verbose and kind of annoying, but when working with Git logs (`git log`) or GitHub's network tree, this is a huge advantage.
+Branch management, releases and especially finding bugs is way easier with small commit messages.
+
+Some points about the commit message style:
+* Separate `subject` from `body` with a blank line.
+  The body explains _what_ has changed and _why_, not _how_ it has changed.
+  _How_ can be checked by looking at the commit changes itself.
+* Line widths
+    * 1st line (`subject`) up to 50 characters
+    * 2nd line empty
+    * Remaining (`body`) lines up to 72 characters
+* Capitalize the `subject` line
+  ```diff
+  - fix typo ...
+  + Fix typo ...
+  ```
+* Do not end the `subject` line with a period
+  ```diff
+  - Refactor brackets of some if-statements.
+  + Refactor brackets of some if-statements
+  ```
+* Use the present tense  
+  ```diff
+  - Added feature
+  + Add feature
+  ```
+* Use the imperative mood, no other language styles (no description either)  
+  ```diff
+  - Moves cursor to ...
+  - Fixed bug ...
+  - Sweet new API methods ...
+  + Move cursor to ...
+  + Fix bug ...
+  + Add new API methods for ...
+  ```
+In summary, a properly formed Git commit subject line should always be able to complete the following sentence:  
+  `If applied, this commit will <your subject line>`
+
+Consider using following verbs/flags in your commit messages:
+* `fix` when the commit contains bug fixes
+* `doc(s)` when writing documentation
+* `test(s)` when tests were changed/added
+* `style` when code or format style changes occur in the commit
 
 
 ### [Gitflow Workflow][website_gitflow_workflow]
