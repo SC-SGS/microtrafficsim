@@ -8,7 +8,7 @@ with OpenStreetMap data.
 ## News
 
 The bachelor thesis about Uncertainty Quantification and multilane traffic simulation is finally linked [in the wiki](https://github.com/sgs-us/microtrafficsim/wiki/papers#quantifizierung-von-unsicherheiten-in-mikroskopischer-verkehrssimulation).
-A new release containing the multilane logic is in progress.
+A new [release](https://github.com/sgs-us/microtrafficsim/releases) containing the multilane logic has been published.
 
 The next few months will be attended to maintenance.
 In general, the project should be prepared for workers other than project's initiators.
