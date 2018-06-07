@@ -13,18 +13,18 @@ A new [release](https://github.com/sgs-us/microtrafficsim/releases) containing t
 The next few months will be attended to maintenance.
 In general, the project should be prepared for workers other than project's initiators.
 This includes:
-- A lot of Documentation
-- Writing a Github Wiki including explanations about the code structure itself
-- Change repo structure to fit [gitflow-workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)
-- Include [Travis CI](https://travis-ci.org) for doing (JUnit) tests automatically on serverside.
-- Improvements for interacting with the simulator, e.g. simple scenario creations for developers outside this project.
+* A lot of Documentation
+* Writing a Github Wiki including explanations about the code structure itself
+* Change repo structure to fit [gitflow-workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)
+* Include [Travis CI](https://travis-ci.org) for doing (JUnit) tests automatically on serverside.
+* Improvements for interacting with the simulator, e.g. simple scenario creations for developers outside this project.
 
 In addition to that, some maintainability issues occured:
-- In this project, [JOGL](http://jogamp.org/jogl/www/) is used as Java binding for the OpenGL API.
+* In this project, [JOGL](http://jogamp.org/jogl/www/) is used as Java binding for the OpenGL API.
 Regarding this [link](http://jogamp.org/deployment/archive/rc/) in May 2018, JOGL hasn't been updated since 2015.
 Thus the project will use another binding.
 [LWJGL](https://www.lwjgl.org) is a good alternative.
-- This project uses own math-code to handle calculations.
+* This project uses own math-code to handle calculations.
 It is helpful to "outsource" this code.
 [JOML - Java OpenGL Math Library](https://github.com/JOML-CI/JOML) seems to meet our needs.
 JOML has been updated recently (May 2018), it is usable in concurrent execution environments and, on its main page, it has an own chapter about its usage with LWJGL (among others).
