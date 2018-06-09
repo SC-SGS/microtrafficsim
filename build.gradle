@@ -1,6 +1,6 @@
 project.ext.set("distname", "microtrafficsim")
 project.ext.set("distver", "1.2.0")
-project.ext.set("distrel", "1")
+project.ext.set("distrel", "2")
 
 // filter out 'examples' subproject as it is not a 'real' java project
 def javaProjects() {
