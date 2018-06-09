@@ -139,6 +139,7 @@ Please check the following points for a new release.
 * Are all distribution files added?
     * `./gradlew :microtrafficsim-ui:distAll` creates the distribution files, which then can be found in `microtrafficsim-ui/build/distributions`.
     * the `executable jar file` can be found in `microtrafficsim-ui/build/libs`
+    * It can help to call `./gradlew clean` before executing the build and dist commands.
 
 
 #### [Semantic Versioning][website_semantic_versioning]
