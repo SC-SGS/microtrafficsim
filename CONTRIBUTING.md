@@ -165,6 +165,7 @@ Hence you have to set your `JAVA_HOME` to a correct `JDK`.
 This setup is tested with `macOS 10.13.4`.
 If you don't do this, the main-ui could probably start but bugs like deadlock behaviour when loading a new map may occur.
 Setting `bundleJRE = false` follows into errors when multiple `JDKs` are installed.
+To make the life of end users easier, just bundle the `JRE` as described above.
 
 
 
