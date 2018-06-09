@@ -2,7 +2,7 @@ import org.gradle.internal.hash.HashUtil;
 
 plugins {
     id 'application'
-    id 'edu.sc.seis.macAppBundle' version '2.1.6'
+    id 'edu.sc.seis.macAppBundle' version '2.2.1'
     id 'nebula.ospackage' version '4.4.0'
 }
 
@@ -48,7 +48,9 @@ macAppBundle {
     version = "${distVersion}-${distRelease}"
 
     mainClassName = "${main}"
-    bundleJRE = false
+    jvmVersion = project.targetCompatibility.toString()
+    bundleJRE = true
+    jreHome = "${System.env.JAVA_HOME}"
 }
 
 ospackage {

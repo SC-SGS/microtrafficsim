@@ -16,6 +16,7 @@ Feel free to propose changes to this document in a pull request.
   * [Releases](#releases)
     * [Release Checklist](#release-checklist)
     * [Semantic Versioning](#semantic-versioning)
+    * [Release for macOS](#release-for-macos)
 
 ---
 
@@ -150,6 +151,20 @@ Additional labesl for pre-release and build metadata are available as extensions
 
 For more information, see [the original site][website_semantic_versioning].
 
+
+#### Release for macOS
+
+In case you are releasing for macOS, the current version of this simulation is only working with Java 8 (tested with `1.8.0_172`).
+For correct building, the following code lines should be set
+```gradle
+bundleJRE = true
+jreHome = "${System.env.JAVA_HOME}"
+```
+in `microtrafficsim-ui/build.gradle`.
+Hence you have to set your `JAVA_HOME` to a correct `JDK`.
+This setup is tested with `macOS 10.13.4`.
+If you don't do this, the main-ui could probably start but bugs like deadlock behaviour when loading a new map may occur.
+Setting `bundleJRE = false` follows into errors when multiple `JDKs` are installed.
 
 
 
