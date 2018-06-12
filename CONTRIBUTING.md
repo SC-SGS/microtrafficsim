@@ -214,7 +214,7 @@ They help a lot keeping overview and the code clear.
   public class Vehicle {
     private Color color;
 
-  /**************************************************/
+  /**************************************************************************************************/
     // group 0, e.g. constructors and factory methods
 
     public Vehicle(Color color) {
@@ -225,7 +225,7 @@ They help a lot keeping overview and the code clear.
       return new Vehicle(Color.RED);
     }
 
-  /**************************************************/
+  /**************************************************************************************************/
     // group 1, e.g. getter/setter
 
     public Color getColor() {
@@ -236,7 +236,7 @@ They help a lot keeping overview and the code clear.
       this.color = color;
     }
 
-  /**************************************************/
+  /**************************************************************************************************/
     // group 2, e.g. Nagel-Schreckenberg-Model
 
     public void accelerate() {
@@ -255,7 +255,7 @@ They help a lot keeping overview and the code clear.
       // ...
     }
 
-  /**************************************************/
+  /**************************************************************************************************/
     // group 3 (e.g. private classes)
   }
   ```
