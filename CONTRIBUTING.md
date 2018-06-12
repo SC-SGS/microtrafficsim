@@ -17,6 +17,7 @@ Feel free to propose changes to this document in a pull request.
     * [Release Checklist](#release-checklist)
     * [Semantic Versioning](#semantic-versioning)
     * [Release for macOS](#release-for-macos)
+  * [Java](#java)
 
 ---
 
@@ -167,6 +168,137 @@ This setup is tested with `macOS 10.13.4`.
 If you don't do this, the main-ui could probably start but bugs like deadlock behaviour when loading a new map may occur.
 Setting `bundleJRE = false` follows into errors when multiple `JDKs` are installed.
 To make the life of end users easier, just bundle the `JRE` as described above.
+
+
+### Java
+
+The following conventions and suggestions should be followed.
+They help a lot keeping overview and the code clear.
+
+* Maximum line width is `100`.
+
+  _This is a good trade off between `120` and `80`.
+  Humans have trouble reading the code with increasing line width.
+  In general, more than `80` is not recommended, but Java is a very verbose language._
+
+* Use `4 spaces` for indention (p.s.: [could help your salary](https://stackoverflow.blog/2017/06/15/developers-use-spaces-make-money-use-tabs)!).
+
+* Make visibility as closest as possible.
+
+  _Usually, you tend to not bother with visibility, but visibility helps a lot with getting nice and persistent interfaces._
+
+* Use `getter`/`setter` instead of direct access, even for private usage.
+
+  _This is unhandy in Java, but important for maintenance.
+  Changing the implementation of a class should tend to make no difference for users of this class.
+  Furthermore, debugging with breakpoints is much more easier when you only have to make one breakpoint instead of many at different positions.
+  Same argument counts for synchronization code snippets.
+  [The code is getting inlined](https://stackoverflow.com/questions/23931546/java-getter-and-setter-faster-than-direct-access)._
+
+  `getter` starts with `get`, `setter` starts with `set`.
+  Those `getter` returning a boolean expression may start differently, but with a verb.
+  Corresponding fields are named like adjectives/states.
+  Field names adapt to their corresponding `getter`/`setter`, not the other way around.
+  ```diff
+  - count()
+  + getCount()
+
+  - boolean isRunning = false;
+  + boolean running = true;
+  + boolean isRunning() { return running; }
+  ```
+
+* Separate class sections with `/*****/` (whole line).
+  Take the following code snippet for inspiration.
+  ```java
+  public class Vehicle {
+    private Color color;
+
+  /**************************************************/
+    // group 0, e.g. constructors and factory methods
+
+    public Vehicle(Color color) {
+      this.color = color;
+    }
+
+    public static Vehicle getRedVehicle() {
+      return new Vehicle(Color.RED);
+    }
+
+  /**************************************************/
+    // group 1, e.g. getter/setter
+
+    public Color getColor() {
+      return color;
+    }
+
+    public void setColor(Color color) {
+      this.color = color;
+    }
+
+  /**************************************************/
+    // group 2, e.g. Nagel-Schreckenberg-Model
+
+    public void accelerate() {
+      // ...
+    }
+
+    public void brake() {
+      // ...
+    }
+
+    public void dawdle() {
+      // ...
+    }
+
+    public void move() {
+      // ...
+    }
+
+  /**************************************************/
+    // group 3 (e.g. private classes)
+  }
+  ```
+
+* Use control structures with `curly brackets` and the keyword `else` after the closing bracket for nice commenting.
+
+  _Using control structures without `curly brackets` are easy to write, but usually very uncomfortable to read (especially inside other control structures).
+  Most of the time code is read, not written, so `curly brackets` should be used.
+  _
+
+  ```java
+  // BAD: may confuse
+  for (int i = 0; i < n; i++)
+      for (int j = 0; j < n; j++)
+          // Are these comment lines ignored?
+          // Can't remember without my IDE...
+          if (isRunning)
+              doSomething();
+          else
+              doSomethingElse();
+          doAnything(); // NOT in the loop, but seems to be due to wrong indention
+
+
+  // GOOD: clear and easy to read
+  for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+          // no problem with comments
+          if (isRunning) {
+              doSomething();
+          }
+          // `else` after closing bracket for nice commenting
+          else {
+              doSomethingElse();
+          }
+      }
+  }
+  doAnything();
+  ```
+
+* Prefer package/folder management over class mangement if meaningful.
+  Large classes are unhandy.
+
+* Use annotations where expected (e.g. `@Override`).
 
 
 

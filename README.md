@@ -2,7 +2,7 @@
 
 with OpenStreetMap data.
 
-![Teaser: New York](resources/teaser.png "Teaser: New York")
+![Teaser: Stuttgart](resources/teaser_2018-06-12_Stuttgart.png "Teaser: Stuttgart")
 
 
 ## News
