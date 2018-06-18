@@ -178,6 +178,9 @@ To make the life of end users easier, just bundle the `JRE` as described above.
 The following conventions and suggestions should be followed.
 They help a lot keeping overview and the code clear.
 
+
+### File style
+
 * Maximum line width is `100`.
 
   _This is a good trade off between `120` and `80`.
@@ -185,6 +188,9 @@ They help a lot keeping overview and the code clear.
   In general, more than `80` is not recommended, but Java is a very verbose language._
 
 * Use `4 spaces` for indention (p.s.: [could help your salary](https://stackoverflow.blog/2017/06/15/developers-use-spaces-make-money-use-tabs)!).
+
+
+### Coding conventions
 
 * Make visibility as closest as possible.
 
@@ -210,6 +216,44 @@ They help a lot keeping overview and the code clear.
   + boolean running = true;
   + boolean isRunning() { return running; }
   ```
+
+* Use control structures with `curly brackets` and the keyword `else` after the closing bracket for nice commenting.
+
+  _Using control structures without `curly brackets` are easy to write, but usually very uncomfortable to read (especially inside other control structures).
+  Most of the time code is read, not written, so `curly brackets` should be used.
+  _
+
+  ```java
+  // BAD: may confuse
+  for (int i = 0; i < n; i++)
+      for (int j = 0; j < n; j++)
+          // Are these comment lines ignored?
+          // Can't remember without my IDE...
+          if (isRunning)
+              doSomething();
+          else
+              doSomethingElse();
+          doAnything(); // NOT in the loop, but seems to be due to wrong indention
+
+
+  // GOOD: clear and easy to read
+  for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+          // no problem with comments
+          if (isRunning) {
+              doSomething();
+          }
+          // `else` after closing bracket for nice commenting
+          else {
+              doSomethingElse();
+          }
+      }
+  }
+  doAnything();
+  ```
+
+
+### Documentation
 
 * Separate class sections with `/*****/` (whole line).
   Take the following code snippet for inspiration.
@@ -263,45 +307,13 @@ They help a lot keeping overview and the code clear.
   }
   ```
 
-* Use control structures with `curly brackets` and the keyword `else` after the closing bracket for nice commenting.
-
-  _Using control structures without `curly brackets` are easy to write, but usually very uncomfortable to read (especially inside other control structures).
-  Most of the time code is read, not written, so `curly brackets` should be used.
-  _
-
-  ```java
-  // BAD: may confuse
-  for (int i = 0; i < n; i++)
-      for (int j = 0; j < n; j++)
-          // Are these comment lines ignored?
-          // Can't remember without my IDE...
-          if (isRunning)
-              doSomething();
-          else
-              doSomethingElse();
-          doAnything(); // NOT in the loop, but seems to be due to wrong indention
-
-
-  // GOOD: clear and easy to read
-  for (int i = 0; i < n; i++) {
-      for (int j = 0; j < n; j++) {
-          // no problem with comments
-          if (isRunning) {
-              doSomething();
-          }
-          // `else` after closing bracket for nice commenting
-          else {
-              doSomethingElse();
-          }
-      }
-  }
-  doAnything();
-  ```
-
-* Prefer package/folder management over class mangement if meaningful.
-  Large classes are unhandy.
-
 * Use annotations where expected (e.g. `@Override`).
+
+
+### Project conventions
+
+* Prefer package/folder/file management over class mangement if `meaningful`.
+  Large classes are unhandy.
 
 
 
