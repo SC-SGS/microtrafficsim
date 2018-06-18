@@ -2,7 +2,7 @@
 
 👍🎉 First off, thanks for your interest in contributing to this project! 🎉👍
 
-The following is a set of guidelines for contributing to microtrafficsim.
+The following is a set of (style) guidelines for contributing to microtrafficsim.
 Feel free to propose changes to this document in a pull request.
 
 
@@ -10,14 +10,19 @@ Feel free to propose changes to this document in a pull request.
 
 [Code of Conduct](#code-of-conduct)
 
-[Styleguides](#styleguides)
-  * [Git Commit Messages](#git-commit-messages)
-  * [Gitflow Workflow](#gitflow-workflow)
-  * [Releases](#releases)
-    * [Release Checklist](#release-checklist)
-    * [Semantic Versioning](#semantic-versioning)
-    * [Release for macOS](#release-for-macos)
-  * [Java](#java)
+[Git Commit Messages](#git-commit-messages)
+
+[Gitflow Workflow](#gitflow-workflow)
+
+[Releases](#releases)
+
+* [Release Checklist](#release-checklist)
+
+* [Semantic Versioning](#semantic-versioning)
+
+* [Release for macOS](#release-for-macos)
+
+[Java](#java)
 
 ---
 
@@ -27,9 +32,7 @@ This project and everyone participating in it is governed by the [Code of Conduc
 By participating, you are expected to uphold this code.
 
 
-## Styleguides
-
-### [Git Commit Messages][website_git_commit_messages]
+## [Git Commit Messages][website_git_commit_messages]
 
 Commit messages are a _hugely_ important part of working with git.
 They not only help other workers to understand your changes quickly, they also are the basement for new releases and their release notes.
@@ -82,7 +85,7 @@ Consider using following verbs/flags in your commit messages:
 * `style` when code or format style changes occur in the commit
 
 
-### [Gitflow Workflow][website_gitflow_workflow]
+## [Gitflow Workflow][website_gitflow_workflow]
 
 This project uses [Gitflow Workflow][website_gitflow_workflow], a nice and clear way to work effectively.
 
@@ -95,7 +98,7 @@ This means we are using the following branches:
 * `fix/<name>`: branches for bug fixes branched off `develop`
 
 
-### Releases
+## Releases
 
 You can copy and use the following template for new releases.
 In general, needed information should be optained from commit messages.
@@ -130,7 +133,7 @@ Download for Linux and others: see below
 ```
 
 
-#### Release Checklist
+### Release Checklist
 
 Please check the following points for a new release.
 * Is the distribution and release version correct in [build.gradle](build.gradle) files?
@@ -143,7 +146,7 @@ Please check the following points for a new release.
     * It can help to call `./gradlew clean` before executing the build and dist commands.
 
 
-#### [Semantic Versioning][website_semantic_versioning]
+### [Semantic Versioning][website_semantic_versioning]
 
 "Given a version number `MAJOR.MINOR.PATCH`, increment the:
 * `MAJOR` version when you make incompatible API changes,
@@ -154,7 +157,7 @@ Additional labesl for pre-release and build metadata are available as extensions
 For more information, see [the original site][website_semantic_versioning].
 
 
-#### Release for macOS
+### Release for macOS
 
 In case you are releasing for macOS, the current version of this simulation is only working with Java 8 (tested with `1.8.0_172`).
 For correct building, the following code lines should be set
@@ -170,7 +173,7 @@ Setting `bundleJRE = false` follows into errors when multiple `JDKs` are install
 To make the life of end users easier, just bundle the `JRE` as described above.
 
 
-### Java
+## Java
 
 The following conventions and suggestions should be followed.
 They help a lot keeping overview and the code clear.
