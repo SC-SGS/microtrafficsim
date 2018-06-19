@@ -225,6 +225,16 @@ They help a lot keeping overview and the code clear.
   + boolean isRunning() { return running; }
   ```
 
+* Use white spaces around binary operators.
+  Exceptions can be made for special cases to improve readability (see below).
+
+  ```diff
+  - int e = a*b;
+  + int e = a * b;
+  - int e = a * b + c * d;
+  + int e = a*b + c*d;
+  ```
+
 * Use control structures with `curly brackets` and the keyword `else` after the closing bracket for nice commenting.
 
   _Using control structures without `curly brackets` are easy to write, but usually very uncomfortable to read (especially inside other control structures).
