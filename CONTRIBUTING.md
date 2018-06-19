@@ -200,6 +200,36 @@ They help a lot keeping overview and the code clear.
 
 ### Coding Conventions
 
+* Use `constants` over `magic numbers`!
+
+  _Even you as the author will not know the meaning of every number after several months.
+  And if you know, you will probably forget the precision of your constant and the places, where you put them (-> bad for debugging)._
+
+  ```java
+  // BAD
+
+  float area = 3.1 * radius * radius;
+  // (...)
+  // somewhere else in the code
+  float circum = 2 * 3.1415 * radius;
+  // or
+  float circum = 6.283 * radius;
+
+
+
+  // GOOD
+
+  public static final float PI   = 3.1415;
+  public static final float PI_2 = 6.2832;
+
+  float area = PI * radius * radius;
+  // (...)
+  // somewhere else in the code
+  float circum = 2 * PI * radius;
+  // or
+  float circum = PI_2 * radius;
+  ```
+
 * Make __visibility as closest__ as possible.
 
   _Usually, you tend to not bother with visibility, but visibility helps a lot with getting nice and persistent interfaces._
