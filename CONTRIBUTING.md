@@ -24,6 +24,14 @@ Feel free to propose changes to this document in a pull request.
 
 [Java](#java)
 
+* [File Style](#file-style)
+
+* [Coding Conventions](#coding-conventions)
+
+* [Documentation](#documentation)
+
+* [Project Conventions](#project-conventions)
+
 ---
 
 ## Code of Conduct
@@ -179,7 +187,7 @@ The following conventions and suggestions should be followed.
 They help a lot keeping overview and the code clear.
 
 
-### File style
+### File Style
 
 * Maximum line width is `100`.
 
@@ -190,7 +198,7 @@ They help a lot keeping overview and the code clear.
 * Use `4 spaces` for indention (p.s.: [could help your salary](https://stackoverflow.blog/2017/06/15/developers-use-spaces-make-money-use-tabs)!).
 
 
-### Coding conventions
+### Coding Conventions
 
 * Make __visibility as closest__ as possible.
 
@@ -309,7 +317,7 @@ They help a lot keeping overview and the code clear.
 * Use annotations where expected (e.g. `@Override`).
 
 
-### Project conventions
+### Project Conventions
 
 * Prefer package/folder/file management over class mangement if `meaningful`.  
   __BUT:__ Think in an intuitive, handy and `deterministic`(!) way and don't take structuring and subfolding too far.
