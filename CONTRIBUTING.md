@@ -91,6 +91,7 @@ Consider using following verbs/flags in your commit messages:
 * `doc(s)` when writing documentation
 * `test(s)` when tests were changed/added
 * `style` when code or format style changes occur in the commit
+* `refactor` when changes __DO NOT__ change functionality
 
 
 ## [Gitflow Workflow][website_gitflow_workflow]
@@ -275,7 +276,9 @@ They help a lot keeping overview and the code clear.
   Most of the time code is read, not written, so `curly brackets` should be used._
 
   ```java
-  // BAD: may confuse
+  // BAD
+  // may confuse
+
   for (int i = 0; i < n; i++)
       for (int j = 0; j < n; j++)
           // Are these comment lines ignored?
@@ -287,7 +290,10 @@ They help a lot keeping overview and the code clear.
           doAnything(); // NOT in the loop, but seems to be due to wrong indention
 
 
-  // GOOD: clear and easy to read
+
+  // GOOD
+  // clear and easy to read
+
   for (int i = 0; i < n; i++) {
       for (int j = 0; j < n; j++) {
           // no problem with comments
