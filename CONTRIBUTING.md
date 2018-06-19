@@ -225,14 +225,18 @@ They help a lot keeping overview and the code clear.
   + boolean isRunning() { return running; }
   ```
 
-* Use white spaces around binary operators.
+* Use __white spaces around binary operators__.
   Exceptions can be made for special cases to improve readability (see below).
 
   ```diff
+  - int e = (- a) * b;
+  + int e = (-a) * b;
+
   - int e = a*b;
   + int e = a * b;
-  - int e = a * b + c * d;
-  + int e = a*b + c*d;
+
+  + int e = a * b + c * d;    // ok, but not recommended here
+  + int e = a*b + c*d;        // improves readability
   ```
 
 * Use control structures with `curly brackets` and the keyword `else` after the closing bracket for nice commenting.
