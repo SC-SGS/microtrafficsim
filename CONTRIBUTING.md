@@ -311,8 +311,20 @@ They help a lot keeping overview and the code clear.
 
 ### Project conventions
 
-* Prefer package/folder/file management over class mangement if `meaningful`.
-  Large classes are unhandy.
+* Prefer package/folder/file management over class mangement if `meaningful`.  
+  __BUT:__ Think in an intuitive, handy and `deterministic`(!) way and don't take structuring and subfolding too far.
+
+  Always ask yourself:  
+  `How would most of the people search for this class?`  
+  Someone without knowing your whole project structure should be able to find a file at the first try.  
+  `In every folder, there should be only one option to continue searching (-> determinism).`
+
+  _Take a math API for instance.
+  It is okay to put basic classes like vector and matrix classes in __ONE__ package called `math`, because that's what it is.
+  Someone searching for these classes will find them easily in this package even if there are a lot more classes in it.
+  Think of creating a subfolder for your matrices and another subfolder for graph data structures.
+  Is a matrix describing graph structures belonging to the matrix or the graph folder?
+  It would be annoying to look for such a file in such a folder structure due to non-intuitive subfoldering._
 
 
 
