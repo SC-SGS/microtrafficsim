@@ -192,11 +192,11 @@ They help a lot keeping overview and the code clear.
 
 ### Coding conventions
 
-* Make visibility as closest as possible.
+* Make __visibility as closest__ as possible.
 
   _Usually, you tend to not bother with visibility, but visibility helps a lot with getting nice and persistent interfaces._
 
-* Use `getter`/`setter` instead of direct access, even for private usage.
+* __Use `getter`/`setter`__ instead of direct access, even for private usage.
 
   _This is unhandy in Java, but important for maintenance.
   Changing the implementation of a class should tend to make no difference for users of this class.
