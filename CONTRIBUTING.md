@@ -220,8 +220,7 @@ They help a lot keeping overview and the code clear.
 * Use control structures with `curly brackets` and the keyword `else` after the closing bracket for nice commenting.
 
   _Using control structures without `curly brackets` are easy to write, but usually very uncomfortable to read (especially inside other control structures).
-  Most of the time code is read, not written, so `curly brackets` should be used.
-  _
+  Most of the time code is read, not written, so `curly brackets` should be used._
 
   ```java
   // BAD: may confuse
