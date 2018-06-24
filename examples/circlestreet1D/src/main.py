@@ -50,23 +50,21 @@ class VelocityImage:
         # return np.array(np.arange(6) * np.arange(5)[:, np.newaxis])
 
 
-    def shift(self):
+    def shift(self, new_street):
         del self._street_vals[-1]
-        self._street_vals.insert(0, self._street_vals[0])
+        self._street_vals.insert(0, new_street.to_v_list())
 
 
-    def add_new_street(self, new_street):
-        if len(self._street_vals) == self._t:
-            raise ValueError("too many streets")
-        self._street_vals.insert(0, new_street)
-
-
-def animate(i, v_img):
+def animate(i, v_img, street):
     if (i == 0):
         print("init step")
     else:
         print("step", i)
-        v_img.shift()
+
+        for vehicle in street.vehicles:
+            vehicle.accelerate()
+
+        v_img.shift(street)
 
 
     v_img.plot.set_data(v_img.to_array())
@@ -78,6 +76,7 @@ def main():
     street = mts.Street(5)
     vehicle = mts.Vehicle()
     street[1] = vehicle
+    street[4] = mts.Vehicle()
 
     fig = pyplot.figure()
     v_img = VelocityImage(street, t=6)
@@ -85,7 +84,7 @@ def main():
     anim = animation.FuncAnimation(
         fig,
         func=animate,
-        fargs=[v_img],
+        fargs=[v_img, street],
         interval=1000,
         blit=True
     )

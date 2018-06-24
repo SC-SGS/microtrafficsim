@@ -32,6 +32,11 @@ class Street:
         return self._n
 
 
+    @property
+    def vehicles(self):
+        return self._cells.values()
+
+
     def to_v_list(self):
         list = [np.nan] * self.length
 
@@ -58,3 +63,7 @@ class Vehicle:
     @property
     def max_v(self):
         return self._max_v
+
+
+    def accelerate(self):
+        self._v = min(self.v + 1, self.max_v)
