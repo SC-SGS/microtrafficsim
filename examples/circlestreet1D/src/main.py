@@ -34,7 +34,6 @@ class VelocityImage:
         pyplot.colorbar()
 
 
-
     @property
     def cmap(self):
         return self._cmap
