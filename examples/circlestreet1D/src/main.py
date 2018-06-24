@@ -1,6 +1,7 @@
 from matplotlib import pyplot
 from matplotlib import animation
 from matplotlib import cm
+import random
 import numpy as np
 
 import microtrafficsim as mts
@@ -64,6 +65,15 @@ def animate(i, v_img, street):
         for vehicle in street.vehicles:
             vehicle.accelerate()
 
+        for vehicle in street.vehicles:
+            vehicle.brake()
+
+        for vehicle in street.vehicles:
+            vehicle.dawdle()
+
+        for vehicle in street.vehicles:
+            vehicle.move()
+
         v_img.shift(street)
 
 
@@ -74,9 +84,8 @@ def animate(i, v_img, street):
 def main():
     # init street
     street = mts.Street(5)
-    vehicle = mts.Vehicle()
-    street[1] = vehicle
-    street[4] = mts.Vehicle()
+    street[1] = mts.Vehicle(street, random.random())
+    street[4] = mts.Vehicle(street, random.random())
 
     fig = pyplot.figure()
     v_img = VelocityImage(street, t=6)

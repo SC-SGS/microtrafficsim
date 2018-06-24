@@ -1,4 +1,5 @@
 from matplotlib import cm
+import random
 import numpy as np
 
 
@@ -51,19 +52,42 @@ class Vehicle:
     TODO
     """
 
-    def __init__(self, colormap_name='cubehelix'):
+    def __init__(self, street, seed, dawdle_factor=0.2, colormap_name='cubehelix'):
+        self._street = street
+        self._random = random.Random(seed)
+        self._dawdle_factor = dawdle_factor
         self._cmap = cm.get_cmap(colormap_name)
         self._max_v = 5
         self._v = 0
 
+
     @property
     def v(self):
         return self._v
+
 
     @property
     def max_v(self):
         return self._max_v
 
 
+    @property
+    def dawdle_factor(self):
+        return self._dawdle_factor
+
+
     def accelerate(self):
         self._v = min(self.v + 1, self.max_v)
+
+
+    def brake(self):
+        pass
+
+
+    def dawdle(self):
+        if self._random.random() < self.dawdle_factor:
+            self._v = max(self.v - 1, 0)
+
+
+    def move(self):
+        pass
