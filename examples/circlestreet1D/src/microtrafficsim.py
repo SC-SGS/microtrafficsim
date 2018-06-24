@@ -53,10 +53,14 @@ class Vehicle:
     """
 
     def __init__(self, street, seed, dawdle_factor=0.2, colormap_name='cubehelix'):
+        # street stuff
         self._street = street
+
+        # dawdle factor
         self._random = random.Random(seed)
         self._dawdle_factor = dawdle_factor
-        self._cmap = cm.get_cmap(colormap_name)
+
+        # velocity
         self._max_v = 5
         self._v = 0
 

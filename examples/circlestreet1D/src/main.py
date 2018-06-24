@@ -83,12 +83,12 @@ def animate(i, v_img, street):
 
 def main():
     # init street
-    street = mts.Street(5)
+    street = mts.Street(42)
     street[1] = mts.Vehicle(street, random.random())
-    street[4] = mts.Vehicle(street, random.random())
+    street[2] = mts.Vehicle(street, random.random())
 
     fig = pyplot.figure()
-    v_img = VelocityImage(street, t=6)
+    v_img = VelocityImage(street, t=42)
 
     anim = animation.FuncAnimation(
         fig,
