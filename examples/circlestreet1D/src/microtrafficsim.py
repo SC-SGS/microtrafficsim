@@ -48,6 +48,15 @@ class Street:
         self._v_max = v_max
 
 
+    @property
+    def length(self):
+        return len(self)
+
+
+    def __len__(self):
+        return self._length
+
+
     def __cell_check(self, cell):
         """
         Raises an IndexError if cell < 0 or length <= cell.
@@ -111,11 +120,6 @@ class Street:
             return None
         else:
             return self._cells[keys[idx]]
-
-
-    @property
-    def length(self):
-        return self._length
 
 
     @property
