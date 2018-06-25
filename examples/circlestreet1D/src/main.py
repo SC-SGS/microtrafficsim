@@ -27,12 +27,18 @@ class VelocityImage:
             self.to_array(), origin='lower', animated=True
         )
 
+        # init plot
+        pyplot.title("Single Laned Nagel-Schreckenberg-Model")
+        pyplot.xlabel("street cell")
+        pyplot.ylabel("street age")
+
         # init colormap
         self._cmap = cm.get_cmap(cmap_name)
         self._cmap.set_bad(color=bg)
         self._imgplot.set_cmap(self.cmap)
         pyplot.clim(0, 5)
         pyplot.colorbar()
+
 
 
     @property
@@ -58,10 +64,8 @@ class VelocityImage:
 
 def animate(i, v_img, street):
     if (i == 0):
-        print("init step")
+        pass # init step
     else:
-        print("step", i)
-
         for vehicle in street.vehicles:
             vehicle.accelerate()
 

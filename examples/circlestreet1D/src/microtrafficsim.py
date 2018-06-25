@@ -93,7 +93,6 @@ class Street:
         vehicle._pos = dest
 
 
-
     @property
     def _last_pos(self):
         # if no vehicles in the street
