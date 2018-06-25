@@ -12,7 +12,7 @@ class VelocityImage:
     Contains all velocities.
     """
 
-    def __init__(self, init_street, t=100, cmap_name='cool'):
+    def __init__(self, init_street, t=100, cmap_name='cool', bg='white'):
         # init street values
         self._t = t
         n = init_street.length
@@ -29,7 +29,7 @@ class VelocityImage:
 
         # init colormap
         self._cmap = cm.get_cmap(cmap_name)
-        self._cmap.set_bad(color='white')
+        self._cmap.set_bad(color=bg)
         self._imgplot.set_cmap(self.cmap)
         pyplot.clim(0, 5)
         pyplot.colorbar()
@@ -83,7 +83,12 @@ def animate(i, v_img, street):
 
 def main():
     # init street
-    street = mts.Street(42)
+    crossroad = mts.Crossroad()
+    street = mts.Street(42, crossroad)
+    crossroad.incoming = street
+    crossroad.leaving = street
+
+    # vehicles
     street[1] = mts.Vehicle(street, random.random())
     street[2] = mts.Vehicle(street, random.random())
 

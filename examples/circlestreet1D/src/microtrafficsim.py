@@ -3,34 +3,88 @@ import random
 import numpy as np
 
 
+class Crossroad:
+    """
+    TODO
+    """
+
+    def __init__(self):
+        self._incoming = None
+        self._leaving = None
+
+
+    @property
+    def incoming(self):
+        return self._incoming
+
+
+    @incoming.setter
+    def incoming(self, incoming):
+        self._incoming = incoming
+
+
+    @property
+    def leaving(self):
+        return self._leaving
+
+
+    @leaving.setter
+    def leaving(self, leaving):
+        self._leaving = leaving
+
+
 class Street:
     """
     TODO
     """
 
-    def __init__(self, n):
+    def __init__(self, length, crossroad):
+        # vehicles
         self._cells = {}
-        self._n = n
+        self._last_vehicle = None
+
+        # params
+        self._length = length
+        self._crossroad = crossroad
 
 
-    def __index_check(self, index):
-        if index < 0 or self.length <= index:
+    def __cell_check(self, cell):
+        """
+        Raises an IndexError if cell < 0 or length <= cell.
+
+        Returns true if the cell contains a vehicle
+        """
+        if cell < 0 or self.length <= cell:
             raise IndexError()
+        return cell in self._cells
 
 
     def __getitem__(self, cell):
-        self.__index_check(cell)
+        contains_vehicle = self.__cell_check(cell)
+        if not contains_vehicle:
+            raise ValueError("There should be a vehicle, but is not.")
         return self._cells[cell]
 
 
     def __setitem__(self, cell, vehicle):
-        self.__index_check(cell)
+        self.__cell_check(cell)
+        contains_vehicle = self.__cell_check(cell)
+        if contains_vehicle:
+            raise ValueError("There should be no vehicle to fill cell.")
         self._cells[cell] = vehicle
 
 
     @property
     def length(self):
-        return self._n
+        return self._length
+
+
+    @property
+    def _last_pos(self):
+        if self._last_vehicle is not None:
+            return self._last_vehicle.pos
+        else:
+            return self.length
 
 
     @property
@@ -42,7 +96,7 @@ class Street:
         list = [np.nan] * self.length
 
         for cell, vehicle in self._cells.items():
-            list[cell] = vehicle.v
+            list[cell] = vehicle._v
 
         return list
 
@@ -55,6 +109,8 @@ class Vehicle:
     def __init__(self, street, seed, dawdle_factor=0.2, colormap_name='cubehelix'):
         # street stuff
         self._street = street
+        self._front = None
+        self._pos = -1
 
         # dawdle factor
         self._random = random.Random(seed)
@@ -65,32 +121,28 @@ class Vehicle:
         self._v = 0
 
 
-    @property
-    def v(self):
-        return self._v
-
-
-    @property
-    def max_v(self):
-        return self._max_v
-
-
-    @property
-    def dawdle_factor(self):
-        return self._dawdle_factor
-
-
     def accelerate(self):
-        self._v = min(self.v + 1, self.max_v)
+        self._v = min(self._v + 1, self._max_v)
 
 
     def brake(self):
-        pass
+        # if no front vehicle
+        # -> self is frontmost
+        # -> brake for next street
+        if self._front == None:
+            distance = self._street._length - self._pos
+            distance += self._street._crossroad._leaving._last_pos
+        # if front vehicle
+        # -> brake for front vehicle
+        else:
+            distance = self._front._pos - self._pos
+
+        self._v = min(self._v, distance - 1)
 
 
     def dawdle(self):
-        if self._random.random() < self.dawdle_factor:
-            self._v = max(self.v - 1, 0)
+        if self._random.random() < self._dawdle_factor:
+            self._v = max(self._v - 1, 0)
 
 
     def move(self):
