@@ -41,7 +41,6 @@ class Street:
     def __init__(self, length, crossroad):
         # vehicles
         self._cells = {}
-        self._last_vehicle = None
 
         # params
         self._length = length
@@ -69,7 +68,10 @@ class Street:
     def __setitem__(self, cell, vehicle):
         contains_vehicle = self.__cell_check(cell)
         if contains_vehicle:
-            raise ValueError("There should be no vehicle to fill cell {}.".format(cell))
+            raise ValueError(
+                "There should be no vehicle (at {}) to fill cell {}." \
+                .format(vehicle._pos, cell)
+            )
         self._cells[cell] = vehicle
         vehicle._pos = cell
 
@@ -82,7 +84,10 @@ class Street:
         del self._cells[vehicle._pos]
         contains_vehicle = self.__cell_check(dest)
         if contains_vehicle:
-            raise ValueError("There should be no vehicle to fill cell {}.".format(dest))
+            raise ValueError(
+                "There should be no vehicle (at {}) to fill cell {}." \
+                .format(vehicle._pos, dest)
+            )
         self._cells[dest] = vehicle
         vehicle._pos = dest
 
@@ -90,10 +95,12 @@ class Street:
 
     @property
     def _last_pos(self):
-        if self._last_vehicle is not None:
-            return self._last_vehicle.pos
-        else:
+        # if no vehicles in the street
+        if not self._cells:
             return self._length
+        else:
+            key = sorted(self._cells.keys())[0]
+            return self._cells[key]._pos
 
 
     def _vehicle_in_front(self, vehicle):
@@ -173,12 +180,12 @@ class Vehicle:
 
 
     def move(self):
-        distance = self._street.length - 1 - self._pos
+        distance = self._street.length - self._pos
         # if vehicle leaves current street
         # -> enter next street
-        if self._v > distance:
+        if self._v >= distance:
             del self._street[self._pos]
             self._street = self._street._crossroad.leaving
-            self._street[self._v - distance - 1] = self
+            self._street[self._v - distance] = self
         else:
             self._street._move(self, self._pos + self._v)
