@@ -54,7 +54,7 @@ class Street:
 
         Returns true if the cell contains a vehicle
         """
-        if cell < 0 or self.length <= cell:
+        if cell < 0 or self._length <= cell:
             raise IndexError()
         return cell in self._cells
 
@@ -75,16 +75,16 @@ class Street:
 
 
     @property
-    def length(self):
-        return self._length
-
-
-    @property
     def _last_pos(self):
         if self._last_vehicle is not None:
             return self._last_vehicle.pos
         else:
-            return self.length
+            return self._length
+
+
+    @property
+    def length(self):
+        return self._length
 
 
     @property
@@ -93,7 +93,7 @@ class Street:
 
 
     def to_v_list(self):
-        list = [np.nan] * self.length
+        list = [np.nan] * self._length
 
         for cell, vehicle in self._cells.items():
             list[cell] = vehicle._v
@@ -106,7 +106,7 @@ class Vehicle:
     TODO
     """
 
-    def __init__(self, street, seed, dawdle_factor=0.2, colormap_name='cubehelix'):
+    def __init__(self, street, seed, dawdle_factor=0.2):
         # street stuff
         self._street = street
         self._front = None
