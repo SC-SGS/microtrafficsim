@@ -38,13 +38,14 @@ class Street:
     TODO
     """
 
-    def __init__(self, length, crossroad):
+    def __init__(self, length, crossroad, v_max):
         # vehicles
         self._cells = {}
 
         # params
         self._length = length
         self._crossroad = crossroad
+        self._v_max = v_max
 
 
     def __cell_check(self, cell):
@@ -152,7 +153,8 @@ class Vehicle:
 
 
     def accelerate(self):
-        self._v = min(self._v + 1, self._max_v)
+        # accelerate, own max v, street max v
+        self._v = min(self._v + 1, self._max_v, self._street._v_max)
 
 
     def brake(self):

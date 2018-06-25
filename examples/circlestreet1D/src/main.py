@@ -57,9 +57,6 @@ class VelocityImage:
 
 
 def animate(i, v_img, street):
-    print(street.vehicles[0]._pos)
-    print(street.vehicles[0]._v)
-
     if (i == 0):
         print("init step")
     else:
@@ -85,29 +82,36 @@ def animate(i, v_img, street):
 
 
 def main():
-    # init general
-    street_length = 10
-    t = 10
-    random.seed(42)
+    # init params
+    street_length = 100
+    density = 0.2
+    t = 100
+    fps = 1
+    cmap_name = 'cool'
+
+    # calculated params from init params
+    vehicle_count = max(1, int(density * street_length))
+    millis_per_frame = 1000 * max(1, int(1.0 / fps)) 
 
     # init street
     crossroad = mts.Crossroad()
-    street = mts.Street(street_length, crossroad)
+    street = mts.Street(street_length, crossroad, v_max=5)
     crossroad.incoming = street
     crossroad.leaving = street
 
-    # vehicles
-    street[0] = mts.Vehicle(street, random.random())
-    street[2] = mts.Vehicle(street, random.random())
+    # create vehicles
+    for index in random.sample(range(street_length), vehicle_count):
+        street[index] = mts.Vehicle(street, random.random())
 
+    # plotting
     fig = pyplot.figure()
-    v_img = VelocityImage(street, t=t)
+    v_img = VelocityImage(street, t=t, cmap_name=cmap_name)
 
     anim = animation.FuncAnimation(
         fig,
         func=animate,
         fargs=[v_img, street],
-        interval=2000,
+        interval=millis_per_frame,
         blit=True
     )
     pyplot.show()
