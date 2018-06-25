@@ -67,7 +67,6 @@ class Street:
 
 
     def __setitem__(self, cell, vehicle):
-        self.__cell_check(cell)
         contains_vehicle = self.__cell_check(cell)
         if contains_vehicle:
             raise ValueError("There should be no vehicle to fill cell.")
