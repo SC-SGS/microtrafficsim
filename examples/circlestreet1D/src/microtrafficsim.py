@@ -48,11 +48,6 @@ class Street:
         self._v_max = v_max
 
 
-    @property
-    def length(self):
-        return len(self)
-
-
     def __len__(self):
         return self._length
 
@@ -123,6 +118,11 @@ class Street:
 
 
     @property
+    def length(self):
+        return len(self)
+
+
+    @property
     def vehicles(self):
         return [vehicle for vehicle in self._cells.values()]
 
@@ -151,13 +151,13 @@ class Vehicle:
         self._dawdle_factor = dawdle_factor
 
         # velocity
-        self._max_v = 5
+        self._v_max = 5
         self._v = 0
 
 
     def accelerate(self):
         # accelerate, own max v, street max v
-        self._v = min(self._v + 1, self._max_v, self._street._v_max)
+        self._v = min(self._v + 1, self._v_max, self._street._v_max)
 
 
     def brake(self):

@@ -14,7 +14,7 @@ class VelocityImage:
     Contains all velocities.
     """
 
-    def __init__(self, init_street, t=100, cmap_name='cool', bg='white'):
+    def __init__(self, init_street, t, cmap_name, bg, v_max):
         # init street values
         self._t = t
         n = init_street.length
@@ -38,7 +38,7 @@ class VelocityImage:
         self._cmap = cm.get_cmap(cmap_name)
         self._cmap.set_bad(color=bg)
         self._imgplot.set_cmap(self.cmap)
-        pyplot.clim(0, 5)
+        pyplot.clim(0, v_max)
         pyplot.colorbar()
 
 
@@ -168,6 +168,9 @@ def main(cfg):
     """
     Config object cfg
     """
+    town_street_v_max = 2
+    motorway_v_max = 5
+    v_max = 5
 
     if not cfg.compound_streets:
         # init street
@@ -188,10 +191,14 @@ def main(cfg):
         crossroad_mid = mts.Crossroad()
 
         # stick graph parts together
-        town_street = mts.Street(cfg.town_street_length, crossroad_mid, v_max=2)
+        town_street = mts.Street(
+            cfg.town_street_length, crossroad_mid, v_max=town_street_v_max
+        )
         crossroad_left.leaving = town_street
         crossroad_mid.incoming = town_street
-        motorway = mts.Street(cfg.motorway_length, crossroad_left, v_max=5)
+        motorway = mts.Street(
+            cfg.motorway_length, crossroad_left, v_max=motorway_v_max
+        )
         crossroad_mid.leaving = motorway
         crossroad_left.incoming = motorway
 
@@ -212,7 +219,9 @@ def main(cfg):
 
     # plotting
     fig = pyplot.figure()
-    v_img = VelocityImage(street, t=cfg.t, cmap_name=cfg.cmap_name, bg=cfg.bg)
+    v_img = VelocityImage(
+        street, t=cfg.t, cmap_name=cfg.cmap_name, bg=cfg.bg, v_max=v_max
+    )
 
     anim = animation.FuncAnimation(
         fig,
