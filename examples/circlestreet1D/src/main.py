@@ -11,10 +11,23 @@ import microtrafficsim as mts
 
 class VelocityImage:
     """
-    Contains all velocities.
+    Contains and visualizes all velocities of a certain number of steps.
     """
 
     def __init__(self, init_street, t, cmap_name, bg, v_max):
+        """
+        PARAM init_street: mts.Street (or similar, e.g. StreetWrapper)
+        The street serving the data being stored visualized.
+
+        PARAM t: int
+        The number of steps that should be remembered.
+
+        PARAM cmap_name: str
+        The colormap used for the velocity values.
+
+        PARAM bg: str (but a color value, e.g. '#D3D3D3' or 'lightgray')
+        The (background) cell color (if no vehicle is in the cell).
+        """
         # init street values
         self._t = t
         n = init_street.length
@@ -45,21 +58,35 @@ class VelocityImage:
 
     @property
     def cmap(self):
+        """
+        RETURN colormap object: matplotlib.colors.Colormap
+        Return the used colormap object for direct usage (e.g. cmap(value)).
+        """
         return self._cmap
 
 
     @property
     def plot(self):
+        """
+        RETURN image plot: <result of pyplot.imshow(...)>
+        """
         return self._imgplot
 
 
     def to_array(self):
+        """
+        RETURN a numpy-array of street velocity values
+        """
         return np.array(self._street_vals)
-        # return np.array([s.to_array() for s in self._street_vals])
-        # return np.array(np.arange(6) * np.arange(5)[:, np.newaxis])
 
 
     def shift(self, new_street):
+        """
+        Deletes the oldest street "screenshot" and inserts the given one as
+        newest.
+
+        PARAM new_street: mts.Street (or similar, e.g. StreetWrapper)
+        """
         del self._street_vals[-1]
         self._street_vals.insert(0, new_street.to_v_list())
 
@@ -70,20 +97,32 @@ class StreetWrapper:
     """
 
     def __init__(self, streets):
+        """
+        PARAM streets: [mts.Street_0, mts.Street_1, ...]
+        """
         self._length = sum([s.length for s in streets])
         self._streets = streets
 
 
     @property
     def length(self):
+        """
+        RETURN length of all streets in this wrapper summed up
+        """
         return len(self)
 
 
     def __len__(self):
+        """
+        RETURN length of all streets in this wrapper summed up
+        """
         return self._length
 
 
     def to_v_list(self):
+        """
+        RETURN one list of all velocity values of the wrapped streets
+        """
         v_list = []
         for s in self._streets:
             v_list += s.to_v_list()
@@ -92,6 +131,9 @@ class StreetWrapper:
 
     @property
     def vehicles(self):
+        """
+        RETURN one list of all vehicles of the wrapped streets
+        """
         v_list = []
         for s in self._streets:
             v_list += s.vehicles
@@ -100,10 +142,13 @@ class StreetWrapper:
 
 class Config:
     """
-    TODO
+    A container for all parameters and properties of a simulation.
     """
 
     def __init__(self):
+        """
+        Sets all params to default.
+        """
         # streets
         self.street_length = 100
         self.compound_streets = False
@@ -123,25 +168,50 @@ class Config:
 
     @property
     def vehicle_count(self):
+        """
+        RETURN number of vehicles depending on the density: int
+        """
         return max(1, int(self.density * self.street_length))
 
 
     @property
     def millis_per_frame(self):
+        """
+        RETURN millis depending on the fps: int
+        """
         return max(1, int(1000.0 / self.fps))
 
 
     @property
     def town_street_length(self):
+        """
+        RETURN number of cells used in the town part of the street: int
+        """
         return int(self.street_length * self.town_part)
 
 
     @property
     def motorway_length(self):
+        """
+        RETURN number of cells used in the motorway part of the street: int
+        """
         return self.street_length - self.town_street_length
 
 
 def animate(i, v_img, street):
+    """
+    This is the simulation loop executing the NaSch-model and calling the
+    visualization's update.
+
+    PARAM i: int
+    Current time step given by matplotlib's animation.
+
+    PARAM v_img: VelocityImage
+    The visualization manager
+
+    PARAM street: mts.Street (or similar, e.g. StreetWrapper)
+    Needed for the vehicles' container
+    """
     if (i == 0):
         pass # init step
     else:
@@ -166,7 +236,8 @@ def animate(i, v_img, street):
 
 def main(cfg):
     """
-    Config object cfg
+    PARAM cfg: Config
+    Config object (used read-only)
     """
     town_street_v_max = 2
     motorway_v_max = 5
