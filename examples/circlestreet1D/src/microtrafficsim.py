@@ -72,6 +72,7 @@ class Street:
         if contains_vehicle:
             raise ValueError("There should be no vehicle to fill cell.")
         self._cells[cell] = vehicle
+        vehicle._pos = cell
 
 
     @property
