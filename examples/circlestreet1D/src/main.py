@@ -1,3 +1,15 @@
+"""
+A file for visualizing the small 1D microtrafficsim module.
+
+
+Authors:
+Parga Cacheiro, Dominic
+
+Date:
+June 26, 2018
+"""
+
+
 import argparse
 
 from matplotlib import pyplot

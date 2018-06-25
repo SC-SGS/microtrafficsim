@@ -1,3 +1,15 @@
+"""
+A small module for 1D microscopic traffic simulation.
+
+
+Authors:
+Parga Cacheiro, Dominic
+
+Date:
+June 26, 2018
+"""
+
+
 from matplotlib import cm
 import random
 import numpy as np
