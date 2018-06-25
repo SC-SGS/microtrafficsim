@@ -125,7 +125,7 @@ def main():
 
     # calculated params from init params
     vehicle_count = max(1, int(density * street_length))
-    millis_per_frame = 1000 * max(1, int(1.0 / fps)) 
+    millis_per_frame = max(1, int(1000.0 / fps))
 
     # init street
     crossroad = mts.Crossroad()
