@@ -62,6 +62,32 @@ class VelocityImage:
         self._street_vals.insert(0, new_street.to_v_list())
 
 
+class StreetWrapper:
+    """
+    Should wrap multiple streets for easier interaction with the visualization.
+    """
+
+    def __init__(self, streets):
+        self._length = sum([s.length for s in streets])
+        self._streets = streets
+
+
+    @property
+    def length(self):
+        return self._length
+
+
+    def to_v_list(self):
+        v_list = []
+        return [v_list + s.to_v_list() for s in self._streets][0]
+
+
+    @property
+    def vehicles(self):
+        tmp = []
+        return [tmp + s.vehicles for s in self._streets][0]
+
+
 def animate(i, v_img, street):
     if (i == 0):
         pass # init step
@@ -107,6 +133,8 @@ def main():
     for index in random.sample(range(street_length), vehicle_count):
         street[index] = mts.Vehicle(street, random.random())
 
+    # street wrapper for better interaction
+    street = StreetWrapper([street])
     # plotting
     fig = pyplot.figure()
     v_img = VelocityImage(street, t=t, cmap_name=cmap_name)
