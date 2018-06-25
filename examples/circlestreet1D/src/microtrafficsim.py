@@ -83,6 +83,16 @@ class Street:
             return self._length
 
 
+    def _vehicle_in_front(self, vehicle):
+        keys = sorted(self._cells.keys())
+        idx = 1 + keys.index(vehicle._pos)
+
+        if idx == len(keys):
+            return None
+        else:
+            return self._cells[keys[idx]]
+
+
     @property
     def length(self):
         return self._length
@@ -110,7 +120,6 @@ class Vehicle:
     def __init__(self, street, seed, dawdle_factor=0.2):
         # street stuff
         self._street = street
-        self._front = None
         self._pos = -1
 
         # dawdle factor
@@ -127,16 +136,20 @@ class Vehicle:
 
 
     def brake(self):
+        front = self._street._vehicle_in_front(self)
+
         # if no front vehicle
         # -> self is frontmost
         # -> brake for next street
-        if self._front == None:
+        if front == None:
+            # distance to end of the current street
             distance = self._street._length - self._pos
+            # distance to the last free position of the next street
             distance += self._street._crossroad._leaving._last_pos
         # if front vehicle
         # -> brake for front vehicle
         else:
-            distance = self._front._pos - self._pos
+            distance = front._pos - self._pos
 
         self._v = min(self._v, distance - 1)
 
