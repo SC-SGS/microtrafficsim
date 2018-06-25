@@ -55,7 +55,7 @@ class Street:
         Returns true if the cell contains a vehicle
         """
         if cell < 0 or self._length <= cell:
-            raise IndexError()
+            raise IndexError("Index is ", cell)
         return cell in self._cells
 
 
@@ -72,6 +72,20 @@ class Street:
             raise ValueError("There should be no vehicle to fill cell.")
         self._cells[cell] = vehicle
         vehicle._pos = cell
+
+
+    def __delitem__(self, cell):
+        del self._cells[cell]
+
+
+    def _move(self, vehicle, dest):
+        del self._cells[vehicle._pos]
+        contains_vehicle = self.__cell_check(dest)
+        if contains_vehicle:
+            raise ValueError("There should be no vehicle to fill cell.")
+        self._cells[dest] = vehicle
+        vehicle._pos = dest
+
 
 
     @property
@@ -99,7 +113,7 @@ class Street:
 
     @property
     def vehicles(self):
-        return self._cells.values()
+        return [vehicle for vehicle in self._cells.values()]
 
 
     def to_v_list(self):
@@ -159,4 +173,12 @@ class Vehicle:
 
 
     def move(self):
-        pass
+        distance = self._street.length - 1 - self._pos
+        # if vehicle leaves current street
+        # -> enter next street
+        if self._v > distance:
+            del self._street[self._pos]
+            self._street = self._street._crossroad.leaving
+            self._street[self._v - distance - 1] = self
+        else:
+            self._street._move(self, self._pos + self._v)
