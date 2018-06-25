@@ -1,3 +1,5 @@
+import argparse
+
 from matplotlib import pyplot
 from matplotlib import animation
 from matplotlib import cm
@@ -96,6 +98,49 @@ class StreetWrapper:
         return v_list
 
 
+class Config:
+    """
+    TODO
+    """
+
+    def __init__(self):
+        # streets
+        self.street_length = 100
+        self.compound_streets = False
+        self.town_part = 0.3
+
+        # vehicles
+        self.density = 0.16
+
+        # time
+        self.t = 100
+        self.fps = 5
+
+        # plotting
+        self.cmap_name = 'cool'
+        self.bg = 'lightgray'
+
+
+    @property
+    def vehicle_count(self):
+        return max(1, int(self.density * self.street_length))
+
+
+    @property
+    def millis_per_frame(self):
+        return max(1, int(1000.0 / self.fps))
+
+
+    @property
+    def town_street_length(self):
+        return int(self.street_length * self.town_part)
+
+
+    @property
+    def motorway_length(self):
+        return self.street_length - self.town_street_length
+
+
 def animate(i, v_img, street):
     if (i == 0):
         pass # init step
@@ -119,62 +164,40 @@ def animate(i, v_img, street):
     return (v_img.plot,)
 
 
-def main():
-    # init params
-    compound_streets = False
+def main(cfg):
+    """
+    Config object cfg
+    """
 
-    # streets
-    street_length = 100
-    town_part = 0.3
-
-    # vehicles
-    density = 0.2
-
-    # time
-    t = 100
-    fps = 5
-
-    # plotting
-    cmap_name = 'cool'
-    bg = 'lightgrey'
-
-
-    # calculated params from init params
-    vehicle_count = max(1, int(density * street_length))
-    millis_per_frame = max(1, int(1000.0 / fps))
-
-    if not compound_streets:
+    if not cfg.compound_streets:
         # init street
         crossroad = mts.Crossroad()
 
         # stick graph parts together
-        street = mts.Street(street_length, crossroad, v_max=5)
+        street = mts.Street(cfg.street_length, crossroad, v_max=5)
         crossroad.leaving = street
         crossroad.incoming = street
 
 
         # create vehicles
-        for index in random.sample(range(street_length), vehicle_count):
+        for index in random.sample(range(cfg.street_length), cfg.vehicle_count):
             street[index] = mts.Vehicle(street, random.random())
     else:
-        town_street_length = int(street_length * town_part)
-        motorway_length = street_length - town_street_length
-
         # init street
         crossroad_left = mts.Crossroad()
         crossroad_mid = mts.Crossroad()
 
         # stick graph parts together
-        town_street = mts.Street(town_street_length, crossroad_mid, v_max=2)
+        town_street = mts.Street(cfg.town_street_length, crossroad_mid, v_max=2)
         crossroad_left.leaving = town_street
         crossroad_mid.incoming = town_street
-        motorway = mts.Street(motorway_length, crossroad_left, v_max=5)
+        motorway = mts.Street(cfg.motorway_length, crossroad_left, v_max=5)
         crossroad_mid.leaving = motorway
         crossroad_left.incoming = motorway
 
 
         # create vehicles
-        for index in random.sample(range(street_length), vehicle_count):
+        for index in random.sample(range(cfg.street_length), cfg.vehicle_count):
             # get correct street
             if index < len(town_street):
                 town_street[index] = mts.Vehicle(town_street, random.random())
@@ -189,17 +212,76 @@ def main():
 
     # plotting
     fig = pyplot.figure()
-    v_img = VelocityImage(street, t=t, cmap_name=cmap_name, bg=bg)
+    v_img = VelocityImage(street, t=cfg.t, cmap_name=cfg.cmap_name, bg=cfg.bg)
 
     anim = animation.FuncAnimation(
         fig,
         func=animate,
         fargs=[v_img, street],
-        interval=millis_per_frame,
+        interval=cfg.millis_per_frame,
         blit=True
     )
     pyplot.show()
 
 
 if __name__ == "__main__":
-    main()
+    # defaults
+    cfg = Config()
+
+
+    # cmdline parsing
+    parser = argparse.ArgumentParser(description="1D-Microtrafficsim")
+
+    # streets
+    parser.add_argument("-n", "--street_length", type=int,
+        help="number of cells in the 1D-street (default: {})"
+             .format(cfg.street_length),
+        default=cfg.street_length
+    )
+    parser.add_argument("--compound_streets", action="store_true",
+        help="if set, {}%% of the street will be in town".format(cfg.town_part),
+        default=cfg.compound_streets
+    )
+
+    # vehicles
+    parser.add_argument("--density", type=float,
+        help="percentage of filled street cells (default: {})"
+             .format(cfg.density),
+        default=cfg.density
+    )
+
+    # time
+    parser.add_argument("-t", "--steps", type=int,
+        help="remembered time steps (plot's y axis) (default: {})"
+             .format(cfg.t),
+        default=cfg.t
+    )
+    parser.add_argument("-fps", "--fps", type=int,
+        help="time steps per second (default: {})".format(cfg.fps),
+        default=cfg.fps
+    )
+
+    # plotting
+    parser.add_argument("-cm", "--colormap", type=str,
+        help="name of colormap (default: {})".format(cfg.cmap_name),
+        default=cfg.cmap_name
+    )
+    parser.add_argument("-bg", "--background", type=str,
+        help="plot's background color (e.g. #D3D3D3 or lightgray) (default: {})"
+             .format(cfg.bg),
+        default=cfg.bg
+    )
+
+    args = parser.parse_args()
+
+
+    # setup config
+    cfg.street_length = args.street_length
+    cfg.compound_streets = args.compound_streets
+    cfg.density = args.density
+    cfg.t = args.steps
+    cfg.fps = args.fps
+    cfg.cmap_name = args.colormap
+    cfg.bg = args.background
+
+    main(cfg)
