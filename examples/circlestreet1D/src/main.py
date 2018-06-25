@@ -83,13 +83,17 @@ class StreetWrapper:
 
     def to_v_list(self):
         v_list = []
-        return [v_list + s.to_v_list() for s in self._streets][0]
+        for s in self._streets:
+            v_list += s.to_v_list()
+        return v_list
 
 
     @property
     def vehicles(self):
-        tmp = []
-        return [tmp + s.vehicles for s in self._streets][0]
+        v_list = []
+        for s in self._streets:
+            v_list += s.vehicles
+        return v_list
 
 
 def animate(i, v_img, street):
@@ -117,31 +121,75 @@ def animate(i, v_img, street):
 
 def main():
     # init params
+    compound_streets = False
+
+    # streets
     street_length = 100
+    town_part = 0.3
+
+    # vehicles
     density = 0.2
+
+    # time
     t = 100
-    fps = 1
+    fps = 5
+
+    # plotting
     cmap_name = 'cool'
+    bg = 'lightgrey'
+
 
     # calculated params from init params
     vehicle_count = max(1, int(density * street_length))
     millis_per_frame = max(1, int(1000.0 / fps))
 
-    # init street
-    crossroad = mts.Crossroad()
-    street = mts.Street(street_length, crossroad, v_max=5)
-    crossroad.incoming = street
-    crossroad.leaving = street
+    if not compound_streets:
+        # init street
+        crossroad = mts.Crossroad()
 
-    # create vehicles
-    for index in random.sample(range(street_length), vehicle_count):
-        street[index] = mts.Vehicle(street, random.random())
+        # stick graph parts together
+        street = mts.Street(street_length, crossroad, v_max=5)
+        crossroad.leaving = street
+        crossroad.incoming = street
 
-    # street wrapper for better interaction
-    street = StreetWrapper([street])
+
+        # create vehicles
+        for index in random.sample(range(street_length), vehicle_count):
+            street[index] = mts.Vehicle(street, random.random())
+    else:
+        town_street_length = int(street_length * town_part)
+        motorway_length = street_length - town_street_length
+
+        # init street
+        crossroad_left = mts.Crossroad()
+        crossroad_mid = mts.Crossroad()
+
+        # stick graph parts together
+        town_street = mts.Street(town_street_length, crossroad_mid, v_max=2)
+        crossroad_left.leaving = town_street
+        crossroad_mid.incoming = town_street
+        motorway = mts.Street(motorway_length, crossroad_left, v_max=5)
+        crossroad_mid.leaving = motorway
+        crossroad_left.incoming = motorway
+
+
+        # create vehicles
+        for index in random.sample(range(street_length), vehicle_count):
+            # get correct street
+            if index < len(town_street):
+                town_street[index] = mts.Vehicle(town_street, random.random())
+            else:
+                index -= len(town_street)
+                motorway[index] = mts.Vehicle(motorway, random.random())
+
+
+        # street wrapper for better interaction
+        street = StreetWrapper([town_street, motorway])
+
+
     # plotting
     fig = pyplot.figure()
-    v_img = VelocityImage(street, t=t, cmap_name=cmap_name)
+    v_img = VelocityImage(street, t=t, cmap_name=cmap_name, bg=bg)
 
     anim = animation.FuncAnimation(
         fig,
