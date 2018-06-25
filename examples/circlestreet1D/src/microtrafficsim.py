@@ -62,14 +62,14 @@ class Street:
     def __getitem__(self, cell):
         contains_vehicle = self.__cell_check(cell)
         if not contains_vehicle:
-            raise ValueError("There should be a vehicle, but is not.")
+            raise ValueError("There should be a vehicle at {}, but is not.".format(cell))
         return self._cells[cell]
 
 
     def __setitem__(self, cell, vehicle):
         contains_vehicle = self.__cell_check(cell)
         if contains_vehicle:
-            raise ValueError("There should be no vehicle to fill cell.")
+            raise ValueError("There should be no vehicle to fill cell {}.".format(cell))
         self._cells[cell] = vehicle
         vehicle._pos = cell
 
@@ -82,7 +82,7 @@ class Street:
         del self._cells[vehicle._pos]
         contains_vehicle = self.__cell_check(dest)
         if contains_vehicle:
-            raise ValueError("There should be no vehicle to fill cell.")
+            raise ValueError("There should be no vehicle to fill cell {}.".format(dest))
         self._cells[dest] = vehicle
         vehicle._pos = dest
 

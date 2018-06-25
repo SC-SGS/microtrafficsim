@@ -86,7 +86,7 @@ def animate(i, v_img, street):
 
 def main():
     # init general
-    street_length = 6
+    street_length = 10
     t = 10
     random.seed(42)
 
@@ -98,7 +98,7 @@ def main():
 
     # vehicles
     street[0] = mts.Vehicle(street, random.random())
-    # street[2] = mts.Vehicle(street, random.random())
+    street[2] = mts.Vehicle(street, random.random())
 
     fig = pyplot.figure()
     v_img = VelocityImage(street, t=t)
