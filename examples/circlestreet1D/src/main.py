@@ -174,7 +174,7 @@ class Config:
         self.fps = 5
 
         # plotting
-        self.cmap_name = 'cool'
+        self.cmap_name = 'hot'
         self.bg = 'lightgray'
 
 
