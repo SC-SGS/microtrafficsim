@@ -7,5 +7,6 @@ include 'examples:parser'
 include 'examples:simulation'
 include 'examples:measurements'
 include 'examples:mapviewer'
+include 'examples:circlestreet1D'
 
 include 'tools:exfmtconv'
