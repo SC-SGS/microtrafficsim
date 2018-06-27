@@ -1,4 +1,4 @@
-# Microscopic Traffic Simulation - Single Laned
+# Microscopic Traffic Simulation - 1D Single Laned
 
 ![Teaser: 1D Nagel-Schreckenberg-Model](../../resources/teaser_2018-06-26_NaSch1D.png "Teaser: 1D Nagel-Schreckenberg-Model")
 
