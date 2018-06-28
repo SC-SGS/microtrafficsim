@@ -14,8 +14,15 @@ using the python packages
 
 ## Usage
 
-The execution command is `py src/main.py`.
-For further information, call `py src/main.py -h`.
+You can call the example directly using python or using a Gradle task:
+```shell
+# using python
+py examples/circlestreet1D/src/main.py <args>
+
+# Gradle
+./gradlew :examples:circlestreet1D:run -Dexec.args="<args>"
+```
+For further information, set `<args>` to `-h`.
 
 
 ## What you can see
