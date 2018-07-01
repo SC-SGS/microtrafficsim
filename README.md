@@ -13,11 +13,11 @@ A new [release](https://github.com/sgs-us/microtrafficsim/releases) containing t
 The next few months will be attended to maintenance.
 In general, the project should be prepared for workers other than project's initiators.
 This includes:
-* A lot of Documentation
-* Writing a Github Wiki including explanations about the code structure itself
-* Change repo structure to fit [gitflow-workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)
+* A lot of Documentation (besides existing comments)
+* Writing/extending a Github Wiki including explanations about the code structure itself
 * Include [Travis CI](https://travis-ci.org) for doing (JUnit) tests automatically on serverside.
 * Improvements for interacting with the simulator, e.g. simple scenario creations for developers outside this project.
+  The simulation code has many lines being able to support some interesting features like different driver profiles, but the simulator is not prepared to fully support these features' potential (mixed driver profiles at once).
 
 In addition to that, some maintainability issues occured:
 * In this project, [JOGL](http://jogamp.org/jogl/www/) is used as Java binding for the OpenGL API.
@@ -58,7 +58,7 @@ For contributing the project, please refer [to our contribution section](CONTRIB
 acceleration functions etc.)
 * static routing: fastest vs. shortest route
 * streets' max velocity
-* single laned streets
+* multilaned streets
 * driver behaviour (e.g. in acceleration) limited by the vehicles
 "physical" behaviour
 
