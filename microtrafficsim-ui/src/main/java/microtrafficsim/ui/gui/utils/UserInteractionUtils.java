@@ -97,7 +97,7 @@ public class UserInteractionUtils {
         JOptionPane.showMessageDialog(
                 parent,
                 "The scenario has been prepared successfully.\n" +
-                        "You can start it with 'Space' or 'Arrow →'",
+                        "You can start it with 'Space' or 'Right Arrow'",
                 "Preparation finished successfully",
                 JOptionPane.INFORMATION_MESSAGE);
     }
