@@ -1,12 +1,5 @@
 """
 A file for visualizing the small 1D microtrafficsim module.
-
-
-Authors:
-Parga Cacheiro, Dominic
-
-Date:
-June 26, 2018
 """
 
 
@@ -306,7 +299,7 @@ def main(cfg):
         street, t=cfg.t, cmap_name=cfg.cmap_name, bg=cfg.bg, v_max=v_max
     )
 
-    anim = animation.FuncAnimation(
+    _ = animation.FuncAnimation(
         fig,
         func=animate,
         fargs=[v_img, street],
