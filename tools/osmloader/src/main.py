@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
     # -c --coord list of rectangular coordinates
     help = 'List of rectangular coordinates: left,bottom,right,top'
-    parser.add_argument('-c', '--coord', type=str,
+    parser.add_argument('-c', '--coord', action='append', type=str,
         help=help
     )
 
