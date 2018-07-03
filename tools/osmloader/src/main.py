@@ -84,6 +84,10 @@ if __name__ == '__main__':
 
 
     # -o --out list of own files containing filenames
+    help = 'List of map-names related to the list of coordinates'
+    parser.add_argument('-o', '--out', action='append', type=str,
+        help=help
+    )
 
 
     # finished preparing parser
