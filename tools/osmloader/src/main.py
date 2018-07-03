@@ -103,4 +103,33 @@ if __name__ == '__main__':
     # finished preparing parser
     args = parser.parse_args()
 
-    main(args)
+
+    # prepare download files
+    downloads = []
+
+    # remember predefined maps and their related coordinates
+    if args.maps:
+        for map_name in args.maps:
+            try:
+                downloads.append((
+                    map_name,
+                    PREDEFINED[map_name]
+                ))
+            except KeyError:
+                err_msg = '\'' + map_name + '\''
+                err_msg += ' is expected to be predefined, but isn\'t.'
+                exit(err_msg)
+
+    # remember custom maps and their related coordinates
+    if args.out and args.bounds:
+        if len(args.out) > len(args.bounds):
+            err_msg = 'There are more custom map names than bounds.'
+            exit(err_msg)
+        if len(args.out) < len(args.bounds):
+            err_msg = 'There are more bounds than custom map names.'
+            exit(err_msg)
+
+        for map_name, bounds in zip(args.out, args.bounds):
+            downloads.append((map_name, tuple(bounds)))
+
+    main(downloads)
