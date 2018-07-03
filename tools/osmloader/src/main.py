@@ -62,6 +62,7 @@ if __name__ == '__main__':
     # cmdline parsing
     parser = argparse.ArgumentParser(description='OpenStreetMap XML downloader')
 
+
     # list of predefined files
     help = 'List of predefined maps ('
     if len(PREDEFINED) > 0:
@@ -69,9 +70,11 @@ if __name__ == '__main__':
     else:
         help += '<no maps defined>'
     help += ")"
+
     parser.add_argument('-p', '--predefined', nargs='+', type=str,
         help=help
     )
+
 
     # -o --out list of own files containing filenames
 
@@ -83,6 +86,7 @@ if __name__ == '__main__':
     )
 
 
+    # finished preparing parser
     args = parser.parse_args()
 
     main(args)
