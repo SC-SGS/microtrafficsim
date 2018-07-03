@@ -7,6 +7,7 @@ Requires Python 3 and the urllib3 package.
 '''
 
 import argparse
+import urllib3
 
 
 API = 'http://overpass-api.de/api'
@@ -53,7 +54,7 @@ def main(downloads):
     '''
 
     # open file and connection
-    # http = urllib3.PoolManager()
+    http = urllib3.PoolManager()
 
 
     print(downloads)
