@@ -40,13 +40,6 @@ PREDEFINED = {
 }
 
 
-def download_and_save_predefined(maps, api_url=API):
-    '''
-    TODO
-    '''
-    pass
-
-
 def download_and_save_region(bounds, filename, api_url=API):
     '''
     TODO
@@ -54,8 +47,16 @@ def download_and_save_region(bounds, filename, api_url=API):
     pass
 
 
-def main(args):
-    print([float(x) for x in args.coord.split(',')])
+def main(downloads):
+    '''
+    TODO
+    '''
+
+    # open file and connection
+    # http = urllib3.PoolManager()
+
+
+    print(downloads)
 
 
 if __name__ == '__main__':
