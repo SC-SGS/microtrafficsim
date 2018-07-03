@@ -76,14 +76,14 @@ if __name__ == '__main__':
     )
 
 
-    # -o --out list of own files containing filenames
-
-
     # -c --coord list of rectangular coordinates
     help = 'List of rectangular coordinates: left,bottom,right,top'
     parser.add_argument('-c', '--coord', type=str,
         help=help
     )
+
+
+    # -o --out list of own files containing filenames
 
 
     # finished preparing parser
