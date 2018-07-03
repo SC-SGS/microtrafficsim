@@ -43,7 +43,8 @@ PREDEFINED = {
 
 def download_and_save_region(bounds, filename, api_url=API):
     '''
-    TODO
+    Using this wrapper class allows to set the coordinates in an order
+    (left, bottom, right, top) independent of the coordinates' access.
     '''
     pass
 
@@ -57,10 +58,7 @@ def main(downloads):
     http = urllib3.PoolManager()
 
 
-    print(downloads)
-
-
-if __name__ == '__main__':
+def parse_cmdline():
     # cmdline parsing
     parser = argparse.ArgumentParser(description='OpenStreetMap XML downloader')
 
@@ -135,4 +133,13 @@ if __name__ == '__main__':
     for map_name, bounds in zip(args.out, args.bounds):
         downloads.append((map_name, tuple(bounds)))
 
-    main(downloads)
+    return downloads
+
+
+def main():
+    downloads = parse_cmdline()
+    print(downloads)
+
+
+if __name__ == '__main__':
+    main()
