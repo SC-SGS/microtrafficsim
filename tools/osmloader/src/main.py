@@ -2,16 +2,17 @@
 '''
 OpenStreetMap XML downloader for multiple (hardcoded) files, using the
 overpass API.
-
-Requires Python 3 and the urllib3 package.
 '''
 
 import argparse
+import os
 import urllib3
 
 
 API = 'http://overpass-api.de/api'
+# new predefined maps can be added here
 PREDEFINED = {
+    'backnang':            (   9.3767, 48.9132,    9.4905, 48.9753),
     'stuttgart':           (   8.9679, 48.6622,    9.3363, 48.9135),
     'stuttgart-small':     (   9.0565, 48.7027,    9.2876, 48.8561),
     'karlsruhe':           (   8.2356, 48.9164,    8.5408, 49.1195),
@@ -108,7 +109,7 @@ class Region:
         self._top = top
 
 
-def download_and_save_region(region, api_url=API):
+def download_and_save_region(map_path, region, api_url=API):
     '''
     TODO
     '''
@@ -118,10 +119,33 @@ def download_and_save_region(region, api_url=API):
     url = url.format(
         region.left, region.bottom, region.right, region.top
     )
-    print(url)
 
     # open file and connection
     http = urllib3.PoolManager()
+    filename = os.path.abspath(os.path.join(map_path, region.name + '.osm'))
+    has_failed = False
+
+    try:
+        print(
+            'downloading \'{1}\' from \'{0}\''.format(url, region.name),
+            flush=True
+        )
+        with open(filename, 'wb') as target:
+            remote = http.request('GET', url, preload_content=False)
+            for chunk in remote.stream():
+                target.write(chunk)
+    except Exception:
+        has_failed = True
+
+    # close connection
+    remote.release_conn()
+
+    # handle error
+    if not has_failed:
+        print("download finished successfully!", flush=True)
+    else:
+        os.remove(filename)
+        print('Error occurred', flush=True)
 
 
 def parse_cmdline():
@@ -129,15 +153,13 @@ def parse_cmdline():
     parser = argparse.ArgumentParser(description='OpenStreetMap XML downloader')
 
 
-    # list of predefined files
     help = 'List of predefined maps ('
     if len(PREDEFINED) > 0:
         help += ', '.join([map_name for map_name in PREDEFINED.keys()])
     else:
         help += '<no maps defined>'
     help += ")"
-
-    parser.add_argument('-m', '--maps',
+    parser.add_argument('-p', '--predefined',
         metavar=('MAP_NAME'),
         type=str,
         nargs='+',
@@ -146,8 +168,17 @@ def parse_cmdline():
     )
 
 
-    # -b --bounds list of rectangular coordinates
-    help = 'List of rectangular coordinates'
+    help = 'Adds a map name related to the custom bounding box'
+    parser.add_argument('-m', '--maps',
+        metavar=('MAP_NAME'),
+        type=str,
+        action='append',
+        default=[],
+        help=help
+    )
+
+
+    help = 'Adds a custom bounding box'
     parser.add_argument('-b', '--bounds',
         metavar=('LEFT', 'BOTTOM', 'RIGHT', 'TOP'),
         type=float,
@@ -158,13 +189,13 @@ def parse_cmdline():
     )
 
 
-    # -o --out list of own files containing filenames
-    help = 'List of custom map-names related to the list of coordinates. '
+    help = 'Path to map folder. '
+    help += 'Relative paths are relative to this file\'s location. '
+    help += 'Absolute paths (e.g. starting with /) are working as well.'
     parser.add_argument('-o', '--out',
-        metavar=('MAP_NAME'),
+        metavar=('PATH'),
         type=str,
-        nargs='+',
-        default=[],
+        default='.',
         help=help
     )
 
@@ -177,11 +208,15 @@ def parse_cmdline():
     regions = []
 
     # remember predefined maps and their related coordinates
-    for map_name in args.maps:
+    for map_name in args.predefined:
         try:
-            regions.append((
+            bounds = PREDEFINED[map_name]
+            regions.append(Region(
                 map_name,
-                PREDEFINED[map_name]
+                bounds[0],
+                bounds[1],
+                bounds[2],
+                bounds[3],
             ))
         except KeyError:
             err_msg = '\'' + map_name + '\''
@@ -189,14 +224,14 @@ def parse_cmdline():
             exit(err_msg)
 
     # remember custom maps and their related coordinates
-    if len(args.out) > len(args.bounds):
+    if len(args.maps) > len(args.bounds):
         err_msg = 'There are more custom map names than bounds.'
         exit(err_msg)
-    if len(args.out) < len(args.bounds):
+    if len(args.maps) < len(args.bounds):
         err_msg = 'There are more bounds than custom map names.'
         exit(err_msg)
 
-    for map_name, bounds in zip(args.out, args.bounds):
+    for map_name, bounds in zip(args.maps, args.bounds):
         region = Region(
             map_name,
             bounds[0],
@@ -206,14 +241,23 @@ def parse_cmdline():
         )
         regions.append(region)
 
-    return regions
+    return args.out, regions
 
 
 def main():
-    regions = parse_cmdline()
+    map_path, regions = parse_cmdline()
+    map_path = os.path.abspath(map_path)
 
+    if not os.path.isdir(map_path):
+        raise ValueError('Wrong map path')
+    if not regions:
+        exit()
+
+    print('downloading to \'{0}\''.format(map_path))
+    print()
     for region in regions:
-        download_and_save_region(region)
+        download_and_save_region(map_path, region)
+        print()
 
 
 if __name__ == '__main__':
