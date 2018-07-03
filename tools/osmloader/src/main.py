@@ -137,6 +137,7 @@ def download_and_save_region(map_path, region):
             flush=True
         )
         with open(filename, 'wb') as target:
+            # streaming is better, see https://bugs.python.org/issue24658
             remote = http.request('GET', url, preload_content=False)
             for chunk in remote.stream():
                 target.write(chunk)
@@ -170,6 +171,17 @@ def parse_cmdline():
         type=str,
         nargs='+',
         default=[],
+        help=help
+    )
+
+    help = 'Downloads all predefined maps ('
+    if len(PREDEFINED) > 0:
+        help += ', '.join([map_name for map_name in PREDEFINED.keys()])
+    else:
+        help += '<no maps defined>'
+    help += ")"
+    parser.add_argument('--all-predefined',
+        action='store_true',
         help=help
     )
 
@@ -213,10 +225,10 @@ def parse_cmdline():
     # prepare download files
     regions = []
 
-    # remember predefined maps and their related coordinates
-    for map_name in args.predefined:
-        try:
-            bounds = PREDEFINED[map_name]
+
+    # download all?
+    if args.all_predefined:
+        for map_name, bounds in PREDEFINED.items():
             regions.append(Region(
                 map_name,
                 bounds[0],
@@ -224,10 +236,22 @@ def parse_cmdline():
                 bounds[2],
                 bounds[3],
             ))
-        except KeyError:
-            err_msg = '\'' + map_name + '\''
-            err_msg += ' is expected to be predefined, but isn\'t.'
-            exit(err_msg)
+    else:
+        # remember predefined maps and their related coordinates
+        for map_name in args.predefined:
+            try:
+                bounds = PREDEFINED[map_name]
+                regions.append(Region(
+                    map_name,
+                    bounds[0],
+                    bounds[1],
+                    bounds[2],
+                    bounds[3],
+                ))
+            except KeyError:
+                err_msg = '\'' + map_name + '\''
+                err_msg += ' is expected to be predefined, but isn\'t.'
+                exit(err_msg)
 
     # remember custom maps and their related coordinates
     if len(args.maps) > len(args.bounds):
