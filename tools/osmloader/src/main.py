@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # list of predefined files
     help = 'List of predefined maps ('
     if len(PREDEFINED) > 0:
-        help += ', '.join([download[0] for download in PREDEFINED])
+        help += ', '.join([map_name for map_name in PREDEFINED.keys()])
     else:
         help += '<no maps defined>'
     help += ")"
