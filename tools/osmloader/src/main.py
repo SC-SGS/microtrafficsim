@@ -41,67 +41,84 @@ PREDEFINED = {
 }
 
 
-class Bounds:
+class Region:
     '''
     Using this wrapper class allows to set the coordinates in an order
     (left, bottom, right, top) independent of the coordinates' access.
     '''
 
-    def __init__(self, left=0.0, bottom=0.0, right=0.0, top=0.0):
+    def __init__(self, name='map', left=0.0, bottom=0.0, right=0.0, top=0.0):
         '''
         PARAM left,bottom,right,top : float\n
         Default is 0.0
         '''
+        self._name = name
         self._left = left
         self._bottom = bottom
         self._right = right
         self._top = top
 
     def __str__(self):
-        return '({0}, {1}, {2}, {3})'.format(
-            self.left,
-            self.bottom,
-            self.right,
-            self.top
+        return '({n}, {l}, {b}, {r}, {t})'.format(
+            n=self.name,
+            l=self.left,
+            b=self.bottom,
+            r=self.right,
+            t=self.top
         )
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name):
+        self._name = name
 
     @property
     def left(self):
         return self._left
 
     @left.setter
-    def left(self, value):
-        self._left = value
+    def left(self, left):
+        self._left = left
 
     @property
     def bottom(self):
         return self._bottom
 
     @bottom.setter
-    def bottom(self, value):
-        self._bottom = value
+    def bottom(self, bottom):
+        self._bottom = bottom
 
     @property
     def right(self):
         return self._right
 
     @right.setter
-    def right(self, value):
-        self._right = value
+    def right(self, right):
+        self._right = right
 
     @property
     def top(self):
         return self._top
 
     @top.setter
-    def top(self, value):
-        self._top = value
+    def top(self, top):
+        self._top = top
 
 
-def download_and_save_region(bounds, filename, api_url=API):
+def download_and_save_region(region, api_url=API):
     '''
     TODO
     '''
+
+    # construct url
+    url = api_url + '/map?bbox={0},{1},{2},{3}'
+    url = url.format(
+        region.left, region.bottom, region.right, region.top
+    )
+    print(url)
 
     # open file and connection
     http = urllib3.PoolManager()
@@ -157,12 +174,12 @@ def parse_cmdline():
 
 
     # prepare download files
-    downloads = []
+    regions = []
 
     # remember predefined maps and their related coordinates
     for map_name in args.maps:
         try:
-            downloads.append((
+            regions.append((
                 map_name,
                 PREDEFINED[map_name]
             ))
@@ -180,20 +197,23 @@ def parse_cmdline():
         exit(err_msg)
 
     for map_name, bounds in zip(args.out, args.bounds):
-        bounds = Bounds(
+        region = Region(
+            map_name,
             bounds[0],
             bounds[1],
             bounds[2],
             bounds[3],
         )
-        downloads.append((map_name, bounds))
+        regions.append(region)
 
-    return downloads
+    return regions
 
 
 def main():
-    downloads = parse_cmdline()
-    print(downloads)
+    regions = parse_cmdline()
+
+    for region in regions:
+        download_and_save_region(region)
 
 
 if __name__ == '__main__':
