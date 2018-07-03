@@ -9,7 +9,7 @@ import os
 import urllib3
 
 
-API = 'http://overpass-api.de/api'
+API = 'http://overpass-api.de/api/map?bbox={left},{bottom},{right},{top}'
 # new predefined maps can be added here
 PREDEFINED = {
     'backnang':            (   9.3767, 48.9132,    9.4905, 48.9753),
@@ -109,15 +109,21 @@ class Region:
         self._top = top
 
 
-def download_and_save_region(map_path, region, api_url=API):
+def download_and_save_region(map_path, region):
     '''
-    TODO
+    PARAM map_path : str\n
+    Absolute path (e.g. starting with /) or relative to the file's location\n
+    \n
+    PARAM region : Region\n
+    The wrapper class in this module for unified parameter access\n
     '''
 
     # construct url
-    url = api_url + '/map?bbox={0},{1},{2},{3}'
-    url = url.format(
-        region.left, region.bottom, region.right, region.top
+    url = API.format(
+        left=region.left,
+        bottom=region.bottom,
+        right=region.right,
+        top=region.top
     )
 
     # open file and connection
