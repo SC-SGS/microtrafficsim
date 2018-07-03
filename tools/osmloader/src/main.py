@@ -71,21 +71,29 @@ if __name__ == '__main__':
         help += '<no maps defined>'
     help += ")"
 
-    parser.add_argument('-p', '--predefined', nargs='+', type=str,
+    parser.add_argument('-p', '--predefined',
+        type=str,
+        nargs='+',
         help=help
     )
 
 
-    # -c --coord list of rectangular coordinates
-    help = 'List of rectangular coordinates: left,bottom,right,top'
-    parser.add_argument('-c', '--coord', action='append', type=str,
+    # -b --bounds list of rectangular coordinates
+    help = 'List of rectangular coordinates: left bottom right top'
+    parser.add_argument('-b', '--bounds',
+        type=float,
+        nargs=4,
+        action='append',
         help=help
     )
 
 
     # -o --out list of own files containing filenames
     help = 'List of map-names related to the list of coordinates'
-    parser.add_argument('-o', '--out', action='append', type=str,
+    parser.add_argument('-o', '--out',
+        type=str,
+        nargs='+',
+        action='append',
         help=help
     )
 
