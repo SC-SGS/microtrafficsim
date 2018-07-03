@@ -10,3 +10,4 @@ include 'examples:mapviewer'
 include 'examples:circlestreet1D'
 
 include 'tools:exfmtconv'
+include 'tools:osmloader'

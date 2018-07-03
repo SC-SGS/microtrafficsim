@@ -1,0 +1,12 @@
+task run(type:Exec) {
+
+    workingDir 'src'
+
+    args 'python'
+    args 'main.py'
+    if (System.getProperty("exec.args")) {
+        args System.getProperty("exec.args").split()
+    }
+
+    commandLine args
+}
