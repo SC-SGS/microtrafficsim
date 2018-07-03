@@ -41,15 +41,64 @@ PREDEFINED = {
 }
 
 
-def download_and_save_region(bounds, filename, api_url=API):
+class Bounds:
     '''
     Using this wrapper class allows to set the coordinates in an order
     (left, bottom, right, top) independent of the coordinates' access.
     '''
-    pass
+
+    def __init__(self, left=0.0, bottom=0.0, right=0.0, top=0.0):
+        '''
+        PARAM left,bottom,right,top : float\n
+        Default is 0.0
+        '''
+        self._left = left
+        self._bottom = bottom
+        self._right = right
+        self._top = top
+
+    def __str__(self):
+        return '({0}, {1}, {2}, {3})'.format(
+            self.left,
+            self.bottom,
+            self.right,
+            self.top
+        )
+
+    @property
+    def left(self):
+        return self._left
+
+    @left.setter
+    def left(self, value):
+        self._left = value
+
+    @property
+    def bottom(self):
+        return self._bottom
+
+    @bottom.setter
+    def bottom(self, value):
+        self._bottom = value
+
+    @property
+    def right(self):
+        return self._right
+
+    @right.setter
+    def right(self, value):
+        self._right = value
+
+    @property
+    def top(self):
+        return self._top
+
+    @top.setter
+    def top(self, value):
+        self._top = value
 
 
-def main(downloads):
+def download_and_save_region(bounds, filename, api_url=API):
     '''
     TODO
     '''
@@ -131,7 +180,13 @@ def parse_cmdline():
         exit(err_msg)
 
     for map_name, bounds in zip(args.out, args.bounds):
-        downloads.append((map_name, tuple(bounds)))
+        bounds = Bounds(
+            bounds[0],
+            bounds[1],
+            bounds[2],
+            bounds[3],
+        )
+        downloads.append((map_name, bounds))
 
     return downloads
 
