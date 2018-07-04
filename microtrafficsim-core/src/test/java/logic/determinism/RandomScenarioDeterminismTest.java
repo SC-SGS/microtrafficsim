@@ -13,9 +13,9 @@ import org.slf4j.Logger;
  * Tests {@link RandomRouteScenario}. For detailed information about the test itself, see superclass.
  *
  * <p>
- * &bull {@code Number of runs = } {@value simulationRuns}<br>
- * &bull {@code Number of steps = } {@value maxStep}<br>
- * &bull {@code Number of checks = } {@value checks}
+ * &bull; {@code Number of runs = } {@value simulationRuns}<br>
+ * &bull; {@code Number of steps = } {@value maxStep}<br>
+ * &bull; {@code Number of checks = } {@value checks}
  *
  * @author Dominic Parga Cacheiro
  */

@@ -435,7 +435,7 @@ public class DirectedEdge
         }
 
         /**
-         * @return true if success (<=> no vehicle has been on the given position)
+         * @return true if success (meaning no vehicle has been on the given position)
          */
         public boolean removeVehicle(Vehicle vehicle) {
             boolean success;

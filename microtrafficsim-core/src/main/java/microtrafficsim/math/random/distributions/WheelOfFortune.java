@@ -14,8 +14,8 @@ import java.util.Iterator;
  * <p>
  * For example: Let this wheel contain two objects, {@code obj1} with int-value 2 and {@code obj2} with int-value 4.<br>
  * Thus the probability of <br>
- * &bull getting {@code obj1} is {@code 2/(2+4) = 1/3} and <br>
- * &bull getting {@code obj2} is {@code 4/(2+4) = 2/3}. <br>
+ * &bull; getting {@code obj1} is {@code 2/(2+4) = 1/3} and <br>
+ * &bull; getting {@code obj2} is {@code 4/(2+4) = 2/3}. <br>
  * As you see, the sum of all probabilities is 1.
  *
  * @author Dominic Parga Cacheiro
@@ -24,7 +24,7 @@ public interface WheelOfFortune<T> extends Resettable, Seeded, Iterable<T> {
 
     /**
      * Adds the given object with the given weight to this wheel. If the object is already added, nothing happens. To
-     * change the object's weight, call {@link #update(T, int)}.
+     * change the object's weight, call {@link #update(Object, int) update(T, int)}.
      *
      * @param t This object is added to this wheel if the wheel doesn't contain it.
      * @param weight The weight of this object used for its probability calculation. For more information, see class
@@ -86,7 +86,7 @@ public interface WheelOfFortune<T> extends Resettable, Seeded, Iterable<T> {
     }
 
     /**
-     * @param weighted If false, all elements in this wheel are weighted equally for the use of this method
+     * @param weightedUniformly If false, all elements in this wheel are weighted equally for the use of this method
      *
      * @return One object in this wheel. How the probability for an object is calculated is described in the class
      * documentation.

@@ -41,7 +41,7 @@ public class DynamicThreadDelegator implements ThreadDelegator {
     /**
      * <p>
      * This method executes the given task on every element in this iterator using a thread pool. Every thread
-     * takes a certain number of elements (<=> {@code packageCount} and executes the task on them.
+     * takes a certain number of elements ({@code packageCount}) and executes the task on them.
      *
      * @deprecated This method does not guarantee, that every element of this iterator is taken exactly once
      */

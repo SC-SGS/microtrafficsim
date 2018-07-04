@@ -153,10 +153,10 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
     */
     /**
      * Rules:<br>
-     * &bull two not-spawned vehicles are compared by their IDs. The greater id wins.<br>
-     * &bull spawned vehicles gets priority over not spawned vehicles. This makes sense when thinking about the
+     * &bull; two not-spawned vehicles are compared by their IDs. The greater id wins.<br>
+     * &bull; spawned vehicles gets priority over not spawned vehicles. This makes sense when thinking about the
      * situation, when you want to enter the street from your private parking place.<br>
-     * &bull two spawned vehicles means they are coming from a street and want to make a turn. Thus they have to be
+     * &bull; two spawned vehicles means they are coming from a street and want to make a turn. Thus they have to be
      * compared by the crossing logic (below).<br>
      * IMPORTANT: The registration does NOT check the positions relative to each other vehicle ON THE STREET, but it
      * checks/compares all information relevant for the crossing itself.
@@ -166,7 +166,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
      * compared. If equal, they have to be compared by right-before-left or randomly. All sub-comparisons can be
      * enabled/disabled with the {@link SimulationConfig}.
      *
-     * @return an int > 0 if v1 has priority over v2; an int < 0 if v2 has priority over v1; an int = 0 if v1 and v2
+     * @return an {@code int > 0} if v1 has priority over v2; an {@code int < 0} if v2 has priority over v1; an {@code int = 0} if v1 and v2
      * have equal priorities
      */
     private int compare(Vehicle v1, Vehicle v2) {
@@ -347,7 +347,7 @@ public class Node implements ShortestPathNode<DirectedEdge>, Resettable, Seeded,
      * Registers the given vehicle at this node.
      * <p>
      * This method is synchronized because the assertion works with the information whether a vehicle is registered or
-     * not => access should be after registration has finished.
+     * not {@literal ->} access should be after registration has finished.
      *
      * @param newVehicle This vehicle gets registered in this node.
      * @return true, if the given vehicle is getting registered; false otherwise (e.g. if it is already registered)

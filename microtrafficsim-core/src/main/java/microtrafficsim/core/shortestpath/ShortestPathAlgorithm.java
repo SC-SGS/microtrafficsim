@@ -34,7 +34,7 @@ public interface ShortestPathAlgorithm<N extends ShortestPathNode<E>, E extends 
     default void preprocess() {}
 
     /**
-     * <pr>
+     * <p>
      * Calculates the shortest path and returns a stack containing all edges starting with an edge leaving the given
      * start node and ending with an edge going to the given end node.
      * <p>

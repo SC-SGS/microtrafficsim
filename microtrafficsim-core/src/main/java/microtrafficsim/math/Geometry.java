@@ -52,8 +52,8 @@ public class Geometry {
      * @param qy middle point of the curve - vertical
      * @param rx last point of the curve - horizontal
      * @param ry last point of the curve - vertical
-     * @return Direction.LEFT if p->q->r describes a left turn; Direction.RIGHT
-     * if p->q->r describes a right turn; Direction.COLLINEAR if p->q->r
+     * @return Direction.LEFT if {@literal p->q->r} describes a left turn; Direction.RIGHT
+     * if {@literal p->q->r} describes a right turn; Direction.COLLINEAR if {@literal p->q->r}
      * are collinear (= on the same line)
      */
     public static Direction calcCurveDirection(float px, float py, float qx, float qy, float rx, float ry) {
@@ -89,7 +89,7 @@ public class Geometry {
      *
      * @param zero      Stands for 0 degrees
      * @param vectors   Will be sorted
-     * @param clockwise if true => clockwise ascending; if false => counter clockwise
+     * @param clockwise if true {@literal ->} clockwise ascending; if false {@literal ->} counter clockwise
      *                  ascending
      * @return A queue containing the given vectors sorted
      */
@@ -121,7 +121,7 @@ public class Geometry {
      *
      * @param zero      Stands for 0 degrees
      * @param vectors   Will be sorted
-     * @param clockwise if true => clockwise ascending; if false => counter clockwise
+     * @param clockwise if true {@literal ->} clockwise ascending; if false {@literal ->} counter clockwise
      *                  ascending
      * @return A queue containing the given vectors sorted
      */

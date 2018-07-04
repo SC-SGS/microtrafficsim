@@ -13,8 +13,8 @@ import java.util.stream.Stream;
  * <p>
  * Which method sorts and which one doesn't is described in their JavaDoc. In general, the list gets sorted in every
  * method where: <br>
- * &bull runtime could be improved by a sorted list (e.g. {@link #get(Object)} or {@link #contains(Object)}) <br>
- * &bull the identity/order of this list is relevant (e.g. {@link #equals(Object)}, {@link #poll()}) <br>
+ * &bull; runtime could be improved by a sorted list (e.g. {@link #get(Object)} or {@link #contains(Object)}) <br>
+ * &bull; the identity/order of this list is relevant (e.g. {@link #equals(Object)}, {@link #poll()}) <br>
  * It is not sorted for description methods ({@link #toString()}), for {@link #listIterator() list iterators} and
  * getter
  * using indices ({@link #get(int)}).<br>

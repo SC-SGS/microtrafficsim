@@ -17,9 +17,9 @@ import java.util.function.Supplier;
 /**
  * <p>
  * A simulation setup consists of three major parts: <br>
- * &bull {@link Simulation}: the executor of simulation steps <br>
- * &bull {@link Scenario}: the definition of routes etc. <br>
- * &bull {@link ScenarioBuilder}: the scenario builder; e.g. pre-calculating routes by a
+ * &bull; {@link Simulation}: the executor of simulation steps <br>
+ * &bull; {@link Scenario}: the definition of routes etc. <br>
+ * &bull; {@link ScenarioBuilder}: the scenario builder; e.g. pre-calculating routes by a
  * given scenario
  *
  * <p>
@@ -86,9 +86,9 @@ public interface Scenario extends StepListener, Resettable {
 
     /**
      * Resets this scenario by<br>
-     * &bull setting prepared to false <br>
-     * &bull clearing the vehicle container <br>
-     * &bull resetting the streetgraph
+     * &bull; setting prepared to false <br>
+     * &bull; clearing the vehicle container <br>
+     * &bull; resetting the streetgraph
      *
      * @see #setPrepared(boolean)
      * @see #getVehicleContainer()

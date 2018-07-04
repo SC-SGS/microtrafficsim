@@ -48,8 +48,8 @@ import static org.junit.Assert.*;
  * the test fails early. Concentration in the end is a compromise: The longer the simulation executes, the higher is
  * the test precision, but more vehicles are disappeared as well. <br>
  * A state check compares for a certain simulation step:<br>
- * &bull for every vehicle: {@code (vehicle's id, vehicle's street, vehicle's cell position)} is identical<br>
- * &bull correct number of vehicles
+ * &bull; for every vehicle: {@code (vehicle's id, vehicle's street, vehicle's cell position)} is identical<br>
+ * &bull; correct number of vehicles
  *
  * @author Dominic Parga Cacheiro
  */
@@ -226,7 +226,7 @@ public abstract class AbstractDeterminismTest {
             simulate(simulationAge - lastSimulationAge);
             lastSimulationAge = simulationAge;
 
-            // remember current state (<=> expected state later)
+            // remember current state (which is the expected state later)
             storeStateFor(simulationAge);
         }
     }

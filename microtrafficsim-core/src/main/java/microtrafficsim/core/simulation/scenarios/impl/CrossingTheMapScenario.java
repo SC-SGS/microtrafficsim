@@ -176,10 +176,10 @@ public class CrossingTheMapScenario extends AreaScenario {
     /**
      * <p>
      * Until enough vehicles (defined in {@link SimulationConfig}) are created, this method is doing this:<br>
-     * &bull get random origin <br>
-     * &bull calculate its position relative to the graph's center <br>
-     * &bull get a random destination out of the border field (of nodes) being closest to the chosen origin
-     * &bull increase the route count for the found origin-destination-pair
+     * &bull; get random origin <br>
+     * &bull; calculate its position relative to the graph's center <br>
+     * &bull; get a random destination out of the border field (of nodes) being closest to the chosen origin
+     * &bull; increase the route count for the found origin-destination-pair
      */
     @Override
     public void redefineMetaRoutes() {

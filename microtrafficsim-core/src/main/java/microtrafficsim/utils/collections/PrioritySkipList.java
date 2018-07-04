@@ -68,10 +68,10 @@ public class PrioritySkipList<E> implements SkipList<E> {
          *
          * <p>
          * Default implementation compares in this order:<br>
-         * &bull if ({@code my comparator != null}) => cast objects to {@code E} and use the comparator<br>
-         * &bull else => cast objects to {@link Comparable Comparable<? super E>} and use
+         * &bull; if ({@code my comparator != null}) {@literal ->} cast objects to {@code E} and use the comparator<br>
+         * &bull; else {@literal ->} cast objects to {@link Comparable Comparable<? super E>} and use
          * {@link Comparable#compareTo(Object) compareTo(E e)}<br>
-         * &bull if ({@code cmp-result == 0}) => use
+         * &bull; if ({@code cmp-result == 0}) {@literal ->} use
          * {@link Long#compare(long, long) Long.compare(o1.hashCode(), o2.hashCode())}
          */
         if (comparator != null) {
@@ -293,7 +293,7 @@ public class PrioritySkipList<E> implements SkipList<E> {
      * Creates a new PrioritySkipList with my seed and comparator and adds all elements of my list to this new list
      * if these elements are equal to an element of the given collection. So the runtime complexity is
      * in {@code O(m * log(n))} where {@code m == collection.size()} and {@code n == this.size()}. {@code O(logn)} is
-     * determined by the runtime of {@link #get(E)} and is expected with high probability.
+     * determined by the runtime of {@link #get(Object) get(E)} and is expected with high probability.
      */
     @Override
     public boolean retainAll(Collection<?> collection) {

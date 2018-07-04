@@ -19,7 +19,7 @@ import java.util.function.ToDoubleFunction;
  * <p>
  * Important note:<br>
  * Hence this class is a {@code bidirectional A}*, it uses two priority queues (forward and backward search). For
- * better performance, {@link #findShortestPath(N, N, Stack) findShortestPath(...)}
+ * better performance, {@link #findShortestPath(ShortestPathNode, ShortestPathNode, Stack) findShortestPath(...)}
  * stops searching for the shortest path if <b>at least</b> one queue is empty, <b>not both</b>. This
  * could cause incorrect shortest paths if the forward queue iterates over different edges/nodes than the backward
  * queue (e.g. in {@code contraction hierarchies}).
@@ -42,7 +42,7 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
      *                           it needs the current weight of N plus the weight of the mentioned edge. <br>
      *                           <p>
      *                           Invariants: <br>
-     *                           All edge weights has to be >= 0
+     *                           All edge weights has to be {@code >= 0}
      * @param estimationFunction In addition, the A* algorithm estimates the distance from this destination D to the end
      *                           of the route to find the shortest path faster by reducing the search area. <br>
      *                           <p>
@@ -51,7 +51,7 @@ public class BidirectionalAStar<N extends ShortestPathNode<E>, E extends Shortes
      *                           to the route's end. So it is not allowed to be more pessimistic than the correct
      *                           shortest path. Otherwise, it is not guaranteed, that the A* algorithm returns correct
      *                           results. <br>
-     *                           2) This estimation has to be >= 0
+     *                           2) This estimation has to be {@code >= 0}
      *
      */
     public BidirectionalAStar(ToDoubleFunction<? super E> edgeWeightFunction,

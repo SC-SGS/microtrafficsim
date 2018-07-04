@@ -13,13 +13,13 @@ public interface LaneContainer {
 
     /**
      * @return The first vehicle in the lane. 'First' means the vehicle being on the street for the longest time
-     * <=> the vehicle on the lane that entered it at first.
+     * which is the vehicle on the lane that entered it at first.
      */
     Vehicle getFirstVehicle(int laneNo);
 
     /**
      * @return The last vehicle in the lane. 'Last' means the vehicle being on the street for the shortest time
-     * <=> the vehicle on the lane that entered it at last.
+     * which is the vehicle on the lane that entered it at last.
      */
     Vehicle getLastVehicle(int laneNo);
 

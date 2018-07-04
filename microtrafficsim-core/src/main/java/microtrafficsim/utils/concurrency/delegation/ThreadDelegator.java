@@ -17,9 +17,6 @@ public interface ThreadDelegator {
      * Executes the {@code elementTask} for each element of the given {@code iterator} in packs of {@code
      * elementCount} many elements.
      *
-     * <p>
-     * If {@link #interrupt()} is called, the execution interrupts.
-     *
      * @param elementTask This task is executed for each element in the iterator
      * @param iter Iterator over all elements
      * @param elementCount This is the number of elements that should be executed in one go

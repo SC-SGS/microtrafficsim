@@ -25,7 +25,7 @@ public interface VehicleStyleSheet {
      * <p>
      * The color could be dependant of the vehicle's anger based defined by {@link Hulk}
      *
-     * @param vehicle The logic implementation of a vehicle. You can access its current visualization (=> current
+     * @param vehicle The logic implementation of a vehicle. You can access its current visualization ({@literal ->} current
      *                color) using {@link Vehicle#getEntity()}.
      *
      * @return The new vehicle color after the current vehicle step.

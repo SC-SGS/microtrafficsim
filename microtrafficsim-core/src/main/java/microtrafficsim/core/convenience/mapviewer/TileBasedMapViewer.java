@@ -54,11 +54,11 @@ public class TileBasedMapViewer extends BasicMapViewer {
     /**
      * <p>
      * Default constructor initializing basic configurations: <br>
-     * &bull {@code INITIAL_WINDOW_WIDTH}  = 1600 <br>
-     * &bull {@code INITIAL_WINDOW_HEIGHT} = 900 <br>
+     * &bull; {@code INITIAL_WINDOW_WIDTH}  = 1600 <br>
+     * &bull; {@code INITIAL_WINDOW_HEIGHT} = 900 <br>
      * <br>
-     * &bull {@code PROJECTION} = new {@link MercatorProjection}(256)<br>
-     * &bull {@code STYLE} = {@code style} (given as parameter) <br>
+     * &bull; {@code PROJECTION} = new {@link MercatorProjection}(256)<br>
+     * &bull; {@code STYLE} = {@code style} (given as parameter) <br>
      *
      * @param style This style sheet is used for the map style
      * @see #TileBasedMapViewer(int, int, MapStyleSheet, Projection)
@@ -70,7 +70,7 @@ public class TileBasedMapViewer extends BasicMapViewer {
     /**
      * <p>
      * Default constructor initializing basic configurations: <br>
-     * &bull {@code PRINT_FRAME_STATS} = false <br>
+     * &bull; {@code PRINT_FRAME_STATS} = false <br>
      *
      * @see #TileBasedMapViewer(int, int, MapStyleSheet, Projection, boolean)
      */
@@ -81,10 +81,10 @@ public class TileBasedMapViewer extends BasicMapViewer {
     /**
      * <p>
      * Default constructor initializing basic configurations: <br>
-     * &bull {@code TILING_SCHEME} = new {@link QuadTreeTilingScheme}(PROJECTION, 0, 19) <br>
+     * &bull; {@code TILING_SCHEME} = new {@link QuadTreeTilingScheme}(PROJECTION, 0, 19) <br>
      * <br>
-     * &bull {@code TILE_GRID_LEVEL} = 12 <br>
-     * &bull {@code NUM_TILE_WORKERS} = at least 2 <br>
+     * &bull; {@code TILE_GRID_LEVEL} = 12 <br>
+     * &bull; {@code NUM_TILE_WORKERS} = at least 2 <br>
      *
      * @see TileBasedMapViewer#TileBasedMapViewer(int, int, MapStyleSheet, Projection, TilingScheme, int, int,
      * boolean)

@@ -22,8 +22,8 @@ public class BasicPolygonArea implements PolygonArea {
      *
      * <p>
      * Conventions: <br>
-     * &bull two coordinates after each other are unequal <br>
-     * &bull first and last coordinate are unequal
+     * &bull; two coordinates after each other are unequal <br>
+     * &bull; first and last coordinate are unequal
      *
      * @param coordinates Has to contain at least 3 points, otherwise {@link IllegalAccessException} is thrown.
      */

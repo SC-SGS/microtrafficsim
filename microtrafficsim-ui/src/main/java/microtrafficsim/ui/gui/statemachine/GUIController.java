@@ -35,7 +35,7 @@ public interface GUIController {
      *
      * @param event e.g. KeyEvent.EVENT_KEY_RELEASED
      * @param vk e.g. KeyEvent.VK_M
-     * @param command e.g. e -> System.out.println("M -> KeyEvent.EVENT_KEY_RELEASED")
+     * @param command e.g. e {@literal ->} System.out.println("M {@literal ->} KeyEvent.EVENT_KEY_RELEASED")
      */
     void addKeyCommand(short event, short vk, KeyCommand command);
 }

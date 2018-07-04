@@ -137,9 +137,9 @@ public class TestShortestPathAlgorithms {
     /**
      * <p>
      * Executes: <br>
-     * &bull {@link #isDangerous()} <br>
-     * &bull {@link #isShortestPathCorrect()} <br>
-     * &bull {@link #multipleCorrectPathsPossible()} <br>
+     * &bull; {@link #isDangerous()} <br>
+     * &bull; {@link #isShortestPathCorrect()} <br>
+     * &bull; {@link #multipleCorrectPathsPossible()} <br>
      *
      * <p>
      * A {@code @Test} method is needed if you want to add a new shortest path algorithm for testing <br>
@@ -161,10 +161,10 @@ public class TestShortestPathAlgorithms {
      * <p>
      * This method creates a graph using {@link DirectedEdge} and {@link Node} and checks the shortest path algorithm
      * for:<br>
-     * &bull Is the shortest path correct? This check differs from the method {@link #isShortestPathCorrect()} in the
+     * &bull; Is the shortest path correct? This check differs from the method {@link #isShortestPathCorrect()} in the
      * graph (this graph here is a few nodes smaller). <br>
-     * &bull Is the shortest path not changing the graph? <br>
-     * &bull Is the shortest path empty if there does not exist a shortest path?
+     * &bull; Is the shortest path not changing the graph? <br>
+     * &bull; Is the shortest path empty if there does not exist a shortest path?
      *
      * <p>
      * Console output is generated, so you will be able to differentiate the errors above.

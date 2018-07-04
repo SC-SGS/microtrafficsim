@@ -156,7 +156,7 @@ public class TestCrossingIndicesCalculation {
     }
 
     /**
-     * Three roads => 6 {@code DirectedEdge}s
+     * Three roads {@literal ->} 6 {@code DirectedEdge}s
      */
     @Test
     public void testMergingCrossroad() {

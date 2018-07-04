@@ -7,9 +7,9 @@ import microtrafficsim.utils.progressable.ProgressListener;
 /**
  * <p>
  * A simulation setup consists of three major parts: <br>
- * &bull {@link Simulation}: the executor of simulation steps <br>
- * &bull {@link Scenario}: the definition of routes etc. <br>
- * &bull {@link ScenarioBuilder}: the scenario builder; e.g. pre-calculating routes by a
+ * &bull; {@link Simulation}: the executor of simulation steps <br>
+ * &bull; {@link Scenario}: the definition of routes etc. <br>
+ * &bull; {@link ScenarioBuilder}: the scenario builder; e.g. pre-calculating routes by a
  * given scenario
  *
  * <p>

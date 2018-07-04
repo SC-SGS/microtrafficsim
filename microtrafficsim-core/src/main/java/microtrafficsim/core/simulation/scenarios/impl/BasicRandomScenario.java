@@ -105,8 +105,8 @@ public abstract class BasicRandomScenario extends BasicScenario implements Seede
      * let m be {@link RouteContainer#size() routeLexicon.size()}.
      *
      * <p>
-     * If n >= m: All routes are added and (n-m) are chosen randomly <br>
-     * If n < m: n routes are chosen randomly<br>
+     * If {@code n >= m}: All routes are added and (n-m) are chosen randomly <br>
+     * If {@code n < m}: n routes are chosen randomly<br>
      * The randomness depends on the given {@link RouteContainer#getRdm(Random)}
      */
     public void setRoutes(RouteContainer routeLexicon) {

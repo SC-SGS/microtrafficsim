@@ -10,7 +10,7 @@ import java.util.function.Function;
  * <p>
  * This class represents a simple car of default values:<br>
  * <ul>
- *     <li>{@code max velocity} (Nagel-Schreckenberg-Model: 5 <=> 135 km/h)
+ *     <li>{@code max velocity} (Nagel-Schreckenberg-Model: 5 cells/s = 135 km/h)
  *     <li>{@code dawdle factor}
  *     <li>acceleration and dawdle functions as described in the Nagel-Schreckenberg-Model, which can be changed by
  *     extending this class

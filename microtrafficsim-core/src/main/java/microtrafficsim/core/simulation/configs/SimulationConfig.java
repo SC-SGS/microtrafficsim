@@ -9,15 +9,15 @@ import java.util.HashMap;
 /**
  * <p>
  * This class contains the following simulation parameters/constants like the street priorities. <br>
- * &bull {@link #speedup} a simple factor defining, how many steps should be calculated per second (depending on the cpu etc.,
+ * &bull; {@link #speedup} a simple factor defining, how many steps should be calculated per second (depending on the cpu etc.,
  * the real speedup could be less) <br>
- * &bull {@link #seed} this seed should be used for random variables and similar tasks
- * &bull {@link #scenario} This configuration object contains attributes about the scenario <br>
- * &bull {@link #crossingLogic} This configuration object contains attributes relevant for the crossing logic <br>
- * &bull {@link #visualization} This configuration object contains attributes relevant for the visualization <br>
- * &bull {@link #maxVehicleCount} The initial number of vehicles on the streetgraph <br>
- * &bull {@link #streetPriorityLevel} This is a function returning the street priority depending on the street type <br>
- * &bull {@link #multiThreading} This configuration object contains attributes relevant for multi-threading
+ * &bull; {@link #seed} this seed should be used for random variables and similar tasks
+ * &bull; {@link #scenario} This configuration object contains attributes about the scenario <br>
+ * &bull; {@link #crossingLogic} This configuration object contains attributes relevant for the crossing logic <br>
+ * &bull; {@link #visualization} This configuration object contains attributes relevant for the visualization <br>
+ * &bull; {@link #maxVehicleCount} The initial number of vehicles on the streetgraph <br>
+ * &bull; {@link #streetPriorityLevel} This is a function returning the street priority depending on the street type <br>
+ * &bull; {@link #multiThreading} This configuration object contains attributes relevant for multi-threading
  *
  * @author Jan-Oliver Schmidt, Dominic Parga Cacheiro
  */
@@ -70,14 +70,14 @@ public final class SimulationConfig {
     /**
      * <p>
      * Resets the parameter of this config file. This method keeps references of<br>
-     * &bull {@link VisualizationConfig}<br>
-     * &bull {@link CrossingLogicConfig}<br>
-     * &bull {@link MultiThreadingConfig}
+     * &bull; {@link VisualizationConfig}<br>
+     * &bull; {@link CrossingLogicConfig}<br>
+     * &bull; {@link MultiThreadingConfig}
      */
     private void setup() {
-        // 1/3,6 = 25/90 = 0,277... => 0,277 m/cell means 1 cell/s <=> 1 km/h
+        // 1/3,6 = 25/90 = 0,277... => 0,277 m/cell means 1 cell/s = 1 km/h
         metersPerCell     = 7.5f; // Nagel-Schreckenberg-Model
-        globalMaxVelocity = 6; // <=> ca. 180 km/h after Nagel-Schreckenberg-Model
+        globalMaxVelocity = 6; // = ca. 180 km/h after Nagel-Schreckenberg-Model
         speedup           = 1;
         seed              = new Random().nextLong();
         // vehicles
@@ -88,9 +88,9 @@ public final class SimulationConfig {
 
     /**
      * Updates the parameter of this config file. This method keeps references of<br>
-     * &bull {@link VisualizationConfig}<br>
-     * &bull {@link CrossingLogicConfig}<br>
-     * &bull {@link MultiThreadingConfig}<br>
+     * &bull; {@link VisualizationConfig}<br>
+     * &bull; {@link CrossingLogicConfig}<br>
+     * &bull; {@link MultiThreadingConfig}<br>
      *
      * @param config All values of the new config instance are set to this config-values.
      */

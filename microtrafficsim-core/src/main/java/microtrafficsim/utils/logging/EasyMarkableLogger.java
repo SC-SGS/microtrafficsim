@@ -8,7 +8,7 @@ import org.slf4j.Marker;
  * <p>
  * This class uses a {@link Logger logger} of the {@link LoggerFactory} for its implementation, but serves attributes
  * for deciding whether the method should log or not, both locally and statically. <br>
- * {@code level is enabled <=> level is statically enabled and locally enabled}
+ * {@code level is enabled means level is statically enabled and locally enabled}
  *
  * <p>
  * Possible attributes: trace, debug, info, warn, error

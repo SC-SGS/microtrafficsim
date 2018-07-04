@@ -413,7 +413,7 @@ public class SimulationController implements GUIController {
 
 
         // parsing is already getting interrupted or no parsing is executed yet
-        // => just try executing a new parsing
+        // -> just try executing a new parsing
         userInputExecutor.tryStartingExecutionThread(() -> {
             parsingThread = parsingExecutor.tryStartingExecutionThread(() -> {
                 closePreferences();
@@ -495,7 +495,7 @@ public class SimulationController implements GUIController {
 
 
         // scenario building is already getting interrupted or no scenario is getting built yet
-        // => just try executing a new scenario building
+        // -> just try executing a new scenario building
         userInputExecutor.tryStartingExecutionThread(() -> {
             if (streetgraph != null) { // finish user input task after accept/cancel
                 pauseSim();
@@ -892,7 +892,7 @@ public class SimulationController implements GUIController {
     }
 
     private void saveAreas(File file) {
-        // todo are overlay-areas <=> project(unproject(overlay-areas))? If no, this step could make trouble
+        // TODO are overlay-areas {@literal <->} project(unproject(overlay-areas))? If no, this step could make trouble
         UnprojectedAreas areas = scenarioAreaOverlay.getAreas().toUnprojectedAreas(mapviewer.getProjection());
         boolean success = exfmtStorage.saveAreas(file, areas);
 
@@ -1225,7 +1225,7 @@ public class SimulationController implements GUIController {
                         && streetgraph != null;
 
         if (enableScenarioAreaOverlay) {
-            /* check if there is a scenario => ask for removing it */
+            /* check if there is a scenario -> ask for removing it */
             if (simulation.hasScenario()) {
                 if (UserInteractionUtils.askUserToRemoveScenario(frame))
                     removeCurrentScenario();

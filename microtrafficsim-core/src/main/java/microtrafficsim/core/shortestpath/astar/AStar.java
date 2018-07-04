@@ -33,7 +33,7 @@ public class AStar<N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>>
      *                           it needs the current weight of N plus the weight of the mentioned edge. <br>
      *                           <p>
      *                           Invariants: <br>
-     *                           All edge weights has to be >= 0
+     *                           All edge weights has to be {@code >= 0}
      * @param estimationFunction In addition, the A* algorithm estimates the distance from this destination D to the end
      *                           of the route to find the shortest path faster by reducing the search area. <br>
      *                           <p>
@@ -42,7 +42,7 @@ public class AStar<N extends ShortestPathNode<E>, E extends ShortestPathEdge<N>>
      *                           to the route's end. So it is not allowed to be more pessimistic than the correct
      *                           shortest path. Otherwise, it is not guaranteed, that the A* algorithm returns correct
      *                           results. <br>
-     *                           2) This estimation has to be >= 0
+     *                           2) This estimation has to be {@code >= 0}
      *
      */
     public AStar(ToDoubleFunction<? super E> edgeWeightFunction,

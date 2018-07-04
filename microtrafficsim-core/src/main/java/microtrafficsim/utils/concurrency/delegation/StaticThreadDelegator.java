@@ -29,7 +29,7 @@ public class StaticThreadDelegator implements ThreadDelegator {
     /**
      * <p>
      * This method executes the given task on every element in this iterator using a thread pool. At first, all
-     * tasks containing a list of a certain number of elements (<=> {@code elementCount} are created.
+     * tasks containing a list of a certain number of elements ({@code elementCount}) are created.
      */
     public <T> void doTask(Consumer<T> elementTask, Iterator<T> iter, int elementCount) throws InterruptedException {
 

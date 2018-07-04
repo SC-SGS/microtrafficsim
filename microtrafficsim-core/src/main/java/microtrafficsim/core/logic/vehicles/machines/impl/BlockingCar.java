@@ -35,7 +35,7 @@ public class BlockingCar extends Car {
     }
 
     /**
-     * As the method name says, it sets the block mode of this car. Blocking (<=> value == true) means, the vehicle is
+     * As the method name says, it sets the block mode of this car. Blocking (value == true) means, the vehicle is
      * standing.
      */
     public void setBlockMode(boolean value) {

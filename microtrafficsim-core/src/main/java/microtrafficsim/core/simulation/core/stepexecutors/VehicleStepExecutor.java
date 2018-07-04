@@ -42,7 +42,7 @@ public interface VehicleStepExecutor {
     void didMoveAll(Scenario scenario);
 
     /**
-     * After executing tasks for spawned vehicles, there is space for not spawned ones => spawn them.
+     * After executing tasks for spawned vehicles, there is space for not spawned ones {@literal ->} spawn them.
      *
      * @param scenario The scenario holding an iterator over all not-spawned vehicles getting prepared for moving.
      */
