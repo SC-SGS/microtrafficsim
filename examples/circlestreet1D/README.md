@@ -7,7 +7,7 @@
 
 * `python3`
 
-using the python packages
+using additional python packages
 * `matplotlib`
 * `numpy`
 
