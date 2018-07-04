@@ -11,7 +11,7 @@ import urllib3
 
 API = 'http://overpass-api.de/api/map?bbox={l},{b},{r},{t}'
 # new predefined maps can be added here
-# in ALPHABETICAL ORDER
+# in ALPHABETICAL ORDER for better overview
 PREDEFINED = {
     'backnang':            (   9.3767, 48.9132,    9.4905, 48.9753),
     'bangkok':             ( 100.3924, 13.5946,  100.7240, 14.1958),
