@@ -9,7 +9,7 @@ import os
 import urllib3
 
 
-API = 'http://overpass-api.de/api/map?bbox={left},{bottom},{right},{top}'
+API = 'http://overpass-api.de/api/map?bbox={l},{b},{r},{t}'
 # new predefined maps can be added here
 # in ALPHABETICAL ORDER
 PREDEFINED = {
@@ -121,10 +121,10 @@ def download_and_save_region(map_path, region):
 
     # construct url
     url = API.format(
-        left=region.left,
-        bottom=region.bottom,
-        right=region.right,
-        top=region.top
+        l=region.left,
+        b=region.bottom,
+        r=region.right,
+        t=region.top
     )
 
     # open file and connection
