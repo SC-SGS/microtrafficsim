@@ -1,19 +1,14 @@
 """
 A small module for 1D microscopic traffic simulation.
-
-
-Authors:
-Parga Cacheiro, Dominic
-
-Date:
-June 26, 2018
 """
 
+################################################################################
 
 from matplotlib import cm
 import random
 import numpy as np
 
+################################################################################
 
 class Crossroad:
     """
@@ -29,6 +24,7 @@ class Crossroad:
         self._incoming = None
         self._leaving = None
 
+    ############################################################################
 
     @property
     def incoming(self):
@@ -37,14 +33,12 @@ class Crossroad:
         """
         return self._incoming
 
-
     @incoming.setter
     def incoming(self, incoming):
         """
         PARAM incoming: Street
         """
         self._incoming = incoming
-
 
     @property
     def leaving(self):
@@ -53,7 +47,6 @@ class Crossroad:
         """
         return self._leaving
 
-
     @leaving.setter
     def leaving(self, leaving):
         """
@@ -61,6 +54,7 @@ class Crossroad:
         """
         self._leaving = leaving
 
+################################################################################
 
 class Street:
     """
@@ -88,6 +82,7 @@ class Street:
         self._crossroad = crossroad
         self._v_max = v_max
 
+    ############################################################################
 
     @property
     def length(self):
@@ -96,13 +91,11 @@ class Street:
         """
         return len(self)
 
-
     def __len__(self):
         """
         RETURN length of this street: int
         """
         return self._length
-
 
     def __cell_check(self, cell):
         """
@@ -114,7 +107,6 @@ class Street:
             raise IndexError("Index is ", cell)
         return cell in self._cells
 
-
     def __getitem__(self, cell):
         """
         PARAM cell: int
@@ -125,9 +117,10 @@ class Street:
         """
         contains_vehicle = self.__cell_check(cell)
         if not contains_vehicle:
-            raise ValueError("There should be a vehicle at {}, but is not.".format(cell))
+            err_msg = "There should be a vehicle at {}, but is not."
+            err_msg = err_msg.format(cell)
+            raise ValueError(err_msg)
         return self._cells[cell]
-
 
     def __setitem__(self, cell, vehicle):
         """
@@ -149,13 +142,13 @@ class Street:
         self._cells[cell] = vehicle
         vehicle._pos = cell
 
-
     def __delitem__(self, cell):
         """
         Removes a vehicle at the given cell position (if not empty)
         """
         del self._cells[cell]
 
+    ############################################################################
 
     def _move(self, vehicle, dest):
         """
@@ -175,7 +168,6 @@ class Street:
         self._cells[dest] = vehicle
         vehicle._pos = dest
 
-
     @property
     def _last_pos(self):
         """
@@ -190,7 +182,6 @@ class Street:
         else:
             key = sorted(self._cells.keys())[0]
             return self._cells[key]._pos
-
 
     def _vehicle_in_front(self, vehicle):
         """
@@ -208,6 +199,7 @@ class Street:
         else:
             return self._cells[keys[idx]]
 
+    ############################################################################
 
     @property
     def vehicles(self):
@@ -215,7 +207,6 @@ class Street:
         RETURN a list of vehicles in this street (no fix order): list
         """
         return [vehicle for vehicle in self._cells.values()]
-
 
     def to_v_list(self):
         """
@@ -229,11 +220,12 @@ class Street:
 
         return list
 
+################################################################################
 
 class Vehicle:
     """
-    A vehicle containing information about machine (v_max) and driver (street.v_max)
-    at once.
+    A vehicle containing information about machine (v_max) and driver
+    (street.v_max) at once.
     """
 
     def __init__(self, street, seed, dawdle_factor=0.2):
@@ -261,6 +253,7 @@ class Vehicle:
         self._v_max = 5
         self._v = 0
 
+    ############################################################################
 
     def accelerate(self):
         """
@@ -268,7 +261,6 @@ class Vehicle:
         """
         # accelerate, own max v, street max v
         self._v = min(self._v + 1, self._v_max, self._street._v_max)
-
 
     def brake(self):
         """
@@ -292,14 +284,12 @@ class Vehicle:
 
         self._v = min(self._v, distance - 1)
 
-
     def dawdle(self):
         """
         If random, the velocity is decremented.
         """
         if self._random.random() < self._dawdle_factor:
             self._v = max(self._v - 1, 0)
-
 
     def move(self):
         """

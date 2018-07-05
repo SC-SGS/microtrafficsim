@@ -2,6 +2,7 @@
 A file for visualizing the small 1D microtrafficsim module.
 """
 
+################################################################################
 
 import argparse
 
@@ -13,6 +14,7 @@ import numpy as np
 
 import microtrafficsim as mts
 
+################################################################################
 
 class VelocityImage:
     """
@@ -59,8 +61,6 @@ class VelocityImage:
         pyplot.clim(0, v_max)
         pyplot.colorbar()
 
-
-
     @property
     def cmap(self):
         """
@@ -69,7 +69,6 @@ class VelocityImage:
         """
         return self._cmap
 
-
     @property
     def plot(self):
         """
@@ -77,13 +76,13 @@ class VelocityImage:
         """
         return self._imgplot
 
+    ############################################################################
 
     def to_array(self):
         """
         RETURN a numpy-array of street velocity values
         """
         return np.array(self._street_vals)
-
 
     def shift(self, new_street):
         """
@@ -95,6 +94,7 @@ class VelocityImage:
         del self._street_vals[-1]
         self._street_vals.insert(0, new_street.to_v_list())
 
+################################################################################
 
 class StreetWrapper:
     """
@@ -108,7 +108,6 @@ class StreetWrapper:
         self._length = sum([s.length for s in streets])
         self._streets = streets
 
-
     @property
     def length(self):
         """
@@ -116,13 +115,11 @@ class StreetWrapper:
         """
         return len(self)
 
-
     def __len__(self):
         """
         RETURN length of all streets in this wrapper summed up
         """
         return self._length
-
 
     def to_v_list(self):
         """
@@ -132,7 +129,6 @@ class StreetWrapper:
         for s in self._streets:
             v_list += s.to_v_list()
         return v_list
-
 
     @property
     def vehicles(self):
@@ -144,6 +140,7 @@ class StreetWrapper:
             v_list += s.vehicles
         return v_list
 
+################################################################################
 
 class Config:
     """
@@ -170,14 +167,12 @@ class Config:
         self.cmap_name = 'hot'
         self.bg = 'lightgray'
 
-
     @property
     def vehicle_count(self):
         """
         RETURN number of vehicles depending on the density: int
         """
         return max(1, int(self.density * self.street_length))
-
 
     @property
     def millis_per_frame(self):
@@ -186,14 +181,12 @@ class Config:
         """
         return max(1, int(1000.0 / self.fps))
 
-
     @property
     def town_street_length(self):
         """
         RETURN number of cells used in the town part of the street: int
         """
         return int(self.street_length * self.town_part)
-
 
     @property
     def motorway_length(self):
@@ -202,6 +195,7 @@ class Config:
         """
         return self.street_length - self.town_street_length
 
+################################################################################
 
 def animate(i, v_img, street):
     """
@@ -234,10 +228,8 @@ def animate(i, v_img, street):
 
         v_img.shift(street)
 
-
     v_img.plot.set_data(v_img.to_array())
     return (v_img.plot,)
-
 
 def main(cfg):
     """
@@ -256,7 +248,6 @@ def main(cfg):
         street = mts.Street(cfg.street_length, crossroad, v_max=5)
         crossroad.leaving = street
         crossroad.incoming = street
-
 
         # create vehicles
         for index in random.sample(range(cfg.street_length), cfg.vehicle_count):
@@ -278,7 +269,6 @@ def main(cfg):
         crossroad_mid.leaving = motorway
         crossroad_left.incoming = motorway
 
-
         # create vehicles
         for index in random.sample(range(cfg.street_length), cfg.vehicle_count):
             # get correct street
@@ -291,7 +281,6 @@ def main(cfg):
 
         # street wrapper for better interaction
         street = StreetWrapper([town_street, motorway])
-
 
     # plotting
     fig = pyplot.figure()
@@ -308,11 +297,9 @@ def main(cfg):
     )
     pyplot.show()
 
-
 if __name__ == "__main__":
     # defaults
     cfg = Config()
-
 
     # cmdline parsing
     parser = argparse.ArgumentParser(description="1D-Microtrafficsim")
@@ -358,7 +345,6 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
 
     # setup config
     cfg.street_length = args.street_length
