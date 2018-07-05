@@ -645,10 +645,16 @@ which you may call `pythonic`.
   Someone without knowing your whole project structure should be able to find a file at the first try.  
   `In every folder, there should be only one option to continue searching (-> determinism).`
 
+---
+
+Back to [Table of contents][website_contributing_toc]
 
 
 
 
+
+
+[website_contributing_toc]: #table-of-contents
 
 [website_git_commit_messages]: https://chris.beams.io/posts/git-commit
 [website_gitflow_workflow]: https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow
