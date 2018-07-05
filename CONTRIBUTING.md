@@ -6,7 +6,7 @@ The following is a set of (style) guidelines for contributing to microtrafficsim
 Feel free to propose changes to this document in a pull request.
 
 
-## Table of contents
+## Table of Contents
 
 [Code of Conduct](#code-of-conduct)
 
@@ -647,7 +647,7 @@ which you may call `pythonic`.
 
 ---
 
-Back to [Table of contents][website_contributing_toc]
+Back to [Table of Contents][website_contributing_toc]
 
 
 
