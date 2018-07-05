@@ -539,12 +539,12 @@ which you may call `pythonic`.
 
   # access
   length = Length(42.0)
-  print(length.metres) # prints 42.0
-  print(length.kilometres) # prints 0.042
+  print(length.metres)        # prints 42.0
+  print(length.kilometres)    # prints 0.042
 
   # set properties
-  length.kilometres = 0.043 # allowed
-  length.metres = 43.0 # no setter -> error
+  length.kilometres = 0.043   # allowed
+  length.metres = 43.0        # no setter -> error
   ```
   It's very handy to use this, but keep in mind that these properties will be used for quick access.
   Thus, they should not be seen as replacement for a function calculating a lot.
@@ -559,8 +559,8 @@ which you may call `pythonic`.
   - e = a*b;
   + e = a * b;
 
-  + e = a * b + c * d;    // ok, but not recommended here
-  + e = a*b + c*d;        // improves readability
+  + e = a * b + c * d;    # ok, but not recommended here
+  + e = a*b + c*d;        # improves readability
   ```
 
 
