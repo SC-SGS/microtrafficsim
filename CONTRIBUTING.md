@@ -186,6 +186,7 @@ To make the life of end users easier, just bundle the `JRE` as described above.
 
 The following conventions and suggestions should be followed.
 They help a lot keeping overview and the code clear.
+These conventions just extend common Java style, meaning for instance that `camelCase` is used though it is not mentioned below.
 
 
 ### File Style
