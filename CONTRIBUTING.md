@@ -190,6 +190,11 @@ They help a lot keeping overview and the code clear.
 
 ### File Style
 
+* Header files should not contain redundant information (authors, date, license).
+  
+  _For instance authors are stored through your VCS (`git`).
+  Writing this information in the header would cause confusion about its reliability._
+
 * Maximum line width is `100`.
 
   _This is a good trade off between `120` and `80`.
