@@ -425,10 +425,33 @@ which you may call `pythonic`.
 
 ### File Style
 
-* Header files should not contain redundant information (authors, date, license).
+* Header files should __NOT__ contain redundant information (like authors, date, license).
   
   _For instance authors are stored through your VCS (`git`).
   Writing this information in the header would cause confusion about its reliability._
+
+  ```python
+  '''
+  This is an example for a python file.
+  The header should explain this file/module.
+
+  Important:
+  (1) Empty lines are on purpose.
+  (2) Sort imports in alphabetical order.
+  '''
+
+  # first: built-in imports
+  import argparse
+
+  # then: third-party-modules
+  import matplotlib
+
+  # last: own modules
+  import my_module
+
+
+  # content
+  ```
 
 * Maximum line width is `80`.
 
