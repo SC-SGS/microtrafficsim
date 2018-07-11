@@ -201,10 +201,28 @@ These conventions just extend common Java style, meaning for instance that `came
 
 ### File Style
 
-* Header files should not contain redundant information (authors, date, license).
+* Header files should __NOT__ contain redundant information (like date, license).
+  Authors and credits are accepted.
+  This is not only to prevent copying code without its authors, it also helps to find a person who (hopefully) understands the code.
 
-  _For instance authors are stored through your VCS (`git`).
+  _For instance date and license are stored through your VCS (`git`) or repo.
   Writing this information in the header would cause confusion about its reliability._
+
+  ```Java
+  package xyz;
+
+  import java.*;  // :)
+
+  /**
+   * Class explanations are going -here-.
+   *
+   * @author Maximilian Luz
+   * @author Dominic Parga Cacheiro
+   */
+  public class Foo {
+      // content
+  }
+  ```
 
 * Maximum line width is `100`.
 
@@ -425,9 +443,11 @@ which you may call `pythonic`.
 
 ### File Style
 
-* Header files should __NOT__ contain redundant information (like authors, date, license).
-  
-  _For instance authors are stored through your VCS (`git`).
+* Header files should __NOT__ contain redundant information (like date, license).
+  Authors and credits are accepted.
+  This is not only to prevent copying code without its authors, it also helps to find a person who (hopefully) understands the code.
+
+  _For instance date and license are stored through your VCS (`git`) or repo.
   Writing this information in the header would cause confusion about its reliability._
 
   ```python
@@ -439,6 +459,8 @@ which you may call `pythonic`.
   (1) Empty lines are on purpose.
   (2) Sort imports in alphabetical order.
   '''
+  __author__ = 'Maximilian Luz, Dominic Parga Cacheiro'
+  __credits__ = 'Maximilian Luz, Dominic Parga Cacheiro, Jan-Oliver Schmidt'
 
   # first: built-in imports
   import argparse
