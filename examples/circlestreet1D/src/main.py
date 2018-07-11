@@ -1,6 +1,7 @@
 """
 A file for visualizing the small 1D microtrafficsim module.
 """
+__author__ = "Dominic Parga Cacheiro"
 
 ################################################################################
 

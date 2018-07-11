@@ -3,6 +3,7 @@
 OpenStreetMap XML downloader for multiple (hardcoded) files, using the
 overpass API.
 '''
+__author__ = 'Maximilian Luz, Dominic Parga Cacheiro'
 
 import argparse
 import os

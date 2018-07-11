@@ -26,7 +26,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-
+/**
+ * @author Maximilian Luz
+ */
 public class ExchangeFormatConverter {
     private final static Logger logger = LoggerFactory.getLogger(ExchangeFormatConverter.class);
 

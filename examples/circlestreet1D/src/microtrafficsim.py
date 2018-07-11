@@ -1,6 +1,7 @@
 """
 A small module for 1D microscopic traffic simulation.
 """
+__author__ = "Dominic Parga Cacheiro"
 
 ################################################################################
 
