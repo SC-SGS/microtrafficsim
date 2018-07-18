@@ -398,8 +398,61 @@ These conventions just extend common Java style, meaning for instance that `came
   }
   ```
 
-* Use annotations where expected (e.g. `@Override`).
+* Use annotations and html only where expected and helpful.
+  Some useful ones:
 
+  `@Override`  
+  Indicates that the annotated method is inherited from the parent class.
+
+  `{@code xyz}`  
+  Can be used in JavaDocs to format text into code (with literals of the same width).
+
+  `{@literal xyz}`  
+  Can be used in JavaDocs to use the literals as they are, not interpreted (e.g. as html).
+
+  `<p>...</p>`  
+  wraps a paragraph for formatting purpose, for instance it adds empty lines between paragraphs.
+  This should be used over `<br>`.
+
+  `<ul>`  
+  `<li>` some item  
+  `<li>` some other item  
+  `</ul>`  
+  adds an enumeration.
+  This should be used over `&bull;`.
+
+  `&bull;`  
+  Point (similar to an enumeration item), but not a replacement for enumeration (see `<ul>` above).
+  Can be used for dividing text snippets.
+
+  `<br>`  
+  is a line break, but it should be avoided and `<p>...</p>` should be used instead.
+  Besides "dirty style" another reason is: some IDEs does not parse this linebreak in its JavaDoc preview.
+
+  ```java
+  /**
+   * <p>
+   * This is the JavaDoc of the following method.
+   * </p>
+   *
+   * <p>
+   * With {@literal <p>} you start a new paragraph.
+   * Possible values for parameter x are:
+   * <ul>
+   * <li> {@code < 3} e.g. {@code x == 2}
+   * <li> {@code >= 3} e.g. {@code x == 3}
+   * </ul>
+   * </p>
+   */
+  public void doStuff(int x) {
+      if (x < 3) {
+          System.out.println("x < 3");
+      }
+      else {
+          System.out.println("x >= 3");
+      }
+  }
+  ```
 
 ### Project Conventions
 
