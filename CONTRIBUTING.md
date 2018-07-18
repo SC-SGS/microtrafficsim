@@ -454,6 +454,16 @@ These conventions just extend common Java style, meaning for instance that `came
   }
   ```
 
+* A file `package-info.java` in a package can be used for package documentation.
+
+  com/foo/package-info.java:
+  ```java
+  /**
+   * package documentation
+   */
+  package com.foo;
+  ```
+
 ### Project Conventions
 
 * Prefer package/folder/file management over class mangement if `meaningful`.  
