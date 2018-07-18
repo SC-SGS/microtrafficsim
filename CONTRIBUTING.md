@@ -401,14 +401,20 @@ These conventions just extend common Java style, meaning for instance that `came
 * Use annotations and html only where expected and helpful.
   Some useful ones:
 
+  `@author Dominic Parga Cacheiro`  
+  declares "Dominic Parga Cacheiro" as author of the class.
+  In case of multiple authors, every author gets its own `@author`-tag.
+  This tag should be seen as credit.
+  See [File Style](#file-style) for more information.
+
   `@Override`  
-  Indicates that the annotated method is inherited from the parent class.
+  indicates that the annotated method is inherited from the parent class.
 
   `{@code xyz}`  
-  Can be used in JavaDocs to format text into code (with literals of the same width).
+  can be used in JavaDocs to format text into code (with literals of the same width).
 
   `{@literal xyz}`  
-  Can be used in JavaDocs to use the literals as they are, not interpreted (e.g. as html).
+  can be used in JavaDocs to use the literals as they are, not interpreted (e.g. as html).
 
   `<p>...</p>`  
   wraps a paragraph for formatting purpose, for instance it adds empty lines between paragraphs.
@@ -422,7 +428,7 @@ These conventions just extend common Java style, meaning for instance that `came
   This should be used over `&bull;`.
 
   `&bull;`  
-  Point (similar to an enumeration item), but not a replacement for enumeration (see `<ul>` above).
+  is a Point (similar to an enumeration item), but not a replacement for enumeration (see `<ul>` above).
   Can be used for dividing text snippets.
 
   `<br>`  
