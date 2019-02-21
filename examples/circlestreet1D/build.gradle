@@ -2,7 +2,7 @@ task run(type:Exec) {
 
     workingDir 'src'
 
-    args 'python'
+    args 'python3'
     args 'main.py'
     if (System.getProperty("exec.args")) {
         args System.getProperty("exec.args").split()
