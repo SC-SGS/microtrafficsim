@@ -30,10 +30,10 @@ It is helpful to "outsource" this code.
 JOML has been updated recently (May 2018), it is usable in concurrent execution environments and, on its main page, it has an own chapter about its usage with LWJGL (among others).
 
 Last but not least, sometimes, when writing Java, you miss kind of handy "syntactical sugar".
-An alternative for Java is [Kotlin](https://kotlinlang.org).
-Kotlin's syntax is fresh, modern and its compiler is able to compile Java-code as well.
-Hence Kotlin is 100% interoperable with Java, which means, Kotlin-files can be added to a Java-project and Kotlin's compiler is able to handle it.
-Unfortunately, Kotlin isn't fully supported by many IDEs yet.
+Two alternatives for Java are [Kotlin](https://kotlinlang.org) vs. [Scala](https://www.scala-lang.org/).
+The syntax of both languages is fresh and modern.
+Since respectively Kotlin or Scala files can be added to a Java-project and their compiler are able to handle it, Kotlin and Scala are 100% interoperable with Java.
+Unfortunately, both languages aren't fully supported by many IDEs yet (Jan 2019).
 Therefore, for the moment, the traffic simulation code will still be written in Java.
 
 
