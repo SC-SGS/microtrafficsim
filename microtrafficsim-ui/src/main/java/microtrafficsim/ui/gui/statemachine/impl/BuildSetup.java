@@ -1,6 +1,7 @@
 package microtrafficsim.ui.gui.statemachine.impl;
 
 import microtrafficsim.core.convenience.mapviewer.TileBasedMapViewer;
+import microtrafficsim.core.map.style.StyleSheet;
 import microtrafficsim.core.map.style.impl.DarkMonochromeStyleSheet;
 import microtrafficsim.core.simulation.builder.ScenarioBuilder;
 import microtrafficsim.core.simulation.builder.impl.VehicleScenarioBuilder;
@@ -57,12 +58,18 @@ public class BuildSetup {
         config.scenario.selectedClass = config.scenario.supportedClasses.get(AreaScenario.class);
 
         /* visualization and parsing */
-        config.visualization.style = new DarkMonochromeStyleSheet();
+        updateStyle(new DarkMonochromeStyleSheet());
         mapviewer = new TileBasedMapViewer(config.visualization.style);
         overlay   = new SpriteBasedVehicleOverlay(mapviewer.getProjection(), config.visualization.style);
 
         /* simulation */
         simulation      = new VehicleSimulation();
         scenarioBuilder = new VehicleScenarioBuilder(config.seed, overlay.getVehicleFactory());
+    }
+
+    public void updateStyle(StyleSheet sheet) {
+        config.visualization.style = sheet;
+        mapviewer = new TileBasedMapViewer(config.visualization.style);
+        overlay   = new SpriteBasedVehicleOverlay(mapviewer.getProjection(), config.visualization.style);
     }
 }

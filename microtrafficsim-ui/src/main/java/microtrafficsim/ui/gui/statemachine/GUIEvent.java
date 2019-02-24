@@ -9,6 +9,7 @@ package microtrafficsim.ui.gui.statemachine;
 public enum GUIEvent {
     EXIT,
     /* map */
+    LOAD_MAP_PRIO_TO_THE_RIGHT,
     LOAD_MAP,
     SAVE_MAP,
     /* simulation */

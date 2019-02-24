@@ -337,8 +337,11 @@ public class SimulationController implements GUIController {
 
         switch (event) {
             /* map */
+            case LOAD_MAP_PRIO_TO_THE_RIGHT:
+                transitionLoadMap(file, true);
+                break;
             case LOAD_MAP:
-                transitionLoadMap(file);
+                transitionLoadMap(file, null);
                 break;
             case SAVE_MAP:
                 transitionSaveMap();
@@ -399,7 +402,7 @@ public class SimulationController implements GUIController {
 
 
     /* map */
-    private void transitionLoadMap(File file) {
+    private void transitionLoadMap(File file, Boolean priorityToTheRight) {
         // try to interrupt parsing if already running
         if (parsingExecutor.tryStartingInterruptionThread(() -> {
             boolean yes = UserInteractionUtils.askUserForOk(
@@ -427,7 +430,7 @@ public class SimulationController implements GUIController {
                     filechooser.setSelectedFile(loadedFile);
                 }
                 if (UserInteractionUtils.isFileOkayForLoading(loadedFile))
-                    loadAndShowMap(loadedFile);
+                    loadAndShowMap(loadedFile, priorityToTheRight);
 
                 parsingExecutor.finishedProcedureExecution();
                 updateMenuBar();
@@ -695,7 +698,7 @@ public class SimulationController implements GUIController {
         return UserInteractionUtils.askForSaveFile(filechooser, filename, frame);
     }
 
-    private void loadAndShowMap(File file) {
+    private void loadAndShowMap(File file, Boolean priorityToTheRight) {
         /* update frame title and remember old one */
         WrappedString cachedTitle = new WrappedString();
         rememberCurrentFrameTitleIn(cachedTitle);
@@ -709,7 +712,7 @@ public class SimulationController implements GUIController {
 
         /* parse/load map */
         try {
-            boolean success = loadMapAndUpdate(file);
+            boolean success = loadMapAndUpdate(file, priorityToTheRight);
 
             /* show map */
             if (success) {
@@ -745,19 +748,31 @@ public class SimulationController implements GUIController {
      *
      * @return true, if loading was successful; false otherwise
      */
-    private boolean loadMapAndUpdate(File file) throws InterruptedException, IOException {
-        boolean priorityToTheRight = true;
-        if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
-            priorityToTheRight = UserInteractionUtils.askUserForDecision(
-                    "For visualization purpose:\n" +
-                            "Is the road network built for driving on the right?\n" +
-                            "The answer to this does not influence the logic,\n" +
-                            "but the visualization.\n" +
-                            "To make them coherent, we need to consider it now.",
+    private boolean loadMapAndUpdate(File file, Boolean priorityToTheRight)
+    throws InterruptedException, IOException {
+        /******************************************************************************************/
+        /* set priority-to-the-right for visualization purpose */
+
+        if (priorityToTheRight == null) {
+            priorityToTheRight = true;
+
+            if (MTSFileChooser.Filters.MAP_OSM_XML.accept(file)) {
+                String question =
+                "Is the road network built for driving on the right?\n"
+                + "\n"
+                + "This influences the visualization, not the logic.\n"
+                ;
+                priorityToTheRight = UserInteractionUtils.askUserForDecision(
+                    question,
                     "Optical issue",
                     frame
-            );
+                );
+            }
         }
+
+        /******************************************************************************************/
+        /* load and set map */
+
         Tuple<Graph, MapProvider> result = exfmtStorage.loadMap(file, priorityToTheRight);
         if (result != null) {
             if (result.obj0 != null) {
